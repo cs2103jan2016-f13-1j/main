@@ -2,6 +2,8 @@
  * 
  */
 
+package main.ui;
+
 /**
  * @author pixelducky
  *
