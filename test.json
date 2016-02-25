@@ -1,8 +1,41 @@
 [
-  {
-    "title": "mop the floor"
-  },
-  {
-    "title": "sweep the floor"
-  }
+  [
+    {
+      "title": "Floating task 1.1"
+    },
+    {
+      "title": "Floating task 2"
+    },
+    {
+      "title": "Floating task 3"
+    },
+    {
+      "title": "Floating task 4"
+    },
+    {
+      "title": "Floating task 6"
+    }
+  ],
+  [
+    {
+      "title": "Today task 1",
+      "endDate": "Feb 25, 2016 10:39:32 PM"
+    },
+    {
+      "title": "Today task 2",
+      "endDate": "Feb 25, 2016 10:39:32 PM"
+    },
+    {
+      "title": "Next seven task 1",
+      "endDate": "Feb 28, 2016 10:39:32 PM"
+    },
+    {
+      "title": "Next seven task 1",
+      "endDate": "Feb 28, 2016 10:39:32 PM"
+    },
+    {
+      "title": "Next year task 1",
+      "endDate": "Feb 25, 2017 10:39:32 PM"
+    }
+  ]
 ]

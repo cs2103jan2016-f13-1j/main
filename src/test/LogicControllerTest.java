@@ -1,11 +1,14 @@
 package test;
 
-import static org.junit.Assert.*;
-import main.data.Task;
-import main.logic.Controller;
+import static org.junit.Assert.assertEquals;
+
+import java.util.ArrayList;
 
 import org.junit.Before;
 import org.junit.Test;
+
+import main.data.Task;
+import main.logic.Controller;
 
 public class LogicControllerTest {
 	
@@ -15,32 +18,47 @@ public class LogicControllerTest {
 	public void initialize() {
 		controller = new Controller();
 	}
-	
-	@Test
-	public void constructorTest() {
-		assertNotEquals(0,controller.getTasks().size());
-	}
-	
+
+	//Adds a floating task
 	@Test
 	public void addTaskTest() {
 		Task task = new Task();
-		task.setTitle("sweep the floor");
-		controller.addTask(task);
-		assertEquals(controller.getTasks().size(),controller.getStorage().readTasks().size());
+		task.setTitle("Floating task 6");
+		controller.addTask("floating",task);
+		assertEquals(controller.getFloatingTasks().size(),controller.getStorage().readTasks().get(0).size());	
 	}
 	
+	//Deletes last task
 	@Test
 	public void deleteTaskTest() {
-		controller.deleteTask(controller.getTasks().size()-1);
-		assertEquals(controller.getTasks().size(),controller.getStorage().readTasks().size());
+		ArrayList<Integer> indexes = new ArrayList<Integer>();
+		indexes.add(controller.getFloatingTasks().size()-1);
+		controller.deleteTask("floating",indexes);
+		assertEquals(controller.getFloatingTasks().size(),controller.getStorage().readTasks().get(0).size());
 	}
 	
+	//Edits the first floating task
 	@Test
 	public void editTaskTest() {
 		Task task = new Task();
-		task.setTitle("mop the floor");
-		controller.editTask(0,task);
-		assertEquals("mop the floor", controller.getTasks().get(0).getTitle());
+		task.setTitle("Floating task 1.1");
+		controller.editTask("floating",1,task);
+		assertEquals("Floating task 1.1", controller.getAllTasks().get(0).getTitle());
 	}
 	
+	//Retrieves today's tasks
+	@Test
+	public void getTodayTest() {
+		for (Task t : controller.getTodayTasks()) {
+			System.out.println(t.getTitle());
+		}
+	}
+	
+	//Retrieves tasks for next seven days
+	@Test
+	public void getNextSevenDaysTest() {
+		for (Task t : controller.getNextSevenDays()) {
+			System.out.println(t.getTitle());
+		}
+	}
 }

@@ -3,7 +3,10 @@
  */
 package main.parser;
 
+import java.util.Date;
+
 import main.data.Command;
+import main.data.Task;
 
 /**
  * @author Joleen
@@ -21,7 +24,10 @@ public class CommandParser {
 	 * del => (commandType, Int index)
 	 * edit => (commandType, Int oldTaskIndex, Task newEditedTask)
 	 */
-	public Command parseCommand(String userCommand) {
-		return new Command();
-	}
+	public Command parse(String commandString) {
+		Task task = new Task();
+		task.setTitle("sweep the floor");
+		task.setEndDate(new Date());
+        return new Command("add","floating",task);
+    }
 }

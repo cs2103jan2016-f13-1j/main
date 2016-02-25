@@ -3,6 +3,8 @@
  */
 package main.data;
 
+import java.util.Date;
+
 /**
  * @author Joleen
  *
@@ -10,10 +12,8 @@ package main.data;
 public class Task {
 
 	private String title;
-	private String startDate;
-	private String startTime;
-	private String endDate;
-	private String endTime;
+	private Date startDate;
+	private Date endDate;
 	private String label;
 
 	public String getTitle() {
@@ -24,36 +24,20 @@ public class Task {
 		this.title = title;
 	}
 
-	public String getStartDate() {
+	public Date getStartDate() {
 		return startDate;
 	}
 
-	public void setStartDate(String startDate) {
+	public void setStartDate(Date startDate) {
 		this.startDate = startDate;
 	}
 
-	public String getStartTime() {
-		return startTime;
-	}
-
-	public void setStartTime(String startTime) {
-		this.startTime = startTime;
-	}
-
-	public String getEndDate() {
+	public Date getEndDate() {
 		return endDate;
 	}
 
-	public void setEndDate(String endDate) {
+	public void setEndDate(Date endDate) {
 		this.endDate = endDate;
-	}
-
-	public String getEndTime() {
-		return endTime;
-	}
-
-	public void setEndTime(String endTime) {
-		this.endTime = endTime;
 	}
 
 	public String getLabel() {
@@ -66,7 +50,6 @@ public class Task {
 	
 	//returns different strings based on fields that tasks has
 	public String toString() {
-		return title + " from " + startDate + " " + startTime + " to "
-				+ endDate + " " + endTime + " label: " + label;
+		return title;
 	}
 }
