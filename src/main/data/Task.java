@@ -9,47 +9,97 @@ import java.util.Date;
  * @author Joleen
  *
  */
+
 public class Task {
-
-	private String title;
-	private Date startDate;
-	private Date endDate;
-	private String label;
-
-	public String getTitle() {
-		return title;
-	}
-
-	public void setTitle(String title) {
-		this.title = title;
-	}
-
-	public Date getStartDate() {
-		return startDate;
-	}
-
-	public void setStartDate(Date startDate) {
-		this.startDate = startDate;
-	}
-
-	public Date getEndDate() {
-		return endDate;
-	}
-
-	public void setEndDate(Date endDate) {
-		this.endDate = endDate;
-	}
-
-	public String getLabel() {
-		return label;
-	}
-
-	public void setLabel(String label) {
-		this.label = label;
-	}
-	
-	//returns different strings based on fields that tasks has
-	public String toString() {
-		return title;
-	}
+    private String title;
+    
+    boolean status;
+    private int priority;
+    private String label;
+    private Date startDate;
+    private Date endDate;
+    
+    public String getTitle() {
+        return title;
+    }
+    
+    public boolean getStatus() {
+        return status;
+    }
+    
+    public int getPriority() {
+        return priority;
+    }
+    
+    public String getLabel() {
+        return label;
+    }
+    
+    public Date getStartDate() {
+        return startDate;
+    }
+    
+    public Date getEndDate() {
+        return endDate;
+    }
+    
+    @Override
+    public String toString() {
+        int startDateOnly = startDate.getDate();
+        int startTime = startDate.getHours();
+        int endDateOnly = endDate.getDate();
+        int endTime = endDate.getHours();
+        return title + " from " + startDateOnly + " " + startTime + " to " + endDateOnly + " " + endTime + " label: " + label;
+    }
+    
+    private Task(TaskBuilder builder) {
+        this.title = builder.title;
+        this.status = builder.status;
+        this.priority = builder.priority;
+        this.label = builder.label;
+        this.startDate = builder.startDate;
+        this.endDate = builder.endDate;
+    }
+    
+    public static class TaskBuilder {
+        private String title = null;
+        private boolean status = false;
+        private int priority = 0;
+        private String label = null;
+        private Date startDate = null;
+        private Date endDate = null;
+        
+        public TaskBuilder (String title) {
+            this.title = title;
+        }
+        
+        public TaskBuilder setStatus(boolean status) {
+            this.status = status;
+            return this;
+        }
+        
+        public TaskBuilder setPriority(int priority) {
+            this.priority = priority;
+            return this;
+        }
+        
+        public TaskBuilder setLabel(String label) {
+            this.label = label;
+            return this;
+        }
+        
+        public TaskBuilder setStartDate(Date startDate) {
+            this.startDate = startDate;
+            return this;
+        }
+        
+        public TaskBuilder setEndDate(Date endDate) {
+            this.endDate = endDate;
+            return this;
+        }
+        
+        public Task build() {
+            return new Task(this);
+        }
+    }
 }

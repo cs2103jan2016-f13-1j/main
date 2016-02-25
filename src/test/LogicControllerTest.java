@@ -19,8 +19,7 @@ public class LogicControllerTest {
 	//Adds a floating task
 	@Test
 	public void addTaskTest() {
-		Task task = new Task();
-		task.setTitle("Floating task 6");
+		Task task = new Task.TaskBuilder("Floating task 6").build();
 		controller.addTask(Controller.FLOATING,task);
 		assertEquals(controller.getFloatingTasks().size(),controller.getStorage().readTasks().get(0).size());	
 	}
@@ -37,12 +36,11 @@ public class LogicControllerTest {
 	//Edits the first floating task
 	@Test
 	public void editTaskTest() {
-		Task task = new Task();
-		task.setTitle("Floating task 1.1");
-		controller.editTask(Controller.FLOATING,1,task);
+		Task task1 = new Task.TaskBuilder("Floating task 1.1").build();
+		controller.editTask(Controller.FLOATING,1,task1);
 		assertEquals("Floating task 1.1", controller.getFloatingTasks().get(0).getTitle());
-		task.setTitle("Floating task 1");
-		controller.editTask(Controller.FLOATING,1,task);
+		Task task2 = new Task.TaskBuilder("Floating task 1").build();
+		controller.editTask(Controller.FLOATING,1,task2);
 		assertEquals("Floating task 1", controller.getFloatingTasks().get(0).getTitle());
 	}
 	
