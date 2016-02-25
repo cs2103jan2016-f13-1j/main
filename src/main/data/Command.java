@@ -1,12 +1,39 @@
-/**
- * 
- */
-package main.data;
+import java.util.ArrayList;
 
 /**
- * @author Joleen
+ * @author Joleeen
  *
  */
-public class Command {
 
+public class Command {
+    private String commandType;
+    private String tab;
+    private Task task;
+    private ArrayList<Integer> deleteIndexes;
+    
+    public Command(String commandType, String tab, Task task) {
+        this.commandType = commandType;
+        this.tab = tab;
+        this.task = task;
+    }
+    
+    public Command(String commandType, ArrayList<Integer> deleteIndexes) {
+        this.commandType = commandType;
+        this.deleteIndexes = deleteIndexes;
+    }
+    public String getCommandType() {
+        return commandType;
+    }
+    
+    public Task getTask() {
+        return task;
+    }
+    
+    public String getTab() {
+        return tab;
+    }
+    
+    public ArrayList<Integer> getIndexes() {
+        return deleteIndexes;
+    }
 }
