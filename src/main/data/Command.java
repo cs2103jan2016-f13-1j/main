@@ -9,7 +9,7 @@ public class Command {
     private String commandType;
     private String tab;
     private Task task;
-    private ArrayList<Integer> deleteIndexes;
+    private ArrayList<Integer> indexesToDelete;
     
     public Command(String commandType, String tab, Task task) {
         this.commandType = commandType;
@@ -17,9 +17,9 @@ public class Command {
         this.task = task;
     }
     
-    public Command(String commandType, ArrayList<Integer> deleteIndexes) {
+    public Command(String commandType, ArrayList<Integer> indexesToDelete) {
         this.commandType = commandType;
-        this.deleteIndexes = deleteIndexes;
+        this.indexesToDelete = indexesToDelete;
     }
     public String getCommandType() {
         return commandType;
@@ -34,6 +34,6 @@ public class Command {
     }
     
     public ArrayList<Integer> getIndexes() {
-        return deleteIndexes;
+        return indexesToDelete;
     }
 }
