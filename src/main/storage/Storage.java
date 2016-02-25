@@ -28,8 +28,8 @@ public class Storage {
 
 	private static Storage storage;
 
-	String fileDirectory = "C:\\Users\\Admin1\\Desktop\\Workspace\\Dooleh";
-	String fileName = "test.json";
+	String fileDirectory = System.getProperty("user.dir");
+	String fileName = "storage.txt";
 	String filePath = fileDirectory + "\\" + fileName;
 
 	private Storage() {

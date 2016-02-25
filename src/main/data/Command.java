@@ -10,6 +10,10 @@ package main.data;
 import java.util.ArrayList;
 
 public class Command {
+	
+	public static final String FLOATING_TAB = "floating";
+	public static final String DATED_TAB = "dated";
+	
     private String commandType;
     private String tab;
     private Task task;

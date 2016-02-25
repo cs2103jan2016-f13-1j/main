@@ -28,6 +28,6 @@ public class CommandParser {
 		Task task = new Task();
 		task.setTitle("sweep the floor");
 		task.setEndDate(new Date());
-        return new Command("add","floating",task);
+        return new Command("add",Command.FLOATING_TAB,task);
     }
 }
