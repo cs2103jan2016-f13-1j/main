@@ -9,7 +9,7 @@ import org.ocpsoft.prettytime.nlp.PrettyTimeParser;
  * @author Joleeen
  *
  *
- *Currently assuming that labels are added at the very end, with no more information behind.
+ *Currently assuming that label are added at the very end, with no more information behind.
  *
  */
 
@@ -18,6 +18,10 @@ public class CommandParser {
     private final int LENGTH_DEL = 3;
     private final int LENGTH_DELETE = 6;
     private final int LENGTH_OFFSET = 1;
+    private final int DATE_END = 0;
+    private final int DATE_START_RANGED = 0;
+    private final int DATE_END_RANGED = 1;
+    private final int DATE_MAX_SIZE = 2;
     
     public Command parse(String commandString) {
         String command = getFirstWord(commandString);
@@ -32,9 +36,9 @@ public class CommandParser {
     public String determineCommandType(String command) {
         if (command.equalsIgnoreCase("delete") || (command.equalsIgnoreCase("del"))) {
             return "delete";
+        } else {
+            return "add";
         }
-        
-        return "add";
     }
     
     public Command commandPreparations(String type, String commandString) {
@@ -51,87 +55,64 @@ public class CommandParser {
     }
     
     public Command prepareForAdd(String type, String commandString) {
-        String title;
         String tab = "floating";
-        Task task;
-        ArrayList<String> labels = null;
+        String title = null;
+        Task task = null;
+        String label = null;
         Date startDate = null;
         Date endDate = null;
+        boolean isLabelPresent;
         
-        boolean isFloating;
-        List<Date> dates = getDate(commandString);
-        isFloating = checkIsFloating(dates);
+        List<Date> dates = parseDate(commandString);
+        int numberOfDate = dates.size();
+        
+        if (numberOfDate > 0) {
+            tab = "dated";
+            endDate = getDate(dates, DATE_END);
+        }
+        
+        if (numberOfDate == DATE_MAX_SIZE) {
+            startDate = getDate(dates, DATE_START_RANGED);
+            endDate = getDate(dates, DATE_END_RANGED);
+        }
         
         title = commandString;
         
-        if (!isFloating) {
-            tab = "dated";
-            startDate = prepareStartDate(dates);
-            
-            boolean isDateRanged;
-            isDateRanged = checkDateRange(dates);
-            
-            if (isDateRanged) {
-                endDate = prepareEndDate(dates);
-            }
+        isLabelPresent = checkForLabel(commandString);
+        if (isLabelPresent) {
+            label = extractLabel(commandString);
+            title = removeLabel(title);
         }
         
-        boolean isLabelsPresent;
-        isLabelsPresent = checkForLabels(commandString);
-        if (isLabelsPresent) {
-            labels = extractLabels(commandString);
-            title = removeLabels(title);
-        }
-        
-        task = buildTask(title, startDate, endDate, labels);
+        task = buildTask(title, startDate, endDate, label);
         Command command = new Command(type, tab, task);
         return command;
     }
     
-    public List<Date> getDate(String commandString) {
+    public List<Date> parseDate(String commandString) {
         PrettyTimeParser parser = new PrettyTimeParser();
         List<Date> dates = parser.parse(commandString);
         return dates;
     }
     
-    public boolean checkIsFloating(List<Date> dates) {
-        if (dates.size() == 0) {
-            return true;
-        }
-        return false;
+    public Date getDate(List<Date> dates, int index) {
+        return dates.get(index);
     }
     
-    public Date prepareStartDate(List<Date> dates) {
-        return dates.get(0);
-    }
-    
-    public boolean checkDateRange(List<Date> dates) {
-        if (dates.size() == 2) {
-            return true;
-        }
-        return false;
-    }
-    
-    public Date prepareEndDate(List<Date> dates) {
-        return dates.get(1);
-    }
-    
-    public boolean checkForLabels(String commandString) {
+    public boolean checkForLabel(String commandString) {
         if (commandString.contains("#")) {
             return true;
+        } else {
+            return false;
         }
-        return false;
     }
     
-    public ArrayList<String> extractLabels(String commandString) {
-        ArrayList<String> labels = new ArrayList<String>();
+    public String extractLabel(String commandString) {
         int index = commandString.indexOf("#");
         index = index + LENGTH_OFFSET;
         String substring = commandString.substring(index);
-        substring = removeWhiteSpace(substring);
-        Collections.addAll(labels, substring.split(","));
-        
-        return labels;
+        String label = substring.trim();
+        return label;
     }
     
     public String removeWhiteSpace(String string) {
@@ -139,35 +120,29 @@ public class CommandParser {
         return string;
     }
     
-    public String removeLabels(String title) {
+    public String removeLabel(String title) {
         int index = title.indexOf("#");
         index = index - LENGTH_OFFSET;
         return title.substring(0, index);
     }
     
-    public Task buildTask(String title, Date startDate, Date endDate, ArrayList<String> labels) {
+    public Task buildTask(String title, Date startDate, Date endDate, String label) {
         Task task = new Task.TaskBuilder(title).setStartDate(startDate).setEndDate(endDate)
-        .setLabels(labels).build();
+        .setLabel(label).build();
         return task;
     }
     
     public Command prepareForDel(String type, String commandString) {
-        String index = retrieveDeleteIndex(commandString);
-        String indexType = checkIndexType(index);
+        String index = getIndexString(commandString);
         
-        ArrayList<Integer> deleteIndexes = new ArrayList<Integer>();
+        ArrayList<Integer> indexesToDelete = new ArrayList<Integer>();
+        indexesToDelete = extractIndex(index);
         
-        if (indexType.equals("single")) {
-            deleteIndexes.add(Integer.parseInt(index));
-        } else {
-            deleteIndexes = extractMultipleIndex(index, indexType);
-        }
-        
-        Command command = new Command(type, deleteIndexes);
+        Command command = new Command(type, indexesToDelete);
         return command;
     }
     
-    public String retrieveDeleteIndex(String commandString) {
+    public String getIndexString(String commandString) {
         int index = 0;
         String command = getFirstWord(commandString);
         
@@ -178,46 +153,36 @@ public class CommandParser {
         }
         index = index + LENGTH_OFFSET;
         
-        commandString = commandString.substring(index, commandString.length());
-        commandString = removeWhiteSpace(commandString);
+        String indexToDelete = commandString.substring(index, commandString.length());
+        indexToDelete = removeWhiteSpace(indexToDelete);
         
-        return commandString;
+        return indexToDelete;
     }
     
-    public String checkIndexType(String index) {
-        String type;
-        
-        if (index.contains(",")) {
-            type = "multiple";
-        } else if (index.contains("-")) {
-            type = "range";
-        } else {
-            type = "single";
-        }
-        
-        return type;
-    }
-    
-    public ArrayList<Integer> extractMultipleIndex(String index, String type) {
+    public ArrayList<Integer> extractIndex(String index) {
         ArrayList<String> indexes = new ArrayList<String>();
+        ArrayList<String> tempRangedIndexes = new ArrayList<String>();
         ArrayList<Integer> multipleIndexes = new ArrayList<Integer>();
         ArrayList<Integer> rangedIndexes = new ArrayList<Integer>();
         
-        if (type.equals("multiple")) {
-            Collections.addAll(indexes, index.split(","));
-            
-            for (int i = 0; i < indexes.size(); i++) {
+        Collections.addAll(indexes, index.split(","));
+        
+        for (int i = 0; i < indexes.size(); i++) {
+            if (indexes.get(i).contains("-")) {
+                Collections.addAll(tempRangedIndexes, indexes.get(i).split("-"));
+                
+                for (int j = 0; j < tempRangedIndexes.size(); j++) {
+                    rangedIndexes.add(Integer.parseInt(tempRangedIndexes.get(j)));
+                }
+                
+                for (int k = rangedIndexes.get(0); k <= rangedIndexes.get(1); k++) {
+                    multipleIndexes.add(k);
+                }
+                
+                tempRangedIndexes.clear();
+                rangedIndexes.clear();
+            } else {
                 multipleIndexes.add(Integer.parseInt(indexes.get(i)));
-            }
-        } else {
-            Collections.addAll(indexes, index.split("-"));
-            
-            for (int i = 0; i < indexes.size(); i++) {
-                rangedIndexes.add(Integer.parseInt(indexes.get(i)));
-            }
-            
-            for (int i = rangedIndexes.get(0); i <= rangedIndexes.get(1); i++) {
-                multipleIndexes.add(i);
             }
         }
         
