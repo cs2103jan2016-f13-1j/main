@@ -1,6 +1,3 @@
-package main.data;
-
-import java.util.ArrayList;
 import java.util.Date;
 
 /**
@@ -9,15 +6,11 @@ import java.util.Date;
  */
 
 public class Task {
-    //required
     private String title;
     
-    //optional
-    private int status; //01 undone done
-    private int priority; //0123 no LMH
-    private boolean isPostpone;
-    private boolean isRecurring;
-    private ArrayList<String> labels;
+    boolean status;
+    private int priority;
+    private String label;
     private Date startDate;
     private Date endDate;
     
@@ -25,7 +18,7 @@ public class Task {
         return title;
     }
     
-    public int getStatus() {
+    public boolean getStatus() {
         return status;
     }
     
@@ -33,16 +26,8 @@ public class Task {
         return priority;
     }
     
-    public boolean getIsPostpone(){
-        return isPostpone;
-    }
-    
-    public boolean getIsRecurring() {
-        return isRecurring;
-    }
-    
-    public ArrayList<String> getLabels() {
-        return labels;
+    public String getLabel() {
+        return label;
     }
     
     public Date getStartDate() {
@@ -59,35 +44,31 @@ public class Task {
         int startTime = startDate.getHours();
         int endDateOnly = endDate.getDate();
         int endTime = endDate.getHours();
-        return title + " from " + startDateOnly + " " + startTime + " to " + endDateOnly + " " + endTime + " label: " + labels;
+        return title + " from " + startDateOnly + " " + startTime + " to " + endDateOnly + " " + endTime + " label: " + label;
     }
     
     private Task(TaskBuilder builder) {
         this.title = builder.title;
         this.status = builder.status;
         this.priority = builder.priority;
-        this.isPostpone = builder.isPostpone;
-        this.isRecurring = builder.isRecurring;
-        this.labels = builder.labels;
+        this.label = builder.label;
         this.startDate = builder.startDate;
         this.endDate = builder.endDate;
     }
     
     public static class TaskBuilder {
-        private String title;
-        private int status;
-        private int priority;
-        private boolean isPostpone;
-        private boolean isRecurring;
-        private ArrayList<String> labels;
-        private Date startDate;
-        private Date endDate;
+        private String title = null;
+        private boolean status = false;
+        private int priority = 0;
+        private String label = null;
+        private Date startDate = null;
+        private Date endDate = null;
         
         public TaskBuilder (String title) {
             this.title = title;
         }
         
-        public TaskBuilder setStatus(int status) {
+        public TaskBuilder setStatus(boolean status) {
             this.status = status;
             return this;
         }
@@ -97,18 +78,8 @@ public class Task {
             return this;
         }
         
-        public TaskBuilder setPostpone(boolean isPostpone) {
-            this.isPostpone = isPostpone;
-            return this;
-        }
-        
-        public TaskBuilder setRecurring(boolean isRecurring) {
-            this.isRecurring = isRecurring;
-            return this;
-        }
-        
-        public TaskBuilder setLabels(ArrayList<String> labels) {
-            this.labels = labels;
+        public TaskBuilder setLabel(String label) {
+            this.label = label;
             return this;
         }
         
