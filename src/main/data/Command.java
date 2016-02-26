@@ -6,6 +6,13 @@ import java.util.ArrayList;
  */
 
 public class Command {
+import java.util.ArrayList;
+
+public class Command {
+	
+	public static final String FLOATING_TAB = "floating";
+	public static final String DATED_TAB = "dated";
+	
     private String commandType;
     private String tab;
     private Task task;
@@ -31,6 +38,10 @@ public class Command {
     
     public String getTab() {
         return tab;
+    }
+    
+    public void setTab(String tab) {
+        this.tab = tab;
     }
     
     public ArrayList<Integer> getIndexes() {
