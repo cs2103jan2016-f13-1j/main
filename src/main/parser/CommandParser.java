@@ -1,10 +1,12 @@
+/**
+ *
+ */
 package main.parser;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-
-//import org.ocpsoft.prettytime.nlp.PrettyTimeParser;
-
+/**
+ * @author Joleen
+ *
+ */
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -14,11 +16,6 @@ import org.ocpsoft.prettytime.nlp.PrettyTimeParser;
 
 import main.data.Command;
 import main.data.Task;
-
-/**
- * @author Joleen
- *
- */
 
 public class CommandParser {
     private final int LENGTH_DEL = 3;
@@ -103,16 +100,16 @@ public class CommandParser {
         //List<Date> dates = new ArrayList<Date>();
         
         /*
-        if (commandString.contains("pm")) {
-            SimpleDateFormat df = new SimpleDateFormat("EEE MMM d HH:mm:ss Z yyyy");
-            String dateString = "Thu Feb 25 19:00:00 SGT 2016";
-            try {
-                Date date = df.parse(dateString);
-                dates.add(date);
-            } catch (ParseException e) {
-            }
-        }
-        */
+         if (commandString.contains("pm")) {
+         SimpleDateFormat df = new SimpleDateFormat("EEE MMM d HH:mm:ss Z yyyy");
+         String dateString = "Thu Feb 25 19:00:00 SGT 2016";
+         try {
+         Date date = df.parse(dateString);
+         dates.add(date);
+         } catch (ParseException e) {
+         }
+         }
+         */
         return dates;
     }
     
@@ -143,18 +140,18 @@ public class CommandParser {
     }
     
     private String removeLabel(String title, String label) {
-    	String tag = "#".concat(label);
-	 	
-	 	int index = title.indexOf(tag);
-	 	index = index + label.length() + LENGTH_OFFSET;
-
-	 	if (title.length() != index) {
-	 		tag = tag.concat(" ");
-	 	} else {
-	 		tag = " ".concat(tag);
-	 	}
-	 	
-	 	title = title.replace(tag, "");
+        String tag = "#".concat(label);
+        
+        int index = title.indexOf(tag);
+        index = index + label.length() + LENGTH_OFFSET;
+        
+        if (title.length() != index) {
+            tag = tag.concat(" ");
+        } else {
+            tag = " ".concat(tag);
+        }
+        
+        title = title.replace(tag, "");
         return title;
     }
     

@@ -1,4 +1,12 @@
+/**
+ *
+ */
 package test;
+
+/**
+ * @author Joleen
+ *
+ */
 
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
@@ -10,11 +18,6 @@ import java.util.Date;
 
 import main.data.Command;
 import main.parser.CommandParser;
-
-/**
- * @author Joleen
- *
- */
 
 public class TestCommandParser {
     
