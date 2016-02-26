@@ -1,6 +1,3 @@
-/**
- *
- */
 package main.data;
 
 import java.text.SimpleDateFormat;
@@ -57,7 +54,7 @@ public class Task {
                     feedback = title + " #" + label;
                 }
             } else {
-                
+                //end date only
             }
         } else {
             String startDateTime = dateFormat.format(startDate);
@@ -66,11 +63,6 @@ public class Task {
         }
         
         return feedback;
-        /*int startDateOnly = startDate.getDate();
-         int startTime = startDate.getHours();
-         int endDateOnly = endDate.getDate();
-         int endTime = endDate.getHours();*/
-        //return title + " from " + startDateOnly + " " + startTime + " to " + endDateOnly + " " + endTime + " label: " + label;
     }
     
     private Task(TaskBuilder builder) {

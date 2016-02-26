@@ -1,12 +1,10 @@
-/**
- *
- */
 package main.data;
 
 /**
  * @author Joleen
  *
  */
+
 import java.util.ArrayList;
 
 public class Command {

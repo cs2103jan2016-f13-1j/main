@@ -1,6 +1,3 @@
-/**
- * Currently assuming that label are added at the very end, with no more information behind.
- */
 package main.parser;
 
 import java.text.ParseException;
@@ -20,8 +17,8 @@ import main.data.Task;
  * @author Joleen
  *
  */
+
 public class CommandParser {
-    
     private final int LENGTH_DEL = 3;
     private final int LENGTH_DELETE = 6;
     private final int LENGTH_OFFSET = 1;
@@ -130,7 +127,6 @@ public class CommandParser {
     /* rework algo to support different locations of #tag
      * input string: #cook dinner home
      */
-    
     private String extractLabel(String commandString) {
         int index = commandString.indexOf("#");
         index = index + LENGTH_OFFSET;
