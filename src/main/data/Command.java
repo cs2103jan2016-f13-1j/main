@@ -1,18 +1,19 @@
-import java.util.ArrayList;
-
 /**
- * @author Joleeen
  *
  */
+package main.data;
 
-public class Command {
+/**
+ * @author Joleen
+ *
+ */
 import java.util.ArrayList;
 
 public class Command {
-	
-	public static final String FLOATING_TAB = "floating";
-	public static final String DATED_TAB = "dated";
-	
+    
+    public static final String FLOATING_TAB = "floating";
+    public static final String DATED_TAB = "dated";
+    
     private String commandType;
     private String tab;
     private Task task;

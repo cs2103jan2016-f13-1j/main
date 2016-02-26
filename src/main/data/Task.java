@@ -1,10 +1,13 @@
-import java.util.Date;
+/**
+ *
+ */
+package main.data;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
- * @author Joleeen
+ * @author Joleen
  *
  */
 
@@ -41,40 +44,32 @@ public class Task {
         return endDate;
     }
     
-    @Override
     public String toString() {
-        int startDateOnly = startDate.getDate();
-        int startTime = startDate.getHours();
-        int endDateOnly = endDate.getDate();
-        int endTime = endDate.getHours();
-        return title + " from " + startDateOnly + " " + startTime + " to " + endDateOnly + " " + endTime + " label: " + label;
+        String feedback = null;
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd HH:mm");
         
-    public String toString() {
-    	String feedback = null;
-    	SimpleDateFormat dateFormat = new SimpleDateFormat("dd HH:mm");
-		
-		if (startDate == null) {
-			if (endDate == null) {
-				//floating task
-				if (label == null) {
-					feedback = title;
-				} else {
-					feedback = title + " #" + label;
-				}
-			} else {
-				
-			}
-		} else {
-			String startDateTime = dateFormat.format(startDate);
-			String endDateTime = dateFormat.format(endDate);
-			feedback = title + " from " + startDateTime + " to " + endDateTime + " #" + label;
-		}
-		
-		return feedback;
+        if (startDate == null) {
+            if (endDate == null) {
+                //floating task
+                if (label == null) {
+                    feedback = title;
+                } else {
+                    feedback = title + " #" + label;
+                }
+            } else {
+                
+            }
+        } else {
+            String startDateTime = dateFormat.format(startDate);
+            String endDateTime = dateFormat.format(endDate);
+            feedback = title + " from " + startDateTime + " to " + endDateTime + " #" + label;
+        }
+        
+        return feedback;
         /*int startDateOnly = startDate.getDate();
-        int startTime = startDate.getHours();
-        int endDateOnly = endDate.getDate();
-        int endTime = endDate.getHours();*/
+         int startTime = startDate.getHours();
+         int endDateOnly = endDate.getDate();
+         int endTime = endDate.getHours();*/
         //return title + " from " + startDateOnly + " " + startTime + " to " + endDateOnly + " " + endTime + " label: " + label;
     }
     
