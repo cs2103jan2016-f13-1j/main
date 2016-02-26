@@ -1,4 +1,20 @@
 /**
+ * Summary of public methods that can be called:
+ * 
+ * Controller();
+ * parseCommand(String userCommand, Tab tab);
+ * editTask(String tab, int oldTaskIndex);
+ * executeCommand();
+ * 
+ * getFloatingTasks();
+ * getDatedTasks();
+ * getTodayTasks();
+ * getNextSevenDays();
+ * getFileDirectory();
+ * getFileName();
+ * 
+ * setFileDirectory(String fileDirectory);
+ * setFileName(String fileName);
  * 
  */
 package main.logic;
@@ -24,6 +40,9 @@ public class Controller {
 	public enum Tab {
 		NO_TAB, FLOATING_TAB, DATED_TAB, TODAY_TAB, NEXT_SEVEN_DAYS_TAB
 	}
+	
+	public static final String DATE_FORMAT_DDMMYY = "ddMMyyyy";
+	
 	public static final String FLOATING = "floating";
 	public static final String DATED = "dated";
 	public static final String TODAY = "today";
@@ -34,12 +53,12 @@ public class Controller {
 	
 	private static final int FLOATING_TASKS_INDEX = 0;
 	private static final int DATED_TASKS_INDEX = 1;
+	
 	CommandParser parser = null;
 	Storage storage = null;
 	
 	Stack<Command> history = new Stack<Command>();
 	ArrayList<Task> floatingTasks = new ArrayList<Task>();
-	
 	ArrayList<Task> datedTasks = new ArrayList<Task>();
 	
 	Command command = null;
@@ -57,6 +76,7 @@ public class Controller {
 	}
 	
 	/**
+	 * Do not use method, public visibility for testing purposes
 	 * Adds the {@code Task} object to the tab
 	 * 
 	 * @param 	tab 
@@ -66,10 +86,10 @@ public class Controller {
 	 */
 	public void addTask(String tab, Task task) {
 		switch (tab.toLowerCase()) {
-			case "floating":
+			case FLOATING:
 				floatingTasks.add(task);
 				break;
-			case "dated":
+			case DATED:
 				datedTasks.add(task);
 				break;
 			default:
@@ -87,7 +107,7 @@ public class Controller {
 	}
 	
 	private ArrayList<Task> deleteFromList(ArrayList<Task> listToDelete, ArrayList<Integer> indexesToDelete) {
-		while (indexesToDelete.size() > 0) {
+		while (!indexesToDelete.isEmpty()) {
 			int indexToDelete = indexesToDelete.remove(0);
 			listToDelete.remove(indexToDelete);
 			indexesToDelete = decreaseIndex(indexesToDelete);
@@ -96,6 +116,7 @@ public class Controller {
 	}
 	
 	/**
+	 * Do not use method, public visibility for testing purposes
 	 * Deletes tasks from tab based on given indexes
 	 * @param 	tab 
 	 * 			the tab to delete from
@@ -196,7 +217,8 @@ public class Controller {
 	}
 
 	/**
-	 * Executes the last evaluated command and stores it in a {@code Command} history stack
+	 * Executes the last command stored when parseCommand was called,
+	 * and stores it in a {@code Command} history stack
 	 */
 	public void executeCommand() {
 		execute(command);
@@ -277,7 +299,7 @@ public class Controller {
 	 * @return the list of tasks due today
 	 */
 	public ArrayList<Task> getTodayTasks() {
-		SimpleDateFormat dateFormat = new SimpleDateFormat("ddMMyyyy");
+		SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT_DDMMYY);
 		String today = dateFormat.format(new Date());
 		
 		ArrayList<Task> result = new ArrayList<Task>();
@@ -292,6 +314,14 @@ public class Controller {
 		}
 		return result;
 	}
+	
+	/**
+	 * Use to retrieve every task which has the date field
+	 * @return the list of tasks with dates
+	 */
+	public ArrayList<Task> getDatedTasks() {
+		return datedTasks;
+	}
 
 	private Date getTomorrow() {
 		Calendar calendar = Calendar.getInstance();
@@ -304,17 +334,6 @@ public class Controller {
 		return calendar.getTime();
 	}
 	
-	/**
-	 * Evaluates the given command and provide feedback
-	 * 
-	 * @param   userCommand 
-	 * 			the command to be evaluated
-	 * 
-	 * @param   tab 
-	 * 			the tab affected by the command
-	 * 
-	 * @return	feedback resulting from the evaluation of the command
-	 */
 	/*
 	 * For edit mode, use this command to get feedback while user is typing
 	 * On hit enter, use "editTask" command
@@ -326,14 +345,23 @@ public class Controller {
 	 * 
 	 * Returns feedback to be displayed to user
 	 */
+	/**
+	 * Evaluates the given command and provide feedback
+	 * 
+	 * @param   userCommand 
+	 * 			the command to be evaluated
+	 * 
+	 * @param   tab 
+	 * 			the tab affected by the command
+	 * 
+	 * @return	feedback resulting from the evaluation of the command
+	 */
 	public String parseCommand(String userCommand, Tab tab) {
 		command = parser.parse(userCommand);
 		String feedback = null;
 		
 		switch (tab) {
 			case NO_TAB:
-				//add command
-				//parser will assign the tag field
 				feedback = command.getTask().toString();
 				break;
 			case FLOATING_TAB:
