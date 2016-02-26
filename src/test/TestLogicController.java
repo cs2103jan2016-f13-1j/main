@@ -1,4 +1,12 @@
+/**
+ * 
+ */
 package test;
+
+/**
+ * @author Bevin
+ *
+ */
 
 import static org.junit.Assert.*;
 
@@ -11,6 +19,8 @@ import org.junit.Test;
 
 import main.data.Task;
 import main.logic.Controller;
+
+
 
 public class TestLogicController {
 	

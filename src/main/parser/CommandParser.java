@@ -1,27 +1,23 @@
 /**
- * Currently assuming that label are added at the very end, with no more information behind.
+ * 
  */
 package main.parser;
-
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-
-//import org.ocpsoft.prettytime.nlp.PrettyTimeParser;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-
-import main.data.Command;
-import main.data.Task;
 
 /**
  * @author Joleen
  *
  */
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+
+import org.ocpsoft.prettytime.nlp.PrettyTimeParser;
+
+import main.data.Command;
+import main.data.Task;
+
 public class CommandParser {
-    
     private final int LENGTH_DEL = 3;
     private final int LENGTH_DELETE = 6;
     private final int LENGTH_OFFSET = 1;
@@ -88,7 +84,7 @@ public class CommandParser {
         isLabelPresent = checkForLabel(commandString);
         if (isLabelPresent) {
             label = extractLabel(commandString);
-            title = removeLabel(title);
+            title = removeLabel(title, label);
         }
         
         task = buildTask(title, startDate, endDate, label);
@@ -97,21 +93,23 @@ public class CommandParser {
     }
     
     private List<Date> parseDate(String commandString) {
-        //PrettyTimeParser parser = new PrettyTimeParser();
-        //List<Date> dates = parser.parse(commandString);
-    	
-    	//test data to simulate working parser
-    	List<Date> dates = new ArrayList<Date>();
-    	
-    	if (commandString.contains("pm")) {
-	    	SimpleDateFormat df = new SimpleDateFormat("EEE MMM d HH:mm:ss Z yyyy");
-	    	String dateString = "Thu Feb 25 19:00:00 SGT 2016";
-	        try {
-				Date date = df.parse(dateString);
-				dates.add(date);
-			} catch (ParseException e) {
-			}
-    	}
+        PrettyTimeParser parser = new PrettyTimeParser();
+        List<Date> dates = parser.parse(commandString);
+        
+        //test data to simulate working parser
+        //List<Date> dates = new ArrayList<Date>();
+        
+        /*
+        if (commandString.contains("pm")) {
+            SimpleDateFormat df = new SimpleDateFormat("EEE MMM d HH:mm:ss Z yyyy");
+            String dateString = "Thu Feb 25 19:00:00 SGT 2016";
+            try {
+                Date date = df.parse(dateString);
+                dates.add(date);
+            } catch (ParseException e) {
+            }
+        }
+        */
         return dates;
     }
     
@@ -127,15 +125,12 @@ public class CommandParser {
         }
     }
     
-    /* rework algo to support different locations of #tag
-     * input string: #cook dinner home
-     */
-
     private String extractLabel(String commandString) {
         int index = commandString.indexOf("#");
         index = index + LENGTH_OFFSET;
         String substring = commandString.substring(index);
         String label = substring.trim();
+        label = getFirstWord(label);
         return label;
     }
     
@@ -144,10 +139,20 @@ public class CommandParser {
         return string;
     }
     
-    private String removeLabel(String title) {
-        int index = title.indexOf("#");
-        index = index - LENGTH_OFFSET;
-        return title.substring(0, index);
+    private String removeLabel(String title, String label) {
+    	String tag = "#".concat(label);
+	 	
+	 	int index = title.indexOf(tag);
+	 	index = index + label.length() + LENGTH_OFFSET;
+
+	 	if (title.length() != index) {
+	 		tag = tag.concat(" ");
+	 	} else {
+	 		tag = " ".concat(tag);
+	 	}
+	 	
+	 	title = title.replace(tag, "");
+        return title;
     }
     
     private Task buildTask(String title, Date startDate, Date endDate, String label) {

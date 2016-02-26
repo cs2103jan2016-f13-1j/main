@@ -17,5 +17,10 @@
 			<attribute name="javadoc_location" value="jar:platform:/resource/Dooleh/lib/docs/hamcrest-core-1.3-javadoc.jar!/"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="lib/prettytime-nlp-4.0.1.Final.jar" sourcepath="lib/src/prettytime-nlp-4.0.1.Final-sources.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:platform:/resource/Dooleh/lib/docs/prettytime-nlp-4.0.1.Final-javadoc.jar!/"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

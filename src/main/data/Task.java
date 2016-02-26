@@ -1,6 +1,3 @@
-/**
- * 
- */
 package main.data;
 
 import java.text.SimpleDateFormat;
@@ -45,32 +42,27 @@ public class Task {
     }
     
     public String toString() {
-    	String feedback = null;
-    	SimpleDateFormat dateFormat = new SimpleDateFormat("dd HH:mm");
-		
-		if (startDate == null) {
-			if (endDate == null) {
-				//floating task
-				if (label == null) {
-					feedback = title;
-				} else {
-					feedback = title + " #" + label;
-				}
-			} else {
-				
-			}
-		} else {
-			String startDateTime = dateFormat.format(startDate);
-			String endDateTime = dateFormat.format(endDate);
-			feedback = title + " from " + startDateTime + " to " + endDateTime + " #" + label;
-		}
-		
-		return feedback;
-        /*int startDateOnly = startDate.getDate();
-        int startTime = startDate.getHours();
-        int endDateOnly = endDate.getDate();
-        int endTime = endDate.getHours();*/
-        //return title + " from " + startDateOnly + " " + startTime + " to " + endDateOnly + " " + endTime + " label: " + label;
+        String feedback = null;
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd HH:mm");
+        
+        if (startDate == null) {
+            if (endDate == null) {
+                //floating task
+                if (label == null) {
+                    feedback = title;
+                } else {
+                    feedback = title + " #" + label;
+                }
+            } else {
+                //end date only
+            }
+        } else {
+            String startDateTime = dateFormat.format(startDate);
+            String endDateTime = dateFormat.format(endDate);
+            feedback = title + " from " + startDateTime + " to " + endDateTime + " #" + label;
+        }
+        
+        return feedback;
     }
     
     private Task(TaskBuilder builder) {

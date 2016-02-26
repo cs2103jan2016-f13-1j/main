@@ -1,22 +1,23 @@
+/**
+ * 
+ */
 package test;
 
+/**
+ * @author Joleen
+ *
+ */
+
 import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-import org.junit.Test;
-
 import main.data.Command;
 import main.parser.CommandParser;
-
-
-/**
- * @author Joleen
- *
- */
 
 public class TestCommandParser {
     
@@ -36,11 +37,16 @@ public class TestCommandParser {
         Command command = parser.parse("Cook dinner by 7pm");
         
         SimpleDateFormat df = new SimpleDateFormat("EEE MMM d HH:mm:ss Z yyyy");
-        String date = "Thu Feb 25 19:00:00 SGT 2016";
+        String date = "Thu Feb 26 19:00:00 SGT 2016";
         Date expectedDate = df.parse(date);
         
         assertEquals("dated", command.getTab());
         assertEquals(expectedDate, command.getTask().getEndDate());
+        
+        //testing pretty on latest
+        command = parser.parse("attend meeting from 14 - 16");
+        System.out.println(command.getTask().getStartDate());
+        System.out.println(command.getTask().getEndDate());
     }
     
     @Test
@@ -48,6 +54,10 @@ public class TestCommandParser {
         CommandParser parser = new CommandParser();
         Command command = parser.parse("Cook dinner #home");
         
+        assertEquals("Cook dinner", command.getTask().getTitle());
+        assertEquals("home", command.getTask().getLabel());
+        
+        parser.parse("#home Cook dinner");
         assertEquals("Cook dinner", command.getTask().getTitle());
         assertEquals("home", command.getTask().getLabel());
     }
