@@ -118,44 +118,46 @@ public class Controller {
 				temp = new ArrayList<Task>();
 				temp.addAll(newTodayTasks);
 				temp.addAll(getNextSevenDays());
-				datedTasks = temp;
+				datedTasks = new ArrayList<Task>();
+				for (Task task : temp) {
+					datedTasks.add(task);
+				}
 			case NEXT_SEVEN_DAYS:
 				ArrayList<Task> newNextSevenDaysTasks = deleteFromList(getNextSevenDays(), indexesToDelete);
 				temp = new ArrayList<Task>();
-				datedTasks.addAll(getTodayTasks());
-				datedTasks.addAll(newNextSevenDaysTasks);
-				datedTasks = temp;
+				temp.addAll(getTodayTasks());
+				temp.addAll(newNextSevenDaysTasks);
+				datedTasks = new ArrayList<Task>();
+				for (Task task : temp) {
+					datedTasks.add(task);
+				}
 			default:
 				break;
 		}
 		saveTasks();
 	}
 	
-	private ArrayList<Task> editList(ArrayList<Task> list, int oldTaskIndex, Task newTask) {
-		list.remove(oldTaskIndex);
-		list.add(oldTaskIndex, newTask);
-		return list;
-	}
-	
-	public void editTask(String tab, int oldTaskIndex, Task newTask) {
+	private void addToList(String tab, int oldTaskIndex) {
 		oldTaskIndex--;
 		ArrayList<Task> temp = null;
 		
 		switch (tab) {
 			case FLOATING:
-				editList(floatingTasks,oldTaskIndex,newTask);
+				floatingTasks.add(oldTaskIndex,command.getTask());
 				break;
 			case DATED:
-				editList(datedTasks,oldTaskIndex,newTask);
+				datedTasks.add(oldTaskIndex,command.getTask());
 				break;
 			case TODAY:
-				ArrayList<Task> newTodayTasks = editList(getTodayTasks(),oldTaskIndex,newTask);
+				ArrayList<Task> newTodayTasks = getTodayTasks();
+				newTodayTasks.add(oldTaskIndex,command.getTask());
 				temp = new ArrayList<Task>();
 				temp.addAll(newTodayTasks);
 				temp.addAll(getNextSevenDays());
 				datedTasks = temp;
 			case NEXT_SEVEN_DAYS:
-				ArrayList<Task> newNextSevenDaysTasks = editList(getNextSevenDays(),oldTaskIndex,newTask);
+				ArrayList<Task> newNextSevenDaysTasks = getNextSevenDays();
+				newNextSevenDaysTasks.add(oldTaskIndex,command.getTask());
 				temp = new ArrayList<Task>();
 				datedTasks.addAll(getTodayTasks());
 				datedTasks.addAll(newNextSevenDaysTasks);
@@ -163,6 +165,20 @@ public class Controller {
 			default:
 				break;
 		}
+	}
+	
+	/**
+	 * Edits the task in the respective {@code tab} at position {@code oldTaskIndex}
+	 * @param 	tab
+	 * 			the tab where the task is
+	 * @param 	oldTaskIndex
+	 * 			the index of the task
+	 */
+	public void editTask(String tab, int oldTaskIndex) {
+		ArrayList<Integer> indexToDelete = new ArrayList<Integer>();
+		indexToDelete.add(oldTaskIndex);
+		deleteTask(tab, indexToDelete);
+		addToList(tab, oldTaskIndex);
 		saveTasks();
 	}
 	
@@ -298,6 +314,17 @@ public class Controller {
 	 * 			the tab affected by the command
 	 * 
 	 * @return	feedback resulting from the evaluation of the command
+	 */
+	/*
+	 * For edit mode, use this command to get feedback while user is typing
+	 * On hit enter, use "editTask" command
+	 * 
+	 * Examples of use: 
+	 * add - parseCommand("cook dinner", Controller.Tab.NO_TAB);
+	 * add - parseCommand("cook dinner #home", Controller.Tab.NO_TAB);
+	 * delete - parseCommand("delete 6,7-8", Controller.Tab.FLOATING_TAB);
+	 * 
+	 * Returns feedback to be displayed to user
 	 */
 	public String parseCommand(String userCommand, Tab tab) {
 		command = parser.parse(userCommand);

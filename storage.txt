@@ -1,7 +1,7 @@
 [
   [
     {
-      "title": "Floating task 1",
+      "title": "Floating task 1.1",
       "status": false,
       "priority": 0
     },
@@ -21,7 +21,7 @@
       "priority": 0
     },
     {
-      "title": "Floating task 6",
+      "title": "Floating task 5",
       "status": false,
       "priority": 0
     }
@@ -50,12 +50,6 @@
       "status": false,
       "priority": 0,
       "endDate": "Feb 28, 2016 10:39:32 PM"
-    },
-    {
-      "title": "Next year task 1",
-      "status": false,
-      "priority": 0,
-      "endDate": "Feb 25, 2017 10:39:32 PM"
     }
   ]
 ]

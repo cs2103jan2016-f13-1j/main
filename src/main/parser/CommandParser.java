@@ -3,6 +3,9 @@
  */
 package main.parser;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+
 //import org.ocpsoft.prettytime.nlp.PrettyTimeParser;
 
 import java.util.ArrayList;
@@ -33,11 +36,11 @@ public class CommandParser {
         return commandPreparations(commandType, commandString);
     }
     
-    public String getFirstWord(String commandString) {
+    private String getFirstWord(String commandString) {
         return commandString.split(" ")[0];
     }
     
-    public String determineCommandType(String command) {
+    private String determineCommandType(String command) {
         if (command.equalsIgnoreCase("delete") || (command.equalsIgnoreCase("del"))) {
             return "delete";
         } else {
@@ -45,7 +48,7 @@ public class CommandParser {
         }
     }
     
-    public Command commandPreparations(String type, String commandString) {
+    private Command commandPreparations(String type, String commandString) {
         switch (type) {
             case "add" :
                 return prepareForAdd(type, commandString);
@@ -58,7 +61,7 @@ public class CommandParser {
         }
     }
     
-    public Command prepareForAdd(String type, String commandString) {
+    private Command prepareForAdd(String type, String commandString) {
         String tab = "floating";
         String title = null;
         Task task = null;
@@ -93,18 +96,30 @@ public class CommandParser {
         return command;
     }
     
-    public List<Date> parseDate(String commandString) {
+    private List<Date> parseDate(String commandString) {
         //PrettyTimeParser parser = new PrettyTimeParser();
         //List<Date> dates = parser.parse(commandString);
+    	
+    	//test data to simulate working parser
     	List<Date> dates = new ArrayList<Date>();
+    	
+    	if (commandString.contains("pm")) {
+	    	SimpleDateFormat df = new SimpleDateFormat("EEE MMM d HH:mm:ss Z yyyy");
+	    	String dateString = "Thu Feb 25 19:00:00 SGT 2016";
+	        try {
+				Date date = df.parse(dateString);
+				dates.add(date);
+			} catch (ParseException e) {
+			}
+    	}
         return dates;
     }
     
-    public Date getDate(List<Date> dates, int index) {
+    private Date getDate(List<Date> dates, int index) {
         return dates.get(index);
     }
     
-    public boolean checkForLabel(String commandString) {
+    private boolean checkForLabel(String commandString) {
         if (commandString.contains("#")) {
             return true;
         } else {
@@ -112,7 +127,11 @@ public class CommandParser {
         }
     }
     
-    public String extractLabel(String commandString) {
+    /* rework algo to support different locations of #tag
+     * input string: #cook dinner home
+     */
+
+    private String extractLabel(String commandString) {
         int index = commandString.indexOf("#");
         index = index + LENGTH_OFFSET;
         String substring = commandString.substring(index);
@@ -120,24 +139,24 @@ public class CommandParser {
         return label;
     }
     
-    public String removeWhiteSpace(String string) {
+    private String removeWhiteSpace(String string) {
         string = string.replaceAll("\\s","");
         return string;
     }
     
-    public String removeLabel(String title) {
+    private String removeLabel(String title) {
         int index = title.indexOf("#");
         index = index - LENGTH_OFFSET;
         return title.substring(0, index);
     }
     
-    public Task buildTask(String title, Date startDate, Date endDate, String label) {
+    private Task buildTask(String title, Date startDate, Date endDate, String label) {
         Task task = new Task.TaskBuilder(title).setStartDate(startDate).setEndDate(endDate)
         .setLabel(label).build();
         return task;
     }
     
-    public Command prepareForDel(String type, String commandString) {
+    private Command prepareForDel(String type, String commandString) {
         String index = getIndexString(commandString);
         
         ArrayList<Integer> indexesToDelete = new ArrayList<Integer>();
@@ -147,7 +166,7 @@ public class CommandParser {
         return command;
     }
     
-    public String getIndexString(String commandString) {
+    private String getIndexString(String commandString) {
         int index = 0;
         String command = getFirstWord(commandString);
         
@@ -164,7 +183,7 @@ public class CommandParser {
         return indexToDelete;
     }
     
-    public ArrayList<Integer> extractIndex(String index) {
+    private ArrayList<Integer> extractIndex(String index) {
         ArrayList<String> indexes = new ArrayList<String>();
         ArrayList<String> tempRangedIndexes = new ArrayList<String>();
         ArrayList<Integer> multipleIndexes = new ArrayList<Integer>();

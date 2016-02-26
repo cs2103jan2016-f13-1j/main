@@ -4,7 +4,7 @@
 package main.data;
 
 /**
- * @author Joleeen
+ * @author Joleen
  *
  */
 import java.util.ArrayList;
