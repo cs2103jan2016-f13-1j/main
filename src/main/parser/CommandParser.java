@@ -10,6 +10,8 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import org.ocpsoft.prettytime.nlp.PrettyTimeParser;
+
 import main.data.Command;
 import main.data.Task;
 
@@ -94,12 +96,13 @@ public class CommandParser {
     }
     
     private List<Date> parseDate(String commandString) {
-        //PrettyTimeParser parser = new PrettyTimeParser();
-        //List<Date> dates = parser.parse(commandString);
+        PrettyTimeParser parser = new PrettyTimeParser();
+        List<Date> dates = parser.parse(commandString);
         
         //test data to simulate working parser
-        List<Date> dates = new ArrayList<Date>();
+        //List<Date> dates = new ArrayList<Date>();
         
+        /*
         if (commandString.contains("pm")) {
             SimpleDateFormat df = new SimpleDateFormat("EEE MMM d HH:mm:ss Z yyyy");
             String dateString = "Thu Feb 25 19:00:00 SGT 2016";
@@ -109,6 +112,7 @@ public class CommandParser {
             } catch (ParseException e) {
             }
         }
+        */
         return dates;
     }
     

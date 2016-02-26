@@ -34,11 +34,16 @@ public class TestCommandParser {
         Command command = parser.parse("Cook dinner by 7pm");
         
         SimpleDateFormat df = new SimpleDateFormat("EEE MMM d HH:mm:ss Z yyyy");
-        String date = "Thu Feb 25 19:00:00 SGT 2016";
+        String date = "Thu Feb 26 19:00:00 SGT 2016";
         Date expectedDate = df.parse(date);
         
         assertEquals("dated", command.getTab());
         assertEquals(expectedDate, command.getTask().getEndDate());
+        
+        //testing pretty on latest
+        command = parser.parse("attend meeting from 14 - 16");
+        System.out.println(command.getTask().getStartDate());
+        System.out.println(command.getTask().getEndDate());
     }
     
     @Test
