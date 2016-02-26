@@ -1,5 +1,8 @@
 import java.util.Date;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 /**
  * @author Joleeen
  *
@@ -45,6 +48,33 @@ public class Task {
         int endDateOnly = endDate.getDate();
         int endTime = endDate.getHours();
         return title + " from " + startDateOnly + " " + startTime + " to " + endDateOnly + " " + endTime + " label: " + label;
+    public String toString() {
+    	String feedback = null;
+    	SimpleDateFormat dateFormat = new SimpleDateFormat("dd HH:mm");
+		
+		if (startDate == null) {
+			if (endDate == null) {
+				//floating task
+				if (label == null) {
+					feedback = title;
+				} else {
+					feedback = title + " #" + label;
+				}
+			} else {
+				
+			}
+		} else {
+			String startDateTime = dateFormat.format(startDate);
+			String endDateTime = dateFormat.format(endDate);
+			feedback = title + " from " + startDateTime + " to " + endDateTime + " #" + label;
+		}
+		
+		return feedback;
+        /*int startDateOnly = startDate.getDate();
+        int startTime = startDate.getHours();
+        int endDateOnly = endDate.getDate();
+        int endTime = endDate.getHours();*/
+        //return title + " from " + startDateOnly + " " + startTime + " to " + endDateOnly + " " + endTime + " label: " + label;
     }
     
     private Task(TaskBuilder builder) {
