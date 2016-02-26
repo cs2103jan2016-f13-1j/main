@@ -48,6 +48,10 @@ public class TestCommandParser {
         
         assertEquals("Cook dinner", command.getTask().getTitle());
         assertEquals("home", command.getTask().getLabel());
+        
+        parser.parse("#home Cook dinner");
+        assertEquals("Cook dinner", command.getTask().getTitle());
+        assertEquals("home", command.getTask().getLabel());
     }
     
     @Test

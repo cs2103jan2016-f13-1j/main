@@ -85,7 +85,7 @@ public class CommandParser {
         isLabelPresent = checkForLabel(commandString);
         if (isLabelPresent) {
             label = extractLabel(commandString);
-            title = removeLabel(title);
+            title = removeLabel(title, label);
         }
         
         task = buildTask(title, startDate, endDate, label);
@@ -124,14 +124,12 @@ public class CommandParser {
         }
     }
     
-    /* rework algo to support different locations of #tag
-     * input string: #cook dinner home
-     */
     private String extractLabel(String commandString) {
         int index = commandString.indexOf("#");
         index = index + LENGTH_OFFSET;
         String substring = commandString.substring(index);
         String label = substring.trim();
+        label = getFirstWord(label);
         return label;
     }
     
@@ -140,10 +138,20 @@ public class CommandParser {
         return string;
     }
     
-    private String removeLabel(String title) {
-        int index = title.indexOf("#");
-        index = index - LENGTH_OFFSET;
-        return title.substring(0, index);
+    private String removeLabel(String title, String label) {
+    	String tag = "#".concat(label);
+	 	
+	 	int index = title.indexOf(tag);
+	 	index = index + label.length() + LENGTH_OFFSET;
+
+	 	if (title.length() != index) {
+	 		tag = tag.concat(" ");
+	 	} else {
+	 		tag = " ".concat(tag);
+	 	}
+	 	
+	 	title = title.replace(tag, "");
+        return title;
     }
     
     private Task buildTask(String title, Date startDate, Date endDate, String label) {
