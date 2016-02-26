@@ -48,6 +48,7 @@ public class Task {
         int endDateOnly = endDate.getDate();
         int endTime = endDate.getHours();
         return title + " from " + startDateOnly + " " + startTime + " to " + endDateOnly + " " + endTime + " label: " + label;
+        
     public String toString() {
     	String feedback = null;
     	SimpleDateFormat dateFormat = new SimpleDateFormat("dd HH:mm");
