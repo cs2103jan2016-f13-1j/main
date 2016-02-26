@@ -18,8 +18,7 @@
                <content>
                   <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="412.0" prefWidth="591.0">
                      <children>
-                        <JFXListView fx:id="allView" currentVerticalGap="2.0" layoutX="144.0" layoutY="22.0" verticalGap="2.0" AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="40.0" AnchorPane.topAnchor="40.0" />
-                        <Label fx:id="labelFeedback" layoutX="281.0" layoutY="396.0" text="haha" />
+                        <ListView fx:id="allView" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="40.0" AnchorPane.topAnchor="40.0" />
                      </children>
                   </AnchorPane>
                </content>
@@ -37,5 +36,6 @@
          </tabs>
       </TabPane>
       <TextField fx:id="commandBar" layoutX="40.0" layoutY="489.0" prefHeight="25.0" prefWidth="500.0" AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="29.0" />
+      <Label fx:id="labelFeedback" text="haha" AnchorPane.leftAnchor="250.0" AnchorPane.topAnchor="440.0" />
    </children>
 </AnchorPane>

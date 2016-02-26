@@ -2,18 +2,22 @@ package main.ui;
 
 import java.util.ArrayList;
 
+import com.jfoenix.controls.JFXListView;
+
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.SimpleListProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
-import main.data.TaskBean;
-import main.logic.ControllerStub;
+import main.data.Task;
+import main.logic.Controller;
+import main.logic.Controller.Tab;
 
 public class RootLayoutController {
 	private DoolehMainApp main;
@@ -29,30 +33,57 @@ public class RootLayoutController {
 	@FXML // fx:id="allView"
 	private ListView<String> allView; // Value injected by FXMLLoader
 	
-	ControllerStub controller;
-
+	private Controller controller;
+	private String inputFeedback;
 	public RootLayoutController() {
 	}
 
 	@FXML
 	private void initialize() {
 
-		ControllerStub controller = new ControllerStub();
+		Controller controller = new Controller();
+		
+		//ListView seems to only allow binding of a OberservableList of String type
 		ListProperty<String> lp = new SimpleListProperty<String>();
 		allView.itemsProperty().bind(lp);
-		ArrayList<TaskBean> tasks = controller.getTasks();
-		for (TaskBean tb : tasks) {
-			taskList.add(tb.getTitle());
+		
+		//retrieve all task and add into an ObservableList
+		ArrayList<Task> tasks = controller.getAllTasks();
+		for (Task task : tasks) {
+			taskList.add(task.toString());
 		}
 		lp.set(taskList);
 		
-		commandBar.setOnKeyPressed(new EventHandler<Event>() {
+		commandBar.setOnKeyReleased(new EventHandler<Event>() {
 
 			@Override
 			public void handle(Event event) {
 				// TODO Auto-generated method stub
-				labelFeedback.setText(commandBar.getText());
+				inputFeedback = controller.parseCommand(commandBar.getText(), Tab.NO_TAB);
+				labelFeedback.setText(inputFeedback);
+				System.out.println(inputFeedback);
 				
+			}
+		});
+		
+		commandBar.setOnAction(new EventHandler<ActionEvent>() {
+			
+			@Override
+			public void handle(ActionEvent event) {
+				// TODO Auto-generated method stub
+				controller.executeCommand();
+				
+				//clear and retrieve all task and add into an ObservableList
+				taskList.clear();
+				ArrayList<Task> tasks = controller.getAllTasks();
+				for (Task task : tasks) {
+					taskList.add(task.toString());
+				}
+				
+				//if we dont set the list again, the listview item may show a buggy arrangement
+				//due to how the listview recycles it's cell items for effiency
+				lp.set(taskList);
+				commandBar.clear();
 			}
 		});
 
