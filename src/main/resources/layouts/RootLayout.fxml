@@ -19,7 +19,7 @@
                   <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="412.0" prefWidth="591.0">
                      <children>
                         <JFXListView fx:id="allView" currentVerticalGap="2.0" layoutX="144.0" layoutY="22.0" verticalGap="2.0" AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="40.0" AnchorPane.topAnchor="40.0" />
-                        <Label fx:id="labelFeedback" layoutX="281.0" layoutY="409.0" text="haha" AnchorPane.bottomAnchor="80.0" AnchorPane.leftAnchor="281.0" AnchorPane.rightAnchor="280.0" AnchorPane.topAnchor="500.0" />
+                        <Label fx:id="labelFeedback" layoutX="281.0" layoutY="396.0" text="haha" />
                      </children>
                   </AnchorPane>
                </content>
