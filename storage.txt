@@ -1,0 +1,55 @@
+[
+  [
+    {
+      "title": "Floating task 1.1",
+      "status": false,
+      "priority": 0
+    },
+    {
+      "title": "Floating task 2",
+      "status": false,
+      "priority": 0
+    },
+    {
+      "title": "Floating task 3",
+      "status": false,
+      "priority": 0
+    },
+    {
+      "title": "Floating task 4",
+      "status": false,
+      "priority": 0
+    },
+    {
+      "title": "Floating task 5",
+      "status": false,
+      "priority": 0
+    }
+  ],
+  [
+    {
+      "title": "Today task 1",
+      "status": false,
+      "priority": 0,
+      "endDate": "Feb 26, 2016 10:39:32 PM"
+    },
+    {
+      "title": "Today task 2",
+      "status": false,
+      "priority": 0,
+      "endDate": "Feb 26, 2016 10:39:32 PM"
+    },
+    {
+      "title": "Next seven task 1",
+      "status": false,
+      "priority": 0,
+      "endDate": "Feb 28, 2016 10:39:32 PM"
+    },
+    {
+      "title": "Next seven task 2",
+      "status": false,
+      "priority": 0,
+      "endDate": "Feb 28, 2016 10:39:32 PM"
+    }
+  ]
+]
