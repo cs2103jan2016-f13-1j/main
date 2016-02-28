@@ -28,7 +28,7 @@ public class CommandParser {
     
     public Command parse(String commandString) {
         String command = getFirstWord(commandString);
-        String commandType = determineCommandType(command);
+        String commandType = getCommandType(command);
         return commandPreparations(commandType, commandString);
     }
     
@@ -36,11 +36,11 @@ public class CommandParser {
         return commandString.split(" ")[0];
     }
     
-    private String determineCommandType(String command) {
+    private String getCommandType(String command) {
         if (command.equalsIgnoreCase("delete") || (command.equalsIgnoreCase("del"))) {
             return "delete";
         } else {
-            return "add";
+        	return "add";
         }
     }
     
@@ -57,6 +57,16 @@ public class CommandParser {
         }
     }
     
+    
+    /**
+     * Find out what kind of task is to be added
+     * 
+     * @param type
+     * 			command type
+     * @param commandString
+     * 			user input string
+     * @return command object with the type of command and a task.
+     */
     private Command prepareForAdd(String type, String commandString) {
         String tab = "floating";
         String title = null;
@@ -84,7 +94,7 @@ public class CommandParser {
         isLabelPresent = checkForLabel(commandString);
         if (isLabelPresent) {
             label = extractLabel(commandString);
-            title = removeLabel(title, label);
+            title = removeLabelFromTitle(title, label);
         }
         
         task = buildTask(title, startDate, endDate, label);
@@ -95,21 +105,6 @@ public class CommandParser {
     private List<Date> parseDate(String commandString) {
         PrettyTimeParser parser = new PrettyTimeParser();
         List<Date> dates = parser.parse(commandString);
-        
-        //test data to simulate working parser
-        //List<Date> dates = new ArrayList<Date>();
-        
-        /*
-         if (commandString.contains("pm")) {
-         SimpleDateFormat df = new SimpleDateFormat("EEE MMM d HH:mm:ss Z yyyy");
-         String dateString = "Thu Feb 25 19:00:00 SGT 2016";
-         try {
-         Date date = df.parse(dateString);
-         dates.add(date);
-         } catch (ParseException e) {
-         }
-         }
-         */
         return dates;
     }
     
@@ -139,7 +134,8 @@ public class CommandParser {
         return string;
     }
     
-    private String removeLabel(String title, String label) {
+
+    private String removeLabelFromTitle(String title, String label) {
         String tag = "#".concat(label);
         
         int index = title.indexOf(tag);
@@ -147,7 +143,7 @@ public class CommandParser {
         
         if (title.length() != index) {
             tag = tag.concat(" ");
-        } else {
+        } else if (title.length() == index) {
             tag = " ".concat(tag);
         }
         
@@ -161,6 +157,16 @@ public class CommandParser {
         return task;
     }
     
+    
+    /**
+     * Get delete index(es)
+     * 
+     * @param type
+     * 			command type
+     * @param commandString
+     * 			user input string
+     * @return a command object with the type of command and index(es)
+     */
     private Command prepareForDel(String type, String commandString) {
         String index = getIndexString(commandString);
         
@@ -187,6 +193,7 @@ public class CommandParser {
         
         return indexToDelete;
     }
+    
     
     private ArrayList<Integer> extractIndex(String index) {
         ArrayList<String> indexes = new ArrayList<String>();
