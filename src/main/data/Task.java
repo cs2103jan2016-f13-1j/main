@@ -54,12 +54,19 @@ public class Task {
                     feedback = title + " #" + label;
                 }
             } else {
-                //end date only
+                String endDateTime = dateFormat.format(endDate);
+                feedback =  title + " by " + endDateTime;
+                if (label != null) {
+                	feedback += " #" + label;
+                }
             }
         } else {
             String startDateTime = dateFormat.format(startDate);
             String endDateTime = dateFormat.format(endDate);
-            feedback = title + " from " + startDateTime + " to " + endDateTime + " #" + label;
+            feedback = title + " from " + startDateTime + " to " + endDateTime;
+            if (label != null) {
+            	feedback += " #" + label;
+            }
         }
         
         return feedback;
