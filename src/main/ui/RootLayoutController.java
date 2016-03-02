@@ -25,7 +25,11 @@ public class RootLayoutController {
 	private ObservableList<String> taskList = FXCollections.observableArrayList();
 
 	@FXML
-	private Label labelFeedback;
+    private Label labelAddingTask;
+
+    @FXML
+    private Label labelUserFeedback;
+
 
 	@FXML
 	private TextField commandBar;
@@ -59,8 +63,17 @@ public class RootLayoutController {
 			@Override
 			public void handle(Event event) {
 				// TODO Auto-generated method stub
+				
+				if(commandBar.getCharacters().length() == 0){
+					labelUserFeedback.setVisible(false);
+					labelAddingTask.setVisible(false);
+					return;
+				}
+				
 				inputFeedback = controller.parseCommand(commandBar.getText(), Tab.NO_TAB);
-				labelFeedback.setText(inputFeedback);
+				labelAddingTask.setVisible(true);
+				labelUserFeedback.setText(inputFeedback);
+				labelUserFeedback.setVisible(true);
 				System.out.println(inputFeedback);
 				
 			}
@@ -84,6 +97,9 @@ public class RootLayoutController {
 				//due to how the listview recycles it's cell items for effiency
 				lp.set(taskList);
 				commandBar.clear();
+				
+				labelUserFeedback.setVisible(false);
+				labelAddingTask.setVisible(false);
 			}
 		});
 

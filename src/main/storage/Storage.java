@@ -40,6 +40,7 @@ public class Storage {
 	String fileName = "storage.txt";
 	String filePath = "";
 
+
 	private Storage() {
 		buildFilePath();
 		createFile();

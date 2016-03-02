@@ -1,16 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import com.jfoenix.controls.*?>
-<?import java.lang.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
 
-<AnchorPane minHeight="-Infinity" minWidth="-Infinity" prefHeight="550.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.ui.RootLayoutController">
+<AnchorPane minHeight="-Infinity" minWidth="-Infinity" prefHeight="550.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.ui.RootLayoutController">
    <children>
       <TabPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="481.0" prefWidth="600.0" tabClosingPolicy="UNAVAILABLE" tabMinWidth="180.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <tabs>
@@ -35,7 +33,18 @@
             </Tab>
          </tabs>
       </TabPane>
-      <TextField fx:id="commandBar" layoutX="40.0" layoutY="489.0" prefHeight="25.0" prefWidth="500.0" AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="29.0" />
-      <Label fx:id="labelFeedback" text="haha" AnchorPane.leftAnchor="250.0" AnchorPane.topAnchor="440.0" />
+      <TextField fx:id="commandBar" layoutX="40.0" layoutY="489.0" prefHeight="25.0" prefWidth="500.0" promptText="Type something to add a task" AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="29.0">
+         <font>
+            <Font name="Noto Sans" size="13.0" />
+         </font></TextField>
+      <Label fx:id="labelAddingTask" text="Adding task:" textFill="#039be5" visible="false" AnchorPane.leftAnchor="50.0" AnchorPane.rightAnchor="50.0" AnchorPane.topAnchor="450.0">
+         <font>
+            <Font name="Noto Sans Bold" size="13.0" />
+         </font></Label>
+      <Label fx:id="labelUserFeedback" layoutX="143.0" layoutY="450.0" text="task" textFill="#00121b" visible="false" AnchorPane.topAnchor="450.0">
+         <font>
+            <Font name="Noto Sans Bold" size="13.0" />
+         </font>
+      </Label>
    </children>
 </AnchorPane>
