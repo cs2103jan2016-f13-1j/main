@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import com.jfoenix.controls.JFXListView?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.TextField?>
@@ -16,7 +16,7 @@
                <content>
                   <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="412.0" prefWidth="591.0">
                      <children>
-                        <ListView fx:id="allView" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="40.0" AnchorPane.topAnchor="40.0" />
+                        <JFXListView fx:id="allView" AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="40.0" AnchorPane.topAnchor="40.0" />
                      </children>
                   </AnchorPane>
                </content>
@@ -37,7 +37,7 @@
          <font>
             <Font name="Noto Sans" size="13.0" />
          </font></TextField>
-      <Label fx:id="labelAddingTask" text="Adding task:" textFill="#039be5" visible="false" AnchorPane.leftAnchor="50.0" AnchorPane.rightAnchor="50.0" AnchorPane.topAnchor="450.0">
+      <Label fx:id="labelUserAction" text="Adding task:" textFill="#039be5" visible="false" AnchorPane.leftAnchor="50.0" AnchorPane.rightAnchor="50.0" AnchorPane.topAnchor="450.0">
          <font>
             <Font name="Noto Sans Bold" size="13.0" />
          </font></Label>

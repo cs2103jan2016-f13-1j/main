@@ -25,7 +25,7 @@ public class RootLayoutController {
 	private ObservableList<String> taskList = FXCollections.observableArrayList();
 
 	@FXML
-    private Label labelAddingTask;
+    private Label labelUserAction;
 
     @FXML
     private Label labelUserFeedback;
@@ -39,6 +39,9 @@ public class RootLayoutController {
 	
 	private Controller controller;
 	private String inputFeedback;
+	private String userInput;
+	private String userCommand;
+	
 	public RootLayoutController() {
 	}
 
@@ -63,15 +66,44 @@ public class RootLayoutController {
 			@Override
 			public void handle(Event event) {
 				// TODO Auto-generated method stub
+				userInput = commandBar.getCharacters().toString();
 				
-				if(commandBar.getCharacters().length() == 0){
+				if(userInput.length() == 0){
 					labelUserFeedback.setVisible(false);
-					labelAddingTask.setVisible(false);
+					labelUserAction.setVisible(false);
+					userInput = "";
+					labelUserAction.setText("");
+					labelUserFeedback.setText("");
 					return;
 				}
 				
-				inputFeedback = controller.parseCommand(commandBar.getText(), Tab.NO_TAB);
-				labelAddingTask.setVisible(true);
+				//stub method to grab command type from user input
+				userCommand = userInput.split(" ")[0];
+				switch(userCommand){
+				case "search":
+				case "find":
+					labelUserFeedback.setVisible(true);
+					labelUserAction.setText("Searching:");
+					labelUserAction.setVisible(true);
+					break;
+					
+				case "delete":
+				case "del":
+					labelUserFeedback.setVisible(true);
+					labelUserAction.setText("Deleting:");
+					labelUserAction.setVisible(true);
+					break;
+					
+				default:
+					labelUserFeedback.setVisible(true);
+					labelUserAction.setText("Adding:");
+					labelUserAction.setVisible(true);
+					
+				}
+				
+				inputFeedback = controller.parseCommand(userInput, Tab.NO_TAB);
+				
+				labelUserAction.setVisible(true);
 				labelUserFeedback.setText(inputFeedback);
 				labelUserFeedback.setVisible(true);
 				System.out.println(inputFeedback);
@@ -99,7 +131,7 @@ public class RootLayoutController {
 				commandBar.clear();
 				
 				labelUserFeedback.setVisible(false);
-				labelAddingTask.setVisible(false);
+				labelUserAction.setVisible(false);
 			}
 		});
 
