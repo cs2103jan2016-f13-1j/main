@@ -27,12 +27,21 @@ import main.data.Task;
 public class Storage {
 
 	private static Storage storage;
-
+	private String OS = System.getProperty("os.name").toLowerCase();
+	
+	private final String WINDOWS_DIR_SYMBOL = "\\";
+	private final String MAC_DIR_SYMBOL = "/";
+	private final String UNIX_DIR_SYMBOL = "/";
+	private final String SOLARIS_DIR_SYMBOL = "/";
+	
+	private final String FILE_PATH_FORMAT = "%s%s%s";
+	
 	String fileDirectory = System.getProperty("user.dir");
 	String fileName = "storage.txt";
-	String filePath = fileDirectory + "\\" + fileName;
+	String filePath = "";
 
 	private Storage() {
+		buildFilePath();
 		createFile();
 	}
 
@@ -90,6 +99,21 @@ public class Storage {
 		}
 	}
 	
+	private void buildFilePath() {
+		if (isWindows()) {
+			filePath = String.format(FILE_PATH_FORMAT,fileDirectory,WINDOWS_DIR_SYMBOL,fileName);
+        } else if (isMac()) {
+        	filePath = String.format(FILE_PATH_FORMAT,fileDirectory,MAC_DIR_SYMBOL,fileName);
+        } else if (isUnix()) {
+        	filePath = String.format(FILE_PATH_FORMAT,fileDirectory,UNIX_DIR_SYMBOL,fileName);
+        } else if (isSolaris()) {
+        	filePath = String.format(FILE_PATH_FORMAT,fileDirectory,SOLARIS_DIR_SYMBOL,fileName);
+        } 
+        else {
+        	System.out.println("Your OS is not supported");
+        }
+	}
+	
 	public String getFileDirectory() {
 		return fileDirectory;
 	}
@@ -105,4 +129,21 @@ public class Storage {
 	public void setFileName(String fileName) {
 		this.fileName = fileName;
 	}
+	
+	private boolean isWindows() {
+		return (OS.contains("win"));
+	}
+	
+	private boolean isMac() {
+		return (OS.contains("mac"));
+	}
+	
+	private boolean isUnix() {
+		return (OS.contains("nix") || OS.contains("nux") || OS.contains("aix"));
+	}
+	
+	private boolean isSolaris() {
+		return (OS.contains("sunos"));
+	}
+
 }
