@@ -102,6 +102,10 @@ public class CommandParser {
             title = removeLabelFromTitle(title, label);
         }
         
+        if (tab.equals("dated")) {
+        	title = removeDateFromTitle(title, numberOfDate);
+        }
+
         task = buildTask(title, startDate, endDate, label);
         Command command = new Command(type, tab, task);
         return command;
@@ -153,6 +157,14 @@ public class CommandParser {
         
         title = title.replace(tag, "");
         return title;
+    }
+    
+    private String removeDateFromTitle(String title, int numberOfDate) {
+    	if (numberOfDate == DATE_MAX_SIZE) {
+    		
+    	}
+    	
+    	return "";
     }
     
     private Task buildTask(String title, Date startDate, Date endDate, String label) {
