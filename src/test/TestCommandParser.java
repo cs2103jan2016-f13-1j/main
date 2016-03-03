@@ -34,19 +34,14 @@ public class TestCommandParser {
     @Test
     public void testAdd() throws ParseException {
         CommandParser parser = new CommandParser();
-        Command command = parser.parse("Cook dinner by 7pm");
+        Command command = parser.parse("Cook dinner on 4 Mar 7pm");
         
         SimpleDateFormat df = new SimpleDateFormat("EEE MMM d HH:mm:ss Z yyyy");
-        String date = "Thu Feb 26 19:00:00 SGT 2016";
+        String date = "Thu Mar 4 19:00:00 SGT 2016";
         Date expectedDate = df.parse(date);
         
         assertEquals("dated", command.getTab());
         assertEquals(expectedDate, command.getTask().getEndDate());
-        
-        //testing pretty on latest
-        command = parser.parse("attend meeting from 14 - 16");
-        System.out.println(command.getTask().getStartDate());
-        System.out.println(command.getTask().getEndDate());
     }
     
     @Test
@@ -67,36 +62,36 @@ public class TestCommandParser {
         CommandParser parser = new CommandParser();
         Command command = parser.parse("delete 1");
         
-        ArrayList<Integer> indexesToDelete= new ArrayList<Integer>();
-        indexesToDelete.add(1);
+        ArrayList<Integer> indexes = new ArrayList<Integer>();
+        indexes.add(1);
         assertEquals("delete", command.getCommandType());
-        assertEquals(indexesToDelete, command.getIndexes());
+        assertEquals(indexes, command.getIndexes());
         
         command = parser.parse("del 1,3,5,7,9");
-        indexesToDelete.clear();
-        indexesToDelete.add(1);
-        indexesToDelete.add(3);
-        indexesToDelete.add(5);
-        indexesToDelete.add(7);
-        indexesToDelete.add(9);
+        indexes.clear();
+        indexes.add(1);
+        indexes.add(3);
+        indexes.add(5);
+        indexes.add(7);
+        indexes.add(9);
         assertEquals("delete", command.getCommandType());
-        assertEquals(indexesToDelete, command.getIndexes());
+        assertEquals(indexes, command.getIndexes());
         
         command = parser.parse("delete 1-10");
-        indexesToDelete.clear();
-        indexesToDelete.add(1);
-        indexesToDelete.add(2);
-        indexesToDelete.add(3);
-        indexesToDelete.add(4);
-        indexesToDelete.add(5);
-        indexesToDelete.add(6);
-        indexesToDelete.add(7);
-        indexesToDelete.add(8);
-        indexesToDelete.add(9);
-        indexesToDelete.add(10);
-        assertEquals(indexesToDelete, command.getIndexes());
+        indexes.clear();
+        indexes.add(1);
+        indexes.add(2);
+        indexes.add(3);
+        indexes.add(4);
+        indexes.add(5);
+        indexes.add(6);
+        indexes.add(7);
+        indexes.add(8);
+        indexes.add(9);
+        indexes.add(10);
+        assertEquals(indexes, command.getIndexes());
         
         command = parser.parse("delete 1-3,4,5,6-9,10");
-        assertEquals(indexesToDelete, command.getIndexes());
+        assertEquals(indexes, command.getIndexes());
     }
 }

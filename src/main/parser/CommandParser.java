@@ -20,6 +20,7 @@ import main.data.Task;
 public class CommandParser {
     private final int LENGTH_DEL = 3;
     private final int LENGTH_DELETE = 6;
+    private final int LENGTH_DONE = 4;
     private final int LENGTH_OFFSET = 1;
     private final int DATE_END = 0;
     private final int DATE_START_RANGED = 0;
@@ -39,6 +40,8 @@ public class CommandParser {
     private String getCommandType(String command) {
         if (command.equalsIgnoreCase("delete") || (command.equalsIgnoreCase("del"))) {
             return "delete";
+        } else if (command.equalsIgnoreCase("done")) {
+        	return "done";
         } else {
         	return "add";
         }
@@ -50,13 +53,15 @@ public class CommandParser {
                 return prepareForAdd(type, commandString);
                 
             case "delete" :
-                return prepareForDel(type, commandString);
+                return prepareIndexes(type, commandString);
                 
+            case "done" :
+            	return prepareIndexes(type, commandString);
+            	
             default :
                 return null;
         }
     }
-    
     
     /**
      * Find out what kind of task is to be added
@@ -133,8 +138,7 @@ public class CommandParser {
         string = string.replaceAll("\\s","");
         return string;
     }
-    
-
+   
     private String removeLabelFromTitle(String title, String label) {
         String tag = "#".concat(label);
         
@@ -157,9 +161,8 @@ public class CommandParser {
         return task;
     }
     
-    
     /**
-     * Get delete index(es)
+     * Get index(es) from command
      * 
      * @param type
      * 			command type
@@ -167,13 +170,13 @@ public class CommandParser {
      * 			user input string
      * @return a command object with the type of command and index(es)
      */
-    private Command prepareForDel(String type, String commandString) {
-        String index = getIndexString(commandString);
+    private Command prepareIndexes(String type, String commandString) {
+        String indexString = getIndexString(commandString);
         
-        ArrayList<Integer> indexesToDelete = new ArrayList<Integer>();
-        indexesToDelete = extractIndex(index);
+        ArrayList<Integer> indexes = new ArrayList<Integer>();
+        indexes = extractIndex(indexString);
         
-        Command command = new Command(type, indexesToDelete);
+        Command command = new Command(type, indexes);
         return command;
     }
     
@@ -185,15 +188,16 @@ public class CommandParser {
             index = LENGTH_DELETE;
         } else if (command.matches("del")) {
             index = LENGTH_DEL;
+        } else if (command.matches("done")) {
+        	index = LENGTH_DONE;
         }
         index = index + LENGTH_OFFSET;
         
-        String indexToDelete = commandString.substring(index, commandString.length());
-        indexToDelete = removeWhiteSpace(indexToDelete);
+        String indexString = commandString.substring(index, commandString.length());
+        indexString = removeWhiteSpace(indexString);
         
-        return indexToDelete;
+        return indexString;
     }
-    
     
     private ArrayList<Integer> extractIndex(String index) {
         ArrayList<String> indexes = new ArrayList<String>();
