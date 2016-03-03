@@ -50,6 +50,7 @@ public class RootLayoutController {
     private String[] userInputArray;
     private String userCommand;
     private String userArguments;
+    private int currentSelectedTaskIndex;
 
     public RootLayoutController() {
 
@@ -67,9 +68,9 @@ public class RootLayoutController {
 
         // retrieve all task and add into an ObservableList
         allTasks = controller.getAllTasks();
-        
-        for(int i=0; i<allTasks.size(); i++){
-            taskList.add(i+1+". "+allTasks.get(i));
+
+        for (int i = 0; i < allTasks.size(); i++) {
+            taskList.add(i + 1 + ". " + allTasks.get(i));
         }
         lp.set(taskList);
 
@@ -82,17 +83,36 @@ public class RootLayoutController {
                 // pass focus over to listview instead of tabs
                 if (keyEvent.getCode() == KeyCode.UP) {
                     listView.getSelectionModel().selectPrevious();
+                    currentSelectedTaskIndex = listView.getSelectionModel().getSelectedIndex();
+
+                    // only set currently selected item to command bar when in
+                    // Edit mode
+                    if (labelCurrentMode.getText().equals("Edit mode")) {
+                        commandBar.setText(allTasks.get(currentSelectedTaskIndex).toString());
+                    }
                     keyEvent.consume();
 
                 } else if (keyEvent.getCode() == KeyCode.DOWN) {
                     listView.getSelectionModel().selectNext();
+                    currentSelectedTaskIndex = listView.getSelectionModel().getSelectedIndex();
+
+                    // only set currently selected item to command bar when in
+                    // Edit mode
+                    if (labelCurrentMode.getText().equals("Edit mode")) {
+                        commandBar.setText(allTasks.get(currentSelectedTaskIndex).toString());
+                    }
                     keyEvent.consume();
                 } else if (keyEvent.getCode() == KeyCode.F1) {
                     if (labelCurrentMode.getText().equals("Edit mode")) {
                         labelCurrentMode.setText("Today");
+                        // TODO currently clears command bar.
+                        // can consider save/restore previous input that was in
+                        // the command bar
+                        commandBar.clear();
 
                     } else {
                         labelCurrentMode.setText("Edit mode");
+                        commandBar.setText(allTasks.get(currentSelectedTaskIndex).toString());
                     }
                     keyEvent.consume();
                 }
@@ -106,67 +126,70 @@ public class RootLayoutController {
 
             @Override
             public void handle(Event event) {
-                // TODO Auto-generated method stub
-                userInput = commandBar.getCharacters().toString();
+                if (labelCurrentMode.getText().equals("Today")) {
 
-                if (userInput.length() == 0) {
-                    labelUserFeedback.setVisible(false);
-                    labelUserAction.setVisible(false);
-                    userInput = "";
-                    labelUserAction.setText("");
-                    labelUserFeedback.setText("");
-                    userArguments = "";
-                    return;
+                    // TODO Auto-generated method stub
+                    userInput = commandBar.getCharacters().toString();
+
+                    if (userInput.length() == 0) {
+                        labelUserFeedback.setVisible(false);
+                        labelUserAction.setVisible(false);
+                        userInput = "";
+                        labelUserAction.setText("");
+                        labelUserFeedback.setText("");
+                        userArguments = "";
+                        return;
+                    }
+
+                    userInputArray = userInput.split(" ");
+                    userCommand = userInputArray[0];
+                    if (userInputArray.length > 1) {
+                        System.out.println(userCommand + " " + userInput.indexOf(userCommand) + " "
+                                + userInput.lastIndexOf(userCommand));
+
+                        userArguments = userInput.substring(userInput.indexOf(userInputArray[1]));
+                    }
+
+                    switch (userCommand) {
+                        case "search" :
+                        case "find" :
+                            labelUserFeedback.setVisible(true);
+                            labelUserAction.setText("Searching:");
+                            labelUserAction.setVisible(true);
+                            if (userInputArray.length > 1) {
+                                inputFeedback = userArguments; // stub code
+                            } else {
+                                inputFeedback = "";
+                            }
+                            break;
+
+                        case "delete" :
+                        case "del" :
+                            labelUserFeedback.setVisible(true);
+                            labelUserAction.setText("Deleting:");
+                            labelUserAction.setVisible(true);
+                            if (userInputArray.length > 1) {
+                                inputFeedback = allTasks.get(Integer.parseInt(userArguments) - 1).toString();
+                                controller.parseCommand(userInput, Controller.Tab.FLOATING_TAB);
+                            } else {
+                                inputFeedback = "";
+                            }
+                            break;
+
+                        default :
+                            labelUserFeedback.setVisible(true);
+                            labelUserAction.setText("Adding:");
+                            labelUserAction.setVisible(true);
+                            inputFeedback = controller.parseCommand(userInput, Controller.Tab.NO_TAB);
+
+                    }
+
+                    labelUserFeedback.setText(inputFeedback);
+                    labelUserAction.setVisible(true);
+                    labelUserFeedback.setVisible(true);
+                    System.out.println(inputFeedback);
+
                 }
-
-                userInputArray = userInput.split(" ");
-                userCommand = userInputArray[0];
-                if (userInputArray.length > 1) {
-                    System.out.println(userCommand + " " +userInput.indexOf(userCommand) + " " +userInput.lastIndexOf(userCommand));
-                    
-                    userArguments = userInput.substring(userInput.indexOf(userInputArray[1]));
-                }
-
-                // stub method to grab command type from user input
-
-                switch (userCommand) {
-                    case "search" :
-                    case "find" :
-                        labelUserFeedback.setVisible(true);
-                        labelUserAction.setText("Searching:");
-                        labelUserAction.setVisible(true);
-                        if (userInputArray.length > 1) {
-                            inputFeedback = userArguments; // stub code
-                        } else {
-                            inputFeedback = "";
-                        }
-                        break;
-
-                    case "delete" :
-                    case "del" :
-                        labelUserFeedback.setVisible(true);
-                        labelUserAction.setText("Deleting:");
-                        labelUserAction.setVisible(true);
-                        if (userInputArray.length > 1) {
-                            inputFeedback = allTasks.get(Integer.parseInt(userArguments) - 1).toString();
-                            controller.parseCommand(userInput, Controller.Tab.FLOATING_TAB);
-                        } else {
-                            inputFeedback = "";
-                        }
-                        break;
-
-                    default :
-                        labelUserFeedback.setVisible(true);
-                        labelUserAction.setText("Adding:");
-                        labelUserAction.setVisible(true);
-                        inputFeedback = controller.parseCommand(userInput, Controller.Tab.NO_TAB);
-
-                }
-                
-                labelUserFeedback.setText(inputFeedback);
-                labelUserAction.setVisible(true);
-                labelUserFeedback.setVisible(true);
-                System.out.println(inputFeedback);
 
             }
         });
@@ -176,14 +199,20 @@ public class RootLayoutController {
             @Override
             public void handle(ActionEvent event) {
                 // TODO Auto-generated method stub
-                controller.executeCommand();
 
-                //TODO refactor into a method
+                if (labelCurrentMode.getText().equals("Today")) {
+                    controller.executeCommand();
+                } else if (labelCurrentMode.getText().equals("Edit mode")) {
+                    // something is wrong with this controller.editTask API
+                    controller.editTask(commandBar.getText(), currentSelectedTaskIndex);
+                }
+
+                // TODO refactor into a method
                 // clear and retrieve all task and add into an ObservableList
                 taskList.clear();
                 allTasks = controller.getAllTasks();
-                for(int i=0; i<allTasks.size(); i++){
-                    taskList.add(i+1+". "+allTasks.get(i));
+                for (int i = 0; i < allTasks.size(); i++) {
+                    taskList.add(i + 1 + ". " + allTasks.get(i));
                 }
 
                 // if we dont set the list again, the listview item may show a
@@ -204,5 +233,10 @@ public class RootLayoutController {
 
     public void requestFocusForCommandBar() {
         commandBar.requestFocus();
+    }
+
+    public void selectFirstItemFromListView() {
+        listView.getSelectionModel().selectNext();
+        currentSelectedTaskIndex = listView.getSelectionModel().getSelectedIndex();
     }
 }

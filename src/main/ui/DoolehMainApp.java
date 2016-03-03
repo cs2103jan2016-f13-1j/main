@@ -39,6 +39,7 @@ public class DoolehMainApp extends Application {
             //get a handle on the UI controller and set focus to the text field
             RootLayoutController rootLayoutController = (RootLayoutController) loader.getController();
             rootLayoutController.requestFocusForCommandBar();
+            rootLayoutController.selectFirstItemFromListView();
 
         } catch (IOException e) {
             e.printStackTrace();
