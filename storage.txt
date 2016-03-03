@@ -1,16 +1,6 @@
 [
   [
     {
-      "title": "Floating task 1.1",
-      "status": false,
-      "priority": 0
-    },
-    {
-      "title": "Visit granny",
-      "status": false,
-      "priority": 0
-    },
-    {
       "title": "a",
       "status": false,
       "priority": 0
@@ -31,7 +21,5 @@
       "priority": 0
     }
   ],
-  [
-    
-  ]
+  []
 ]

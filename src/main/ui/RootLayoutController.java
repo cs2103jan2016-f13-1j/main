@@ -2,8 +2,6 @@ package main.ui;
 
 import java.util.ArrayList;
 
-import javax.xml.stream.EventFilter;
-
 import com.jfoenix.controls.JFXListView;
 
 import javafx.beans.property.ListProperty;
@@ -15,7 +13,6 @@ import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
-import javafx.scene.control.Tab;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -50,7 +47,9 @@ public class RootLayoutController {
     private Controller controller;
     private String inputFeedback;
     private String userInput;
+    private String[] userInputArray;
     private String userCommand;
+    private String userArguments;
 
     public RootLayoutController() {
 
@@ -68,8 +67,9 @@ public class RootLayoutController {
 
         // retrieve all task and add into an ObservableList
         allTasks = controller.getAllTasks();
-        for (Task task : allTasks) {
-            taskList.add(task.toString());
+        
+        for(int i=0; i<allTasks.size(); i++){
+            taskList.add(i+1+". "+allTasks.get(i));
         }
         lp.set(taskList);
 
@@ -115,17 +115,31 @@ public class RootLayoutController {
                     userInput = "";
                     labelUserAction.setText("");
                     labelUserFeedback.setText("");
+                    userArguments = "";
                     return;
                 }
 
+                userInputArray = userInput.split(" ");
+                userCommand = userInputArray[0];
+                if (userInputArray.length > 1) {
+                    System.out.println(userCommand + " " +userInput.indexOf(userCommand) + " " +userInput.lastIndexOf(userCommand));
+                    
+                    userArguments = userInput.substring(userInput.indexOf(userInputArray[1]));
+                }
+
                 // stub method to grab command type from user input
-                userCommand = userInput.split(" ")[0];
+
                 switch (userCommand) {
                     case "search" :
                     case "find" :
                         labelUserFeedback.setVisible(true);
                         labelUserAction.setText("Searching:");
                         labelUserAction.setVisible(true);
+                        if (userInputArray.length > 1) {
+                            inputFeedback = userArguments; // stub code
+                        } else {
+                            inputFeedback = "";
+                        }
                         break;
 
                     case "delete" :
@@ -133,19 +147,24 @@ public class RootLayoutController {
                         labelUserFeedback.setVisible(true);
                         labelUserAction.setText("Deleting:");
                         labelUserAction.setVisible(true);
+                        if (userInputArray.length > 1) {
+                            inputFeedback = allTasks.get(Integer.parseInt(userArguments) - 1).toString();
+                            controller.parseCommand(userInput, Controller.Tab.FLOATING_TAB);
+                        } else {
+                            inputFeedback = "";
+                        }
                         break;
 
                     default :
                         labelUserFeedback.setVisible(true);
                         labelUserAction.setText("Adding:");
                         labelUserAction.setVisible(true);
+                        inputFeedback = controller.parseCommand(userInput, Controller.Tab.NO_TAB);
 
                 }
-
-                inputFeedback = controller.parseCommand(userInput, Controller.Tab.NO_TAB);
-
-                labelUserAction.setVisible(true);
+                
                 labelUserFeedback.setText(inputFeedback);
+                labelUserAction.setVisible(true);
                 labelUserFeedback.setVisible(true);
                 System.out.println(inputFeedback);
 
@@ -159,11 +178,12 @@ public class RootLayoutController {
                 // TODO Auto-generated method stub
                 controller.executeCommand();
 
+                //TODO refactor into a method
                 // clear and retrieve all task and add into an ObservableList
                 taskList.clear();
-                ArrayList<Task> tasks = controller.getAllTasks();
-                for (Task task : tasks) {
-                    taskList.add(task.toString());
+                allTasks = controller.getAllTasks();
+                for(int i=0; i<allTasks.size(); i++){
+                    taskList.add(i+1+". "+allTasks.get(i));
                 }
 
                 // if we dont set the list again, the listview item may show a
@@ -177,12 +197,12 @@ public class RootLayoutController {
             }
         });
 
-        //requestFocus will not work here since this class is run before
-        //before the construction of the scene in DoolehMainApp class
-//        commandBar.requestFocus();
+        // requestFocus will not work here since this class is run before
+        // before the construction of the scene in DoolehMainApp class
+        // commandBar.requestFocus();
     }
-    
-    public void requestFocusForCommandBar(){
+
+    public void requestFocusForCommandBar() {
         commandBar.requestFocus();
     }
 }

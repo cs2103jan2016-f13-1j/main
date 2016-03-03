@@ -9,12 +9,13 @@ package test;
  */
 
 import static org.junit.Assert.assertEquals;
-import org.junit.Test;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+
+import org.junit.Test;
 
 import main.data.Command;
 import main.parser.CommandParser;

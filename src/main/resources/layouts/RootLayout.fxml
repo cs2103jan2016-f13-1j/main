@@ -12,7 +12,7 @@
    <children>
       <TabPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="481.0" prefWidth="600.0" tabClosingPolicy="UNAVAILABLE" tabMinWidth="180.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <tabs>
-            <Tab fx:id="tabAll" text="All">
+            <Tab text="All">
                <content>
                   <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="412.0" prefWidth="591.0">
                      <children>
@@ -21,12 +21,12 @@
                   </AnchorPane>
                </content>
             </Tab>
-            <Tab fx:id="tabToday" text="Today">
+            <Tab text="Today">
                <content>
                   <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="412.0" prefWidth="591.0" />
                </content>
             </Tab>
-            <Tab fx:id="tabWeek" text="This week">
+            <Tab text="This week">
                <content>
                   <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="412.0" prefWidth="591.0" />
                </content>
@@ -42,11 +42,11 @@
             <Font name="Noto Sans" size="24.0" />
          </font>
       </Label>
-      <Label fx:id="labelUserAction" prefWidth="96.0" text="Adding task:" textFill="#039be5" visible="false" AnchorPane.leftAnchor="50.0" AnchorPane.rightAnchor="454.0" AnchorPane.topAnchor="452.0">
+      <Label fx:id="labelUserAction" prefWidth="85.0" text="Adding task:" textFill="#039be5" visible="false" AnchorPane.leftAnchor="50.0" AnchorPane.topAnchor="452.0">
          <font>
             <Font name="Noto Sans Bold" size="13.0" />
          </font></Label>
-      <Label fx:id="labelUserFeedback" layoutX="143.0" layoutY="450.0" prefWidth="414.0" text="task" textFill="#00121b" visible="false" AnchorPane.topAnchor="452.0">
+      <Label fx:id="labelUserFeedback" layoutX="136.0" layoutY="450.0" prefWidth="421.0" text="task" textFill="#00121b" visible="false" AnchorPane.topAnchor="452.0">
          <font>
             <Font name="Noto Sans Bold" size="13.0" />
          </font>
