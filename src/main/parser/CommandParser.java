@@ -27,6 +27,9 @@ public class CommandParser {
     private final int DATE_START_RANGED = 0;
     private final int DATE_END_RANGED = 1;
     private final int DATE_MAX_SIZE = 2;
+    private final int INDEX_OFFSET = 1;
+    private final int PREPOSITION_FROM_LENGTH = 4;
+    private final int PREPOSITION_OTHER_LENGTH = 2;
     
     public Command parse(String commandString) {
         String command = getFirstWord(commandString);
@@ -65,7 +68,8 @@ public class CommandParser {
     }
     
     /**
-     * Find out what kind of task is to be added
+     * Find out what kind of task is to be added.
+     * Words without prepositions are considered floating tasks.
      * 
      * @param type
      * 			command type
@@ -116,7 +120,7 @@ public class CommandParser {
         return command;
     }
     
-    private boolean checkForPrepositions(String commandString) {
+    private ArrayList<String> populatePrepositions() {
     	ArrayList<String> prepositions = new ArrayList<String>();
     	prepositions.add("from");
     	prepositions.add("at");
@@ -124,6 +128,13 @@ public class CommandParser {
     	prepositions.add("by");
     	prepositions.add("before");
     	
+    	return prepositions;
+    }
+    
+    private boolean checkForPrepositions(String commandString) {
+    	ArrayList<String> prepositions = new ArrayList<String>();
+	    prepositions = populatePrepositions();
+	    
     	List<String> words = new ArrayList<String>(Arrays.asList(commandString.split(" ")));
     	
     	for (int i = 0; i < prepositions.size(); i++ ) {
@@ -183,11 +194,41 @@ public class CommandParser {
     }
     
     private String removeDateFromTitle(String title, int numberOfDate) {
+    	String dateString = "";
+    	List<String> words = new ArrayList<String>(Arrays.asList(title.split(" ")));
+		int index = getPrepositionsIndex(title);
+		int upperBound = 0;
+		
     	if (numberOfDate == DATE_MAX_SIZE) {
-    		
+    		upperBound = PREPOSITION_FROM_LENGTH;
+    	} else if (numberOfDate > 0) {
+    		upperBound = PREPOSITION_OTHER_LENGTH;
     	}
     	
-    	return "";
+    	for (int i = 0; i < upperBound; i++) {
+			dateString = dateString.concat(" ");
+			dateString = dateString.concat(words.get(index+i));
+		}
+    	
+    	title = title.replace(dateString, "");
+    	return title;
+    }
+    
+    private int getPrepositionsIndex(String commandString) {
+    	ArrayList<String> prepositions = new ArrayList<String>();
+	    prepositions = populatePrepositions();
+
+    	List<String> words = new ArrayList<String>(Arrays.asList(commandString.split(" ")));
+    	int index = 0;
+    	
+    	for (int i = 0; i < prepositions.size(); i++ ) {
+    		if (words.contains(prepositions.get(i))) {
+    			index = words.indexOf(prepositions.get(i));
+    			break;
+    		}
+    	}
+    	
+    	return index;
     }
     
     private Task buildTask(String title, Date startDate, Date endDate, String label) {
@@ -197,7 +238,7 @@ public class CommandParser {
     }
     
     /**
-     * Get index(es) from command
+     * Detect the types of indexes before processing them
      * 
      * @param type
      * 			command type

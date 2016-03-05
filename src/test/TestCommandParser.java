@@ -33,7 +33,7 @@ public class TestCommandParser {
         command = parser.parse("Fetch my brothers from school");
         assertEquals("floating", command.getTab());
         
-        command = parser.parse("Send 100 emails from schools");
+        command = parser.parse("Send 100 emails from my computer");
         assertEquals("floating", command.getTab());
         
         command = parser.parse("Drive by the supermarket");
@@ -43,9 +43,6 @@ public class TestCommandParser {
         assertEquals("floating", command.getTab());
         
         command = parser.parse("Send 100 email before I sleep");
-        assertEquals("floating", command.getTab());
-        
-        command = parser.parse("Send 100 emails from schools");
         assertEquals("floating", command.getTab());
     }
     
@@ -57,6 +54,11 @@ public class TestCommandParser {
         assertEquals("add", command.getCommandType());
         assertEquals("floating", command.getTab());
         assertEquals("Cook dinner", command.getTask().getTitle());
+        
+        command = parser.parse("Attack enemy base on signal");
+        assertEquals("add", command.getCommandType());
+        assertEquals("floating", command.getTab());
+        assertEquals("Attack enemy base on signal", command.getTask().getTitle());
     }
     
     @Test
@@ -83,6 +85,31 @@ public class TestCommandParser {
         parser.parse("#home Cook dinner");
         assertEquals("Cook dinner", command.getTask().getTitle());
         assertEquals("home", command.getTask().getLabel());
+    }
+    
+    @Test
+    public void testDatedTaskTitle(){
+    	CommandParser parser = new CommandParser();
+    	Command command = parser.parse("Attend meeting from monday to wednesday");
+    	assertEquals("Attend meeting", command.getTask().getTitle());
+
+    	command = parser.parse("Attend meeting from 4 to 6");
+    	assertEquals("Attend meeting", command.getTask().getTitle());
+    	
+    	command = parser.parse("Attend meeting from 4 - 6");
+    	assertEquals("Attend meeting", command.getTask().getTitle());
+    	
+    	command = parser.parse("Cook dinner at 7");
+    	assertEquals("Cook dinner", command.getTask().getTitle());
+
+    	command = parser.parse("Attend meeting on weds");
+    	assertEquals("Attend meeting", command.getTask().getTitle());
+
+    	command = parser.parse("Do homework by sunday");
+    	assertEquals("Do homework", command.getTask().getTitle());
+
+    	command = parser.parse("Send 100 email by 8");
+    	assertEquals("Send 100 email", command.getTask().getTitle());
     }
     
     @Test
