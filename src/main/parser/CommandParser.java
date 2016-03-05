@@ -8,6 +8,7 @@ package main.parser;
  *
  */
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -77,24 +78,28 @@ public class CommandParser {
         String title = null;
         Task task = null;
         String label = null;
+        int numberOfDate = 0;
         Date startDate = null;
         Date endDate = null;
         boolean isLabelPresent;
-        
-        List<Date> dates = parseDate(commandString);
-        int numberOfDate = dates.size();
-        
-        if (numberOfDate > 0) {
-            tab = "dated";
-            endDate = getDate(dates, DATE_END);
-        }
-        
-        if (numberOfDate == DATE_MAX_SIZE) {
-            startDate = getDate(dates, DATE_START_RANGED);
-            endDate = getDate(dates, DATE_END_RANGED);
-        }
-        
+        boolean hasPreposition;
         title = commandString;
+
+        hasPreposition = checkForPrepositions(commandString);
+        if (hasPreposition) {
+        	List<Date> dates = parseDate(commandString);
+            numberOfDate = dates.size();
+            
+            if (numberOfDate > 0) {
+                tab = "dated";
+                endDate = getDate(dates, DATE_END);
+            }
+            
+            if (numberOfDate == DATE_MAX_SIZE) {
+                startDate = getDate(dates, DATE_START_RANGED);
+                endDate = getDate(dates, DATE_END_RANGED);
+            }
+        }    
         
         isLabelPresent = checkForLabel(commandString);
         if (isLabelPresent) {
@@ -109,6 +114,22 @@ public class CommandParser {
         task = buildTask(title, startDate, endDate, label);
         Command command = new Command(type, tab, task);
         return command;
+    }
+    
+    private boolean checkForPrepositions(String commandString) {
+    	ArrayList<String> prepositions = new ArrayList<String>();
+    	prepositions.add("from");
+    	prepositions.add("at");
+    	prepositions.add("on");
+    	
+    	List<String> words = new ArrayList<String>(Arrays.asList(commandString.split(" ")));
+    	
+    	for (int i = 0; i < prepositions.size(); i++ ) {
+    		if (words.contains(prepositions.get(i))) {
+    			return true;
+    		}
+    	}
+    	return false;
     }
     
     private List<Date> parseDate(String commandString) {

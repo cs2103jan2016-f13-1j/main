@@ -22,6 +22,28 @@ import main.parser.CommandParser;
 public class TestCommandParser {
     
     @Test
+    public void testDetectFloating() {
+        CommandParser parser = new CommandParser();
+        Command command = parser.parse("Do assignment 1");
+        assertEquals("floating", command.getTab());
+        
+        command = parser.parse("Undo task 3");
+        assertEquals("floating", command.getTab());
+        
+        command = parser.parse("Fetch brother from school");
+        assertEquals("floating", command.getTab());
+        
+        command = parser.parse("Drive by the supermarket");
+        assertEquals("floating", command.getTab());
+        
+        command = parser.parse("Attack enemy base on signal");
+        assertEquals("floating", command.getTab());
+        
+        command = parser.parse("Send 100 email before I sleep");
+        assertEquals("floating", command.getTab());       
+    }
+    
+    @Test
     public void testAddFloating() {
         CommandParser parser = new CommandParser();
         Command command = parser.parse("Cook dinner");
