@@ -2,8 +2,6 @@ package main.ui;
 
 import java.util.ArrayList;
 
-import org.ocpsoft.prettytime.shade.org.apache.commons.logging.LogSource;
-
 import com.jfoenix.controls.JFXListView;
 
 import javafx.beans.property.ListProperty;
@@ -234,6 +232,7 @@ public class RootLayoutController {
         allTasks = controller.getAllTasks();
 
         for (int i = 0; i < allTasks.size(); i++) {
+            System.out.println(allTasks.get(i));
             observableTaskList.add(i + 1 + ". " + allTasks.get(i));
         }
 
@@ -314,8 +313,7 @@ public class RootLayoutController {
      * 
      */
     private void handleDeleteKey() {
-        controller.parseCommand(COMMAND_DELETE + WHITESPACE + (getSelectedTaskIndex() + 1),
-                Controller.Tab.FLOATING_TAB);
+        controller.parseCommand(COMMAND_DELETE + WHITESPACE + (getSelectedTaskIndex()), Controller.FLOATING_TAB);
         controller.executeCommand();
         saveSelectedTaskIndex();
         refreshListView();
@@ -368,7 +366,7 @@ public class RootLayoutController {
             System.out.println(inputFeedback);
 
         } else {
-            controller.parseCommand(commandBar.getText(), Controller.Tab.FLOATING_TAB);
+            controller.parseCommand(commandBar.getText(), Controller.FLOATING_TAB);
         }
     }
 
@@ -393,7 +391,7 @@ public class RootLayoutController {
 
         } else {
             // something is wrong with this controller.editTask API
-            controller.editTask(Controller.FLOATING, listView.getSelectionModel().getSelectedIndex() + 1);
+            controller.editTask(Controller.FLOATING_TAB, getSelectedTaskIndex());
             refreshListView();
             saveSelectedTaskIndex();
             listView.getSelectionModel().select(previousSelectedTaskIndex);
@@ -443,7 +441,7 @@ public class RootLayoutController {
      * 
      */
     private void parseAdd() {
-        inputFeedback = controller.parseCommand(userInput, Controller.Tab.NO_TAB);
+        inputFeedback = controller.parseCommand(userInput, Controller.NO_TAB);
         showFeedback(true, MESSAGE_FEEDBACK_ACTION_ADD, inputFeedback);
     }
 
@@ -453,7 +451,7 @@ public class RootLayoutController {
     private void parseDelete() {
         System.out.println("parseDelete");
         if (userInputArray.length > 1) {
-           int userIndex = 0;
+            int userIndex = 0;
             try {
                 userIndex = Integer.parseInt(userArguments);
             } catch (NumberFormatException nfe) {
@@ -465,12 +463,12 @@ public class RootLayoutController {
 
             if (actualIndex >= allTasks.size()) {
                 showResult(true, String.format(MESSAGE_ERROR_RESULT_DELETE, userIndex));
-                // showFeedback(false);
+
             } else {
                 inputFeedback = allTasks.get(actualIndex).toString();
-                // showResult(false, EMPTY_STRING);
                 showFeedback(true, MESSAGE_FEEDBACK_ACTION_DELETE, inputFeedback);
-                controller.parseCommand(userInput, Controller.Tab.FLOATING_TAB);
+                controller.parseCommand(COMMAND_DELETE + WHITESPACE + actualIndex, Controller.FLOATING_TAB);
+
                 // listView.getSelectionModel().select(actualIndex);
                 listView.scrollTo(actualIndex);
             }

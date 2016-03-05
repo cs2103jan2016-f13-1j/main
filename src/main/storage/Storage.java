@@ -1,5 +1,15 @@
 /**
+ * Summary of public methods that can be called:
  * 
+ * getStorage();
+ * readTasks();
+ * writeTasks(ArrayList<ArrayList<Task>> tasks);
+ * 
+ * getFileDirectory();
+ * getFileName();
+ * 
+ * setFileDirectory(String fileDirectory);
+ * setFileName(String fileName);
  */
 package main.storage;
 
@@ -38,7 +48,7 @@ public class Storage {
 	
 	String fileDirectory = System.getProperty("user.dir");
 	String fileName = "storage.txt";
-	String filePath = "";
+	String filePath = null;
 
 
 	private Storage() {
@@ -58,7 +68,7 @@ public class Storage {
 	}
 	
 	//Open file if it exists, otherwise create a new file
-	public void createFile() {
+	private void createFile() {
 		File file = new File(filePath);
 
 		try {
@@ -111,7 +121,7 @@ public class Storage {
         	filePath = String.format(FILE_PATH_FORMAT,fileDirectory,SOLARIS_DIR_SYMBOL,fileName);
         } 
         else {
-        	System.out.println("Your OS is not supported");
+        	System.out.println("OS is not supported");
         }
 	}
 	
@@ -121,6 +131,7 @@ public class Storage {
 	
 	public void setFileDirectory(String directory) {
 		this.fileDirectory = directory;
+		buildFilePath();
 	}
 
 	public String getFileName() {
@@ -129,6 +140,7 @@ public class Storage {
 
 	public void setFileName(String fileName) {
 		this.fileName = fileName;
+		buildFilePath();
 	}
 	
 	private boolean isWindows() {

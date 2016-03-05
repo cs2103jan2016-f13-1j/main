@@ -14,10 +14,11 @@ public class Command {
     public static final String FLOATING_TAB = "floating";
     public static final String DATED_TAB = "dated";
     
-    private String commandType;
-    private String tab;
-    private Task task;
-    private ArrayList<Integer> indexesToDelete;
+    private String commandType = null;
+    private String tab = null;
+    private Task task = null;
+    private ArrayList<Task> previousTasks = new ArrayList<Task>();
+    private ArrayList<Integer> indexesToDelete = new ArrayList<Integer>();
     
     public Command(String commandType, String tab, Task task) {
         this.commandType = commandType;
@@ -31,6 +32,10 @@ public class Command {
     }
     public String getCommandType() {
         return commandType;
+    }
+    
+    public void setCommandType(String commandType) {
+    	this.commandType = commandType;
     }
     
     public Task getTask() {
@@ -47,5 +52,13 @@ public class Command {
     
     public ArrayList<Integer> getIndexes() {
         return indexesToDelete;
+    }
+
+    public ArrayList<Task> getPreviousTasks() {
+        return previousTasks;
+    }
+
+    public void setPreviousTasks(ArrayList<Task> previousTasks) {
+        this.previousTasks = previousTasks;
     }
 }
