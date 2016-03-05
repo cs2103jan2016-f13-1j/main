@@ -6,6 +6,11 @@
       "priority": 0
     },
     {
+      "title": "Floating task 1",
+      "status": false,
+      "priority": 0
+    },
+    {
       "title": "Floating task 2",
       "status": false,
       "priority": 0
@@ -17,11 +22,6 @@
     },
     {
       "title": "Floating task 4",
-      "status": false,
-      "priority": 0
-    },
-    {
-      "title": "Floating task 5",
       "status": false,
       "priority": 0
     }
