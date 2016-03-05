@@ -11,7 +11,6 @@ package test;
 import static org.junit.Assert.*;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 
 import org.junit.Before;
@@ -26,26 +25,13 @@ public class TestLogicController {
 	
 	Controller controller = null;
 	
-	//Adds a new floating task, and delete it
-	@Test
-	public void addAndDeleteTaskTest() {
-		Task task = new Task.TaskBuilder("Floating task 6").build();
-		controller.addTask(Controller.FLOATING,task);
-		assertEquals(controller.getFloatingTasks().size(),controller.getStorage().readTasks().get(0).size());
-		
-		ArrayList<Integer> indexes = new ArrayList<Integer>();
-		indexes.add(controller.getFloatingTasks().size());
-		controller.deleteTask("floating",indexes);
-		assertEquals(controller.getFloatingTasks().size(),controller.getStorage().readTasks().get(0).size());
-	}
-	
 	//Edits task from different tabs
 	@Test
 	public void editTaskTest() {
-		String title = "Floating task 1.1";
-		String feedback = controller.parseCommand(title, Controller.Tab.NO_TAB);
+		String title = "Floating task 0.1";
+		String feedback = controller.parseCommand(title, Controller.NO_TAB);
 		assertEquals(feedback,title);
-		controller.editTask(Controller.FLOATING, 1);
+		controller.editTask(Controller.FLOATING_TAB, 0);
 		assertEquals(title,controller.getFloatingTasks().get(0).getTitle());
 		
 		//title = "Today task 1.1";
@@ -79,17 +65,17 @@ public class TestLogicController {
 	@Test
 	public void parseAddAndDeleteTaskTest() {
 		String feedback = null;
-		feedback = controller.parseCommand("cook dinner #home", Controller.Tab.NO_TAB);
+		feedback = controller.parseCommand("cook dinner #home", Controller.NO_TAB);
 		assertEquals(feedback,"cook dinner #home");
 		controller.executeCommand();
 		controller.executeCommand();
 		
-		feedback = controller.parseCommand("cook dinner", Controller.Tab.NO_TAB);
+		feedback = controller.parseCommand("cook dinner", Controller.NO_TAB);
 		assertEquals(feedback,"cook dinner");
 		controller.executeCommand();
 		
-		feedback = controller.parseCommand("delete 6,7-8", Controller.Tab.FLOATING_TAB);
-		assertEquals(feedback,"delete from floating");
+		feedback = controller.parseCommand("delete 5,6-7", Controller.FLOATING_TAB);
+		assertEquals(feedback,"delete from all");
 		controller.executeCommand();
 		
 		//feedback = controller.parseCommand("delete 1", Controller.Tab.TODAY);
