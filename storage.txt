@@ -1,7 +1,7 @@
 [
   [
     {
-      "title": "Floating task 1.1",
+      "title": "Floating task 0.1",
       "status": false,
       "priority": 0
     },
