@@ -46,6 +46,7 @@ public class Controller {
 	public static final String NEXT_SEVEN_DAYS_TAB = "nextSevenDays";
 	
 	private static final String COMMAND_TYPE_ADD = "add";
+	private static final String COMMAND_TYPE_EDIT = "edit";
 	private static final String COMMAND_TYPE_DELETE = "delete";
 	
 	private static final int FLOATING_TASKS_INDEX = 0;
@@ -54,7 +55,8 @@ public class Controller {
 	CommandParser parser = null;
 	Storage storage = null;
 	
-	Stack<Command> history = new Stack<Command>();
+	Stack<Command> undoHistory = new Stack<Command>();
+	Stack<Command> redoHistory = new Stack<Command>();
 	ArrayList<Task> floatingTasks = new ArrayList<Task>();
 	ArrayList<Task> datedTasks = new ArrayList<Task>();
 	
@@ -86,19 +88,13 @@ public class Controller {
 		saveTasks();
 	}
 	
-	//decrements every integer in the array by 1
-	private ArrayList<Integer> decreaseIndex(ArrayList<Integer> indexes) {
-		for (int i = 0; i < indexes.size(); i++) {
-			indexes.set(i, indexes.get(i) - 1);
-		}
-		return indexes;
-	}
-	
-	private ArrayList<Task> deleteFromList(ArrayList<Task> listToDelete, ArrayList<Integer> indexesToDelete) {
-		while (!indexesToDelete.isEmpty()) {
-			int indexToDelete = indexesToDelete.remove(0);
-			listToDelete.remove(indexToDelete);
-			indexesToDelete = decreaseIndex(indexesToDelete);
+	private ArrayList<Task> deleteMultipleFromList(ArrayList<Task> listToDelete, ArrayList<Integer> indexesToDelete) {
+		int j = 0;
+		for (int i = 0; i < indexesToDelete.size(); i++) {
+		    int indexToDelete = indexesToDelete.get(i-j);
+		    Task removedTask = listToDelete.remove(indexToDelete);
+		    command.getPreviousTasks().add(removedTask);
+		    j++;
 		}
 		return listToDelete;
 	}
@@ -108,13 +104,13 @@ public class Controller {
 		
 		switch (tab) {
 			case FLOATING_TAB:
-				deleteFromList(floatingTasks, indexes);
+				deleteMultipleFromList(floatingTasks, indexes);
 				break;
 			case DATED_TAB:
-				deleteFromList(datedTasks, indexes);
+				deleteMultipleFromList(datedTasks, indexes);
 				break;
 			case TODAY_TAB:
-				ArrayList<Task> newTodayTasks = deleteFromList(getTodayTasks(), indexes);
+				ArrayList<Task> newTodayTasks = deleteMultipleFromList(getTodayTasks(), indexes);
 				temp = new ArrayList<Task>();
 				temp.addAll(newTodayTasks);
 				temp.addAll(getNextSevenDays());
@@ -123,7 +119,7 @@ public class Controller {
 					datedTasks.add(task);
 				}
 			case NEXT_SEVEN_DAYS_TAB:
-				ArrayList<Task> newNextSevenDaysTasks = deleteFromList(getNextSevenDays(), indexes);
+				ArrayList<Task> newNextSevenDaysTasks = deleteMultipleFromList(getNextSevenDays(), indexes);
 				temp = new ArrayList<Task>();
 				temp.addAll(getTodayTasks());
 				temp.addAll(newNextSevenDaysTasks);
@@ -137,48 +133,57 @@ public class Controller {
 		saveTasks();
 	}
 	
-	private void addToList(String tab, int oldTaskIndex) {
+	private void addToList(String tab, int index, Task task) {
 		ArrayList<Task> temp = null;
 		
-		switch (tab) {
+		switch (tab.toLowerCase()) {
 			case FLOATING_TAB:
-				floatingTasks.add(oldTaskIndex,command.getTask());
+				floatingTasks.add(index,task);
 				break;
 			case DATED_TAB:
-				datedTasks.add(oldTaskIndex,command.getTask());
+				datedTasks.add(index,task);
 				break;
 			case TODAY_TAB:
 				ArrayList<Task> newTodayTasks = getTodayTasks();
-				newTodayTasks.add(oldTaskIndex,command.getTask());
+				newTodayTasks.add(index,task);
 				temp = new ArrayList<Task>();
 				temp.addAll(newTodayTasks);
 				temp.addAll(getNextSevenDays());
-				datedTasks = temp;
+				datedTasks = new ArrayList<Task>();
+                for (Task t : temp) {
+                    datedTasks.add(t);
+                }
 			case NEXT_SEVEN_DAYS_TAB:
 				ArrayList<Task> newNextSevenDaysTasks = getNextSevenDays();
-				newNextSevenDaysTasks.add(oldTaskIndex,command.getTask());
+				newNextSevenDaysTasks.add(index,task);
 				temp = new ArrayList<Task>();
-				datedTasks.addAll(getTodayTasks());
-				datedTasks.addAll(newNextSevenDaysTasks);
-				datedTasks = temp;
+                temp.addAll(getTodayTasks());
+                temp.addAll(newNextSevenDaysTasks);
+                datedTasks = new ArrayList<Task>();
+                for (Task t : temp) {
+                    datedTasks.add(t);
+                }
 			default:
 				break;
 		}
 	}
 	
 	/**
-	 * Edits the task in the respective {@code tab} at position {@code oldTaskIndex}
+	 * Edits the task in the respective {@code tab} at position {@code index}
 	 * @param 	tab
 	 * 			the tab where the task is
-	 * @param 	oldTaskIndex
+	 * @param 	index
 	 * 			the index of the task
 	 */
-	public void editTask(String tab, int oldTaskIndex) {
-		ArrayList<Integer> indexToDelete = new ArrayList<Integer>();
-		indexToDelete.add(oldTaskIndex);
-		deleteTask(tab, indexToDelete);
-		addToList(tab, oldTaskIndex);
+	public void editTask(String tab, int index) {
+		command.setCommandType(COMMAND_TYPE_EDIT);
+		command.getPreviousTasks().add(getTaskAtIndex(tab,index));
+		command.getIndexes().add(index);
+		
+		deleteTask(tab,command.getIndexes());
+		addToList(tab,index,command.getTask());
 		saveTasks();
+		undoHistory.push(command);
 	}
 	
 	private void execute(Command command) {
@@ -200,8 +205,106 @@ public class Controller {
 	 */
 	public void executeCommand() {
 		execute(command);
-		//add command to history stack
+		undoHistory.push(command);
 	}
+	
+	public void undo() {
+		Command undoCommand = undoHistory.pop();
+		redoHistory.push(undoCommand);
+		String tab = undoCommand.getTab();
+		
+		ArrayList<Integer> indexes = null;
+		
+		switch (undoCommand.getCommandType().toLowerCase()) {
+			case COMMAND_TYPE_ADD:
+			    ArrayList<Integer> indexToDelete = new ArrayList<Integer>();
+			    indexToDelete.add(getLastIndexOf(tab));
+			    deleteTask(tab,indexToDelete);
+				break;
+			case COMMAND_TYPE_EDIT:
+                //delete task and add previous task at index
+			    Task previousTask = undoCommand.getPreviousTasks().get(0);
+			    indexes = undoCommand.getIndexes();
+			    deleteTask(tab,indexes);
+			    addToList(tab,indexes.get(0),previousTask);
+                break;
+			case COMMAND_TYPE_DELETE:
+			    ArrayList<Task> previousTasks = undoCommand.getPreviousTasks();
+			    indexes = undoCommand.getIndexes();
+			    for (int i = 0; i < previousTasks.size(); i++) {
+			        addToList(tab, indexes.get(i), previousTasks.get(i));
+			    }
+				break;
+			default:
+				break;
+		}
+		saveTasks();
+	}
+	
+	public void redo() {
+	    Command redoCommand = redoHistory.pop();
+        undoHistory.push(redoCommand);
+        String tab = redoCommand.getTab();
+
+        switch (redoCommand.getCommandType().toLowerCase()) {
+            case COMMAND_TYPE_ADD:
+                command = redoCommand;
+                executeCommand();
+                break;
+            case COMMAND_TYPE_EDIT:
+                deleteTask(tab,command.getIndexes());
+                addToList(tab,command.getIndexes().get(0),command.getTask());
+                saveTasks();
+                break;
+            case COMMAND_TYPE_DELETE:
+                command = redoCommand;
+                executeCommand();
+                break;
+            default:
+                break;
+        }
+	}
+	
+	private int getLastIndexOf(String tab) {
+	    int index = 0;
+	    
+	    switch (tab.toLowerCase()) {
+    	    case FLOATING_TAB:
+                index = floatingTasks.size();
+                break;
+            case DATED_TAB:
+                index = datedTasks.size();
+                break;
+            case TODAY_TAB:
+                index = getTodayTasks().size();
+            case NEXT_SEVEN_DAYS_TAB:
+                index = getNextSevenDays().size();
+            default:
+                break;
+	    }
+	    index--;
+	    return index;
+	}
+	
+   private Task getTaskAtIndex(String tab, int index) {
+        Task task = null;
+        
+        switch (tab.toLowerCase()) {
+            case FLOATING_TAB:
+                task = floatingTasks.get(index);
+                break;
+            case DATED_TAB:
+                task = datedTasks.get(index);
+                break;
+            case TODAY_TAB:
+                task = getTodayTasks().get(index);
+            case NEXT_SEVEN_DAYS_TAB:
+                task = getNextSevenDays().get(index);
+            default:
+                break;
+        }
+        return task;
+    }
 
 	/**
 	 * Combines all floating and dated tasks
@@ -307,19 +410,13 @@ public class Controller {
 		return calendar.getTime();
 	}
 	
-	/*
-	 * For edit mode, use this command to get feedback while user is typing
-	 * On hit enter, use "editTask" command
-	 * 
-	 * Examples of use: 
-	 * add - parseCommand("cook dinner", Controller.NO_TAB);
-	 * add - parseCommand("cook dinner #home", Controller.NO_TAB);
-	 * delete - parseCommand("delete 5,6-7", Controller.FLOATING_TAB);
-	 * 
-	 * Returns feedback to be displayed to user
-	 */
 	/**
 	 * Evaluates the given command and provide feedback
+	 * 
+	 * Examples of use: 
+     * add - parseCommand("cook dinner", Controller.NO_TAB);
+     * add - parseCommand("cook dinner #home", Controller.NO_TAB);
+     * delete - parseCommand("delete 5,6-7", Controller.FLOATING_TAB);
 	 * 
 	 * @param   userCommand 
 	 * 			the command to be evaluated
