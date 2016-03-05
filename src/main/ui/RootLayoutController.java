@@ -258,7 +258,7 @@ public class RootLayoutController {
         // Edit mode
         if (isEditMode) {
             commandBar.setText(allTasks.get(getSelectedTaskIndex()).toString());
-//            restoreCaretPosition();
+            // restoreCaretPosition();
             moveCaretPositionToLast();
         }
 
@@ -276,7 +276,7 @@ public class RootLayoutController {
         // Edit mode
         if (isEditMode) {
             commandBar.setText(allTasks.get(getSelectedTaskIndex()).toString());
-//            restoreCaretPosition();
+            // restoreCaretPosition();
             moveCaretPositionToLast();
         }
     }
@@ -288,7 +288,7 @@ public class RootLayoutController {
         if (isEditMode) {
             isEditMode = false;
             labelCurrentMode.setText(getSelectedTabName());
-            commandBar.clear();       
+            commandBar.clear();
 
         } else {
             isEditMode = true;
@@ -420,44 +420,63 @@ public class RootLayoutController {
     private void parseUserInput() {
         switch (userCommand) {
             case COMMAND_SEARCH :
-                if (userInputArray.length > 1) {
-                    inputFeedback = userArguments; // stub code
-                } else {
-                    inputFeedback = "";
-                }
-
-                showFeedback(true, MESSAGE_FEEDBACK_ACTION_SEARCH, inputFeedback);
+                parseSearch();
                 break;
 
             case COMMAND_DELETE :
             case COMMAND_DELETE_SHORTHAND :
-                if (userInputArray.length > 1) {
-                    int userIndex = Integer.parseInt(userArguments);
-                    int actualIndex = Integer.parseInt(userArguments) - 1;
-
-                    if (actualIndex >= allTasks.size()) {
-                        showResult(true, String.format(MESSAGE_ERROR_RESULT_DELETE, userIndex));
-                        showFeedback(false);
-                    } else {
-                        inputFeedback = allTasks.get(actualIndex).toString();
-                        showResult(false, "");
-                        showFeedback(true, MESSAGE_FEEDBACK_ACTION_DELETE, inputFeedback);
-                        controller.parseCommand(userInput, Controller.Tab.FLOATING_TAB);
-                        // listView.getSelectionModel().select(actualIndex);
-                        listView.scrollTo(actualIndex);
-                    }
-
-                } else {
-                    inputFeedback = "";
-                }
-
+                parseDelete();
                 break;
 
             default :
-                inputFeedback = controller.parseCommand(userInput, Controller.Tab.NO_TAB);
-                showFeedback(true, MESSAGE_FEEDBACK_ACTION_ADD, inputFeedback);
-
+                parseAdd();
         }
+    }
+
+    /**
+     * 
+     */
+    private void parseAdd() {
+        inputFeedback = controller.parseCommand(userInput, Controller.Tab.NO_TAB);
+        showFeedback(true, MESSAGE_FEEDBACK_ACTION_ADD, inputFeedback);
+    }
+
+    /**
+     * 
+     */
+    private void parseDelete() {
+        if (userInputArray.length > 1) {
+            int userIndex = Integer.parseInt(userArguments);
+            int actualIndex = Integer.parseInt(userArguments) - 1;
+
+            if (actualIndex >= allTasks.size()) {
+                showResult(true, String.format(MESSAGE_ERROR_RESULT_DELETE, userIndex));
+                showFeedback(false);
+            } else {
+                inputFeedback = allTasks.get(actualIndex).toString();
+                showResult(false, "");
+                showFeedback(true, MESSAGE_FEEDBACK_ACTION_DELETE, inputFeedback);
+                controller.parseCommand(userInput, Controller.Tab.FLOATING_TAB);
+                // listView.getSelectionModel().select(actualIndex);
+                listView.scrollTo(actualIndex);
+            }
+
+        } else {
+            inputFeedback = "";
+        }
+    }
+
+    /**
+     * 
+     */
+    private void parseSearch() {
+        if (userInputArray.length > 1) {
+            inputFeedback = userArguments; // stub code
+        } else {
+            inputFeedback = "";
+        }
+
+        showFeedback(true, MESSAGE_FEEDBACK_ACTION_SEARCH, inputFeedback);
     }
 
     /**
@@ -538,15 +557,14 @@ public class RootLayoutController {
      */
     private void handleCtrlTab() {
         SingleSelectionModel<Tab> selectionModel = tabPane.getSelectionModel();
-        
-        //already at the last tab, lets bounce back to first tab
+
+        // already at the last tab, lets bounce back to first tab
         if (selectionModel.getSelectedIndex() == tabPane.getTabs().size() - 1) {
             selectionModel.selectFirst();
-        }
-        else{
+        } else {
             selectionModel.selectNext();
         }
-        
+
         requestFocusForCommandBar();
         restoreCaretPosition();
     }
