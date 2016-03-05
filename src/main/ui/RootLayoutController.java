@@ -13,10 +13,13 @@ import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
+import javafx.scene.control.SingleSelectionModel;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
@@ -24,11 +27,22 @@ import main.data.Task;
 import main.logic.Controller;
 
 public class RootLayoutController {
-
+    private static final String COMMAND_DELETE = "delete";
+    private static final String COMMAND_DELETE_SHORTHAND = "del";
+    private static final String COMMAND_SEARCH = "search";
+    private static final String WHITESPACE = " ";
+    private static final String MESSAGE_LABEL_MODE_EDIT = "Edit mode";
     private static final String MESSAGE_FEEDBACK_ACTION_ADD = "Adding:";
     private static final String MESSAGE_FEEDBACK_ACTION_DELETE = "Deleting:";
     private static final String MESSAGE_FEEDBACK_ACTION_SEARCH = "Searching:";
     private static final String MESSAGE_ERROR_RESULT_DELETE = "Task %1$s not found.";
+
+    // Ctrl+Tab hotket
+    private static final KeyCombination HOTKEY_CTRL_TAB = new KeyCodeCombination(KeyCode.TAB,
+            KeyCombination.CONTROL_DOWN);
+
+    @FXML // fx:id="rootLayout"
+    private AnchorPane rootLayout; // Value injected by FXMLLoader
 
     @FXML // fx:id="tabPane"
     private TabPane tabPane; // Value injected by FXMLLoader
@@ -41,9 +55,6 @@ public class RootLayoutController {
 
     @FXML // fx:id="tabWeek"
     private Tab tabWeek; // Value injected by FXMLLoader
-
-    @FXML // fx:id="rootLayout"
-    private AnchorPane rootLayout; // Value injected by FXMLLoader
 
     @FXML // fx:id="listView"
     private JFXListView<String> listView; // Value injected by FXMLLoader
@@ -109,7 +120,7 @@ public class RootLayoutController {
                 @Override
                 public void handle(Event event) {
                     // TODO Auto-generated method stub
-                    String currentTabName = tabList.get(tabPane.getSelectionModel().getSelectedIndex()).getText();
+                    String currentTabName = getSelectedTabName();
                     labelCurrentMode.setText(currentTabName);
 
                 }
@@ -187,9 +198,8 @@ public class RootLayoutController {
                 } else if (keyEvent.getCode() == KeyCode.DELETE) {
                     handleDeleteKey();
                     keyEvent.consume();
-                } else if (keyEvent.getCode() == KeyCode.CONTROL && keyEvent.getCode() == KeyCode.TAB) {
-                    requestFocusForCommandBar();
-                    restoreCaretPosition();
+                } else if (HOTKEY_CTRL_TAB.match(keyEvent)) {
+                    handleCtrlTab();
                     keyEvent.consume();
                 }
 
@@ -248,7 +258,8 @@ public class RootLayoutController {
         // Edit mode
         if (isEditMode) {
             commandBar.setText(allTasks.get(getSelectedTaskIndex()).toString());
-            restoreCaretPosition();
+//            restoreCaretPosition();
+            moveCaretPositionToLast();
         }
 
     }
@@ -265,7 +276,8 @@ public class RootLayoutController {
         // Edit mode
         if (isEditMode) {
             commandBar.setText(allTasks.get(getSelectedTaskIndex()).toString());
-            restoreCaretPosition();
+//            restoreCaretPosition();
+            moveCaretPositionToLast();
         }
     }
 
@@ -274,29 +286,49 @@ public class RootLayoutController {
      */
     private void handleFOneKey() {
         if (isEditMode) {
-            labelCurrentMode.setText("Today");
-            // TODO currently clears command bar.
-            // can consider save/restore previous input that was in
-            // the command bar
-            commandBar.clear();
             isEditMode = false;
+            labelCurrentMode.setText(getSelectedTabName());
+            commandBar.clear();       
 
         } else {
             isEditMode = true;
-            labelCurrentMode.setText("Edit mode");
+            labelCurrentMode.setText(MESSAGE_LABEL_MODE_EDIT);
             commandBar.setText(allTasks.get(getSelectedTaskIndex()).toString());
+            moveCaretPositionToLast();
         }
     }
 
     /**
      * 
      */
-    private void handleDeleteKey() {
-        controller.parseCommand("delete " + (getSelectedTaskIndex() + 1), Controller.Tab.FLOATING_TAB);
-        controller.executeCommand();
-        previousSelectedTaskIndex = getSelectedTaskIndex();
-        refreshListView();
+    private void moveCaretPositionToLast() {
+        commandBar.positionCaret(commandBar.getText().length());
+    }
 
+    /**
+     * 
+     */
+    private void handleDeleteKey() {
+        controller.parseCommand(COMMAND_DELETE + WHITESPACE + (getSelectedTaskIndex() + 1),
+                Controller.Tab.FLOATING_TAB);
+        controller.executeCommand();
+        saveSelectedTaskIndex();
+        refreshListView();
+        restoreListViewPreviousSelection();
+
+    }
+
+    /**
+     * 
+     */
+    private void saveSelectedTaskIndex() {
+        previousSelectedTaskIndex = getSelectedTaskIndex();
+    }
+
+    /**
+     * 
+     */
+    private void restoreListViewPreviousSelection() {
         // if previous selected index was the last index in the previous list
         if (previousSelectedTaskIndex == allTasks.size()) {
             listView.getSelectionModel().selectLast();
@@ -305,7 +337,6 @@ public class RootLayoutController {
             listView.getSelectionModel().select(previousSelectedTaskIndex);
             listView.scrollTo(previousSelectedTaskIndex);
         }
-
     }
 
     /**
@@ -342,14 +373,23 @@ public class RootLayoutController {
 
         if (!isEditMode) {
             controller.executeCommand();
-            refreshListView();
-            listView.getSelectionModel().selectLast();
-            listView.scrollTo(allTasks.size() - 1);
+
+            // add operation
+            if (!userCommand.equals(COMMAND_DELETE) && !userCommand.equals(COMMAND_DELETE_SHORTHAND)) {
+                refreshListView();
+                listView.scrollTo(allTasks.size() - 1);
+                listView.getSelectionModel().selectLast();
+            } else {
+                saveSelectedTaskIndex();
+                refreshListView();
+                restoreListViewPreviousSelection();
+            }
+
         } else {
             // something is wrong with this controller.editTask API
             controller.editTask(Controller.FLOATING, listView.getSelectionModel().getSelectedIndex() + 1);
             refreshListView();
-            previousSelectedTaskIndex = getSelectedTaskIndex();
+            saveSelectedTaskIndex();
             listView.getSelectionModel().select(previousSelectedTaskIndex);
             listView.scrollTo(getSelectedTaskIndex());
         }
@@ -379,8 +419,7 @@ public class RootLayoutController {
      */
     private void parseUserInput() {
         switch (userCommand) {
-            case "search" :
-            case "find" :
+            case COMMAND_SEARCH :
                 if (userInputArray.length > 1) {
                     inputFeedback = userArguments; // stub code
                 } else {
@@ -390,8 +429,8 @@ public class RootLayoutController {
                 showFeedback(true, MESSAGE_FEEDBACK_ACTION_SEARCH, inputFeedback);
                 break;
 
-            case "delete" :
-            case "del" :
+            case COMMAND_DELETE :
+            case COMMAND_DELETE_SHORTHAND :
                 if (userInputArray.length > 1) {
                     int userIndex = Integer.parseInt(userArguments);
                     int actualIndex = Integer.parseInt(userArguments) - 1;
@@ -484,5 +523,31 @@ public class RootLayoutController {
      */
     private void restoreCaretPosition() {
         commandBar.positionCaret(previousCaretPosition);
+    }
+
+    /**
+     * @param tabList
+     * @return
+     */
+    private String getSelectedTabName() {
+        return tabPane.getTabs().get(tabPane.getSelectionModel().getSelectedIndex()).getText();
+    }
+
+    /**
+     * 
+     */
+    private void handleCtrlTab() {
+        SingleSelectionModel<Tab> selectionModel = tabPane.getSelectionModel();
+        
+        //already at the last tab, lets bounce back to first tab
+        if (selectionModel.getSelectedIndex() == tabPane.getTabs().size() - 1) {
+            selectionModel.selectFirst();
+        }
+        else{
+            selectionModel.selectNext();
+        }
+        
+        requestFocusForCommandBar();
+        restoreCaretPosition();
     }
 }
