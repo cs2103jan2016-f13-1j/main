@@ -2,6 +2,8 @@ package main.ui;
 
 import java.util.ArrayList;
 
+import org.ocpsoft.prettytime.shade.org.apache.commons.logging.LogSource;
+
 import com.jfoenix.controls.JFXListView;
 
 import javafx.beans.property.ListProperty;
@@ -31,13 +33,14 @@ public class RootLayoutController {
     private static final String COMMAND_DELETE_SHORTHAND = "del";
     private static final String COMMAND_SEARCH = "search";
     private static final String WHITESPACE = " ";
+    private static final String EMPTY_STRING = "";
     private static final String MESSAGE_LABEL_MODE_EDIT = "Edit mode";
     private static final String MESSAGE_FEEDBACK_ACTION_ADD = "Adding:";
     private static final String MESSAGE_FEEDBACK_ACTION_DELETE = "Deleting:";
     private static final String MESSAGE_FEEDBACK_ACTION_SEARCH = "Searching:";
-    private static final String MESSAGE_ERROR_RESULT_DELETE = "Task %1$s not found.";
+    private static final String MESSAGE_ERROR_RESULT_DELETE = "Task -%1$s- not found.";
 
-    // Ctrl+Tab hotket
+    // Ctrl+Tab hotkey
     private static final KeyCombination HOTKEY_CTRL_TAB = new KeyCodeCombination(KeyCode.TAB,
             KeyCombination.CONTROL_DOWN);
 
@@ -354,6 +357,7 @@ public class RootLayoutController {
 
             if (userInput.length() == 0) {
                 showFeedback(false);
+                showResult(false, EMPTY_STRING);
                 clearFeedback();
                 clearStoredUserInput();
                 return;
@@ -447,16 +451,24 @@ public class RootLayoutController {
      * 
      */
     private void parseDelete() {
+        System.out.println("parseDelete");
         if (userInputArray.length > 1) {
-            int userIndex = Integer.parseInt(userArguments);
-            int actualIndex = Integer.parseInt(userArguments) - 1;
+           int userIndex = 0;
+            try {
+                userIndex = Integer.parseInt(userArguments);
+            } catch (NumberFormatException nfe) {
+                showResult(true, String.format(MESSAGE_ERROR_RESULT_DELETE, userArguments));
+                return;
+            }
+
+            int actualIndex = userIndex - 1;
 
             if (actualIndex >= allTasks.size()) {
                 showResult(true, String.format(MESSAGE_ERROR_RESULT_DELETE, userIndex));
-                showFeedback(false);
+                // showFeedback(false);
             } else {
                 inputFeedback = allTasks.get(actualIndex).toString();
-                showResult(false, "");
+                // showResult(false, EMPTY_STRING);
                 showFeedback(true, MESSAGE_FEEDBACK_ACTION_DELETE, inputFeedback);
                 controller.parseCommand(userInput, Controller.Tab.FLOATING_TAB);
                 // listView.getSelectionModel().select(actualIndex);
@@ -464,7 +476,7 @@ public class RootLayoutController {
             }
 
         } else {
-            inputFeedback = "";
+            inputFeedback = EMPTY_STRING;
         }
     }
 
@@ -475,7 +487,7 @@ public class RootLayoutController {
         if (userInputArray.length > 1) {
             inputFeedback = userArguments; // stub code
         } else {
-            inputFeedback = "";
+            inputFeedback = EMPTY_STRING;
         }
 
         showFeedback(true, MESSAGE_FEEDBACK_ACTION_SEARCH, inputFeedback);
@@ -485,24 +497,28 @@ public class RootLayoutController {
      * 
      */
     private void clearStoredUserInput() {
-        userInput = "";
+        userInput = EMPTY_STRING;
         userInputArray = null;
-        userCommand = "";
-        userArguments = "";
+        userCommand = EMPTY_STRING;
+        userArguments = EMPTY_STRING;
     }
 
     /**
      * 
      */
     private void clearFeedback() {
-        labelUserAction.setText("");
-        labelUserFeedback.setText("");
+        labelUserAction.setText(EMPTY_STRING);
+        labelUserFeedback.setText(EMPTY_STRING);
     }
 
     /**
      * 
      */
     private void showFeedback(boolean isVisible) {
+        if (isVisible) {
+            showResult(false, EMPTY_STRING);
+        }
+
         labelUserAction.setVisible(isVisible);
         labelUserFeedback.setVisible(isVisible);
     }
@@ -511,6 +527,10 @@ public class RootLayoutController {
      * 
      */
     private void showFeedback(boolean isVisible, String userAction, String userFeedback) {
+        if (isVisible) {
+            showResult(false, EMPTY_STRING);
+        }
+
         labelUserAction.setVisible(isVisible);
         labelUserFeedback.setVisible(isVisible);
         labelUserAction.setText(userAction);
@@ -521,6 +541,10 @@ public class RootLayoutController {
      * @param resultString
      */
     private void showResult(boolean isVisible, String resultString) {
+        if (isVisible) {
+            showFeedback(false);
+        }
+
         labelResult.setText(resultString);
         labelResult.setVisible(isVisible);
     }
