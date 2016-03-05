@@ -11,11 +11,12 @@ public class Command {
     
     public static final String FLOATING_TAB = "floating";
     public static final String DATED_TAB = "dated";
-    
-    private String commandType;
-    private String tab;
-    private Task task;
-    private ArrayList<Integer> indexes;
+        
+    private String commandType = null;
+    private String tab = null;
+    private Task task = null;
+    private ArrayList<Task> previousTasks = new ArrayList<Task>();
+    private ArrayList<Integer> indexes = new ArrayList<Integer>();
     
     public Command(String commandType, String tab, Task task) {
         this.commandType = commandType;
@@ -45,5 +46,13 @@ public class Command {
     
     public ArrayList<Integer> getIndexes() {
         return indexes;
+    }
+    
+    public ArrayList<Task> getPreviousTasks() {
+        return previousTasks;
+    }
+
+    public void setPreviousTasks(ArrayList<Task> previousTasks) {
+        this.previousTasks = previousTasks;
     }
 }
