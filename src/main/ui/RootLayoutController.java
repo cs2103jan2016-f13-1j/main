@@ -13,16 +13,34 @@ import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import main.data.Task;
 import main.logic.Controller;
 
 public class RootLayoutController {
 
-    private ObservableList<String> observableTaskList = FXCollections.observableArrayList();
+    private static final String MESSAGE_FEEDBACK_ACTION_ADD = "Adding:";
+    private static final String MESSAGE_FEEDBACK_ACTION_DELETE = "Deleting:";
+    private static final String MESSAGE_FEEDBACK_ACTION_SEARCH = "Searching:";
+    private static final String MESSAGE_ERROR_RESULT_DELETE = "Task %1$s not found.";
+
+    @FXML // fx:id="tabPane"
+    private TabPane tabPane; // Value injected by FXMLLoader
+
+    @FXML // fx:id="tabAll"
+    private Tab tabAll; // Value injected by FXMLLoader
+
+    @FXML // fx:id="tabToday"
+    private Tab tabToday; // Value injected by FXMLLoader
+
+    @FXML // fx:id="tabWeek"
+    private Tab tabWeek; // Value injected by FXMLLoader
 
     @FXML // fx:id="rootLayout"
     private AnchorPane rootLayout; // Value injected by FXMLLoader
@@ -42,15 +60,20 @@ public class RootLayoutController {
     @FXML // fx:id="labelUserFeedback"
     private Label labelUserFeedback; // Value injected by FXMLLoader
 
+    @FXML // fx:id="labelResult"
+    private Label labelResult; // Value injected by FXMLLoader
+
+    private Controller controller;
     private ArrayList<Task> allTasks;
     private ListProperty<String> listProperty;
-    private Controller controller;
+    private ObservableList<String> observableTaskList = FXCollections.observableArrayList();
     private String inputFeedback;
     private String userInput;
     private String[] userInputArray;
     private String userCommand;
     private String userArguments;
     private int previousSelectedTaskIndex;
+    private int previousCaretPosition;
     private boolean isEditMode;
 
     public RootLayoutController() {
@@ -59,6 +82,7 @@ public class RootLayoutController {
 
     public void requestFocusForCommandBar() {
         commandBar.requestFocus();
+        restoreCaretPosition();
     }
 
     public void selectFirstItemFromListView() {
@@ -68,10 +92,43 @@ public class RootLayoutController {
 
     @FXML
     private void initialize() {
-
         populateListView();
+        initMouseListener();
         initKeyboardListener();
         initCommandBarListener();
+        initTabSelectionListener();
+    }
+
+    /**
+     * 
+     */
+    private void initTabSelectionListener() {
+        ObservableList<Tab> tabList = tabPane.getTabs();
+        for (int i = 0; i < tabList.size(); i++) {
+            tabList.get(i).setOnSelectionChanged(new EventHandler<Event>() {
+                @Override
+                public void handle(Event event) {
+                    // TODO Auto-generated method stub
+                    String currentTabName = tabList.get(tabPane.getSelectionModel().getSelectedIndex()).getText();
+                    labelCurrentMode.setText(currentTabName);
+
+                }
+            });
+        }
+    }
+
+    /**
+     * 
+     */
+    private void initMouseListener() {
+        rootLayout.addEventFilter(MouseEvent.MOUSE_CLICKED, new EventHandler<Event>() {
+
+            @Override
+            public void handle(Event event) {
+                // TODO Auto-generated method stub
+                requestFocusForCommandBar();
+            }
+        });
     }
 
     /**
@@ -83,6 +140,7 @@ public class RootLayoutController {
             @Override
             public void handle(Event event) {
                 handleKeyStrokes();
+                saveCaretPosition();
 
             }
         });
@@ -128,6 +186,10 @@ public class RootLayoutController {
                     keyEvent.consume();
                 } else if (keyEvent.getCode() == KeyCode.DELETE) {
                     handleDeleteKey();
+                    keyEvent.consume();
+                } else if (keyEvent.getCode() == KeyCode.CONTROL && keyEvent.getCode() == KeyCode.TAB) {
+                    requestFocusForCommandBar();
+                    restoreCaretPosition();
                     keyEvent.consume();
                 }
 
@@ -186,6 +248,7 @@ public class RootLayoutController {
         // Edit mode
         if (isEditMode) {
             commandBar.setText(allTasks.get(getSelectedTaskIndex()).toString());
+            restoreCaretPosition();
         }
 
     }
@@ -202,6 +265,7 @@ public class RootLayoutController {
         // Edit mode
         if (isEditMode) {
             commandBar.setText(allTasks.get(getSelectedTaskIndex()).toString());
+            restoreCaretPosition();
         }
     }
 
@@ -323,27 +387,36 @@ public class RootLayoutController {
                     inputFeedback = "";
                 }
 
-                showFeedback(true, "Searching:", inputFeedback);
+                showFeedback(true, MESSAGE_FEEDBACK_ACTION_SEARCH, inputFeedback);
                 break;
 
             case "delete" :
             case "del" :
                 if (userInputArray.length > 1) {
-                    int indexToDelete = Integer.parseInt(userArguments) - 1;
-                    inputFeedback = allTasks.get(indexToDelete).toString();
-                    controller.parseCommand(userInput, Controller.Tab.FLOATING_TAB);
-                    listView.getSelectionModel().select(indexToDelete);
-                    listView.scrollTo(indexToDelete);
+                    int userIndex = Integer.parseInt(userArguments);
+                    int actualIndex = Integer.parseInt(userArguments) - 1;
+
+                    if (actualIndex >= allTasks.size()) {
+                        showResult(true, String.format(MESSAGE_ERROR_RESULT_DELETE, userIndex));
+                        showFeedback(false);
+                    } else {
+                        inputFeedback = allTasks.get(actualIndex).toString();
+                        showResult(false, "");
+                        showFeedback(true, MESSAGE_FEEDBACK_ACTION_DELETE, inputFeedback);
+                        controller.parseCommand(userInput, Controller.Tab.FLOATING_TAB);
+                        // listView.getSelectionModel().select(actualIndex);
+                        listView.scrollTo(actualIndex);
+                    }
+
                 } else {
                     inputFeedback = "";
                 }
 
-                showFeedback(true, "Deleting:", inputFeedback);
                 break;
 
             default :
                 inputFeedback = controller.parseCommand(userInput, Controller.Tab.NO_TAB);
-                showFeedback(true, "Adding:", inputFeedback);
+                showFeedback(true, MESSAGE_FEEDBACK_ACTION_ADD, inputFeedback);
 
         }
     }
@@ -385,9 +458,31 @@ public class RootLayoutController {
     }
 
     /**
+     * @param resultString
+     */
+    private void showResult(boolean isVisible, String resultString) {
+        labelResult.setText(resultString);
+        labelResult.setVisible(isVisible);
+    }
+
+    /**
      * 
      */
     private int getSelectedTaskIndex() {
         return listView.getSelectionModel().getSelectedIndex();
+    }
+
+    /**
+     * 
+     */
+    private void saveCaretPosition() {
+        previousCaretPosition = commandBar.getCaretPosition();
+    }
+
+    /**
+     * 
+     */
+    private void restoreCaretPosition() {
+        commandBar.positionCaret(previousCaretPosition);
     }
 }
