@@ -90,7 +90,7 @@ public class TestCommandParser {
     @Test
     public void testDatedTaskTitle(){
     	CommandParser parser = new CommandParser();
-    	Command command = parser.parse("Attend meeting from monday to wednesday");
+    	Command command = parser.parse("Attend meeting from Monday to Wednesday");
     	assertEquals("Attend meeting", command.getTask().getTitle());
 
     	command = parser.parse("Attend meeting from 4 to 6");
@@ -102,14 +102,34 @@ public class TestCommandParser {
     	command = parser.parse("Cook dinner at 7");
     	assertEquals("Cook dinner", command.getTask().getTitle());
 
-    	command = parser.parse("Attend meeting on weds");
+    	command = parser.parse("Attend meeting on Weds");
     	assertEquals("Attend meeting", command.getTask().getTitle());
 
-    	command = parser.parse("Do homework by sunday");
+    	command = parser.parse("Do homework by Sunday");
     	assertEquals("Do homework", command.getTask().getTitle());
 
-    	command = parser.parse("Send 100 email by 8");
+    	command = parser.parse("Send 100 email before 8pm");
     	assertEquals("Send 100 email", command.getTask().getTitle());
+    }
+    
+    @Test
+    public void testDatedTaskTitleAgain(){
+    	//more for residual date/time
+    	CommandParser parser = new CommandParser();
+    	Command command = parser.parse("Attend meeting from Monday to Wednesday 6pm");
+    	assertEquals("Attend meeting", command.getTask().getTitle());
+    	
+    	command = parser.parse("Cook dinner at 7pm at home");
+    	assertEquals("Cook dinner at home", command.getTask().getTitle());
+    	
+    	command = parser.parse("Cook dinner on 4 Mar 7pm");
+    	assertEquals("Cook dinner", command.getTask().getTitle());
+    	
+    	command = parser.parse("Do assignment by Sunday midnight");
+    	assertEquals("Do assignment", command.getTask().getTitle());
+
+    	command = parser.parse("Send 100 email before sunday 7pm");
+    	assertEquals("Send 100 email", command.getTask().getTitle());  	
     }
     
     @Test

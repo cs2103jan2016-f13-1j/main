@@ -27,7 +27,6 @@ public class CommandParser {
     private final int DATE_START_RANGED = 0;
     private final int DATE_END_RANGED = 1;
     private final int DATE_MAX_SIZE = 2;
-    private final int INDEX_OFFSET = 1;
     private final int PREPOSITION_FROM_LENGTH = 4;
     private final int PREPOSITION_OTHER_LENGTH = 2;
     
@@ -103,7 +102,7 @@ public class CommandParser {
                 startDate = getDate(dates, DATE_START_RANGED);
                 endDate = getDate(dates, DATE_END_RANGED);
             }
-        }    
+        }
         
         isLabelPresent = checkForLabel(commandString);
         if (isLabelPresent) {
@@ -193,10 +192,51 @@ public class CommandParser {
         return title;
     }
     
+    
+    /**
+     * Removes date and time information in title.
+     * 1) It removes preposition together with the date.
+     * 2) Checks and removes residual date information.
+     * 
+     * @param title
+     * 			title to be modified
+     * @param numberOfDate
+     * 			number of dates detected
+     * @return title string without date/time
+     */
     private String removeDateFromTitle(String title, int numberOfDate) {
+		int index = getPrepositionsIndex(title);
+    	title = removePrepositionAndDate(title, numberOfDate, index);
+    	
+    	boolean isParsable = checkForParsableTitle(title);
+    	if (isParsable) {
+    		title = removeParsableWord(title, index);
+    	}
+    	
+    	return title;
+    }
+    
+	/**
+	 * Removes preposition together with the date present in title string.
+	 * Pattern:
+	 * 		"from * to *"
+	 * 		"at *"
+	 * 		"on *"
+	 * 		"by *"
+	 * 		"before *"
+	 * 
+	 * @param title
+	 * 			title to be modified
+	 * @param numberOfDate
+	 * 			number of dates detected
+	 * @param index
+	 * 			index of previously detected preposition
+	 * @return title string without time/date
+	 */
+	private String removePrepositionAndDate(String title, int numberOfDate, int index) {
     	String dateString = "";
     	List<String> words = new ArrayList<String>(Arrays.asList(title.split(" ")));
-		int index = getPrepositionsIndex(title);
+
 		int upperBound = 0;
 		
     	if (numberOfDate == DATE_MAX_SIZE) {
@@ -213,6 +253,60 @@ public class CommandParser {
     	title = title.replace(dateString, "");
     	return title;
     }
+    
+	
+    /**
+     * Checks in case there are still date/time information in title
+     * 
+     * @param title
+     * 			title string
+     * @return true if detected
+     */
+    private boolean checkForParsableTitle(String title) {
+    	List<Date> dates = parseDate(title);
+        int numberOfDate = dates.size();
+        if (numberOfDate > 0) {
+        	return true;
+        } else {        
+        	return false;
+        }
+    }
+    
+	/**
+	 * Starts checking base on where the previous preposition is found.
+	 * Checks and removes residual date/time near the removed preposition.
+	 * 
+	 * @param title
+	 * 			title string with residual date/time
+	 * @param index
+	 * 			index of previously detected and removed preposition
+	 * @return clean title string without date/time
+	 */
+	private String removeParsableWord(String title, int index) {
+		//index is the starting point for checks because it is previously position of preposition
+		List<String> words = new ArrayList<String>(Arrays.asList(title.split(" ")));
+		String toRemove = "";
+		int bound = words.size();
+		
+		//index is used; when word is remove, the remaining array shifts up
+		//thus index never changes
+		//rest of the string not checked because too far away from preposition
+		for (int i=index; i < bound; i++) {
+			List<Date> dates = parseDate(words.get(index));
+			int numberOfDate = dates.size();
+			
+			if (numberOfDate > 0) {
+				toRemove = toRemove.concat(" ");
+				toRemove = toRemove.concat(words.get(index));
+				words.remove(index);
+			} else {
+				break;
+			}
+		}
+	
+		title = title.replace(toRemove,"");
+		return title;
+	}
     
     private int getPrepositionsIndex(String commandString) {
     	ArrayList<String> prepositions = new ArrayList<String>();
