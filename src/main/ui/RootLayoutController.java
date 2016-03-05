@@ -201,6 +201,8 @@ public class RootLayoutController {
                 } else if (HOTKEY_CTRL_TAB.match(keyEvent)) {
                     handleCtrlTab();
                     keyEvent.consume();
+                } else if (keyEvent.getCode() == KeyCode.TAB) {
+                    keyEvent.consume();
                 }
 
                 System.out.println(keyEvent.getTarget());
