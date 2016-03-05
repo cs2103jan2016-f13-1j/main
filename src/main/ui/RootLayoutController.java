@@ -305,46 +305,6 @@ public class RootLayoutController {
     /**
      * 
      */
-    private void moveCaretPositionToLast() {
-        commandBar.positionCaret(commandBar.getText().length());
-    }
-
-    /**
-     * 
-     */
-    private void handleDeleteKey() {
-        controller.parseCommand(COMMAND_DELETE + WHITESPACE + (getSelectedTaskIndex()), Controller.FLOATING_TAB);
-        controller.executeCommand();
-        saveSelectedTaskIndex();
-        refreshListView();
-        restoreListViewPreviousSelection();
-
-    }
-
-    /**
-     * 
-     */
-    private void saveSelectedTaskIndex() {
-        previousSelectedTaskIndex = getSelectedTaskIndex();
-    }
-
-    /**
-     * 
-     */
-    private void restoreListViewPreviousSelection() {
-        // if previous selected index was the last index in the previous list
-        if (previousSelectedTaskIndex == allTasks.size()) {
-            listView.getSelectionModel().selectLast();
-            listView.scrollTo(allTasks.size() - 1);
-        } else {
-            listView.getSelectionModel().select(previousSelectedTaskIndex);
-            listView.scrollTo(previousSelectedTaskIndex);
-        }
-    }
-
-    /**
-     * 
-     */
     private void handleKeyStrokes() {
         if (!isEditMode) {
 
@@ -392,16 +352,55 @@ public class RootLayoutController {
         } else {
             // something is wrong with this controller.editTask API
             controller.editTask(Controller.FLOATING_TAB, getSelectedTaskIndex());
-            refreshListView();
             saveSelectedTaskIndex();
-            listView.getSelectionModel().select(previousSelectedTaskIndex);
-            listView.scrollTo(getSelectedTaskIndex());
+            refreshListView();
+            restoreListViewPreviousSelection();
         }
 
         showFeedback(false);
         clearFeedback();
         clearStoredUserInput();
         commandBar.clear();
+    }
+
+    /**
+     * 
+     */
+    private void moveCaretPositionToLast() {
+        commandBar.positionCaret(commandBar.getText().length());
+    }
+
+    /**
+     * 
+     */
+    private void handleDeleteKey() {
+        controller.parseCommand(COMMAND_DELETE + WHITESPACE + (getSelectedTaskIndex()), Controller.FLOATING_TAB);
+        controller.executeCommand();
+        saveSelectedTaskIndex();
+        refreshListView();
+        restoreListViewPreviousSelection();
+
+    }
+
+    /**
+     * 
+     */
+    private void saveSelectedTaskIndex() {
+        previousSelectedTaskIndex = getSelectedTaskIndex();
+    }
+
+    /**
+     * 
+     */
+    private void restoreListViewPreviousSelection() {
+        // if previous selected index was the last index in the previous list
+        if (previousSelectedTaskIndex == allTasks.size()) {
+            listView.getSelectionModel().selectLast();
+            listView.scrollTo(allTasks.size() - 1);
+        } else {
+            listView.getSelectionModel().select(previousSelectedTaskIndex);
+            listView.scrollTo(previousSelectedTaskIndex);
+        }
     }
 
     /**
@@ -461,7 +460,7 @@ public class RootLayoutController {
 
             int actualIndex = userIndex - 1;
 
-            if (actualIndex >= allTasks.size()) {
+            if (actualIndex >= allTasks.size() || actualIndex < 0) {
                 showResult(true, String.format(MESSAGE_ERROR_RESULT_DELETE, userIndex));
 
             } else {
