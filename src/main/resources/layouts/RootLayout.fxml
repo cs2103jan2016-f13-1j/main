@@ -16,7 +16,7 @@
                <content>
                   <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="412.0" prefWidth="591.0">
                      <children>
-                        <JFXListView fx:id="listView" layoutY="89.0" prefHeight="319.0" prefWidth="520.0" AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="40.0" AnchorPane.topAnchor="89.0" />
+                        <JFXListView fx:id="listView" layoutY="89.0" prefHeight="319.0" prefWidth="520.0" AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="40.0" AnchorPane.topAnchor="80.0" />
                      </children>
                   </AnchorPane>
                </content>
@@ -47,6 +47,11 @@
             <Font name="Noto Sans Bold" size="13.0" />
          </font></Label>
       <Label fx:id="labelUserFeedback" layoutX="136.0" layoutY="450.0" prefWidth="421.0" text="task" textFill="#00121b" visible="false" AnchorPane.topAnchor="452.0">
+         <font>
+            <Font name="Noto Sans Bold" size="13.0" />
+         </font>
+      </Label>
+      <Label fx:id="labelResult" layoutX="146.0" layoutY="460.0" prefWidth="421.0" text="result" textFill="#00121b" visible="false">
          <font>
             <Font name="Noto Sans Bold" size="13.0" />
          </font>

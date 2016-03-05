@@ -21,9 +21,8 @@ import main.data.Task;
 import main.logic.Controller;
 
 public class RootLayoutController {
-    private DoolehMainApp main;
 
-    private ObservableList<String> taskList = FXCollections.observableArrayList();
+    private ObservableList<String> observableTaskList = FXCollections.observableArrayList();
 
     @FXML // fx:id="rootLayout"
     private AnchorPane rootLayout; // Value injected by FXMLLoader
@@ -44,152 +43,46 @@ public class RootLayoutController {
     private Label labelUserFeedback; // Value injected by FXMLLoader
 
     private ArrayList<Task> allTasks;
+    private ListProperty<String> listProperty;
     private Controller controller;
     private String inputFeedback;
     private String userInput;
     private String[] userInputArray;
     private String userCommand;
     private String userArguments;
-    private int currentSelectedTaskIndex;
+    private int previousSelectedTaskIndex;
+    private boolean isEditMode;
 
     public RootLayoutController() {
+
+    }
+
+    public void requestFocusForCommandBar() {
+        commandBar.requestFocus();
+    }
+
+    public void selectFirstItemFromListView() {
+        listView.getSelectionModel().selectNext();
 
     }
 
     @FXML
     private void initialize() {
 
-        Controller controller = new Controller();
+        populateListView();
+        initKeyboardListener();
+        initCommandBarListener();
+    }
 
-        // ListView seems to only allow binding of a OberservableList of String
-        // type
-        ListProperty<String> lp = new SimpleListProperty<String>();
-        listView.itemsProperty().bind(lp);
-
-        // retrieve all task and add into an ObservableList
-        allTasks = controller.getAllTasks();
-
-        for (int i = 0; i < allTasks.size(); i++) {
-            taskList.add(i + 1 + ". " + allTasks.get(i));
-        }
-        lp.set(taskList);
-
-        rootLayout.addEventFilter(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
-
-            @Override
-            public void handle(KeyEvent keyEvent) {
-                // TODO Auto-generated method stub
-
-                // pass focus over to listview instead of tabs
-                if (keyEvent.getCode() == KeyCode.UP) {
-                    listView.getSelectionModel().selectPrevious();
-                    currentSelectedTaskIndex = listView.getSelectionModel().getSelectedIndex();
-
-                    // only set currently selected item to command bar when in
-                    // Edit mode
-                    if (labelCurrentMode.getText().equals("Edit mode")) {
-                        commandBar.setText(allTasks.get(currentSelectedTaskIndex).toString());
-                    }
-                    keyEvent.consume();
-
-                } else if (keyEvent.getCode() == KeyCode.DOWN) {
-                    listView.getSelectionModel().selectNext();
-                    currentSelectedTaskIndex = listView.getSelectionModel().getSelectedIndex();
-
-                    // only set currently selected item to command bar when in
-                    // Edit mode
-                    if (labelCurrentMode.getText().equals("Edit mode")) {
-                        commandBar.setText(allTasks.get(currentSelectedTaskIndex).toString());
-                    }
-                    keyEvent.consume();
-                } else if (keyEvent.getCode() == KeyCode.F1) {
-                    if (labelCurrentMode.getText().equals("Edit mode")) {
-                        labelCurrentMode.setText("Today");
-                        // TODO currently clears command bar.
-                        // can consider save/restore previous input that was in
-                        // the command bar
-                        commandBar.clear();
-
-                    } else {
-                        labelCurrentMode.setText("Edit mode");
-                        commandBar.setText(allTasks.get(currentSelectedTaskIndex).toString());
-                    }
-                    keyEvent.consume();
-                }
-
-                System.out.println(keyEvent.getTarget());
-
-            }
-        });
-
+    /**
+     * 
+     */
+    private void initCommandBarListener() {
         commandBar.setOnKeyReleased(new EventHandler<Event>() {
 
             @Override
             public void handle(Event event) {
-                if (labelCurrentMode.getText().equals("Today")) {
-
-                    // TODO Auto-generated method stub
-                    userInput = commandBar.getCharacters().toString();
-
-                    if (userInput.length() == 0) {
-                        labelUserFeedback.setVisible(false);
-                        labelUserAction.setVisible(false);
-                        userInput = "";
-                        labelUserAction.setText("");
-                        labelUserFeedback.setText("");
-                        userArguments = "";
-                        return;
-                    }
-
-                    userInputArray = userInput.split(" ");
-                    userCommand = userInputArray[0];
-                    if (userInputArray.length > 1) {
-                        System.out.println(userCommand + " " + userInput.indexOf(userCommand) + " "
-                                + userInput.lastIndexOf(userCommand));
-
-                        userArguments = userInput.substring(userInput.indexOf(userInputArray[1]));
-                    }
-
-                    switch (userCommand) {
-                        case "search" :
-                        case "find" :
-                            labelUserFeedback.setVisible(true);
-                            labelUserAction.setText("Searching:");
-                            labelUserAction.setVisible(true);
-                            if (userInputArray.length > 1) {
-                                inputFeedback = userArguments; // stub code
-                            } else {
-                                inputFeedback = "";
-                            }
-                            break;
-
-                        case "delete" :
-                        case "del" :
-                            labelUserFeedback.setVisible(true);
-                            labelUserAction.setText("Deleting:");
-                            labelUserAction.setVisible(true);
-                            if (userInputArray.length > 1) {
-                                inputFeedback = allTasks.get(Integer.parseInt(userArguments) - 1).toString();
-                                controller.parseCommand(userInput, Controller.Tab.FLOATING_TAB);
-                            } else {
-                                inputFeedback = "";
-                            }
-                            break;
-
-                        default :
-                            labelUserFeedback.setVisible(true);
-                            labelUserAction.setText("Adding:");
-                            labelUserAction.setVisible(true);
-                            inputFeedback = controller.parseCommand(userInput, Controller.Tab.NO_TAB);
-
-                    }
-
-                    labelUserFeedback.setText(inputFeedback);
-                    labelUserAction.setVisible(true);
-                    labelUserFeedback.setVisible(true);
-                    System.out.println(inputFeedback);
-
-                }
+                handleKeyStrokes();
 
             }
         });
@@ -200,43 +93,301 @@ public class RootLayoutController {
             public void handle(ActionEvent event) {
                 // TODO Auto-generated method stub
 
-                if (labelCurrentMode.getText().equals("Today")) {
-                    controller.executeCommand();
-                } else if (labelCurrentMode.getText().equals("Edit mode")) {
-                    // something is wrong with this controller.editTask API
-                    controller.editTask(commandBar.getText(), currentSelectedTaskIndex);
+                // do nothing when there is no user input
+                if (commandBar.getLength() == 0) {
+                    event.consume();
+                    return;
                 }
 
-                // TODO refactor into a method
-                // clear and retrieve all task and add into an ObservableList
-                taskList.clear();
-                allTasks = controller.getAllTasks();
-                for (int i = 0; i < allTasks.size(); i++) {
-                    taskList.add(i + 1 + ". " + allTasks.get(i));
-                }
-
-                // if we dont set the list again, the listview item may show a
-                // buggy arrangement
-                // due to how the listview recycles it's cell items for effiency
-                lp.set(taskList);
-                commandBar.clear();
-
-                labelUserFeedback.setVisible(false);
-                labelUserAction.setVisible(false);
+                handleEnterKey();
+                event.consume();
             }
         });
-
-        // requestFocus will not work here since this class is run before
-        // before the construction of the scene in DoolehMainApp class
-        // commandBar.requestFocus();
     }
 
-    public void requestFocusForCommandBar() {
-        commandBar.requestFocus();
+    /**
+     * 
+     */
+    private void initKeyboardListener() {
+        rootLayout.addEventFilter(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
+
+            @Override
+            public void handle(KeyEvent keyEvent) {
+                // TODO Auto-generated method stub
+
+                // pass focus over to listview instead of tabs
+
+                if (keyEvent.getCode() == KeyCode.UP) {
+                    handleUpArrowKey();
+                    keyEvent.consume();
+                } else if (keyEvent.getCode() == KeyCode.DOWN) {
+                    handleDownArrowKey();
+                    keyEvent.consume();
+                } else if (keyEvent.getCode() == KeyCode.F1) {
+                    handleFOneKey();
+                    keyEvent.consume();
+                } else if (keyEvent.getCode() == KeyCode.DELETE) {
+                    handleDeleteKey();
+                    keyEvent.consume();
+                }
+
+                System.out.println(keyEvent.getTarget());
+
+            }
+        });
     }
 
-    public void selectFirstItemFromListView() {
+    /**
+     * 
+     */
+    private void populateListView() {
+
+        if (controller == null) {
+            controller = new Controller();
+        }
+
+        // ListView only allow binding of a OberservableList of String
+        if (listProperty == null) {
+            listProperty = new SimpleListProperty<String>();
+        }
+
+        listView.itemsProperty().bind(listProperty);
+
+        // retrieve all task and add into an ObservableList
+        allTasks = controller.getAllTasks();
+
+        for (int i = 0; i < allTasks.size(); i++) {
+            observableTaskList.add(i + 1 + ". " + allTasks.get(i));
+        }
+
+        listProperty.set(observableTaskList);
+    }
+
+    /**
+     * 
+     */
+    private void refreshListView() {
+        // TODO refactor into a method
+        // clear and retrieve all task and add into an
+        // ObservableList
+        observableTaskList.clear();
+        populateListView();
+    }
+
+    /**
+     * 
+     */
+    private void handleUpArrowKey() {
+        listView.getSelectionModel().selectPrevious();
+        listView.scrollTo(getSelectedTaskIndex());
+        System.out.println(getSelectedTaskIndex());
+
+        // only set currently selected item to command bar when in
+        // Edit mode
+        if (isEditMode) {
+            commandBar.setText(allTasks.get(getSelectedTaskIndex()).toString());
+        }
+
+    }
+
+    /**
+     * 
+     */
+    private void handleDownArrowKey() {
         listView.getSelectionModel().selectNext();
-        currentSelectedTaskIndex = listView.getSelectionModel().getSelectedIndex();
+        listView.scrollTo(getSelectedTaskIndex());
+        System.out.println(getSelectedTaskIndex());
+
+        // only set currently selected item to command bar when in
+        // Edit mode
+        if (isEditMode) {
+            commandBar.setText(allTasks.get(getSelectedTaskIndex()).toString());
+        }
+    }
+
+    /**
+     * 
+     */
+    private void handleFOneKey() {
+        if (isEditMode) {
+            labelCurrentMode.setText("Today");
+            // TODO currently clears command bar.
+            // can consider save/restore previous input that was in
+            // the command bar
+            commandBar.clear();
+            isEditMode = false;
+
+        } else {
+            isEditMode = true;
+            labelCurrentMode.setText("Edit mode");
+            commandBar.setText(allTasks.get(getSelectedTaskIndex()).toString());
+        }
+    }
+
+    /**
+     * 
+     */
+    private void handleDeleteKey() {
+        controller.parseCommand("delete " + (getSelectedTaskIndex() + 1), Controller.Tab.FLOATING_TAB);
+        controller.executeCommand();
+        previousSelectedTaskIndex = getSelectedTaskIndex();
+        refreshListView();
+
+        // if previous selected index was the last index in the previous list
+        if (previousSelectedTaskIndex == allTasks.size()) {
+            listView.getSelectionModel().selectLast();
+            listView.scrollTo(allTasks.size() - 1);
+        } else {
+            listView.getSelectionModel().select(previousSelectedTaskIndex);
+            listView.scrollTo(previousSelectedTaskIndex);
+        }
+
+    }
+
+    /**
+     * 
+     */
+    private void handleKeyStrokes() {
+        if (!isEditMode) {
+
+            // TODO Auto-generated method stub
+            userInput = commandBar.getCharacters().toString();
+            assert userInput != null;
+            System.out.println(userInput);
+
+            if (userInput.length() == 0) {
+                showFeedback(false);
+                clearFeedback();
+                clearStoredUserInput();
+                return;
+            }
+
+            extractUserInput();
+            parseUserInput();
+            System.out.println(inputFeedback);
+
+        } else {
+            controller.parseCommand(commandBar.getText(), Controller.Tab.FLOATING_TAB);
+        }
+    }
+
+    /**
+     * 
+     */
+    private void handleEnterKey() {
+
+        if (!isEditMode) {
+            controller.executeCommand();
+            refreshListView();
+            listView.getSelectionModel().selectLast();
+            listView.scrollTo(allTasks.size() - 1);
+        } else {
+            // something is wrong with this controller.editTask API
+            controller.editTask(Controller.FLOATING, listView.getSelectionModel().getSelectedIndex() + 1);
+            refreshListView();
+            previousSelectedTaskIndex = getSelectedTaskIndex();
+            listView.getSelectionModel().select(previousSelectedTaskIndex);
+            listView.scrollTo(getSelectedTaskIndex());
+        }
+
+        showFeedback(false);
+        clearFeedback();
+        clearStoredUserInput();
+        commandBar.clear();
+    }
+
+    /**
+     * 
+     */
+    private void extractUserInput() {
+        userInputArray = userInput.split(" ");
+        userCommand = userInputArray[0];
+        if (userInputArray.length > 1) {
+            System.out.println(
+                    userCommand + " " + userInput.indexOf(userCommand) + " " + userInput.lastIndexOf(userCommand));
+
+            userArguments = userInput.substring(userInput.indexOf(userInputArray[1]));
+        }
+    }
+
+    /**
+     * 
+     */
+    private void parseUserInput() {
+        switch (userCommand) {
+            case "search" :
+            case "find" :
+                if (userInputArray.length > 1) {
+                    inputFeedback = userArguments; // stub code
+                } else {
+                    inputFeedback = "";
+                }
+
+                showFeedback(true, "Searching:", inputFeedback);
+                break;
+
+            case "delete" :
+            case "del" :
+                if (userInputArray.length > 1) {
+                    int indexToDelete = Integer.parseInt(userArguments) - 1;
+                    inputFeedback = allTasks.get(indexToDelete).toString();
+                    controller.parseCommand(userInput, Controller.Tab.FLOATING_TAB);
+                    listView.getSelectionModel().select(indexToDelete);
+                    listView.scrollTo(indexToDelete);
+                } else {
+                    inputFeedback = "";
+                }
+
+                showFeedback(true, "Deleting:", inputFeedback);
+                break;
+
+            default :
+                inputFeedback = controller.parseCommand(userInput, Controller.Tab.NO_TAB);
+                showFeedback(true, "Adding:", inputFeedback);
+
+        }
+    }
+
+    /**
+     * 
+     */
+    private void clearStoredUserInput() {
+        userInput = "";
+        userInputArray = null;
+        userCommand = "";
+        userArguments = "";
+    }
+
+    /**
+     * 
+     */
+    private void clearFeedback() {
+        labelUserAction.setText("");
+        labelUserFeedback.setText("");
+    }
+
+    /**
+     * 
+     */
+    private void showFeedback(boolean isVisible) {
+        labelUserAction.setVisible(isVisible);
+        labelUserFeedback.setVisible(isVisible);
+    }
+
+    /**
+     * 
+     */
+    private void showFeedback(boolean isVisible, String userAction, String userFeedback) {
+        labelUserAction.setVisible(isVisible);
+        labelUserFeedback.setVisible(isVisible);
+        labelUserAction.setText(userAction);
+        labelUserFeedback.setText(inputFeedback);
+    }
+
+    /**
+     * 
+     */
+    private int getSelectedTaskIndex() {
+        return listView.getSelectionModel().getSelectedIndex();
     }
 }
