@@ -30,7 +30,10 @@ public class TestCommandParser {
         command = parser.parse("Undo task 3");
         assertEquals("floating", command.getTab());
         
-        command = parser.parse("Fetch brother from school");
+        command = parser.parse("Fetch my brothers from school");
+        assertEquals("floating", command.getTab());
+        
+        command = parser.parse("Send 100 emails from schools");
         assertEquals("floating", command.getTab());
         
         command = parser.parse("Drive by the supermarket");
@@ -40,7 +43,10 @@ public class TestCommandParser {
         assertEquals("floating", command.getTab());
         
         command = parser.parse("Send 100 email before I sleep");
-        assertEquals("floating", command.getTab());       
+        assertEquals("floating", command.getTab());
+        
+        command = parser.parse("Send 100 emails from schools");
+        assertEquals("floating", command.getTab());
     }
     
     @Test

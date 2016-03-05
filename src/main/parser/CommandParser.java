@@ -121,6 +121,8 @@ public class CommandParser {
     	prepositions.add("from");
     	prepositions.add("at");
     	prepositions.add("on");
+    	prepositions.add("by");
+    	prepositions.add("before");
     	
     	List<String> words = new ArrayList<String>(Arrays.asList(commandString.split(" ")));
     	
