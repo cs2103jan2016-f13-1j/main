@@ -43,11 +43,10 @@ public class Task {
     
     public String toString() {
         String feedback = null;
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd HH:mm");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("d/M (EEE) HH:mm");
         
         if (startDate == null) {
             if (endDate == null) {
-                //floating task
                 if (label == null) {
                     feedback = title;
                 } else {

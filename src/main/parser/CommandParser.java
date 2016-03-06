@@ -3,6 +3,7 @@
  */
 package main.parser;
 
+
 /**
  * @author Joleen
  *
@@ -12,6 +13,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.time.*;
+import java.time.format.TextStyle;
 
 import org.ocpsoft.prettytime.nlp.PrettyTimeParser;
 
@@ -27,8 +31,7 @@ public class CommandParser {
     private final int DATE_START_RANGED = 0;
     private final int DATE_END_RANGED = 1;
     private final int DATE_MAX_SIZE = 2;
-    private final int PREPOSITION_FROM_LENGTH = 4;
-    private final int PREPOSITION_OTHER_LENGTH = 2;
+    private final int INDEX_OFFSET = 1;
     
     public Command parse(String commandString) {
         String command = getFirstWord(commandString);
@@ -69,6 +72,8 @@ public class CommandParser {
     /**
      * Find out what kind of task is to be added.
      * Words without prepositions are considered floating tasks.
+     * Words with prepositions might not be dated.
+     * Dated task will always contain prepositions.
      * 
      * @param type
      * 			command type
@@ -111,12 +116,26 @@ public class CommandParser {
         }
         
         if (tab.equals("dated")) {
-        	title = removeDateFromTitle(title, numberOfDate);
+        	title = removeDateFromTitle(title, startDate, endDate);
         }
 
         task = buildTask(title, startDate, endDate, label);
         Command command = new Command(type, tab, task);
         return command;
+    }
+    
+    private boolean checkForPrepositions(String commandString) {
+    	ArrayList<String> prepositions = new ArrayList<String>();
+	    prepositions = populatePrepositions();
+	    
+    	List<String> words = new ArrayList<String>(Arrays.asList(commandString.toLowerCase().split(" ")));
+    	
+    	for (int i = 0; i < prepositions.size(); i++ ) {
+    		if (words.contains(prepositions.get(i))) {
+    			return true;
+    		}
+    	}
+    	return false;
     }
     
     private ArrayList<String> populatePrepositions() {
@@ -126,22 +145,10 @@ public class CommandParser {
     	prepositions.add("on");
     	prepositions.add("by");
     	prepositions.add("before");
+    	prepositions.add("to");
+    	prepositions.add("-");
     	
     	return prepositions;
-    }
-    
-    private boolean checkForPrepositions(String commandString) {
-    	ArrayList<String> prepositions = new ArrayList<String>();
-	    prepositions = populatePrepositions();
-	    
-    	List<String> words = new ArrayList<String>(Arrays.asList(commandString.split(" ")));
-    	
-    	for (int i = 0; i < prepositions.size(); i++ ) {
-    		if (words.contains(prepositions.get(i))) {
-    			return true;
-    		}
-    	}
-    	return false;
     }
     
     private List<Date> parseDate(String commandString) {
@@ -170,11 +177,6 @@ public class CommandParser {
         label = getFirstWord(label);
         return label;
     }
-    
-    private String removeWhiteSpace(String string) {
-        string = string.replaceAll("\\s","");
-        return string;
-    }
    
     private String removeLabelFromTitle(String title, String label) {
         String tag = "#".concat(label);
@@ -192,139 +194,121 @@ public class CommandParser {
         return title;
     }
     
-    
-    /**
-     * Removes date and time information in title.
-     * 1) It removes preposition together with the date.
-     * 2) Checks and removes residual date information.
-     * 
-     * @param title
-     * 			title to be modified
-     * @param numberOfDate
-     * 			number of dates detected
-     * @return title string without date/time
-     */
-    private String removeDateFromTitle(String title, int numberOfDate) {
-		int index = getPrepositionsIndex(title);
-    	title = removePrepositionAndDate(title, numberOfDate, index);
-    	
-    	boolean isParsable = checkForParsableTitle(title);
-    	if (isParsable) {
-    		title = removeParsableWord(title, index);
-    	}
-    	
-    	return title;
-    }
-    
-	/**
-	 * Removes preposition together with the date present in title string.
-	 * Pattern:
-	 * 		"from * to *"
-	 * 		"at *"
-	 * 		"on *"
-	 * 		"by *"
-	 * 		"before *"
-	 * 
-	 * @param title
-	 * 			title to be modified
-	 * @param numberOfDate
-	 * 			number of dates detected
-	 * @param index
-	 * 			index of previously detected preposition
-	 * @return title string without time/date
-	 */
-	private String removePrepositionAndDate(String title, int numberOfDate, int index) {
-    	String dateString = "";
-    	List<String> words = new ArrayList<String>(Arrays.asList(title.split(" ")));
-
-		int upperBound = 0;
-		
-    	if (numberOfDate == DATE_MAX_SIZE) {
-    		upperBound = PREPOSITION_FROM_LENGTH;
-    	} else if (numberOfDate > 0) {
-    		upperBound = PREPOSITION_OTHER_LENGTH;
-    	}
-    	
-    	for (int i = 0; i < upperBound; i++) {
-			dateString = dateString.concat(" ");
-			dateString = dateString.concat(words.get(index+i));
-		}
-    	
-    	title = title.replace(dateString, "");
-    	return title;
-    }
-    
-	
-    /**
-     * Checks in case there are still date/time information in title
-     * 
-     * @param title
-     * 			title string
-     * @return true if detected
-     */
-    private boolean checkForParsableTitle(String title) {
+    public String removeDateFromTitle(String title, Date startDate, Date endDate) {
     	List<Date> dates = parseDate(title);
         int numberOfDate = dates.size();
-        if (numberOfDate > 0) {
-        	return true;
-        } else {        
-        	return false;
+   
+        LocalDateTime dateTime = endDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+        Locale locale = Locale.getDefault();
+
+        for (int i = 0; i < numberOfDate; i++) {
+        	 String date = Integer.toString(dateTime.getDayOfMonth());
+             
+             ArrayList<String> months = new ArrayList<String>();
+             Month month = dateTime.getMonth();
+             months.add(month.toString().toLowerCase());
+             months.add(month.getDisplayName(TextStyle.SHORT, locale).toLowerCase());
+
+             DayOfWeek day = dateTime.getDayOfWeek();
+             ArrayList<String> days = new ArrayList<String>();
+             days.add(day.toString().toLowerCase());
+             days.add(day.getDisplayName(TextStyle.SHORT, locale).toLowerCase());
+             
+             ArrayList<String> hours = new ArrayList<String>();
+             int time = dateTime.getHour();
+             hours.add(Integer.toString(time));
+             
+             if (time < 12) {
+            	 if (time == 0) {
+            		 hours.add("12am");
+            	 } else {
+            		 hours.add(Integer.toString(time).concat("am"));
+            	 }
+             } else if (time >= 12) {	
+            	 time = time - 12;
+            	 if (time == 0) {
+            		 hours.add("12pm");
+            	 } else {
+            		 hours.add(Integer.toString(time));
+            		 hours.add(Integer.toString(time).concat("pm"));	
+            	 }
+             }
+             
+             String minute = Integer.toString(dateTime.getMinute());
+
+             title = checkAndRemove(title, date);
+             
+             for (int j = 0; j < months.size(); j++) {
+             	title = checkAndRemove(title, months.get(j));
+             }
+             
+             for (int j = 0; j < days.size(); j++) {
+             	title = checkAndRemove(title, days.get(j));
+             }
+             
+             for (int j = 0; j < hours.size(); j++) {
+             	title = checkAndRemove(title, hours.get(j));
+             }
+             
+             title = checkAndRemove (title, minute);
+             
+             if (numberOfDate == 2) {
+            	 dateTime = startDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+             }
         }
+    	return title;
     }
     
-	/**
-	 * Starts checking base on where the previous preposition is found.
-	 * Checks and removes residual date/time near the removed preposition.
-	 * 
-	 * @param title
-	 * 			title string with residual date/time
-	 * @param index
-	 * 			index of previously detected and removed preposition
-	 * @return clean title string without date/time
-	 */
-	private String removeParsableWord(String title, int index) {
-		//index is the starting point for checks because it is previously position of preposition
-		List<String> words = new ArrayList<String>(Arrays.asList(title.split(" ")));
-		String toRemove = "";
-		int bound = words.size();
-		
-		//index is used; when word is remove, the remaining array shifts up
-		//thus index never changes
-		//rest of the string not checked because too far away from preposition
-		for (int i=index; i < bound; i++) {
-			List<Date> dates = parseDate(words.get(index));
-			int numberOfDate = dates.size();
-			
-			if (numberOfDate > 0) {
-				toRemove = toRemove.concat(" ");
-				toRemove = toRemove.concat(words.get(index));
-				words.remove(index);
-			} else {
-				break;
-			}
-		}
-	
-		title = title.replace(toRemove,"");
-		return title;
-	}
-    
-    private int getPrepositionsIndex(String commandString) {
-    	ArrayList<String> prepositions = new ArrayList<String>();
-	    prepositions = populatePrepositions();
-
-    	List<String> words = new ArrayList<String>(Arrays.asList(commandString.split(" ")));
-    	int index = 0;
+    private String checkAndRemove(String title, String toBeRemoved) {
+    	String toBeReplaced = "";
+    	int index;
+    	boolean isPreposition;
     	
-    	for (int i = 0; i < prepositions.size(); i++ ) {
-    		if (words.contains(prepositions.get(i))) {
-    			index = words.indexOf(prepositions.get(i));
-    			break;
+    	List<String> words = new ArrayList<String>(Arrays.asList(title.toLowerCase().split(" ")));
+
+    	if (words.contains(toBeRemoved)) {
+    		toBeReplaced = toBeReplaced.concat(" ");
+    		toBeReplaced = toBeReplaced.concat(toBeRemoved);
+    		
+    		index = words.indexOf(toBeRemoved);
+    		index = index - INDEX_OFFSET;
+    		isPreposition = checkIsPreposition(title, index);
+    		
+    		if (isPreposition) {
+    			toBeReplaced = words.get(index).concat(toBeReplaced);
+    			toBeReplaced = " ".concat(toBeReplaced);
     		}
     	}
     	
-    	return index;
+    	//remove regardless of case
+    	toBeReplaced = "(?i)".concat(toBeReplaced); 
+    	title = title.replaceAll(toBeReplaced, "");
+    	return title;
     }
     
+    
+    /**
+     * Check if a word is a preposition
+     * 
+     * @param title
+     * 			title string
+     * @param index
+     * 			index of the word to be checked
+     * @return	true if preposition found
+     */
+    private boolean checkIsPreposition(String title, int index) {
+    	ArrayList<String> prepositions = new ArrayList<String>();
+	    prepositions = populatePrepositions();
+
+    	List<String> words = new ArrayList<String>(Arrays.asList(title.toLowerCase().split(" ")));
+    	for (int i = 0; i < prepositions.size(); i++ ) {
+    		if (words.get(index).matches(prepositions.get(i))) {
+    			return true;
+    		}
+    	}
+    	return false;
+    }
+   
     private Task buildTask(String title, Date startDate, Date endDate, String label) {
         Task task = new Task.TaskBuilder(title).setStartDate(startDate).setEndDate(endDate)
         .setLabel(label).build();
@@ -367,6 +351,11 @@ public class CommandParser {
         indexString = removeWhiteSpace(indexString);
         
         return indexString;
+    }
+    
+    private String removeWhiteSpace(String string) {
+        string = string.replaceAll("\\s","");
+        return string;
     }
     
     private ArrayList<Integer> extractIndex(String index) {
