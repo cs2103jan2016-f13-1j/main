@@ -43,27 +43,29 @@ public class Task {
     
     public String toString() {
         String feedback = null;
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd HH:mm");
-        String startDateTime = null;
-        String endDateTime = null;
+        SimpleDateFormat dateFormat = new SimpleDateFormat("d/M (EEE) HH:mm");
         
         if (startDate == null) {
             if (endDate == null) {
-                //floating task
                 if (label == null) {
                     feedback = title;
                 } else {
                     feedback = title + " #" + label;
                 }
             } else {
-                //end date only
-                endDateTime = dateFormat.format(endDate);
-                feedback = title + " by " + endDate;
+                String endDateTime = dateFormat.format(endDate);
+                feedback =  title + " by " + endDateTime;
+                if (label != null) {
+                	feedback += " #" + label;
+                }
             }
         } else {
-            startDateTime = dateFormat.format(startDate);
-            endDateTime = dateFormat.format(endDate);
-            feedback = title + " from " + startDateTime + " to " + endDateTime + " #" + label;
+            String startDateTime = dateFormat.format(startDate);
+            String endDateTime = dateFormat.format(endDate);
+            feedback = title + " from " + startDateTime + " to " + endDateTime;
+            if (label != null) {
+            	feedback += " #" + label;
+            }
         }
         
         return feedback;
