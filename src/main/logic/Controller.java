@@ -454,6 +454,15 @@ public class Controller {
                 feedback = command.getTask().toString();
                 break;
             case COMMAND_TYPE_DELETE:
+                ArrayList<Integer> indexArray = command.getIndexes();
+                StringBuilder indexes = new StringBuilder();
+                for (int i = 0; i < indexArray.size(); i++) {
+                    indexes.append(indexArray.get(i));
+                    if (i < indexArray.size() - 1) {
+                        indexes.append(" ");
+                    }
+                }
+                feedback = indexes.toString();
                 command.setTab(tab);
                 break;
             default:
