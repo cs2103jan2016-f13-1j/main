@@ -184,25 +184,18 @@ public class Controller {
 		deleteTask(tab,command.getIndexes());
 		//string tab tells me where it comes from
 		//command.getTab tells me where to add
-		System.out.println("CURRENT TAB: " + tab + " NEW TASK TAB: " + command.getTab());
+		
 		//if no change in tab, edit in position
 		if (tab.equals(command.getTab())) {
-		    System.out.println("USING THISSS 1");
 		    addToList(tab,index,command.getTask());
 		} else {
 		    if (hasDate(task)) {
 		        datedTasks.add(task);
-		        System.out.println("USING THISSS 2");
 		    } else {
 		        floatingTasks.add(task);
-		        System.out.println("USING THISSS 3");
 		    }
 		}
-//		if (hasDate(task)) {
-//		    datedTasks.add(task);
-//		} else {
-//		    addToList(tab,index,command.getTask());
-//		}
+
 		saveTasks();
 		undoHistory.push(command);
 	}
