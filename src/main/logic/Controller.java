@@ -3,7 +3,7 @@
  * 
  * Controller();
  * parseCommand(String userCommand, String tab);
- * editTask(String tab, int oldTaskIndex);
+ * editTask(String tab, int index);
  * executeCommand();
  * 
  * getFloatingTasks();
@@ -176,15 +176,33 @@ public class Controller {
 	 * 			the index of the task
 	 */
 	public void editTask(String tab, int index) {
-		command.setCommandType(COMMAND_TYPE_EDIT);
+	    command.setCommandType(COMMAND_TYPE_EDIT);
 		command.getPreviousTasks().add(getTaskAtIndex(tab,index));
 		command.getIndexes().add(index);
+		Task task = command.getTask();
 		
 		deleteTask(tab,command.getIndexes());
-		addToList(tab,index,command.getTask());
+		//string tab tells me where it comes from
+		//command.getTab tells me where to add
+		
+		//if no change in tab, edit in position
+		if (tab.equals(command.getTab())) {
+		    addToList(tab,index,command.getTask());
+		} else {
+		    if (hasDate(task)) {
+		        datedTasks.add(task);
+		    } else {
+		        floatingTasks.add(task);
+		    }
+		}
+
 		saveTasks();
 		undoHistory.push(command);
 	}
+
+    private boolean hasDate(Task task) {
+        return (task.getStartDate() != null || task.getEndDate() != null);
+    }
 	
 	private void execute(Command command) {
 		switch (command.getCommandType().toLowerCase()) {
@@ -428,28 +446,18 @@ public class Controller {
 	 */
 	public String parseCommand(String userCommand, String tab) {
 		command = parser.parse(userCommand);
+		String commandType = command.getCommandType().toLowerCase();
 		String feedback = null;
 		
-		switch (tab) {
-			case NO_TAB:
-				feedback = command.getTask().toString();
-				break;
-			case FLOATING_TAB:
-				feedback = "delete from all";
-				command.setTab(FLOATING_TAB);
-				break;
-			case DATED_TAB:
-				feedback = "delete from all";
-				command.setTab(DATED_TAB);
-				break;
-			case TODAY_TAB:
-				feedback = "delete from today";
-				command.setTab(TODAY_TAB);
-				break;
-			case NEXT_SEVEN_DAYS_TAB:
-				feedback = "delete from next seven days";
-				command.setTab(NEXT_SEVEN_DAYS_TAB);
-				break;
+		switch (commandType) {
+            case COMMAND_TYPE_ADD:
+                feedback = command.getTask().toString();
+                break;
+            case COMMAND_TYPE_DELETE:
+                command.setTab(tab);
+                break;
+            default:
+                break;
 		}
 		
 		return feedback;

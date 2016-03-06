@@ -38,7 +38,7 @@ public class TestCommandParser {
         Command command = parser.parse("Cook dinner by 7pm");
         
         SimpleDateFormat df = new SimpleDateFormat("EEE MMM d HH:mm:ss Z yyyy");
-        String date = "Thu Feb 26 19:00:00 SGT 2016";
+        String date = "Sun Mar 06 19:00:00 SGT 2016";
         Date expectedDate = df.parse(date);
         
         assertEquals("dated", command.getTab());

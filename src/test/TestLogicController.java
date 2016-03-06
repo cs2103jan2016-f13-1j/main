@@ -26,7 +26,7 @@ public class TestLogicController {
 	Controller controller = null;
 	
 	//Edits task from different tabs
-	//@Test
+	@Test
 	public void editTaskTest() {
 		String title = "Floating task 0.1";
 		String feedback = controller.parseCommand(title, Controller.NO_TAB);
@@ -79,12 +79,10 @@ public class TestLogicController {
 		//delete last 3 floating tasks
 		lastIndex = controller.getFloatingTasks().size() - 1;
 		feedback = controller.parseCommand("delete " + lastIndex, Controller.FLOATING_TAB);
-        assertEquals(feedback,"delete from all");
         controller.executeCommand();
 		
         lastIndex = controller.getFloatingTasks().size() - 1;
 		feedback = controller.parseCommand("delete " + (lastIndex-1) + "-" + lastIndex, Controller.FLOATING_TAB);
-		assertEquals(feedback,"delete from all");
 		controller.executeCommand();
 		
 		//feedback = controller.parseCommand("delete 1", Controller.Tab.TODAY);
