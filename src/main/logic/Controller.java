@@ -3,7 +3,7 @@
  * 
  * Controller();
  * parseCommand(String userCommand, String tab);
- * editTask(String tab, int oldTaskIndex);
+ * editTask(String tab, int index);
  * executeCommand();
  * 
  * getFloatingTasks();

@@ -44,6 +44,8 @@ public class Task {
     public String toString() {
         String feedback = null;
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd HH:mm");
+        String startDateTime = null;
+        String endDateTime = null;
         
         if (startDate == null) {
             if (endDate == null) {
@@ -55,10 +57,12 @@ public class Task {
                 }
             } else {
                 //end date only
+                endDateTime = dateFormat.format(endDate);
+                feedback = title + " by " + endDate;
             }
         } else {
-            String startDateTime = dateFormat.format(startDate);
-            String endDateTime = dateFormat.format(endDate);
+            startDateTime = dateFormat.format(startDate);
+            endDateTime = dateFormat.format(endDate);
             feedback = title + " from " + startDateTime + " to " + endDateTime + " #" + label;
         }
         
