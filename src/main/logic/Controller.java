@@ -182,17 +182,32 @@ public class Controller {
 		Task task = command.getTask();
 		
 		deleteTask(tab,command.getIndexes());
-		
-		if (hasNoDate(task)) {
-		    datedTasks.add(task);
-		} else {
+		//string tab tells me where it comes from
+		//command.getTab tells me where to add
+		System.out.println("CURRENT TAB: " + tab + " NEW TASK TAB: " + command.getTab());
+		//if no change in tab, edit in position
+		if (tab.equals(command.getTab())) {
+		    System.out.println("USING THISSS 1");
 		    addToList(tab,index,command.getTask());
+		} else {
+		    if (hasDate(task)) {
+		        datedTasks.add(task);
+		        System.out.println("USING THISSS 2");
+		    } else {
+		        floatingTasks.add(task);
+		        System.out.println("USING THISSS 3");
+		    }
 		}
+//		if (hasDate(task)) {
+//		    datedTasks.add(task);
+//		} else {
+//		    addToList(tab,index,command.getTask());
+//		}
 		saveTasks();
 		undoHistory.push(command);
 	}
 
-    private boolean hasNoDate(Task task) {
+    private boolean hasDate(Task task) {
         return (task.getStartDate() != null || task.getEndDate() != null);
     }
 	
@@ -438,28 +453,18 @@ public class Controller {
 	 */
 	public String parseCommand(String userCommand, String tab) {
 		command = parser.parse(userCommand);
+		String commandType = command.getCommandType().toLowerCase();
 		String feedback = null;
 		
-		switch (tab) {
-			case NO_TAB:
-				feedback = command.getTask().toString();
-				break;
-			case FLOATING_TAB:
-				feedback = "delete from all";
-				command.setTab(FLOATING_TAB);
-				break;
-			case DATED_TAB:
-				feedback = "delete from all";
-				command.setTab(DATED_TAB);
-				break;
-			case TODAY_TAB:
-				feedback = "delete from today";
-				command.setTab(TODAY_TAB);
-				break;
-			case NEXT_SEVEN_DAYS_TAB:
-				feedback = "delete from next seven days";
-				command.setTab(NEXT_SEVEN_DAYS_TAB);
-				break;
+		switch (commandType) {
+            case COMMAND_TYPE_ADD:
+                feedback = command.getTask().toString();
+                break;
+            case COMMAND_TYPE_DELETE:
+                command.setTab(tab);
+                break;
+            default:
+                break;
 		}
 		
 		return feedback;
