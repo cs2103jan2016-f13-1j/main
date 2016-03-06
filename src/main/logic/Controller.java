@@ -176,15 +176,25 @@ public class Controller {
 	 * 			the index of the task
 	 */
 	public void editTask(String tab, int index) {
-		command.setCommandType(COMMAND_TYPE_EDIT);
+	    command.setCommandType(COMMAND_TYPE_EDIT);
 		command.getPreviousTasks().add(getTaskAtIndex(tab,index));
 		command.getIndexes().add(index);
+		Task task = command.getTask();
 		
 		deleteTask(tab,command.getIndexes());
-		addToList(tab,index,command.getTask());
+		
+		if (hasNoDate(task)) {
+		    datedTasks.add(task);
+		} else {
+		    addToList(tab,index,command.getTask());
+		}
 		saveTasks();
 		undoHistory.push(command);
 	}
+
+    private boolean hasNoDate(Task task) {
+        return (task.getStartDate() != null || task.getEndDate() != null);
+    }
 	
 	private void execute(Command command) {
 		switch (command.getCommandType().toLowerCase()) {
