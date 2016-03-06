@@ -121,6 +121,7 @@ public class CommandParser {
 
         task = buildTask(title, startDate, endDate, label);
         Command command = new Command(type, tab, task);
+        
         return command;
     }
     

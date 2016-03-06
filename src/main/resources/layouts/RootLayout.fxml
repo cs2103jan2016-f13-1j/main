@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.jfoenix.controls.JFXListView?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane fx:id="rootLayout" minHeight="-Infinity" minWidth="-Infinity" prefHeight="550.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.ui.RootLayoutController">
+   <children>
+      <TabPane fx:id="tabPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="481.0" prefWidth="600.0" tabClosingPolicy="UNAVAILABLE" tabMinWidth="180.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <tabs>
+            <Tab fx:id="tabAll" text="All">
+               <content>
+                  <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="412.0" prefWidth="591.0">
+                     <children>
+                        <JFXListView fx:id="listView" layoutY="89.0" prefHeight="319.0" prefWidth="520.0" AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="40.0" AnchorPane.topAnchor="80.0" />
+                     </children>
+                  </AnchorPane>
+               </content>
+            </Tab>
+            <Tab fx:id="tabToday" text="Today">
+               <content>
+                  <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="412.0" prefWidth="591.0" />
+               </content>
+            </Tab>
+            <Tab fx:id="tabWeek" text="This week">
+               <content>
+                  <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="412.0" prefWidth="591.0" />
+               </content>
+            </Tab>
+         </tabs>
+      </TabPane>
+      <TextField fx:id="commandBar" layoutX="40.0" layoutY="489.0" prefHeight="25.0" prefWidth="500.0" promptText="Type something to add a task" styleClass="text-input" AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="40.0">
+         <font>
+            <Font name="Noto Sans" size="13.0" />
+         </font></TextField>
+      <Label fx:id="labelCurrentMode" layoutX="40.0" layoutY="58.0" text="All">
+         <font>
+            <Font name="Noto Sans" size="24.0" />
+         </font>
+      </Label>
+      <Label fx:id="labelUserAction" prefWidth="85.0" text="Adding task:" textFill="#039be5" visible="false" AnchorPane.leftAnchor="40.0" AnchorPane.topAnchor="452.0">
+         <font>
+            <Font name="Noto Sans Bold" size="13.0" />
+         </font></Label>
+      <Label fx:id="labelUserFeedback" layoutX="136.0" layoutY="450.0" prefWidth="421.0" text="task" textFill="#00121b" visible="false" AnchorPane.topAnchor="452.0">
+         <font>
+            <Font name="Noto Sans Bold" size="13.0" />
+         </font>
+      </Label>
+      <Label fx:id="labelResult" contentDisplay="CENTER" layoutX="146.0" layoutY="460.0" prefWidth="421.0" text="result" textAlignment="CENTER" textFill="#00121b" visible="false" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="40.0" AnchorPane.topAnchor="452.0">
+         <font>
+            <Font name="Noto Sans Bold" size="13.0" />
+         </font>
+      </Label>
+   </children>
+</AnchorPane>

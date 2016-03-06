@@ -1,22 +1,24 @@
+/**
+ * 
+ */
 package main.data;
 
 /**
  * @author Joleen
  *
  */
-
 import java.util.ArrayList;
 
 public class Command {
     
     public static final String FLOATING_TAB = "floating";
     public static final String DATED_TAB = "dated";
-        
+    
     private String commandType = null;
     private String tab = null;
     private Task task = null;
     private ArrayList<Task> previousTasks = new ArrayList<Task>();
-    private ArrayList<Integer> indexes = new ArrayList<Integer>();
+    private ArrayList<Integer> indexesToDelete = new ArrayList<Integer>();
     
     public Command(String commandType, String tab, Task task) {
         this.commandType = commandType;
@@ -26,10 +28,14 @@ public class Command {
     
     public Command(String commandType, ArrayList<Integer> indexesToDelete) {
         this.commandType = commandType;
-        this.indexes = indexesToDelete;
+        this.indexesToDelete = indexesToDelete;
     }
     public String getCommandType() {
         return commandType;
+    }
+    
+    public void setCommandType(String commandType) {
+    	this.commandType = commandType;
     }
     
     public Task getTask() {
@@ -45,9 +51,9 @@ public class Command {
     }
     
     public ArrayList<Integer> getIndexes() {
-        return indexes;
+        return indexesToDelete;
     }
-    
+
     public ArrayList<Task> getPreviousTasks() {
         return previousTasks;
     }
