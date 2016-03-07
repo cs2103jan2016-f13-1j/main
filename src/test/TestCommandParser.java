@@ -10,7 +10,6 @@ package test;
 
 import static org.junit.Assert.assertEquals;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.text.ParseException;
@@ -101,8 +100,17 @@ public class TestCommandParser {
 
     	command = parser.parse("Cook dinner on 24 Mar 7pm #home");
     	assertEquals("Cook dinner by 24/3 (Thu) 19:00 #home", command.getTask().toString());
-
-    	command = parser.parse("Attend meeting on 26 march 7pm");
+    	
+    	command = parser.parse("Cook dinner on 3/24 7pm");
+    	assertEquals("Cook dinner by 24/3 (Thu) 19:00", command.getTask().toString());
+    	
+    	command = parser.parse("Cook dinner on 3/24 7:15");
+    	assertEquals("Cook dinner by 24/3 (Thu) 07:15", command.getTask().toString());
+    	
+    	command = parser.parse("Cook dinner on 3/24 7:15pm");
+    	assertEquals("Cook dinner by 24/3 (Thu) 19:15", command.getTask().toString());
+    	
+    	command = parser.parse("Attend meeting on 3-26 7pm");
     	assertEquals("Attend meeting by 26/3 (Sat) 19:00", command.getTask().toString());
 
     	command = parser.parse("Attend meeting from 4 to 6pm on 25 Mar");
