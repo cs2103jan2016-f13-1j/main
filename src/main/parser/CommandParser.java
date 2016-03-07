@@ -33,6 +33,9 @@ public class CommandParser {
     private final int DATE_END_RANGED = 1;
     private final int DATE_MAX_SIZE = 2;
     private final int INDEX_OFFSET = 1;
+    private final String STRING_AM = "am";
+    private final String STRING_PM = "pm";
+    private final String STRING_TWELVE = "12";
     
     public Command parse(String commandString) {
         String command = getFirstWord(commandString);
@@ -283,23 +286,23 @@ public class CommandParser {
 
 		if (hour < 12) {
 			if (hour == 0) {
-				String temp = "12";
-				timings.add(temp.concat("am"));
-				timings.add(temp.concat(minute).concat("am"));
+				String temp = STRING_TWELVE;
+				timings.add(temp.concat(STRING_AM));
+				timings.add(temp.concat(minute).concat(STRING_AM));
 			} else {
-				timings.add(Integer.toString(hour).concat("am"));
-				timings.add(Integer.toString(hour).concat(minute).concat("am"));
+				timings.add(Integer.toString(hour).concat(STRING_AM));
+				timings.add(Integer.toString(hour).concat(minute).concat(STRING_AM));
 			}
 		} else if (hour >= 12) {	
 			hour = hour - 12;
 			if (hour == 0) {
-				String temp = "12";
-				timings.add(temp.concat("pm"));
-				timings.add(temp.concat(minute).concat("pm"));
+				String temp = STRING_TWELVE;
+				timings.add(temp.concat(STRING_PM));
+				timings.add(temp.concat(minute).concat(STRING_PM));
 			} else {
 				timings.add(Integer.toString(hour));
-				timings.add(Integer.toString(hour).concat("pm"));
-				timings.add(Integer.toString(hour).concat(minute).concat("pm"));	
+				timings.add(Integer.toString(hour).concat(STRING_PM));
+				timings.add(Integer.toString(hour).concat(minute).concat(STRING_PM));	
 			}
 		}
 		return timings;
