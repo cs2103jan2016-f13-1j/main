@@ -33,6 +33,7 @@ public class RootLayoutController {
     private static final String WHITESPACE = " ";
     private static final String EMPTY_STRING = "";
     private static final String MESSAGE_LABEL_MODE_EDIT = "Edit mode";
+    private static final String MESSAGE_LISTVIEW_EMPTY = "You have no task!";
     private static final String MESSAGE_FEEDBACK_ACTION_ADD = "Adding:";
     private static final String MESSAGE_FEEDBACK_ACTION_DELETE = "Deleting:";
     private static final String MESSAGE_FEEDBACK_ACTION_SEARCH = "Searching:";
@@ -227,6 +228,7 @@ public class RootLayoutController {
         }
 
         listView.itemsProperty().bind(listProperty);
+        listView.setPlaceholder(new Label(MESSAGE_LISTVIEW_EMPTY));
 
         // retrieve all task and add into an ObservableList
         allTasks = controller.getAllTasks();
