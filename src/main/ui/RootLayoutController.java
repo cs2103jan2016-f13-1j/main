@@ -3,6 +3,7 @@ package main.ui;
 import java.util.ArrayList;
 
 import com.jfoenix.controls.JFXListView;
+import com.sun.javafx.scene.control.skin.VirtualFlow;
 
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.SimpleListProperty;
@@ -12,6 +13,8 @@ import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
+import javafx.scene.control.IndexedCell;
 import javafx.scene.control.Label;
 import javafx.scene.control.SingleSelectionModel;
 import javafx.scene.control.Tab;
@@ -75,6 +78,10 @@ public class RootLayoutController {
 
     @FXML // fx:id="labelResult"
     private Label labelResult; // Value injected by FXMLLoader
+    
+    private VirtualFlow virtualFlow;
+    private IndexedCell<String> firstVisibleIndexedCell;
+    private IndexedCell<String> lastVisibleIndexedCell;
 
     private Controller controller;
     private ArrayList<Task> allTasks;
@@ -88,6 +95,7 @@ public class RootLayoutController {
     private int previousSelectedTaskIndex;
     private int previousCaretPosition;
     private boolean isEditMode;
+    
 
     public RootLayoutController() {
 
@@ -100,6 +108,13 @@ public class RootLayoutController {
 
     public void selectFirstItemFromListView() {
         listView.getSelectionModel().selectNext();
+        for(Node node: listView.getChildrenUnmodifiable()){
+            if(node instanceof VirtualFlow){
+                virtualFlow = (VirtualFlow<IndexedCell>) node;
+                System.out.println("found virtual flow");
+                
+            }
+        }
 
     }
 
@@ -257,8 +272,20 @@ public class RootLayoutController {
      */
     private void handleUpArrowKey() {
         listView.getSelectionModel().selectPrevious();
-        listView.scrollTo(getSelectedTaskIndex());
-        System.out.println(getSelectedTaskIndex());
+        System.out.println("current index "+getSelectedTaskIndex());
+        
+        firstVisibleIndexedCell = virtualFlow.getFirstVisibleCellWithinViewPort();
+        lastVisibleIndexedCell = virtualFlow.getLastVisibleCellWithinViewPort();
+        
+        System.out.println("first visible cell: "+firstVisibleIndexedCell.getIndex());
+        System.out.println("last visible cell: "+lastVisibleIndexedCell.getIndex());
+        
+        if(getSelectedTaskIndex() < firstVisibleIndexedCell.getIndex()){
+            
+            //viewport will scroll and show the current item at the top
+            //according to ListView.scrollTo() behavior
+            listView.scrollTo(getSelectedTaskIndex()); 
+        }
 
         // only set currently selected item to command bar when in
         // Edit mode
@@ -267,7 +294,6 @@ public class RootLayoutController {
             // restoreCaretPosition();
             moveCaretPositionToLast();
         }
-
     }
 
     /**
@@ -275,9 +301,18 @@ public class RootLayoutController {
      */
     private void handleDownArrowKey() {
         listView.getSelectionModel().selectNext();
-        listView.scrollTo(getSelectedTaskIndex());
-        System.out.println(getSelectedTaskIndex());
-
+        System.out.println("current index "+getSelectedTaskIndex());
+        
+        firstVisibleIndexedCell = virtualFlow.getFirstVisibleCellWithinViewPort();
+        lastVisibleIndexedCell = virtualFlow.getLastVisibleCellWithinViewPort();
+        
+        System.out.println("first visible cell: "+firstVisibleIndexedCell.getIndex());
+        System.out.println("last visible cell: "+lastVisibleIndexedCell.getIndex());
+        
+        if(getSelectedTaskIndex() > lastVisibleIndexedCell.getIndex()){
+            listView.scrollTo(firstVisibleIndexedCell.getIndex()+1);
+        }
+        
         // only set currently selected item to command bar when in
         // Edit mode
         if (isEditMode) {
@@ -286,7 +321,8 @@ public class RootLayoutController {
             moveCaretPositionToLast();
         }
     }
-
+    
+   
     /**
      * 
      */

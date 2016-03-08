@@ -16,7 +16,7 @@
                <content>
                   <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="412.0" prefWidth="591.0">
                      <children>
-                        <JFXListView fx:id="listView" layoutY="89.0" prefHeight="319.0" prefWidth="520.0" AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="40.0" AnchorPane.topAnchor="80.0" />
+                        <JFXListView fx:id="listView" layoutY="89.0" prefHeight="333.0" prefWidth="520.0" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="40.0" AnchorPane.topAnchor="80.0" />
                      </children>
                   </AnchorPane>
                </content>
