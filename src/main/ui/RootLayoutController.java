@@ -483,9 +483,10 @@ public class RootLayoutController {
             inputFeedback = allTasks.get(actualIndex).toString();
             showFeedback(true, MESSAGE_FEEDBACK_ACTION_DELETE, inputFeedback);
             controller.parseCommand(COMMAND_DELETE + WHITESPACE + actualIndex, Controller.FLOATING_TAB);
-
-            // listView.getSelectionModel().select(actualIndex);
-            listView.scrollTo(actualIndex);
+            
+//            saveSelectedTaskIndex();
+//            listView.getFocusModel().focus(actualIndex);
+//            listView.scrollTo(actualIndex);
         }
 
     }
