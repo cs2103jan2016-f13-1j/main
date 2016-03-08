@@ -29,6 +29,7 @@ import javafx.scene.layout.AnchorPane;
 import main.data.Task;
 import main.logic.Controller;
 
+@SuppressWarnings("restriction")
 public class RootLayoutController {
     private static final String COMMAND_DELETE = "delete";
     private static final String COMMAND_DELETE_SHORTHAND = "del";
@@ -78,8 +79,8 @@ public class RootLayoutController {
 
     @FXML // fx:id="labelResult"
     private Label labelResult; // Value injected by FXMLLoader
-    
-    private VirtualFlow virtualFlow;
+
+    private VirtualFlow<IndexedCell<String>> virtualFlow;
     private IndexedCell<String> firstVisibleIndexedCell;
     private IndexedCell<String> lastVisibleIndexedCell;
 
@@ -95,11 +96,6 @@ public class RootLayoutController {
     private int previousSelectedTaskIndex;
     private int previousCaretPosition;
     private boolean isEditMode;
-    
-
-    public RootLayoutController() {
-
-    }
 
     public void requestFocusForCommandBar() {
         commandBar.requestFocus();
@@ -108,13 +104,7 @@ public class RootLayoutController {
 
     public void selectFirstItemFromListView() {
         listView.getSelectionModel().selectNext();
-        for(Node node: listView.getChildrenUnmodifiable()){
-            if(node instanceof VirtualFlow){
-                virtualFlow = (VirtualFlow<IndexedCell>) node;
-                System.out.println("found virtual flow");
-                
-            }
-        }
+        initCustomViewportBehaviorForListView();
 
     }
 
@@ -136,9 +126,7 @@ public class RootLayoutController {
             tabList.get(i).setOnSelectionChanged(new EventHandler<Event>() {
                 @Override
                 public void handle(Event event) {
-                    // TODO Auto-generated method stub
-                    String currentTabName = getSelectedTabName();
-                    labelCurrentMode.setText(currentTabName);
+                    labelCurrentMode.setText(getSelectedTabName());
 
                 }
             });
@@ -153,7 +141,6 @@ public class RootLayoutController {
 
             @Override
             public void handle(Event event) {
-                // TODO Auto-generated method stub
                 requestFocusForCommandBar();
             }
         });
@@ -174,11 +161,8 @@ public class RootLayoutController {
         });
 
         commandBar.setOnAction(new EventHandler<ActionEvent>() {
-
             @Override
             public void handle(ActionEvent event) {
-                // TODO Auto-generated method stub
-
                 // do nothing when there is no user input
                 if (commandBar.getLength() == 0) {
                     event.consume();
@@ -199,15 +183,8 @@ public class RootLayoutController {
 
             @Override
             public void handle(KeyEvent keyEvent) {
-                // TODO Auto-generated method stub
-
-                // pass focus over to listview instead of tabs
-
-                if (keyEvent.getCode() == KeyCode.UP) {
-                    handleUpArrowKey();
-                    keyEvent.consume();
-                } else if (keyEvent.getCode() == KeyCode.DOWN) {
-                    handleDownArrowKey();
+                if (keyEvent.getCode() == KeyCode.UP || keyEvent.getCode() == KeyCode.DOWN) {
+                    handleArrowKeys(keyEvent);
                     keyEvent.consume();
                 } else if (keyEvent.getCode() == KeyCode.F1) {
                     handleFOneKey();
@@ -232,7 +209,6 @@ public class RootLayoutController {
      * 
      */
     private void populateListView() {
-
         if (controller == null) {
             controller = new Controller();
         }
@@ -260,9 +236,6 @@ public class RootLayoutController {
      * 
      */
     private void refreshListView() {
-        // TODO refactor into a method
-        // clear and retrieve all task and add into an
-        // ObservableList
         observableTaskList.clear();
         populateListView();
     }
@@ -270,59 +243,72 @@ public class RootLayoutController {
     /**
      * 
      */
-    private void handleUpArrowKey() {
-        listView.getSelectionModel().selectPrevious();
-        System.out.println("current index "+getSelectedTaskIndex());
-        
-        firstVisibleIndexedCell = virtualFlow.getFirstVisibleCellWithinViewPort();
-        lastVisibleIndexedCell = virtualFlow.getLastVisibleCellWithinViewPort();
-        
-        System.out.println("first visible cell: "+firstVisibleIndexedCell.getIndex());
-        System.out.println("last visible cell: "+lastVisibleIndexedCell.getIndex());
-        
-        if(getSelectedTaskIndex() < firstVisibleIndexedCell.getIndex()){
-            
-            //viewport will scroll and show the current item at the top
-            //according to ListView.scrollTo() behavior
-            listView.scrollTo(getSelectedTaskIndex()); 
+    private void handleArrowKeys(KeyEvent keyEvent) {
+        if (keyEvent.getCode() == KeyCode.UP) {
+            listView.getSelectionModel().selectPrevious();
+            adjustViewportForListView();
+            System.out.println("current index " + getSelectedTaskIndex());
+
+        } else if (keyEvent.getCode() == KeyCode.DOWN) {
+            listView.getSelectionModel().selectNext();
+            adjustViewportForListView();
+            System.out.println("current index " + getSelectedTaskIndex());
+
         }
 
         // only set currently selected item to command bar when in
         // Edit mode
         if (isEditMode) {
             commandBar.setText(allTasks.get(getSelectedTaskIndex()).toString());
-            // restoreCaretPosition();
             moveCaretPositionToLast();
         }
     }
 
     /**
-     * 
+     * This method currently accesses the private API, the VirtualFlow class.
+     * This method can only be called after the Stage has been set in the
+     * DoolehMainApp class. Due to the lifecycle of the JavaFX framework, we can
+     * only to grab an instance of the VirtualFlow class from our ListView after
+     * the Stage has been set. This will allow us to adjust the viewport of the
+     * ListView programmatically whenever user hits the up/down arrow key to
+     * select items from the ListView. See adjustViewportForListView() method to
+     * find out more about the viewport adjusting algorithm
      */
-    private void handleDownArrowKey() {
-        listView.getSelectionModel().selectNext();
-        System.out.println("current index "+getSelectedTaskIndex());
-        
-        firstVisibleIndexedCell = virtualFlow.getFirstVisibleCellWithinViewPort();
-        lastVisibleIndexedCell = virtualFlow.getLastVisibleCellWithinViewPort();
-        
-        System.out.println("first visible cell: "+firstVisibleIndexedCell.getIndex());
-        System.out.println("last visible cell: "+lastVisibleIndexedCell.getIndex());
-        
-        if(getSelectedTaskIndex() > lastVisibleIndexedCell.getIndex()){
-            listView.scrollTo(firstVisibleIndexedCell.getIndex()+1);
-        }
-        
-        // only set currently selected item to command bar when in
-        // Edit mode
-        if (isEditMode) {
-            commandBar.setText(allTasks.get(getSelectedTaskIndex()).toString());
-            // restoreCaretPosition();
-            moveCaretPositionToLast();
+    @SuppressWarnings("unchecked")
+    private void initCustomViewportBehaviorForListView() {
+        for (Node node : listView.getChildrenUnmodifiable()) {
+            if (node instanceof VirtualFlow) {
+                // get an instance of VirtualFlow. this is essentially the
+                // viewport for ListView
+                virtualFlow = (VirtualFlow<IndexedCell<String>>) node;
+                System.out.println("found virtual flow");
+
+            }
         }
     }
-    
-   
+
+    /**
+     * This method is used to emulate the original behavior of a ListView, i.e.
+     * the automatic scrolling of focused ListView when a selected item is not
+     * visible within the viewport
+     */
+    private void adjustViewportForListView() {
+        firstVisibleIndexedCell = virtualFlow.getFirstVisibleCellWithinViewPort();
+        lastVisibleIndexedCell = virtualFlow.getLastVisibleCellWithinViewPort();
+        System.out.println("first visible cell: " + firstVisibleIndexedCell.getIndex());
+        System.out.println("last visible cell: " + lastVisibleIndexedCell.getIndex());
+
+        if (getSelectedTaskIndex() < firstVisibleIndexedCell.getIndex()) {
+
+            // viewport will scroll and show the current item at the top
+            listView.scrollTo(getSelectedTaskIndex());
+        } else if (getSelectedTaskIndex() > lastVisibleIndexedCell.getIndex()) {
+
+            // viewport will scroll and show the current item at the bottom
+            listView.scrollTo(firstVisibleIndexedCell.getIndex() + 1);
+        }
+    }
+
     /**
      * 
      */
@@ -345,8 +331,6 @@ public class RootLayoutController {
      */
     private void handleKeyStrokes() {
         if (!isEditMode) {
-
-            // TODO Auto-generated method stub
             userInput = commandBar.getCharacters().toString();
             assert userInput != null;
             System.out.println(userInput);
@@ -379,8 +363,8 @@ public class RootLayoutController {
             // add operation
             if (!userCommand.equals(COMMAND_DELETE) && !userCommand.equals(COMMAND_DELETE_SHORTHAND)) {
                 refreshListView();
-                listView.scrollTo(allTasks.size() - 1);
                 listView.getSelectionModel().selectLast();
+                listView.scrollTo(allTasks.size() - 1);
             } else {
                 saveSelectedTaskIndex();
                 refreshListView();
@@ -404,13 +388,6 @@ public class RootLayoutController {
     /**
      * 
      */
-    private void moveCaretPositionToLast() {
-        commandBar.positionCaret(commandBar.getText().length());
-    }
-
-    /**
-     * 
-     */
     private void handleDeleteKey() {
         controller.parseCommand(COMMAND_DELETE + WHITESPACE + (getSelectedTaskIndex()), Controller.FLOATING_TAB);
         controller.executeCommand();
@@ -423,22 +400,18 @@ public class RootLayoutController {
     /**
      * 
      */
-    private void saveSelectedTaskIndex() {
-        previousSelectedTaskIndex = getSelectedTaskIndex();
-    }
+    private void handleCtrlTab() {
+        SingleSelectionModel<Tab> selectionModel = tabPane.getSelectionModel();
 
-    /**
-     * 
-     */
-    private void restoreListViewPreviousSelection() {
-        // if previous selected index was the last index in the previous list
-        if (previousSelectedTaskIndex == allTasks.size()) {
-            listView.getSelectionModel().selectLast();
-            listView.scrollTo(allTasks.size() - 1);
+        // already at the last tab, lets bounce back to first tab
+        if (selectionModel.getSelectedIndex() == tabPane.getTabs().size() - 1) {
+            selectionModel.selectFirst();
         } else {
-            listView.getSelectionModel().select(previousSelectedTaskIndex);
-            listView.scrollTo(previousSelectedTaskIndex);
+            selectionModel.selectNext();
         }
+
+        requestFocusForCommandBar();
+        restoreCaretPosition();
     }
 
     /**
@@ -487,38 +460,40 @@ public class RootLayoutController {
      */
     private void parseDelete() {
         System.out.println("parseDelete");
-        if (userInputArray.length > 1) {
-            int userIndex = 0;
-            try {
-                userIndex = Integer.parseInt(userArguments);
-            } catch (NumberFormatException nfe) {
-                showResult(true, String.format(MESSAGE_ERROR_RESULT_DELETE, userArguments));
-                return;
-            }
+        if (userInputArray.length <= 1) {
+            inputFeedback = EMPTY_STRING;
+            return;
+        }
 
-            int actualIndex = userIndex - 1;
+        int userIndex = 0;
+        try {
+            userIndex = Integer.parseInt(userArguments);
+        } catch (NumberFormatException nfe) {
+            showResult(true, String.format(MESSAGE_ERROR_RESULT_DELETE, userArguments));
+            return;
+        }
 
-            if (actualIndex >= allTasks.size() || actualIndex < 0) {
-                showResult(true, String.format(MESSAGE_ERROR_RESULT_DELETE, userIndex));
+        int actualIndex = userIndex - 1;
 
-            } else {
-                inputFeedback = allTasks.get(actualIndex).toString();
-                showFeedback(true, MESSAGE_FEEDBACK_ACTION_DELETE, inputFeedback);
-                controller.parseCommand(COMMAND_DELETE + WHITESPACE + actualIndex, Controller.FLOATING_TAB);
-
-                // listView.getSelectionModel().select(actualIndex);
-                listView.scrollTo(actualIndex);
-            }
+        // if selected index is out of bound
+        if (actualIndex >= allTasks.size() || actualIndex < 0) {
+            showResult(true, String.format(MESSAGE_ERROR_RESULT_DELETE, userIndex));
 
         } else {
-            inputFeedback = EMPTY_STRING;
+            inputFeedback = allTasks.get(actualIndex).toString();
+            showFeedback(true, MESSAGE_FEEDBACK_ACTION_DELETE, inputFeedback);
+            controller.parseCommand(COMMAND_DELETE + WHITESPACE + actualIndex, Controller.FLOATING_TAB);
+
+            // listView.getSelectionModel().select(actualIndex);
+            listView.scrollTo(actualIndex);
         }
+
     }
 
     /**
      * 
      */
-    private void parseSearch() {
+    private void parseSearch() {//TODO to be implemented
         if (userInputArray.length > 1) {
             inputFeedback = userArguments; // stub code
         } else {
@@ -587,8 +562,36 @@ public class RootLayoutController {
     /**
      * 
      */
+    private void saveSelectedTaskIndex() {
+        previousSelectedTaskIndex = getSelectedTaskIndex();
+    }
+
+    /**
+     * 
+     */
+    private void restoreListViewPreviousSelection() {
+        // if previous selected index was the last index in the previous list
+        if (previousSelectedTaskIndex == allTasks.size()) {
+            listView.getSelectionModel().selectLast();
+            listView.scrollTo(allTasks.size() - 1);
+        } else {
+            listView.getSelectionModel().select(previousSelectedTaskIndex);
+            listView.scrollTo(previousSelectedTaskIndex);
+        }
+    }
+
+    /**
+     * 
+     */
     private int getSelectedTaskIndex() {
         return listView.getSelectionModel().getSelectedIndex();
+    }
+
+    /**
+     * @return String
+     */
+    private String getSelectedTabName() {
+        return tabPane.getTabs().get(tabPane.getSelectionModel().getSelectedIndex()).getText();
     }
 
     /**
@@ -606,27 +609,10 @@ public class RootLayoutController {
     }
 
     /**
-     * @param tabList
-     * @return
-     */
-    private String getSelectedTabName() {
-        return tabPane.getTabs().get(tabPane.getSelectionModel().getSelectedIndex()).getText();
-    }
-
-    /**
      * 
      */
-    private void handleCtrlTab() {
-        SingleSelectionModel<Tab> selectionModel = tabPane.getSelectionModel();
-
-        // already at the last tab, lets bounce back to first tab
-        if (selectionModel.getSelectedIndex() == tabPane.getTabs().size() - 1) {
-            selectionModel.selectFirst();
-        } else {
-            selectionModel.selectNext();
-        }
-
-        requestFocusForCommandBar();
-        restoreCaretPosition();
+    private void moveCaretPositionToLast() {
+        commandBar.positionCaret(commandBar.getText().length());
     }
+
 }
