@@ -15,6 +15,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
 
 import org.ocpsoft.prettytime.nlp.PrettyTimeParser;
@@ -32,6 +33,9 @@ public class CommandParser {
     private final int DATE_END_RANGED = 1;
     private final int DATE_MAX_SIZE = 2;
     private final int INDEX_OFFSET = 1;
+    private final String STRING_AM = "am";
+    private final String STRING_PM = "pm";
+    private final String STRING_TWELVE = "12";
     
     public Command parse(String commandString) {
         String command = getFirstWord(commandString);
@@ -76,10 +80,10 @@ public class CommandParser {
      * Dated task will always contain prepositions.
      * 
      * @param type
-     * 			command type
+     * 			command type that is determined
      * @param commandString
-     * 			user input string
-     * @return command object with the type of command and a task.
+     * 			command string from user input
+     * @return Command with the type of command and task
      */
     private Command prepareForAdd(String type, String commandString) {
         String tab = "floating";
@@ -139,6 +143,11 @@ public class CommandParser {
     	return false;
     }
     
+    /**
+     * Generate a list of pre-defined prepositions to be used.
+     * 
+     * @return ArrayList<String> containing prepositions
+     */
     private ArrayList<String> populatePrepositions() {
     	ArrayList<String> prepositions = new ArrayList<String>();
     	prepositions.add("from");
@@ -195,63 +204,35 @@ public class CommandParser {
         return title;
     }
     
-    public String removeDateFromTitle(String title, Date startDate, Date endDate) {
-    	List<Date> dates = parseDate(title);
-        int numberOfDate = dates.size();
+    
+    /**
+     * From the date(s) obtained from title, different formats are generated.
+     * Date information is removed from the title.
+     * 
+     * @param title
+     * 			task's title
+     * @param startDate
+     * 			task's start date
+     * @param endDate
+     * 			task's end date
+     * @return String title without date information
+     */
+    private String removeDateFromTitle(String title, Date startDate, Date endDate) {
+    	List<Date> datesList = parseDate(title);
+        int numberOfDate = datesList.size();
    
         LocalDateTime dateTime = endDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-        Locale locale = Locale.getDefault();
-
+        
         for (int i = 0; i < numberOfDate; i++) {
-        	 String date = Integer.toString(dateTime.getDayOfMonth());
-             
-             ArrayList<String> months = new ArrayList<String>();
-             Month month = dateTime.getMonth();
-             months.add(month.toString().toLowerCase());
-             months.add(month.getDisplayName(TextStyle.SHORT, locale).toLowerCase());
+        	 ArrayList<String> dates = getPossibleDates(dateTime);
+             ArrayList<String> months = getPossibleMonths(dateTime);
+             ArrayList<String> days = getPossibleDays(dateTime);
+             ArrayList<String> timings = getPossibleTimes(dateTime);
 
-             DayOfWeek day = dateTime.getDayOfWeek();
-             ArrayList<String> days = new ArrayList<String>();
-             days.add(day.toString().toLowerCase());
-             days.add(day.getDisplayName(TextStyle.SHORT, locale).toLowerCase());
-             
-             ArrayList<String> hours = new ArrayList<String>();
-             int time = dateTime.getHour();
-             hours.add(Integer.toString(time));
-             
-             if (time < 12) {
-            	 if (time == 0) {
-            		 hours.add("12am");
-            	 } else {
-            		 hours.add(Integer.toString(time).concat("am"));
-            	 }
-             } else if (time >= 12) {	
-            	 time = time - 12;
-            	 if (time == 0) {
-            		 hours.add("12pm");
-            	 } else {
-            		 hours.add(Integer.toString(time));
-            		 hours.add(Integer.toString(time).concat("pm"));	
-            	 }
-             }
-             
-             String minute = Integer.toString(dateTime.getMinute());
-
-             title = checkAndRemove(title, date);
-             
-             for (int j = 0; j < months.size(); j++) {
-             	title = checkAndRemove(title, months.get(j));
-             }
-             
-             for (int j = 0; j < days.size(); j++) {
-             	title = checkAndRemove(title, days.get(j));
-             }
-             
-             for (int j = 0; j < hours.size(); j++) {
-             	title = checkAndRemove(title, hours.get(j));
-             }
-             
-             title = checkAndRemove (title, minute);
+             title = checkAndRemove(title, dates);
+             title = checkAndRemove(title, months);
+             title = checkAndRemove(title, days);
+             title = checkAndRemove(title, timings);
              
              if (numberOfDate == 2) {
             	 dateTime = startDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
@@ -259,34 +240,115 @@ public class CommandParser {
         }
     	return title;
     }
+
+	private ArrayList<String> getPossibleDates(LocalDateTime dateTime) {
+		ArrayList<String> dates = new ArrayList<String>();
+		dates.add(Integer.toString(dateTime.getDayOfMonth()));
+		dates.add(dateTime.format(DateTimeFormatter.ofPattern("M/dd")));
+		dates.add(dateTime.format(DateTimeFormatter.ofPattern("MM/dd")));
+		dates.add(dateTime.format(DateTimeFormatter.ofPattern("M-dd")));
+		dates.add(dateTime.format(DateTimeFormatter.ofPattern("MM-dd")));
+		return dates;
+	}
+	
+	private ArrayList<String> getPossibleMonths(LocalDateTime dateTime) {
+		Locale locale = Locale.getDefault();
+		ArrayList<String> months = new ArrayList<String>();
+		Month month = dateTime.getMonth();
+		months.add(month.toString().toLowerCase());
+		months.add(month.getDisplayName(TextStyle.SHORT, locale).toLowerCase());
+		return months;
+	}
+	
+	private ArrayList<String> getPossibleDays(LocalDateTime dateTime) {
+		Locale locale = Locale.getDefault();
+		DayOfWeek day = dateTime.getDayOfWeek();
+		ArrayList<String> days = new ArrayList<String>();
+		days.add(day.toString().toLowerCase());
+		days.add(day.getDisplayName(TextStyle.SHORT, locale).toLowerCase());
+		return days;
+	}
     
-    private String checkAndRemove(String title, String toBeRemoved) {
+	private ArrayList<String> getPossibleTimes(LocalDateTime dateTime) {
+		ArrayList<String> timings = new ArrayList<String>();
+		int hour = dateTime.getHour();
+		int min = dateTime.getMinute();
+
+		String minute = ":";
+		if (min == 0) {
+			minute = minute.concat("0");
+		}
+
+		minute = minute.concat(Integer.toString(dateTime.getMinute()));
+
+		timings.add(Integer.toString(hour));
+		timings.add(Integer.toString(hour).concat(minute));
+
+		if (hour < 12) {
+			if (hour == 0) {
+				String temp = STRING_TWELVE;
+				timings.add(temp.concat(STRING_AM));
+				timings.add(temp.concat(minute).concat(STRING_AM));
+			} else {
+				timings.add(Integer.toString(hour).concat(STRING_AM));
+				timings.add(Integer.toString(hour).concat(minute).concat(STRING_AM));
+			}
+		} else if (hour >= 12) {	
+			hour = hour - 12;
+			if (hour == 0) {
+				String temp = STRING_TWELVE;
+				timings.add(temp.concat(STRING_PM));
+				timings.add(temp.concat(minute).concat(STRING_PM));
+			} else {
+				timings.add(Integer.toString(hour));
+				timings.add(Integer.toString(hour).concat(STRING_PM));
+				timings.add(Integer.toString(hour).concat(minute).concat(STRING_PM));	
+			}
+		}
+		return timings;
+	}
+	
+    /**
+     * Checks for and removes targeted word from title.
+     * If word to be removed is found, it checks if the word before it is a preposition.
+     * If preposition found, both are removed.
+     * Else, only the matching word is removed.
+     * 
+     * @param title
+     * 			title string to be checked
+     * @param toBeRemoved
+     * 			words to be removed
+     * @return String with targeted words removed
+     */
+    private String checkAndRemove(String title, ArrayList<String> toBeRemoved) {
     	String toBeReplaced = "";
     	int index;
     	boolean isPreposition;
     	
     	List<String> words = new ArrayList<String>(Arrays.asList(title.toLowerCase().split(" ")));
 
-    	if (words.contains(toBeRemoved)) {
-    		toBeReplaced = toBeReplaced.concat(" ");
-    		toBeReplaced = toBeReplaced.concat(toBeRemoved);
-    		
-    		index = words.indexOf(toBeRemoved);
-    		index = index - INDEX_OFFSET;
-    		isPreposition = checkIsPreposition(title, index);
-    		
-    		if (isPreposition) {
-    			toBeReplaced = words.get(index).concat(toBeReplaced);
-    			toBeReplaced = " ".concat(toBeReplaced);
+    	for (int i = 0; i < toBeRemoved.size(); i++) {
+    		if (words.contains(toBeRemoved.get(i))) {
+    			toBeReplaced = toBeReplaced.concat(" ");
+    			toBeReplaced = toBeReplaced.concat(toBeRemoved.get(i));
+
+    			index = words.indexOf(toBeRemoved.get(i));
+    			index = index - INDEX_OFFSET;
+    			isPreposition = checkIsPreposition(title, index);
+
+    			if (isPreposition) {
+    				toBeReplaced = words.get(index).concat(toBeReplaced);
+    				toBeReplaced = " ".concat(toBeReplaced);
+    			}
     		}
+    		
+    		//remove regardless of case
+        	toBeReplaced = "(?i)".concat(toBeReplaced); 
+        	title = title.replaceAll(toBeReplaced, "");
     	}
     	
-    	//remove regardless of case
-    	toBeReplaced = "(?i)".concat(toBeReplaced); 
-    	title = title.replaceAll(toBeReplaced, "");
     	return title;
     }
-    
     
     /**
      * Check if a word is a preposition
@@ -295,7 +357,7 @@ public class CommandParser {
      * 			title string
      * @param index
      * 			index of the word to be checked
-     * @return	true if preposition found
+     * @return Boolean true if preposition found
      */
     private boolean checkIsPreposition(String title, int index) {
     	ArrayList<String> prepositions = new ArrayList<String>();
@@ -317,13 +379,13 @@ public class CommandParser {
     }
     
     /**
-     * Detect the types of indexes before processing them
+     * Detects the types of indexes and processes them.
      * 
      * @param type
      * 			command type
      * @param commandString
      * 			user input string
-     * @return a command object with the type of command and index(es)
+     * @return Command with the type of command and index(es)
      */
     private Command prepareIndexes(String type, String commandString) {
         String indexString = getIndexString(commandString);
@@ -359,6 +421,13 @@ public class CommandParser {
         return string;
     }
     
+    /**
+     * Obtain all numbers based on index string given.
+     * 
+     * @param index
+     * 			index string
+     * @return ArrayList<Integer> of index(es)
+     */
     private ArrayList<Integer> extractIndex(String index) {
         ArrayList<String> indexes = new ArrayList<String>();
         ArrayList<String> tempRangedIndexes = new ArrayList<String>();
