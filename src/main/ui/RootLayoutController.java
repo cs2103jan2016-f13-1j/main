@@ -40,6 +40,7 @@ public class RootLayoutController {
     private static final String MESSAGE_LISTVIEW_EMPTY = "You have no task!";
     private static final String MESSAGE_FEEDBACK_ACTION_ADD = "Adding:";
     private static final String MESSAGE_FEEDBACK_ACTION_DELETE = "Deleting:";
+    private static final String MESSAGE_FEEDBACK_TOTAL_TASK = "(%1$s tasks)";
     private static final String MESSAGE_FEEDBACK_ACTION_SEARCH = "Searching:";
     private static final String MESSAGE_ERROR_RESULT_DELETE = "Task -%1$s- not found.";
 
@@ -115,7 +116,7 @@ public class RootLayoutController {
         initKeyboardListener();
         initCommandBarListener();
         initTabSelectionListener();
-        
+
     }
 
     /**
@@ -332,7 +333,7 @@ public class RootLayoutController {
      */
     private void handleKeyStrokes() {
         if (!isEditMode) {
-            userInput = commandBar.getCharacters().toString();
+            userInput = commandBar.getText();
             assert userInput != null;
             System.out.println(userInput);
 
@@ -440,7 +441,7 @@ public class RootLayoutController {
 
             case COMMAND_DELETE :
             case COMMAND_DELETE_SHORTHAND :
-                parseDelete();
+                parseDeleteImproved();
                 break;
 
             default :
@@ -456,15 +457,53 @@ public class RootLayoutController {
         showFeedback(true, MESSAGE_FEEDBACK_ACTION_ADD, inputFeedback);
     }
 
-    /**
-     * 
-     */
-    private void parseDelete() {
-        System.out.println("parseDelete");
+    private void parseDeleteImproved() {
         if (userInputArray.length <= 1) {
             inputFeedback = EMPTY_STRING;
             return;
         }
+
+        String parseResult = controller.parseCommand(userInput, Controller.FLOATING_TAB);
+        System.out.println("user arguments: "+userArguments);
+        System.out.println("parse result: "+parseResult);
+        String[] indexesToBeDeleted = parseResult.split(" ");
+
+        if (indexesToBeDeleted.length == 1) {
+            int taskIndex = 0;
+            try {
+                taskIndex = Integer.parseInt(indexesToBeDeleted[0]);
+            } catch (NumberFormatException nfe) {
+                showResult(true, String.format(MESSAGE_ERROR_RESULT_DELETE, userArguments));
+                return;
+            }
+
+            inputFeedback = allTasks.get(taskIndex).toString();
+            showFeedback(true, MESSAGE_FEEDBACK_ACTION_DELETE, inputFeedback);
+            return;
+        }
+
+        // int[] indexArray = new int[indexesToBeDeleted.length];
+        // for (int i = 0; i < indexArray.length; i++) {
+        //
+        // }
+
+        showFeedback(true, MESSAGE_FEEDBACK_ACTION_DELETE,
+                userArguments + WHITESPACE + String.format(MESSAGE_FEEDBACK_TOTAL_TASK, indexesToBeDeleted.length));
+
+    }
+
+    /**
+     * 
+     */
+    private void parseDelete() {
+        // System.out.println("parseDelete");
+        if (userInputArray.length <= 1) {
+            inputFeedback = EMPTY_STRING;
+            return;
+        }
+
+        String parseResult = controller.parseCommand("del 100", Controller.FLOATING_TAB);
+        System.out.println(parseResult);
 
         int userIndex = 0;
         try {
@@ -484,10 +523,10 @@ public class RootLayoutController {
             inputFeedback = allTasks.get(actualIndex).toString();
             showFeedback(true, MESSAGE_FEEDBACK_ACTION_DELETE, inputFeedback);
             controller.parseCommand(COMMAND_DELETE + WHITESPACE + actualIndex, Controller.FLOATING_TAB);
-            
-//            saveSelectedTaskIndex();
-//            listView.getFocusModel().focus(actualIndex);
-//            listView.scrollTo(actualIndex);
+
+            // saveSelectedTaskIndex();
+            // listView.getFocusModel().focus(actualIndex);
+            // listView.scrollTo(actualIndex);
         }
 
     }
@@ -495,7 +534,7 @@ public class RootLayoutController {
     /**
      * 
      */
-    private void parseSearch() {//TODO to be implemented
+    private void parseSearch() {// TODO to be implemented
         if (userInputArray.length > 1) {
             inputFeedback = userArguments; // stub code
         } else {
@@ -546,7 +585,7 @@ public class RootLayoutController {
         labelUserAction.setVisible(isVisible);
         labelUserFeedback.setVisible(isVisible);
         labelUserAction.setText(userAction);
-        labelUserFeedback.setText(inputFeedback);
+        labelUserFeedback.setText(userFeedback);
     }
 
     /**
@@ -616,12 +655,12 @@ public class RootLayoutController {
     private void moveCaretPositionToLast() {
         commandBar.positionCaret(commandBar.getText().length());
     }
-    
-    private int getCaretCurrentPosition(){
+
+    private int getCaretCurrentPosition() {
         return commandBar.getCaretPosition();
     }
-    
-    public ArrayList<Task> getTaskList(){
+
+    public ArrayList<Task> getTaskList() {
         return allTasks;
     }
 
