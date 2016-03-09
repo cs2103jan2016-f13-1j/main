@@ -592,7 +592,7 @@ public class RootLayoutController {
     /**
      * @return String
      */
-    public String getSelectedTabName() {
+    private String getSelectedTabName() {
         return tabPane.getTabs().get(tabPane.getSelectionModel().getSelectedIndex()).getText();
     }
 
@@ -617,7 +617,7 @@ public class RootLayoutController {
         commandBar.positionCaret(commandBar.getText().length());
     }
     
-    public int getCaretCurrentPosition(){
+    private int getCaretCurrentPosition(){
         return commandBar.getCaretPosition();
     }
     
