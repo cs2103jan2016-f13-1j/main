@@ -1,10 +1,14 @@
 /**
+ * TO BE DONE: mark tasks as done, sorting
+ * 
  * Summary of public methods that can be called:
  * 
  * Controller();
  * parseCommand(String userCommand, String tab);
  * editTask(String tab, int index);
  * executeCommand();
+ * undo();
+ * redo();
  * 
  * getFloatingTasks();
  * getDatedTasks();
@@ -88,54 +92,58 @@ public class Controller {
 		saveTasks();
 	}
 	
-	private ArrayList<Task> deleteMultipleFromList(ArrayList<Task> listToDelete, ArrayList<Integer> indexesToDelete) {
+	private ArrayList<Task> deleteTasksFromList(ArrayList<Task> list, ArrayList<Integer> indexes) {
 		int j = 0;
-		for (int i = 0; i < indexesToDelete.size(); i++) {
-		    int indexToDelete = indexesToDelete.get(i-j);
-		    Task removedTask = listToDelete.remove(indexToDelete);
+		for (int i = 0; i < indexes.size(); i++) {
+		    int indexToDelete = indexes.get(i-j);
+		    Task removedTask = list.remove(indexToDelete);
 		    command.getPreviousTasks().add(removedTask);
 		    j++;
 		}
-		return listToDelete;
+		return list;
 	}
 	
 	private void deleteTask(String tab, ArrayList<Integer> indexes) {
-		ArrayList<Task> temp = null;	
-		
 		switch (tab) {
 			case FLOATING_TAB:
-				deleteMultipleFromList(floatingTasks, indexes);
+				deleteTasksFromList(floatingTasks, indexes);
 				break;
 			case DATED_TAB:
-				deleteMultipleFromList(datedTasks, indexes);
+				deleteTasksFromList(datedTasks, indexes);
 				break;
 			case TODAY_TAB:
-				ArrayList<Task> newTodayTasks = deleteMultipleFromList(getTodayTasks(), indexes);
-				temp = new ArrayList<Task>();
-				temp.addAll(newTodayTasks);
-				temp.addAll(getNextSevenDays());
-				datedTasks = new ArrayList<Task>();
-				for (Task task : temp) {
-					datedTasks.add(task);
-				}
+                deleteTasksFromToday(indexes);
 			case NEXT_SEVEN_DAYS_TAB:
-				ArrayList<Task> newNextSevenDaysTasks = deleteMultipleFromList(getNextSevenDays(), indexes);
-				temp = new ArrayList<Task>();
-				temp.addAll(getTodayTasks());
-				temp.addAll(newNextSevenDaysTasks);
-				datedTasks = new ArrayList<Task>();
-				for (Task task : temp) {
-					datedTasks.add(task);
-				}
+            deleteTasksFromNextSevenDays(indexes);
 			default:
 				break;
 		}
 		saveTasks();
 	}
+
+    private void deleteTasksFromNextSevenDays(ArrayList<Integer> indexes) {
+        ArrayList<Task> temp = new ArrayList<Task>();
+        ArrayList<Task> newNextSevenDaysTasks = deleteTasksFromList(getNextSevenDays(), indexes);
+        temp.addAll(getTodayTasks());
+        temp.addAll(newNextSevenDaysTasks);
+        datedTasks = new ArrayList<Task>();
+        for (Task task : temp) {
+        	datedTasks.add(task);
+        }
+    }
+
+    private void deleteTasksFromToday(ArrayList<Integer> indexes) {
+        ArrayList<Task> temp = new ArrayList<Task>();
+        ArrayList<Task> newTodayTasks = deleteTasksFromList(getTodayTasks(), indexes);
+        temp.addAll(newTodayTasks);
+        temp.addAll(getNextSevenDays());
+        datedTasks = new ArrayList<Task>();
+        for (Task task : temp) {
+        	datedTasks.add(task);
+        }
+    }
 	
 	private void addToList(String tab, int index, Task task) {
-		ArrayList<Task> temp = null;
-		
 		switch (tab.toLowerCase()) {
 			case FLOATING_TAB:
 				floatingTasks.add(index,task);
@@ -144,34 +152,42 @@ public class Controller {
 				datedTasks.add(index,task);
 				break;
 			case TODAY_TAB:
-				ArrayList<Task> newTodayTasks = getTodayTasks();
-				newTodayTasks.add(index,task);
-				temp = new ArrayList<Task>();
-				temp.addAll(newTodayTasks);
-				temp.addAll(getNextSevenDays());
-				datedTasks = new ArrayList<Task>();
-                for (Task t : temp) {
-                    datedTasks.add(t);
-                }
+                addToToday(index, task);
 			case NEXT_SEVEN_DAYS_TAB:
-				ArrayList<Task> newNextSevenDaysTasks = getNextSevenDays();
-				newNextSevenDaysTasks.add(index,task);
-				temp = new ArrayList<Task>();
-                temp.addAll(getTodayTasks());
-                temp.addAll(newNextSevenDaysTasks);
-                datedTasks = new ArrayList<Task>();
-                for (Task t : temp) {
-                    datedTasks.add(t);
-                }
+                addToNextSevenDays(index, task);
 			default:
 				break;
 		}
 	}
+
+    private void addToNextSevenDays(int index, Task task) {
+        ArrayList<Task> temp = new ArrayList<Task>();
+        ArrayList<Task> newNextSevenDaysTasks = getNextSevenDays();
+        newNextSevenDaysTasks.add(index,task);
+        temp.addAll(getTodayTasks());
+        temp.addAll(newNextSevenDaysTasks);
+        datedTasks = new ArrayList<Task>();
+        for (Task t : temp) {
+            datedTasks.add(t);
+        }
+    }
+
+    private void addToToday(int index, Task task) {
+        ArrayList<Task> temp = new ArrayList<Task>();
+        ArrayList<Task> newTodayTasks = getTodayTasks();
+        newTodayTasks.add(index,task);
+        temp.addAll(newTodayTasks);
+        temp.addAll(getNextSevenDays());
+        datedTasks = new ArrayList<Task>();
+        for (Task t : temp) {
+            datedTasks.add(t);
+        }
+    }
 	
 	/**
 	 * Edits the task in the respective {@code tab} at position {@code index}
 	 * @param 	tab
-	 * 			the tab where the task is
+	 * 			the tab where the task is at
 	 * @param 	index
 	 * 			the index of the task
 	 */
@@ -182,8 +198,6 @@ public class Controller {
 		Task task = command.getTask();
 		
 		deleteTask(tab,command.getIndexes());
-		//string tab tells me where it comes from
-		//command.getTab tells me where to add
 		
 		//if no change in tab, edit in position
 		if (tab.equals(command.getTab())) {
@@ -195,7 +209,6 @@ public class Controller {
 		        floatingTasks.add(task);
 		    }
 		}
-
 		saveTasks();
 		undoHistory.push(command);
 	}

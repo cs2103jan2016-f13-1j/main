@@ -28,7 +28,7 @@ public class TestLogicController {
 	//Edits task from different tabs
 	@Test
 	public void editTaskTest() {
-		String title = "Floating task 0.1";
+		String title = "jUnit edit task";
 		String feedback = controller.parseCommand(title, Controller.NO_TAB);
 		assertEquals(feedback,title);
 		controller.editTask(Controller.FLOATING_TAB, 0);
