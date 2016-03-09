@@ -24,5 +24,8 @@
 			<attribute name="javadoc_location" value="jar:platform:/resource/Dooleh/lib/docs/prettytime-nlp-4.0.1.Final-javadoc.jar!/"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="lib/testfx-core-4.0.2-alpha.jar"/>
+	<classpathentry kind="lib" path="lib/testfx-junit-4.0.2-alpha.jar"/>
+	<classpathentry kind="lib" path="lib/guava-19.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -115,6 +115,7 @@ public class RootLayoutController {
         initKeyboardListener();
         initCommandBarListener();
         initTabSelectionListener();
+        
     }
 
     /**
@@ -591,7 +592,7 @@ public class RootLayoutController {
     /**
      * @return String
      */
-    private String getSelectedTabName() {
+    public String getSelectedTabName() {
         return tabPane.getTabs().get(tabPane.getSelectionModel().getSelectedIndex()).getText();
     }
 
@@ -614,6 +615,14 @@ public class RootLayoutController {
      */
     private void moveCaretPositionToLast() {
         commandBar.positionCaret(commandBar.getText().length());
+    }
+    
+    public int getCaretCurrentPosition(){
+        return commandBar.getCaretPosition();
+    }
+    
+    public ArrayList<Task> getTaskList(){
+        return allTasks;
     }
 
 }
