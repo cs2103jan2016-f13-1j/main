@@ -48,7 +48,7 @@ public class TestGUI extends ApplicationTest {
 
     @Before
     public void initTaskListWithOneItem() {
-        String json = "[[{\"title\": \"First task\",\"status\": false,\"priority\": 0}],[]]";
+      String json = "[[{\"title\": \"First task\",\"status\": false,\"priority\": 0},{\"title\": \"Second task\",\"status\": false,\"priority\": 0},{\"title\": \"Third task\",\"status\": false,\"priority\": 0},{\"title\": \"Forth task\",\"status\": false,\"priority\": 0}],[]]";
         ArrayList<String> lines = new ArrayList<String>();
         lines.add(json);
 
@@ -126,24 +126,24 @@ public class TestGUI extends ApplicationTest {
 
     @Test
     public void user_can_add_task_with_only_a_title() {
-        write("Test task 2").push(KeyCode.ENTER);
-        write("Test task 3").push(KeyCode.ENTER);
-        write("Test task 4").push(KeyCode.ENTER);
+        write("Test task 5").push(KeyCode.ENTER);
+        write("Test task 6").push(KeyCode.ENTER);
+        write("Test task 7").push(KeyCode.ENTER);
 
-        assertEquals(4, controller.getTaskList().size());
+        assertEquals(7, controller.getTaskList().size());
     }
 
     @Test
     public void user_can_delete_task_using_delete_command() {
-        write("Test task 2").push(KeyCode.ENTER);
-        write("Test task 3").push(KeyCode.ENTER);
-        write("Test task 4").push(KeyCode.ENTER);
+        write("Test task 5").push(KeyCode.ENTER);
+        write("Test task 6").push(KeyCode.ENTER);
+        write("Test task 7").push(KeyCode.ENTER);
 
-        write("del 2").push(KeyCode.ENTER);
-        write("del 2").push(KeyCode.ENTER);
-        write("del 2").push(KeyCode.ENTER);
+        write("del 5").push(KeyCode.ENTER);
+        write("del 5").push(KeyCode.ENTER);
+        write("del 5").push(KeyCode.ENTER);
 
-        assertEquals(1, controller.getTaskList().size());
+        assertEquals(4, controller.getTaskList().size());
     }
 
     @Test
@@ -152,27 +152,8 @@ public class TestGUI extends ApplicationTest {
         ListView listView = ((ListView) primaryStage.getScene().lookup("#listView"));
         TextField commandBar = (TextField) primaryStage.getScene().lookup("#commandBar");
         
-        commandBar.setText("Test task 2");
-        push(KeyCode.ENTER);
-        commandBar.setText("Test task 3");
-        push(KeyCode.ENTER);
-        commandBar.setText("Test task 4");
-        push(KeyCode.ENTER);
-
         int previousTaskIndex = listView.getSelectionModel().getSelectedIndex();
-
-        push(KeyCode.UP);
-        assertEquals(previousTaskIndex - 1, listView.getSelectionModel().getSelectedIndex());
-        previousTaskIndex = listView.getSelectionModel().getSelectedIndex();
-
-        push(KeyCode.UP);
-        assertEquals(previousTaskIndex - 1, listView.getSelectionModel().getSelectedIndex());
-        previousTaskIndex = listView.getSelectionModel().getSelectedIndex();
-
-        push(KeyCode.UP);
-        assertEquals(previousTaskIndex - 1, listView.getSelectionModel().getSelectedIndex());
-        previousTaskIndex = listView.getSelectionModel().getSelectedIndex();
-
+        
         push(KeyCode.DOWN);
         assertEquals(previousTaskIndex + 1, listView.getSelectionModel().getSelectedIndex());
         previousTaskIndex = listView.getSelectionModel().getSelectedIndex();
@@ -183,6 +164,18 @@ public class TestGUI extends ApplicationTest {
 
         push(KeyCode.DOWN);
         assertEquals(previousTaskIndex + 1, listView.getSelectionModel().getSelectedIndex());
+        previousTaskIndex = listView.getSelectionModel().getSelectedIndex();
+        
+        push(KeyCode.UP);
+        assertEquals(previousTaskIndex - 1, listView.getSelectionModel().getSelectedIndex());
+        previousTaskIndex = listView.getSelectionModel().getSelectedIndex();
+
+        push(KeyCode.UP);
+        assertEquals(previousTaskIndex - 1, listView.getSelectionModel().getSelectedIndex());
+        previousTaskIndex = listView.getSelectionModel().getSelectedIndex();
+
+        push(KeyCode.UP);
+        assertEquals(previousTaskIndex - 1, listView.getSelectionModel().getSelectedIndex());
         previousTaskIndex = listView.getSelectionModel().getSelectedIndex();
 
     }
