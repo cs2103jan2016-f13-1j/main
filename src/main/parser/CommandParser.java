@@ -426,7 +426,7 @@ public class CommandParser {
      * 
      * @param index
      * 			index string
-     * @return ArrayList<Integer> of index(es)
+     * @return ArrayList<Integer> of index(es) but decremented by 1
      */
     private ArrayList<Integer> extractIndex(String index) {
         ArrayList<String> indexes = new ArrayList<String>();
@@ -435,7 +435,7 @@ public class CommandParser {
         ArrayList<Integer> rangedIndexes = new ArrayList<Integer>();
         
         Collections.addAll(indexes, index.split(","));
-        
+       // 1-3,4,5
         for (int i = 0; i < indexes.size(); i++) {
             if (indexes.get(i).contains("-")) {
                 Collections.addAll(tempRangedIndexes, indexes.get(i).split("-"));
@@ -445,13 +445,16 @@ public class CommandParser {
                 }
                 
                 for (int k = rangedIndexes.get(0); k <= rangedIndexes.get(1); k++) {
-                    multipleIndexes.add(k);
+                    multipleIndexes.add(k - INDEX_OFFSET);
                 }
                 
                 tempRangedIndexes.clear();
                 rangedIndexes.clear();
             } else {
-                multipleIndexes.add(Integer.parseInt(indexes.get(i)));
+            	int indexToAdd;
+            	indexToAdd = Integer.parseInt(indexes.get(i));
+            	indexToAdd = indexToAdd - INDEX_OFFSET;
+                multipleIndexes.add(indexToAdd);
             }
         }
         

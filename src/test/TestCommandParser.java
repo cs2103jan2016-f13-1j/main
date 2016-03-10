@@ -170,22 +170,23 @@ public class TestCommandParser {
         Command command = parser.parse("delete 1");
         
         ArrayList<Integer> indexes = new ArrayList<Integer>();
-        indexes.add(1);
+        indexes.add(0);
         assertEquals("delete", command.getCommandType());
         assertEquals(indexes, command.getIndexes());
         
         command = parser.parse("del 1,3,5,7,9");
         indexes.clear();
-        indexes.add(1);
-        indexes.add(3);
-        indexes.add(5);
-        indexes.add(7);
-        indexes.add(9);
+        indexes.add(0);
+        indexes.add(2);
+        indexes.add(4);
+        indexes.add(6);
+        indexes.add(8);
         assertEquals("delete", command.getCommandType());
         assertEquals(indexes, command.getIndexes());
         
         command = parser.parse("delete 1-10");
         indexes.clear();
+        indexes.add(0);
         indexes.add(1);
         indexes.add(2);
         indexes.add(3);
@@ -195,7 +196,6 @@ public class TestCommandParser {
         indexes.add(7);
         indexes.add(8);
         indexes.add(9);
-        indexes.add(10);
         assertEquals(indexes, command.getIndexes());
         
         command = parser.parse("delete 1-3,4,5,6-9,10");
