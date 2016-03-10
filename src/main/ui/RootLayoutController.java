@@ -13,6 +13,7 @@ import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.IndexedCell;
@@ -87,6 +88,15 @@ public class RootLayoutController {
 
     @FXML // fx:id="btnEdit"
     private Button btnEdit; // Value injected by FXMLLoader
+    
+    @FXML // fx:id="groupUndoRedo"
+    private Group groupUndoRedo; // Value injected by FXMLLoader
+
+    @FXML // fx:id="labelUndoRedo"
+    private Label labelUndoRedo; // Value injected by FXMLLoader
+
+    @FXML // fx:id="btnUndoRedo"
+    private Button btnUndoRedo; // Value injected by FXMLLoader
 
     private VirtualFlow<IndexedCell<String>> virtualFlow;
     private IndexedCell<String> firstVisibleIndexedCell;
@@ -104,6 +114,9 @@ public class RootLayoutController {
     private int previousSelectedTaskIndex;
     private int previousCaretPosition;
     private boolean isEditMode;
+    private boolean isExecuteCommand;
+    private boolean isUndo;
+    private boolean isRedo;
 
     public void requestFocusForCommandBar() {
         commandBar.requestFocus();
@@ -391,7 +404,34 @@ public class RootLayoutController {
         showFeedback(false);
         clearFeedback();
         clearStoredUserInput();
-        commandBar.clear();
+        commandBar.clear();        
+        
+        showUndoButton();
+        toggleUndoRedo();
+        
+    }
+
+    /**
+     * 
+     */
+    private void showUndoButton() {
+        groupUndoRedo.setVisible(true);
+    }
+
+    /**
+     * 
+     */
+    private void toggleUndoRedo() {
+        if(isUndo){
+            isUndo = false;
+            isRedo = true;
+            labelUndoRedo.setText("redo");
+        }
+        else{
+            isUndo = true;
+            isRedo = false;
+            labelUndoRedo.setText("undo");
+        }
     }
 
     /**
@@ -403,6 +443,8 @@ public class RootLayoutController {
         saveSelectedTaskIndex();
         refreshListView();
         restoreListViewPreviousSelection();
+        showUndoButton();
+        toggleUndoRedo();
 
     }
 
