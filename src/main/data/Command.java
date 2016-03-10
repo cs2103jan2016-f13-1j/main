@@ -18,7 +18,7 @@ public class Command {
     private String tab = null;
     private Task task = null;
     private ArrayList<Task> previousTasks = new ArrayList<Task>();
-    private ArrayList<Integer> indexesToDelete = new ArrayList<Integer>();
+    private ArrayList<Integer> indexes = new ArrayList<Integer>();
     
     public Command(String commandType, String tab, Task task) {
         this.commandType = commandType;
@@ -26,9 +26,9 @@ public class Command {
         this.task = task;
     }
     
-    public Command(String commandType, ArrayList<Integer> indexesToDelete) {
+    public Command(String commandType, ArrayList<Integer> indexes) {
         this.commandType = commandType;
-        this.indexesToDelete = indexesToDelete;
+        this.indexes = indexes;
     }
     public String getCommandType() {
         return commandType;
@@ -51,7 +51,7 @@ public class Command {
     }
     
     public ArrayList<Integer> getIndexes() {
-        return indexesToDelete;
+        return indexes;
     }
 
     public ArrayList<Task> getPreviousTasks() {
