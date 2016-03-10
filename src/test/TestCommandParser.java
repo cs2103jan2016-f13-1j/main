@@ -143,6 +143,12 @@ public class TestCommandParser {
 
     	command = parser.parse("Send 100 email before 8pm");
     	assertEquals("Send 100 email", command.getTask().getTitle());
+    	
+    	command = parser.parse("Meet at \"Taco Tuesday\" on Wednesday 5pm");
+    	assertEquals("Meet at \"Taco Tuesday\"", command.getTask().getTitle());
+    	
+    	command =  parser.parse("Chase \"2pm\" Korean band on Saturday 7pm");
+    	assertEquals("Chase \"2pm\" Korean band", command.getTask().getTitle());
     }
     
     @Test
