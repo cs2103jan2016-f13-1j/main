@@ -14,6 +14,7 @@ import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
+import javafx.scene.control.Button;
 import javafx.scene.control.IndexedCell;
 import javafx.scene.control.Label;
 import javafx.scene.control.SingleSelectionModel;
@@ -80,6 +81,12 @@ public class RootLayoutController {
 
     @FXML // fx:id="labelResult"
     private Label labelResult; // Value injected by FXMLLoader
+    
+    @FXML // fx:id="btnDel"
+    private Button btnDel; // Value injected by FXMLLoader
+
+    @FXML // fx:id="btnEdit"
+    private Button btnEdit; // Value injected by FXMLLoader
 
     private VirtualFlow<IndexedCell<String>> virtualFlow;
     private IndexedCell<String> firstVisibleIndexedCell;
@@ -201,7 +208,7 @@ public class RootLayoutController {
                     keyEvent.consume();
                 }
 
-                System.out.println(keyEvent.getTarget());
+                // System.out.println(keyEvent.getTarget());
 
             }
         });
@@ -227,7 +234,7 @@ public class RootLayoutController {
         allTasks = controller.getAllTasks();
 
         for (int i = 0; i < allTasks.size(); i++) {
-            System.out.println(allTasks.get(i));
+            // System.out.println(allTasks.get(i));
             observableTaskList.add(i + 1 + ". " + allTasks.get(i));
         }
 
@@ -464,8 +471,8 @@ public class RootLayoutController {
         }
 
         String parseResult = controller.parseCommand(userInput, Controller.FLOATING_TAB);
-        System.out.println("user arguments: "+userArguments);
-        System.out.println("parse result: "+parseResult);
+        System.out.println("user arguments: " + userArguments);
+        System.out.println("parse result: " + parseResult);
         String[] indexesToBeDeleted = parseResult.split(" ");
 
         if (indexesToBeDeleted.length == 1) {
@@ -477,8 +484,15 @@ public class RootLayoutController {
                 return;
             }
 
-            inputFeedback = allTasks.get(taskIndex).toString();
-            showFeedback(true, MESSAGE_FEEDBACK_ACTION_DELETE, inputFeedback);
+            // if selected index is out of bound
+            if (taskIndex >= allTasks.size() || taskIndex < 0) {
+                showResult(true, String.format(MESSAGE_ERROR_RESULT_DELETE, taskIndex + 1));
+
+            } else {
+                inputFeedback = allTasks.get(taskIndex).toString();
+                showFeedback(true, MESSAGE_FEEDBACK_ACTION_DELETE, inputFeedback);
+            }
+
             return;
         }
 

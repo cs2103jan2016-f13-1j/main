@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import com.jfoenix.controls.JFXListView?>
+<?import javafx.scene.Group?>
+<?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
@@ -37,9 +39,9 @@
          <font>
             <Font name="Noto Sans" size="13.0" />
          </font></TextField>
-      <Label fx:id="labelCurrentMode" layoutX="40.0" layoutY="58.0" text="All">
+      <Label fx:id="labelCurrentMode" alignment="BASELINE_LEFT" layoutX="40.0" layoutY="48.0" prefHeight="25.0" prefWidth="159.0" text="All">
          <font>
-            <Font name="Noto Sans" size="24.0" />
+            <Font name="Noto Sans" size="36.0" />
          </font>
       </Label>
       <Label fx:id="labelUserAction" prefWidth="85.0" text="Adding task:" textFill="#039be5" visible="false" AnchorPane.leftAnchor="40.0" AnchorPane.topAnchor="452.0">
@@ -56,5 +58,33 @@
             <Font name="Noto Sans Bold" size="13.0" />
          </font>
       </Label>
+      <Group layoutX="465.0" layoutY="88.0">
+         <children>
+            <Label alignment="CENTER" layoutY="-12.0" prefHeight="15.0" prefWidth="30.0" text="delete">
+               <font>
+                  <Font name="Noto Sans" size="10.0" />
+               </font>
+            </Label>
+            <Button fx:id="btnDel" layoutY="-30.0" mnemonicParsing="false" prefHeight="18.0" prefWidth="30.0" text="del" textAlignment="CENTER">
+               <font>
+                  <Font name="Noto Sans Bold" size="8.0" />
+               </font>
+            </Button>
+         </children>
+      </Group>
+      <Group layoutX="433.0" layoutY="88.0">
+         <children>
+            <Label alignment="CENTER" layoutY="-12.0" prefHeight="15.0" prefWidth="21.0" text="edit">
+               <font>
+                  <Font name="Noto Sans" size="10.0" />
+               </font>
+            </Label>
+            <Button fx:id="btnEdit" layoutY="-30.0" mnemonicParsing="false" text="F1" textAlignment="CENTER">
+               <font>
+                  <Font name="Noto Sans Bold" size="8.0" />
+               </font>
+            </Button>
+         </children>
+      </Group>
    </children>
 </AnchorPane>
