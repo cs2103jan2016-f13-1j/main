@@ -45,6 +45,9 @@ public class TestCommandParser {
         
         command = parser.parse("Send 100 email before I sleep");
         assertEquals("floating", command.getTab());
+        
+        command = parser.parse("Watch day after tomorrow movie");
+        assertEquals("floating", command.getTab());
     }
     
     @Test
