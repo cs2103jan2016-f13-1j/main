@@ -29,7 +29,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import main.data.Task;
-import main.logic.Controller;
+import main.logic.Logic;
 
 @SuppressWarnings("restriction")
 public class RootLayoutController {
@@ -102,7 +102,7 @@ public class RootLayoutController {
     private IndexedCell<String> firstVisibleIndexedCell;
     private IndexedCell<String> lastVisibleIndexedCell;
 
-    private Controller controller;
+    private Logic logic;
     private ArrayList<Task> allTasks;
     private ListProperty<String> listProperty;
     private ObservableList<String> observableTaskList = FXCollections.observableArrayList();
@@ -235,8 +235,8 @@ public class RootLayoutController {
      * 
      */
     private void populateListView() {
-        if (controller == null) {
-            controller = new Controller();
+        if (logic == null) {
+            logic = Logic.getLogic();
         }
 
         // ListView only allow binding of a OberservableList of String
@@ -248,7 +248,7 @@ public class RootLayoutController {
         listView.setPlaceholder(new Label(MESSAGE_LISTVIEW_EMPTY));
 
         // retrieve all task and add into an ObservableList
-        allTasks = controller.getAllTasks();
+        allTasks = logic.getAllTasks();
 
         for (int i = 0; i < allTasks.size(); i++) {
             // System.out.println(allTasks.get(i));
@@ -364,12 +364,12 @@ public class RootLayoutController {
             isUndo = false;
             isRedo = true;
             labelUndoRedo.setText("undo");
-            controller.redo();
+            logic.redo();
         } else {
             isUndo = true;
             isRedo = false;
             labelUndoRedo.setText("redo");
-            controller.undo();
+            logic.undo();
         }
 
         refreshListView();
@@ -397,7 +397,7 @@ public class RootLayoutController {
             System.out.println(inputFeedback);
 
         } else {
-            controller.parseCommand(commandBar.getText(), Controller.FLOATING_TAB);
+            logic.parseCommand(commandBar.getText(), Logic.FLOATING_TAB);
         }
     }
 
@@ -407,7 +407,7 @@ public class RootLayoutController {
     private void handleEnterKey() {
 
         if (!isEditMode) {
-            controller.executeCommand();
+            logic.executeCommand();
 
             // add operation
             if (!userCommand.equals(COMMAND_DELETE) && !userCommand.equals(COMMAND_DELETE_SHORTHAND)) {
@@ -421,8 +421,8 @@ public class RootLayoutController {
             }
 
         } else {
-            // something is wrong with this controller.editTask API
-            controller.editTask(Controller.FLOATING_TAB, getSelectedTaskIndex());
+            // something is wrong with this logic.editTask API
+            logic.editTask(Logic.FLOATING_TAB, getSelectedTaskIndex());
             saveSelectedTaskIndex();
             refreshListView();
             restoreListViewPreviousSelection();
@@ -447,8 +447,8 @@ public class RootLayoutController {
      * 
      */
     private void handleDeleteKey() {
-        controller.parseCommand(COMMAND_DELETE + WHITESPACE + (getSelectedTaskIndex() + 1), Controller.FLOATING_TAB);
-        controller.executeCommand();
+        logic.parseCommand(COMMAND_DELETE + WHITESPACE + (getSelectedTaskIndex() + 1), Logic.FLOATING_TAB);
+        logic.executeCommand();
         saveSelectedTaskIndex();
         refreshListView();
         restoreListViewPreviousSelection();
@@ -510,7 +510,7 @@ public class RootLayoutController {
      * 
      */
     private void parseAdd() {
-        inputFeedback = controller.parseCommand(userInput, Controller.NO_TAB);
+        inputFeedback = logic.parseCommand(userInput, Logic.NO_TAB);
         showFeedback(true, MESSAGE_FEEDBACK_ACTION_ADD, inputFeedback);
     }
 
@@ -520,7 +520,7 @@ public class RootLayoutController {
             return;
         }
 
-        String parseResult = controller.parseCommand(userInput, Controller.FLOATING_TAB);
+        String parseResult = logic.parseCommand(userInput, Logic.FLOATING_TAB);
         System.out.println("user arguments: " + userArguments);
         System.out.println("parse result: " + parseResult);
         String[] indexesToBeDeleted = parseResult.split(" ");
@@ -566,7 +566,7 @@ public class RootLayoutController {
             return;
         }
 
-        String parseResult = controller.parseCommand("del 100", Controller.FLOATING_TAB);
+        String parseResult = logic.parseCommand("del 100", Logic.FLOATING_TAB);
         System.out.println(parseResult);
 
         int userIndex = 0;
@@ -586,7 +586,7 @@ public class RootLayoutController {
         } else {
             inputFeedback = allTasks.get(actualIndex).toString();
             showFeedback(true, MESSAGE_FEEDBACK_ACTION_DELETE, inputFeedback);
-            controller.parseCommand(COMMAND_DELETE + WHITESPACE + actualIndex, Controller.FLOATING_TAB);
+            logic.parseCommand(COMMAND_DELETE + WHITESPACE + actualIndex, Logic.FLOATING_TAB);
 
             // saveSelectedTaskIndex();
             // listView.getFocusModel().focus(actualIndex);

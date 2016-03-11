@@ -41,6 +41,10 @@ public class Task {
         return endDate;
     }
     
+    public boolean hasDate() {
+        return (startDate != null || endDate != null);
+    }
+    
     public String toString() {
         String feedback = null;
         SimpleDateFormat dateFormat = new SimpleDateFormat("d/M (EEE) HH:mm");

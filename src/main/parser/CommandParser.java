@@ -21,6 +21,7 @@ import java.time.format.TextStyle;
 import org.ocpsoft.prettytime.nlp.PrettyTimeParser;
 
 import main.data.Command;
+import main.data.Command.Type;
 import main.data.Task;
 
 public class CommandParser {
@@ -39,7 +40,7 @@ public class CommandParser {
     
     public Command parse(String commandString) {
         String command = getFirstWord(commandString);
-        String commandType = getCommandType(command);
+        Type commandType = getCommandType(command);
         return commandPreparations(commandType, commandString);
     }
     
@@ -47,25 +48,25 @@ public class CommandParser {
         return commandString.split(" ")[0];
     }
     
-    private String getCommandType(String command) {
+    private Type getCommandType(String command) {
         if (command.equalsIgnoreCase("delete") || (command.equalsIgnoreCase("del"))) {
-            return "delete";
+            return Command.Type.DELETE;
         } else if (command.equalsIgnoreCase("done")) {
-        	return "done";
+        	return Command.Type.DONE;
         } else {
-        	return "add";
+        	return Command.Type.ADD;
         }
     }
     
-    private Command commandPreparations(String type, String commandString) {
+    private Command commandPreparations(Type type, String commandString) {
         switch (type) {
-            case "add" :
+            case ADD :
                 return prepareForAdd(type, commandString);
                 
-            case "delete" :
+            case DELETE :
                 return prepareIndexes(type, commandString);
                 
-            case "done" :
+            case DONE :
             	return prepareIndexes(type, commandString);
             	
             default :
@@ -85,8 +86,7 @@ public class CommandParser {
      * 			command string from user input
      * @return Command with the type of command and task
      */
-    private Command prepareForAdd(String type, String commandString) {
-        String tab = "floating";
+    private Command prepareForAdd(Type type, String commandString) {
         String title = null;
         Task task = null;
         String label = null;
@@ -103,13 +103,13 @@ public class CommandParser {
             numberOfDate = dates.size();
             
             if (numberOfDate > 0) {
-                tab = "dated";
                 endDate = getDate(dates, DATE_END);
-            }
-            
-            if (numberOfDate == DATE_MAX_SIZE) {
-                startDate = getDate(dates, DATE_START_RANGED);
-                endDate = getDate(dates, DATE_END_RANGED);
+                
+                if (numberOfDate == DATE_MAX_SIZE) {
+                    startDate = getDate(dates, DATE_START_RANGED);
+                    endDate = getDate(dates, DATE_END_RANGED);
+                    title = removeDateFromTitle(title, startDate, endDate);
+                }
             }
         }
         
@@ -118,14 +118,9 @@ public class CommandParser {
             label = extractLabel(commandString);
             title = removeLabelFromTitle(title, label);
         }
-        
-        if (tab.equals("dated")) {
-        	title = removeDateFromTitle(title, startDate, endDate);
-        }
 
         task = buildTask(title, startDate, endDate, label);
-        Command command = new Command(type, tab, task);
-        
+        Command command = new Command(type, task);
         return command;
     }
     
@@ -387,7 +382,7 @@ public class CommandParser {
      * 			user input string
      * @return Command with the type of command and index(es)
      */
-    private Command prepareIndexes(String type, String commandString) {
+    private Command prepareIndexes(Type type, String commandString) {
         String indexString = getIndexString(commandString);
         
         ArrayList<Integer> indexes = new ArrayList<Integer>();

@@ -11,30 +11,31 @@ import java.util.ArrayList;
 
 public class Command {
     
-    public static final String FLOATING_TAB = "floating";
-    public static final String DATED_TAB = "dated";
+    public static enum Type {
+        ADD, EDIT, DELETE, DONE
+    }
     
-    private String commandType = null;
+    private Type commandType = null;
     private String tab = null;
     private Task task = null;
+    private String previousTab = null;
     private ArrayList<Task> previousTasks = new ArrayList<Task>();
     private ArrayList<Integer> indexes = new ArrayList<Integer>();
     
-    public Command(String commandType, String tab, Task task) {
+    public Command(Type commandType, Task task) {
         this.commandType = commandType;
-        this.tab = tab;
         this.task = task;
     }
     
-    public Command(String commandType, ArrayList<Integer> indexes) {
+    public Command(Type commandType, ArrayList<Integer> indexes) {
         this.commandType = commandType;
         this.indexes = indexes;
     }
-    public String getCommandType() {
+    public Type getCommandType() {
         return commandType;
     }
     
-    public void setCommandType(String commandType) {
+    public void setCommandType(Type commandType) {
     	this.commandType = commandType;
     }
     
@@ -53,6 +54,10 @@ public class Command {
     public ArrayList<Integer> getIndexes() {
         return indexes;
     }
+    
+    public void setIndexes(ArrayList<Integer> indexes) {
+        this.indexes = indexes;
+    }
 
     public ArrayList<Task> getPreviousTasks() {
         return previousTasks;
@@ -60,5 +65,13 @@ public class Command {
 
     public void setPreviousTasks(ArrayList<Task> previousTasks) {
         this.previousTasks = previousTasks;
+    }
+
+    public String getPreviousTab() {
+        return previousTab;
+    }
+
+    public void setPreviousTab(String previousTab) {
+        this.previousTab = previousTab;
     }
 }

@@ -16,6 +16,8 @@
  * getNextSevenDays();
  * getFileDirectory();
  * getFileName();
+ * getUndoCount();
+ * getRedoCount();
  * 
  * setFileDirectory(String fileDirectory);
  * setFileName(String fileName);
@@ -39,8 +41,10 @@ import main.data.Task;
 import main.parser.CommandParser;
 import main.storage.Storage;
 
-public class Controller {
+public class Logic {
 	
+    private static Logic logic;
+    
 	public static final String DATE_FORMAT_DDMMYY = "ddMMyyyy";
 	
 	public static final String NO_TAB = "none";
@@ -48,10 +52,6 @@ public class Controller {
 	public static final String DATED_TAB = "dated";
 	public static final String TODAY_TAB = "today";
 	public static final String NEXT_SEVEN_DAYS_TAB = "nextSevenDays";
-	
-	private static final String COMMAND_TYPE_ADD = "add";
-	private static final String COMMAND_TYPE_EDIT = "edit";
-	private static final String COMMAND_TYPE_DELETE = "delete";
 	
 	private static final int FLOATING_TASKS_INDEX = 0;
 	private static final int DATED_TASKS_INDEX = 1;
@@ -69,14 +69,25 @@ public class Controller {
 	/**
 	 * Initializes a newly created {@code Controller} object.
 	 */
-	public Controller() {
-		parser = new CommandParser();
-		storage = Storage.getStorage();
-		
-		ArrayList<ArrayList<Task>> tasksFromStorage = storage.readTasks();;
-		floatingTasks = tasksFromStorage.get(FLOATING_TASKS_INDEX);
-		datedTasks = tasksFromStorage.get(DATED_TASKS_INDEX);
-	}
+    private Logic() {
+        parser = new CommandParser();
+        storage = Storage.getStorage();
+         
+        ArrayList<ArrayList<Task>> tasksFromStorage = storage.readTasks();;
+        floatingTasks = tasksFromStorage.get(FLOATING_TASKS_INDEX);
+        datedTasks = tasksFromStorage.get(DATED_TASKS_INDEX);
+    }
+
+    public static synchronized Logic getLogic() {
+        if (logic == null) {
+            logic = new Logic();
+        }
+        return logic;
+    }
+
+    public Object clone() throws CloneNotSupportedException {
+        throw new CloneNotSupportedException();
+    }
 	
 	private void addTask(String tab, Task task) {
 		switch (tab.toLowerCase()) {
@@ -89,7 +100,6 @@ public class Controller {
 			default:
 				break;
 		}
-		saveTasks();
 	}
 	
 	private ArrayList<Task> deleteTasksFromList(ArrayList<Task> list, ArrayList<Integer> indexes) {
@@ -120,7 +130,6 @@ public class Controller {
 			default:
 				break;
 		}
-		saveTasks();
 	}
 
     private void deleteTasksFromNextSevenDays(ArrayList<Integer> indexes) {
@@ -194,74 +203,83 @@ public class Controller {
 	 * 			the index of the task
 	 */
 	public void editTask(String tab, int index) {
-	    command.setCommandType(COMMAND_TYPE_EDIT);
-		command.getPreviousTasks().add(getTaskAtIndex(tab,index));
-		command.getIndexes().add(index);
+	    System.out.println("editing from tab: " + tab + " index: " + index + " to: " + command.getTab());
+	    command.setCommandType(Command.Type.EDIT);
+	    command.setPreviousTasks(new ArrayList<Task>());
+	    command.getPreviousTasks().add(getTaskAtIndex(tab,index));
+	    command.setIndexes(new ArrayList<Integer>());
+	    command.getIndexes().add(index);
+	    
 		Task task = command.getTask();
 		
 		deleteTask(tab,command.getIndexes());
 		
 		//if no change in tab, edit in position
 		if (tab.equals(command.getTab())) {
-		    addToList(tab,index,command.getTask());
+		    addToList(tab,index,task);
 		} else {
-		    if (hasDate(task)) {
+		    if (task.hasDate()) {
 		        datedTasks.add(task);
 		    } else {
 		        floatingTasks.add(task);
 		    }
 		}
+		command.setPreviousTab(tab);
 		saveTasks();
-		undoHistory.push(command);
+		addToHistory();
 	}
 
-    private boolean hasDate(Task task) {
-        return (task.getStartDate() != null || task.getEndDate() != null);
+    private void addToHistory() {
+        undoHistory.push(command);
+		redoHistory = new Stack<Command>();
     }
-	
-	private void execute(Command command) {
-		switch (command.getCommandType().toLowerCase()) {
-			case COMMAND_TYPE_ADD:
-				addTask(command.getTab(),command.getTask());
-				break;
-			case COMMAND_TYPE_DELETE:
-				deleteTask(command.getTab(),command.getIndexes());
-				break;
-			default:
-				break;
-		}
-	}
 
 	/**
 	 * Executes the last command stored when parseCommand was called,
-	 * and stores it in a {@code Command} history stack
+	 * and stores it in a {@code Command} history stack.
+	 * 
+	 * Used for add and delete operations.
 	 */
 	public void executeCommand() {
-		execute(command);
-		undoHistory.push(command);
+	    switch (command.getCommandType()) {
+            case ADD:
+                addTask(command.getTab(),command.getTask());
+                break;
+            case DELETE:
+                deleteTask(command.getTab(),command.getIndexes());
+                break;
+            default:
+                break;
+	    }
+	    saveTasks();
+		addToHistory();
 	}
 	
 	public void undo() {
 		Command undoCommand = undoHistory.pop();
-		redoHistory.push(undoCommand);
+		
 		String tab = undoCommand.getTab();
 		
 		ArrayList<Integer> indexes = null;
 		
-		switch (undoCommand.getCommandType().toLowerCase()) {
-			case COMMAND_TYPE_ADD:
+		switch (undoCommand.getCommandType()) {
+			case ADD:
+			    redoHistory.push(undoCommand);
 			    ArrayList<Integer> indexToDelete = new ArrayList<Integer>();
 			    indexToDelete.add(getLastIndexOf(tab));
 			    deleteTask(tab,indexToDelete);
 				break;
-			case COMMAND_TYPE_EDIT:
+			case EDIT:
                 //delete task and add previous task at index
 			    Task previousTask = undoCommand.getPreviousTasks().get(0);
 			    indexes = undoCommand.getIndexes();
 			    deleteTask(tab,indexes);
-			    addToList(tab,indexes.get(0),previousTask);
+			    addToList(undoCommand.getPreviousTab(),indexes.get(0),previousTask);
+			    undoCommand.setTab(tab);
+			    redoHistory.push(undoCommand);
                 break;
-			case COMMAND_TYPE_DELETE:
+			case DELETE:
+			    redoHistory.push(undoCommand);
 			    ArrayList<Task> previousTasks = undoCommand.getPreviousTasks();
 			    indexes = undoCommand.getIndexes();
 			    for (int i = 0; i < previousTasks.size(); i++) {
@@ -276,26 +294,23 @@ public class Controller {
 	
 	public void redo() {
 	    Command redoCommand = redoHistory.pop();
-        String tab = redoCommand.getTab();
+	    command = redoCommand;
+	    undoHistory.push(command);
 
-        switch (redoCommand.getCommandType().toLowerCase()) {
-            case COMMAND_TYPE_ADD:
-                command = redoCommand;
-                executeCommand();
+        switch (redoCommand.getCommandType()) {
+            case ADD:
+                addTask(command.getTab(),command.getTask());             
                 break;
-            case COMMAND_TYPE_EDIT:
-                undoHistory.push(redoCommand);
-                deleteTask(tab,command.getIndexes());
-                addToList(tab,command.getIndexes().get(0),command.getTask());
-                saveTasks();
+            case EDIT:
+                editTask(command.getPreviousTab(),command.getIndexes().get(0));
                 break;
-            case COMMAND_TYPE_DELETE:
-                command = redoCommand;
-                executeCommand();
+            case DELETE:
+                deleteTask(command.getTab(),command.getIndexes());
                 break;
             default:
                 break;
         }
+        saveTasks();
 	}
 	
 	private int getLastIndexOf(String tab) {
@@ -460,15 +475,20 @@ public class Controller {
 	 * @return	feedback resulting from the evaluation of the command
 	 */
 	public String parseCommand(String userCommand, String tab) {
-		command = parser.parse(userCommand);
-		String commandType = command.getCommandType().toLowerCase();
-		String feedback = null;
+	    String feedback = null;
+	    
+	    command = parser.parse(userCommand);
 		
-		switch (commandType) {
-            case COMMAND_TYPE_ADD:
+		switch (command.getCommandType()) {
+            case ADD:
+                if (command.getTask().hasDate()) {
+                    command.setTab(DATED_TAB);
+                } else {
+                    command.setTab(FLOATING_TAB);
+                }
                 feedback = command.getTask().toString();
                 break;
-            case COMMAND_TYPE_DELETE:
+            case DELETE:
                 ArrayList<Integer> indexArray = command.getIndexes();
                 StringBuilder indexes = new StringBuilder();
                 for (int i = 0; i < indexArray.size(); i++) {
@@ -505,4 +525,12 @@ public class Controller {
 	public void setFileName(String fileName) {
 		storage.setFileName(fileName);
 	}
+	
+	public int getUndoCount() {
+	    return undoHistory.size();
+	}
+	
+	public int getRedoCount() {
+        return redoHistory.size();
+    }
 }
