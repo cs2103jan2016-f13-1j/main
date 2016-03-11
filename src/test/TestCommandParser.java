@@ -171,6 +171,15 @@ public class TestCommandParser {
     }
     
     @Test
+    public void testDetectStartEndTime() {
+    	CommandParser parser = new CommandParser();
+    	Command command = parser.parse("Quiz from 5pm");
+    	//PENDING
+    	System.out.println(command.getTask().getTitle());
+    	System.out.println(command.getTask().toString());
+    }
+    
+    @Test
     public void testDelete() {
         CommandParser parser = new CommandParser();
         Command command = parser.parse("delete 1");
