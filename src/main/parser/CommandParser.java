@@ -108,8 +108,9 @@ public class CommandParser {
                 if (numberOfDate == DATE_MAX_SIZE) {
                     startDate = getDate(dates, DATE_START_RANGED);
                     endDate = getDate(dates, DATE_END_RANGED);
-                    title = removeDateFromTitle(title, startDate, endDate);
                 }
+                
+                title = removeDateFromTitle(title, startDate, endDate);
             }
         }
         

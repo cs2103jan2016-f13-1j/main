@@ -31,6 +31,7 @@ public class Command {
         this.commandType = commandType;
         this.indexes = indexes;
     }
+    
     public Type getCommandType() {
         return commandType;
     }
