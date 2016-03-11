@@ -1,13 +1,11 @@
-/**
- * 
- */
 package main.data;
+
+import java.util.ArrayList;
 
 /**
  * @author Joleen
  *
  */
-import java.util.ArrayList;
 
 public class Command {
     
@@ -16,11 +14,11 @@ public class Command {
     }
     
     private Type commandType = null;
-    private String listType = null;
     private Task task = null;
+    private ArrayList<Integer> indexes = new ArrayList<Integer>();
+    private String listType = null;
     private String previousListType = null;
     private ArrayList<Task> previousTasks = new ArrayList<Task>();
-    private ArrayList<Integer> indexes = new ArrayList<Integer>();
     
     public Command(Type commandType, Task task) {
         this.commandType = commandType;
@@ -44,6 +42,14 @@ public class Command {
         return task;
     }
     
+    public ArrayList<Integer> getIndexes() {
+        return indexes;
+    }
+    
+    public void setIndexes(ArrayList<Integer> indexes) {
+        this.indexes = indexes;
+    }
+    
     public String getListType() {
         return listType;
     }
@@ -52,12 +58,12 @@ public class Command {
         this.listType = listType;
     }
     
-    public ArrayList<Integer> getIndexes() {
-        return indexes;
+    public String getPreviousListType() {
+        return previousListType;
     }
-    
-    public void setIndexes(ArrayList<Integer> indexes) {
-        this.indexes = indexes;
+
+    public void setPreviousListType(String previousListType) {
+        this.previousListType = previousListType;
     }
 
     public ArrayList<Task> getPreviousTasks() {
@@ -66,13 +72,5 @@ public class Command {
 
     public void setPreviousTasks(ArrayList<Task> previousTasks) {
         this.previousTasks = previousTasks;
-    }
-
-    public String getPreviousListType() {
-        return previousListType;
-    }
-
-    public void setPreviousListType(String previousListType) {
-        this.previousListType = previousListType;
     }
 }

@@ -1,12 +1,4 @@
-/**
- *
- */
 package test;
-
-/**
- * @author Joleen
- *
- */
 
 import static org.junit.Assert.assertEquals;
 
@@ -20,6 +12,11 @@ import java.util.Date;
 
 import main.data.Command;
 import main.parser.CommandParser;
+
+/**
+ * @author Joleen
+ *
+ */
 
 public class TestCommandParser {
     
@@ -120,7 +117,7 @@ public class TestCommandParser {
     	assertEquals("Attend meeting from 25/3 (Fri) 16:00 to 25/3 (Fri) 18:00",command.getTask().toString()); 	
     }
     
-   @Ignore @Test
+    @Test
     public void testDatedTaskTitle(){
     	CommandParser parser = new CommandParser();
     	Command command = parser.parse("Attend meeting from Monday to Wednesday");
