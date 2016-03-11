@@ -29,9 +29,9 @@ public class TestLogic {
 	@Test
 	public void editTaskTest() {
 		String title = "jUnit edit task";
-		String feedback = logic.parseCommand(title, Logic.NO_TAB);
+		String feedback = logic.parseCommand(title, null);
 		assertEquals(feedback,title);
-		logic.editTask(Logic.FLOATING_TAB, 0);
+		logic.editTask(Logic.List.FLOATING, 0);
 		assertEquals(title,logic.getFloatingTasks().get(0).getTitle());
 		
 		//title = "Today task 1.1";
@@ -67,22 +67,22 @@ public class TestLogic {
 		String feedback = null;
 		int lastIndex = -1;
 		
-		feedback = logic.parseCommand("cook dinner #home", Logic.NO_TAB);
+		feedback = logic.parseCommand("cook dinner #home", null);
 		assertEquals(feedback,"cook dinner #home");
 		logic.executeCommand();
 		logic.executeCommand();
 		
-		feedback = logic.parseCommand("cook dinner", Logic.NO_TAB);
+		feedback = logic.parseCommand("cook dinner", null);
 		assertEquals(feedback,"cook dinner");
 		logic.executeCommand();
 		
 		//delete last 3 floating tasks
 		lastIndex = logic.getFloatingTasks().size() - 1;
-		feedback = logic.parseCommand("delete " + lastIndex, Logic.FLOATING_TAB);
+		feedback = logic.parseCommand("delete " + lastIndex, Logic.List.FLOATING);
         logic.executeCommand();
 		
         lastIndex = logic.getFloatingTasks().size() - 1;
-		feedback = logic.parseCommand("delete " + (lastIndex-1) + "-" + lastIndex, Logic.FLOATING_TAB);
+		feedback = logic.parseCommand("delete " + (lastIndex-1) + "-" + lastIndex, Logic.List.FLOATING);
 		logic.executeCommand();
 		
 		//feedback = logic.parseCommand("delete 1", logic.Tab.TODAY);
@@ -95,7 +95,7 @@ public class TestLogic {
 	    int lastIndex = -1;
 	    
 	    //undo and redo an add operation
-	    logic.parseCommand("undo task", Logic.FLOATING_TAB);
+	    logic.parseCommand("undo task", Logic.List.FLOATING);
         logic.executeCommand();
         logic.undo();
         logic.redo();
@@ -103,28 +103,28 @@ public class TestLogic {
         
         //undo a delete operation of one task
         lastIndex = logic.getFloatingTasks().size() - 1;
-        logic.parseCommand("delete " + lastIndex, Logic.FLOATING_TAB);
+        logic.parseCommand("delete " + lastIndex, Logic.List.FLOATING);
         logic.executeCommand();
         logic.undo();
         logic.redo();
         
         //undo a delete operation of multiple task  
-        logic.parseCommand("undo task", Logic.FLOATING_TAB);
+        logic.parseCommand("undo task", Logic.List.FLOATING);
         logic.executeCommand();
         logic.executeCommand();
         
         int secondLastIndex = logic.getFloatingTasks().size() - 2;
         lastIndex = logic.getFloatingTasks().size() - 1;
         
-        logic.parseCommand("delete " + secondLastIndex + "-" + lastIndex, Logic.FLOATING_TAB);
+        logic.parseCommand("delete " + secondLastIndex + "-" + lastIndex, Logic.List.FLOATING);
         logic.executeCommand();
         logic.undo();
         logic.redo();
         
         //undo and redo an edit task
         String title = "Floating task 0.1";
-        logic.parseCommand(title, Logic.NO_TAB);
-        logic.editTask(Logic.FLOATING_TAB, 0);
+        logic.parseCommand(title, null);
+        logic.editTask(Logic.List.FLOATING, 0);
         logic.undo();
         logic.redo();
 	}

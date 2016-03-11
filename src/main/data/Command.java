@@ -9,6 +9,8 @@ package main.data;
  */
 import java.util.ArrayList;
 
+import main.logic.Logic;
+
 public class Command {
     
     public static enum Type {
@@ -16,9 +18,9 @@ public class Command {
     }
     
     private Type commandType = null;
-    private String tab = null;
+    private Logic.List listType = null;
     private Task task = null;
-    private String previousTab = null;
+    private Logic.List previousListType = null;
     private ArrayList<Task> previousTasks = new ArrayList<Task>();
     private ArrayList<Integer> indexes = new ArrayList<Integer>();
     
@@ -43,12 +45,12 @@ public class Command {
         return task;
     }
     
-    public String getTab() {
-        return tab;
+    public Logic.List getListType() {
+        return listType;
     }
     
-    public void setTab(String tab) {
-        this.tab = tab;
+    public void setListType(Logic.List listType) {
+        this.listType = listType;
     }
     
     public ArrayList<Integer> getIndexes() {
@@ -67,11 +69,11 @@ public class Command {
         this.previousTasks = previousTasks;
     }
 
-    public String getPreviousTab() {
-        return previousTab;
+    public Logic.List getPreviousListType() {
+        return previousListType;
     }
 
-    public void setPreviousTab(String previousTab) {
-        this.previousTab = previousTab;
+    public void setPreviousListType(Logic.List previousListType) {
+        this.previousListType = previousListType;
     }
 }

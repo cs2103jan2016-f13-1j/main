@@ -47,11 +47,14 @@ public class Logic {
     
 	public static final String DATE_FORMAT_DDMMYY = "ddMMyyyy";
 	
-	public static final String NO_TAB = "none";
-	public static final String FLOATING_TAB = "floating";
-	public static final String DATED_TAB = "dated";
-	public static final String TODAY_TAB = "today";
-	public static final String NEXT_SEVEN_DAYS_TAB = "nextSevenDays";
+//	public static final String FLOATING_TAB = "floating";
+//	public static final String DATED_TAB = "dated";
+//	public static final String TODAY_TAB = "today";
+//	public static final String NEXT_SEVEN_DAYS_TAB = "nextSevenDays";
+	
+	public static enum List {
+	    FLOATING, DATED, TODAY, NEXT_SEVEN_DAYS
+	}
 	
 	private static final int FLOATING_TASKS_INDEX = 0;
 	private static final int DATED_TASKS_INDEX = 1;
@@ -89,12 +92,12 @@ public class Logic {
         throw new CloneNotSupportedException();
     }
 	
-	private void addTask(String tab, Task task) {
-		switch (tab.toLowerCase()) {
-			case FLOATING_TAB:
+	private void addTask(List type, Task task) {
+		switch (type) {
+			case FLOATING:
 				floatingTasks.add(task);
 				break;
-			case DATED_TAB:
+			case DATED:
 				datedTasks.add(task);
 				break;
 			default:
@@ -115,17 +118,17 @@ public class Logic {
 		return list;
 	}
 	
-	private void deleteTask(String tab, ArrayList<Integer> indexes) {
-		switch (tab) {
-			case FLOATING_TAB:
+	private void deleteTask(List type, ArrayList<Integer> indexes) {
+		switch (type) {
+			case FLOATING:
 				deleteTasksFromList(floatingTasks, indexes);
 				break;
-			case DATED_TAB:
+			case DATED:
 				deleteTasksFromList(datedTasks, indexes);
 				break;
-			case TODAY_TAB:
+			case TODAY:
                 deleteTasksFromToday(indexes);
-			case NEXT_SEVEN_DAYS_TAB:
+			case NEXT_SEVEN_DAYS:
             deleteTasksFromNextSevenDays(indexes);
 			default:
 				break;
@@ -154,17 +157,17 @@ public class Logic {
         }
     }
 	
-	private void addToList(String tab, int index, Task task) {
-		switch (tab.toLowerCase()) {
-			case FLOATING_TAB:
+	private void addToList(List type, int index, Task task) {
+		switch (type) {
+			case FLOATING:
 				floatingTasks.add(index,task);
 				break;
-			case DATED_TAB:
+			case DATED:
 				datedTasks.add(index,task);
 				break;
-			case TODAY_TAB:
+			case TODAY:
                 addToToday(index, task);
-			case NEXT_SEVEN_DAYS_TAB:
+			case NEXT_SEVEN_DAYS:
                 addToNextSevenDays(index, task);
 			default:
 				break;
@@ -202,21 +205,20 @@ public class Logic {
 	 * @param 	index
 	 * 			the index of the task
 	 */
-	public void editTask(String tab, int index) {
-	    System.out.println("editing from tab: " + tab + " index: " + index + " to: " + command.getTab());
+	public void editTask(List type, int index) {
 	    command.setCommandType(Command.Type.EDIT);
 	    command.setPreviousTasks(new ArrayList<Task>());
-	    command.getPreviousTasks().add(getTaskAtIndex(tab,index));
+	    command.getPreviousTasks().add(getTaskAtIndex(type,index));
 	    command.setIndexes(new ArrayList<Integer>());
 	    command.getIndexes().add(index);
 	    
 		Task task = command.getTask();
 		
-		deleteTask(tab,command.getIndexes());
+		deleteTask(type,command.getIndexes());
 		
 		//if no change in tab, edit in position
-		if (tab.equals(command.getTab())) {
-		    addToList(tab,index,task);
+		if (type.equals(command.getListType())) {
+		    addToList(type,index,task);
 		} else {
 		    if (task.hasDate()) {
 		        datedTasks.add(task);
@@ -224,7 +226,7 @@ public class Logic {
 		        floatingTasks.add(task);
 		    }
 		}
-		command.setPreviousTab(tab);
+		command.setPreviousListType(type);
 		saveTasks();
 		addToHistory();
 	}
@@ -243,10 +245,10 @@ public class Logic {
 	public void executeCommand() {
 	    switch (command.getCommandType()) {
             case ADD:
-                addTask(command.getTab(),command.getTask());
+                addTask(command.getListType(),command.getTask());
                 break;
             case DELETE:
-                deleteTask(command.getTab(),command.getIndexes());
+                deleteTask(command.getListType(),command.getIndexes());
                 break;
             default:
                 break;
@@ -258,7 +260,7 @@ public class Logic {
 	public void undo() {
 		Command undoCommand = undoHistory.pop();
 		
-		String tab = undoCommand.getTab();
+		List type = undoCommand.getListType();
 		
 		ArrayList<Integer> indexes = null;
 		
@@ -266,16 +268,16 @@ public class Logic {
 			case ADD:
 			    redoHistory.push(undoCommand);
 			    ArrayList<Integer> indexToDelete = new ArrayList<Integer>();
-			    indexToDelete.add(getLastIndexOf(tab));
-			    deleteTask(tab,indexToDelete);
+			    indexToDelete.add(getLastIndexOf(type));
+			    deleteTask(type,indexToDelete);
 				break;
 			case EDIT:
                 //delete task and add previous task at index
 			    Task previousTask = undoCommand.getPreviousTasks().get(0);
 			    indexes = undoCommand.getIndexes();
-			    deleteTask(tab,indexes);
-			    addToList(undoCommand.getPreviousTab(),indexes.get(0),previousTask);
-			    undoCommand.setTab(tab);
+			    deleteTask(type,indexes);
+			    addToList(undoCommand.getPreviousListType(),indexes.get(0),previousTask);
+			    undoCommand.setListType(type);
 			    redoHistory.push(undoCommand);
                 break;
 			case DELETE:
@@ -283,7 +285,7 @@ public class Logic {
 			    ArrayList<Task> previousTasks = undoCommand.getPreviousTasks();
 			    indexes = undoCommand.getIndexes();
 			    for (int i = 0; i < previousTasks.size(); i++) {
-			        addToList(tab, indexes.get(i), previousTasks.get(i));
+			        addToList(type, indexes.get(i), previousTasks.get(i));
 			    }
 				break;
 			default:
@@ -299,13 +301,13 @@ public class Logic {
 
         switch (redoCommand.getCommandType()) {
             case ADD:
-                addTask(command.getTab(),command.getTask());             
+                addTask(command.getListType(),command.getTask());             
                 break;
             case EDIT:
-                editTask(command.getPreviousTab(),command.getIndexes().get(0));
+                editTask(command.getPreviousListType(),command.getIndexes().get(0));
                 break;
             case DELETE:
-                deleteTask(command.getTab(),command.getIndexes());
+                deleteTask(command.getListType(),command.getIndexes());
                 break;
             default:
                 break;
@@ -313,19 +315,19 @@ public class Logic {
         saveTasks();
 	}
 	
-	private int getLastIndexOf(String tab) {
+	private int getLastIndexOf(List type) {
 	    int index = 0;
 	    
-	    switch (tab.toLowerCase()) {
-    	    case FLOATING_TAB:
+	    switch (type) {
+    	    case FLOATING:
                 index = floatingTasks.size();
                 break;
-            case DATED_TAB:
+            case DATED:
                 index = datedTasks.size();
                 break;
-            case TODAY_TAB:
+            case TODAY:
                 index = getTodayTasks().size();
-            case NEXT_SEVEN_DAYS_TAB:
+            case NEXT_SEVEN_DAYS:
                 index = getNextSevenDays().size();
             default:
                 break;
@@ -334,19 +336,19 @@ public class Logic {
 	    return index;
 	}
 	
-   private Task getTaskAtIndex(String tab, int index) {
+   private Task getTaskAtIndex(List type, int index) {
         Task task = null;
         
-        switch (tab.toLowerCase()) {
-            case FLOATING_TAB:
+        switch (type) {
+            case FLOATING:
                 task = floatingTasks.get(index);
                 break;
-            case DATED_TAB:
+            case DATED:
                 task = datedTasks.get(index);
                 break;
-            case TODAY_TAB:
+            case TODAY:
                 task = getTodayTasks().get(index);
-            case NEXT_SEVEN_DAYS_TAB:
+            case NEXT_SEVEN_DAYS:
                 task = getNextSevenDays().get(index);
             default:
                 break;
@@ -474,7 +476,7 @@ public class Logic {
 	 * 
 	 * @return	feedback resulting from the evaluation of the command
 	 */
-	public String parseCommand(String userCommand, String tab) {
+	public String parseCommand(String userCommand, List type) {
 	    String feedback = null;
 	    
 	    command = parser.parse(userCommand);
@@ -482,9 +484,9 @@ public class Logic {
 		switch (command.getCommandType()) {
             case ADD:
                 if (command.getTask().hasDate()) {
-                    command.setTab(DATED_TAB);
+                    command.setListType(List.DATED);
                 } else {
-                    command.setTab(FLOATING_TAB);
+                    command.setListType(List.FLOATING);
                 }
                 feedback = command.getTask().toString();
                 break;
@@ -498,7 +500,7 @@ public class Logic {
                     }
                 }
                 feedback = indexes.toString();
-                command.setTab(tab);
+                command.setListType(type);
                 break;
             default:
                 break;

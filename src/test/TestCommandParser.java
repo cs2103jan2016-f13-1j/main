@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import main.data.Command;
+import main.logic.Logic;
 import main.parser.CommandParser;
 
 public class TestCommandParser {
@@ -26,28 +27,28 @@ public class TestCommandParser {
     public void testDetectFloating() {
         CommandParser parser = new CommandParser();
         Command command = parser.parse("Do assignment 1");
-        assertEquals("floating", command.getTab());
+        assertEquals(Logic.List.FLOATING, command.getListType());
         
         command = parser.parse("Undo task 3");
-        assertEquals("floating", command.getTab());
+        assertEquals(Logic.List.FLOATING, command.getListType());
         
         command = parser.parse("Fetch my brothers from school");
-        assertEquals("floating", command.getTab());
+        assertEquals(Logic.List.FLOATING, command.getListType());
         
         command = parser.parse("Send 100 emails from my computer");
-        assertEquals("floating", command.getTab());
+        assertEquals(Logic.List.FLOATING, command.getListType());
         
         command = parser.parse("Drive by the supermarket");
-        assertEquals("floating", command.getTab());
+        assertEquals(Logic.List.FLOATING, command.getListType());
         
         command = parser.parse("Attack enemy base on signal");
-        assertEquals("floating", command.getTab());
+        assertEquals(Logic.List.FLOATING, command.getListType());
         
         command = parser.parse("Send 100 email before I sleep");
-        assertEquals("floating", command.getTab());
+        assertEquals(Logic.List.FLOATING, command.getListType());
         
         command = parser.parse("Watch day after tomorrow movie");
-        assertEquals("floating", command.getTab());
+        assertEquals(Logic.List.FLOATING, command.getListType());
     }
     
     @Test
@@ -56,12 +57,12 @@ public class TestCommandParser {
         Command command = parser.parse("Cook dinner");
         
         assertEquals("add", command.getCommandType());
-        assertEquals("floating", command.getTab());
+        assertEquals(Logic.List.FLOATING, command.getListType());
         assertEquals("Cook dinner", command.getTask().getTitle());
         
         command = parser.parse("Attack enemy base on signal");
         assertEquals("add", command.getCommandType());
-        assertEquals("floating", command.getTab());
+        assertEquals(Logic.List.FLOATING, command.getListType());
         assertEquals("Attack enemy base on signal", command.getTask().getTitle());
     }
     
@@ -74,7 +75,7 @@ public class TestCommandParser {
         String date = "Thu Mar 4 19:00:00 SGT 2016";
         Date expectedDate = df.parse(date);
         
-        assertEquals("dated", command.getTab());
+        assertEquals("dated", command.getListType());
         assertEquals(expectedDate, command.getTask().getEndDate());
     }
     
