@@ -727,8 +727,4 @@ public class RootLayoutController {
         return commandBar.getCaretPosition();
     }
 
-    public ArrayList<Task> getTaskList() {
-        return allTasks;
-    }
-
 }
