@@ -217,7 +217,7 @@ public class Logic {
 		deleteTask(type,command.getIndexes());
 		
 		//if no change in tab, edit in position
-		if (type.equals(command.getListType())) {
+		if (type.name().equals(command.getListType())) {
 		    addToList(type,index,task);
 		} else {
 		    if (task.hasDate()) {
@@ -226,7 +226,7 @@ public class Logic {
 		        floatingTasks.add(task);
 		    }
 		}
-		command.setPreviousListType(type);
+		command.setPreviousListType(type.name());
 		saveTasks();
 		addToHistory();
 	}
@@ -245,10 +245,10 @@ public class Logic {
 	public void executeCommand() {
 	    switch (command.getCommandType()) {
             case ADD:
-                addTask(command.getListType(),command.getTask());
+                addTask(Enum.valueOf(List.class, command.getListType()),command.getTask());
                 break;
             case DELETE:
-                deleteTask(command.getListType(),command.getIndexes());
+                deleteTask(Enum.valueOf(List.class, command.getListType()),command.getIndexes());
                 break;
             default:
                 break;
@@ -260,7 +260,7 @@ public class Logic {
 	public void undo() {
 		Command undoCommand = undoHistory.pop();
 		
-		List type = undoCommand.getListType();
+		List type = Enum.valueOf(List.class, undoCommand.getListType());
 		
 		ArrayList<Integer> indexes = null;
 		
@@ -276,8 +276,8 @@ public class Logic {
 			    Task previousTask = undoCommand.getPreviousTasks().get(0);
 			    indexes = undoCommand.getIndexes();
 			    deleteTask(type,indexes);
-			    addToList(undoCommand.getPreviousListType(),indexes.get(0),previousTask);
-			    undoCommand.setListType(type);
+			    addToList(Enum.valueOf(List.class, undoCommand.getPreviousListType()),indexes.get(0),previousTask);
+			    undoCommand.setListType(type.name());
 			    redoHistory.push(undoCommand);
                 break;
 			case DELETE:
@@ -301,13 +301,13 @@ public class Logic {
 
         switch (redoCommand.getCommandType()) {
             case ADD:
-                addTask(command.getListType(),command.getTask());             
+                addTask(Enum.valueOf(List.class, command.getListType()),command.getTask());             
                 break;
             case EDIT:
-                editTask(command.getPreviousListType(),command.getIndexes().get(0));
+                editTask(Enum.valueOf(List.class, command.getPreviousListType()),command.getIndexes().get(0));
                 break;
             case DELETE:
-                deleteTask(command.getListType(),command.getIndexes());
+                deleteTask(Enum.valueOf(List.class, command.getListType()),command.getIndexes());
                 break;
             default:
                 break;
@@ -484,9 +484,9 @@ public class Logic {
 		switch (command.getCommandType()) {
             case ADD:
                 if (command.getTask().hasDate()) {
-                    command.setListType(List.DATED);
+                    command.setListType(List.DATED.name());
                 } else {
-                    command.setListType(List.FLOATING);
+                    command.setListType(List.FLOATING.name());
                 }
                 feedback = command.getTask().toString();
                 break;
@@ -500,7 +500,7 @@ public class Logic {
                     }
                 }
                 feedback = indexes.toString();
-                command.setListType(type);
+                command.setListType(type.name());
                 break;
             default:
                 break;
