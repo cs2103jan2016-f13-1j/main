@@ -447,7 +447,7 @@ public class RootLayoutController {
      * 
      */
     private void handleDeleteKey() {
-        controller.parseCommand(COMMAND_DELETE + WHITESPACE + (getSelectedTaskIndex()), Controller.FLOATING_TAB);
+        controller.parseCommand(COMMAND_DELETE + WHITESPACE + (getSelectedTaskIndex() + 1), Controller.FLOATING_TAB);
         controller.executeCommand();
         saveSelectedTaskIndex();
         refreshListView();
