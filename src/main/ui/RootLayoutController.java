@@ -356,6 +356,8 @@ public class RootLayoutController {
      * 
      */
     private void handleFTwoKey() {
+        saveSelectedTaskIndex();
+        
         if (!groupUndoRedo.isVisible()) {
             return;
         }
@@ -373,6 +375,7 @@ public class RootLayoutController {
         }
 
         refreshListView();
+        restoreListViewPreviousSelection();
     }
 
     /**
