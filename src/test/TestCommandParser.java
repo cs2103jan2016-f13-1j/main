@@ -170,10 +170,16 @@ public class TestCommandParser {
     @Test
     public void testDetectStartEndTime() {
     	CommandParser parser = new CommandParser();
-    	Command command = parser.parse("Quiz from 5pm");
+    	Command command = parser.parse("Attempt quiz from 5pm");
+    	
+    	command = parser.parse("Sleep after 3am");
+    	
+    	
     	//PENDING
     	System.out.println(command.getTask().getTitle());
     	System.out.println(command.getTask().toString());
+    	System.out.println(command.getTask().getStartDate());
+    	System.out.println(command.getTask().getEndDate());
     }
     
     @Test
