@@ -82,13 +82,13 @@ public class RootLayoutController {
 
     @FXML // fx:id="labelResult"
     private Label labelResult; // Value injected by FXMLLoader
-    
+
     @FXML // fx:id="btnDel"
     private Button btnDel; // Value injected by FXMLLoader
 
     @FXML // fx:id="btnEdit"
     private Button btnEdit; // Value injected by FXMLLoader
-    
+
     @FXML // fx:id="groupUndoRedo"
     private Group groupUndoRedo; // Value injected by FXMLLoader
 
@@ -117,6 +117,7 @@ public class RootLayoutController {
     private boolean isExecuteCommand;
     private boolean isUndo;
     private boolean isRedo;
+    private boolean isUserRevertAction;
 
     public void requestFocusForCommandBar() {
         commandBar.requestFocus();
@@ -210,6 +211,9 @@ public class RootLayoutController {
                     keyEvent.consume();
                 } else if (keyEvent.getCode() == KeyCode.F1) {
                     handleFOneKey();
+                    keyEvent.consume();
+                } else if (keyEvent.getCode() == KeyCode.F2) {
+                    handleFTwoKey();
                     keyEvent.consume();
                 } else if (keyEvent.getCode() == KeyCode.DELETE) {
                     handleDeleteKey();
@@ -351,6 +355,29 @@ public class RootLayoutController {
     /**
      * 
      */
+    private void handleFTwoKey() {
+        if (!groupUndoRedo.isVisible()) {
+            return;
+        }
+
+        if (isUndo) {
+            isUndo = false;
+            isRedo = true;
+            labelUndoRedo.setText("undo");
+            controller.redo();
+        } else {
+            isUndo = true;
+            isRedo = false;
+            labelUndoRedo.setText("redo");
+            controller.undo();
+        }
+
+        refreshListView();
+    }
+
+    /**
+     * 
+     */
     private void handleKeyStrokes() {
         if (!isEditMode) {
             userInput = commandBar.getText();
@@ -404,34 +431,16 @@ public class RootLayoutController {
         showFeedback(false);
         clearFeedback();
         clearStoredUserInput();
-        commandBar.clear();        
-        
-        showUndoButton();
-        toggleUndoRedo();
-        
+        commandBar.clear();
+        showUndoRedoButton();
+
     }
 
     /**
      * 
      */
-    private void showUndoButton() {
+    private void showUndoRedoButton() {
         groupUndoRedo.setVisible(true);
-    }
-
-    /**
-     * 
-     */
-    private void toggleUndoRedo() {
-        if(isUndo){
-            isUndo = false;
-            isRedo = true;
-            labelUndoRedo.setText("redo");
-        }
-        else{
-            isUndo = true;
-            isRedo = false;
-            labelUndoRedo.setText("undo");
-        }
     }
 
     /**
@@ -443,8 +452,7 @@ public class RootLayoutController {
         saveSelectedTaskIndex();
         refreshListView();
         restoreListViewPreviousSelection();
-        showUndoButton();
-        toggleUndoRedo();
+        showUndoRedoButton();
 
     }
 
