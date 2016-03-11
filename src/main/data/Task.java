@@ -41,9 +41,6 @@ public class Task {
         return endDate;
     }
     
-   
-    
-    
     public String toString() {
         String feedback = null;
         SimpleDateFormat dateFormat = new SimpleDateFormat("d/M (EEE) HH:mm");
@@ -56,6 +53,10 @@ public class Task {
         	} else {
         		if (hasStartDate()) {
         			//PENDING
+        			/*
+        			String startDateTime = dateFormat.format(startDate);
+        			feedback =  title + " from " + endDateTime;	 
+        			 */
         		} else if (hasEndDate()) {
         			String endDateTime = dateFormat.format(endDate);
         			feedback =  title + " by " + endDateTime;	 
