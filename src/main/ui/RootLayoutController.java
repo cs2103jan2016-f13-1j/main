@@ -13,7 +13,9 @@ import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.scene.Group;
 import javafx.scene.Node;
+import javafx.scene.control.Button;
 import javafx.scene.control.IndexedCell;
 import javafx.scene.control.Label;
 import javafx.scene.control.SingleSelectionModel;
@@ -40,6 +42,7 @@ public class RootLayoutController {
     private static final String MESSAGE_LISTVIEW_EMPTY = "You have no task!";
     private static final String MESSAGE_FEEDBACK_ACTION_ADD = "Adding:";
     private static final String MESSAGE_FEEDBACK_ACTION_DELETE = "Deleting:";
+    private static final String MESSAGE_FEEDBACK_TOTAL_TASK = "(%1$s tasks)";
     private static final String MESSAGE_FEEDBACK_ACTION_SEARCH = "Searching:";
     private static final String MESSAGE_ERROR_RESULT_DELETE = "Task -%1$s- not found.";
 
@@ -80,6 +83,21 @@ public class RootLayoutController {
     @FXML // fx:id="labelResult"
     private Label labelResult; // Value injected by FXMLLoader
 
+    @FXML // fx:id="btnDel"
+    private Button btnDel; // Value injected by FXMLLoader
+
+    @FXML // fx:id="btnEdit"
+    private Button btnEdit; // Value injected by FXMLLoader
+
+    @FXML // fx:id="groupUndoRedo"
+    private Group groupUndoRedo; // Value injected by FXMLLoader
+
+    @FXML // fx:id="labelUndoRedo"
+    private Label labelUndoRedo; // Value injected by FXMLLoader
+
+    @FXML // fx:id="btnUndoRedo"
+    private Button btnUndoRedo; // Value injected by FXMLLoader
+
     private VirtualFlow<IndexedCell<String>> virtualFlow;
     private IndexedCell<String> firstVisibleIndexedCell;
     private IndexedCell<String> lastVisibleIndexedCell;
@@ -96,6 +114,10 @@ public class RootLayoutController {
     private int previousSelectedTaskIndex;
     private int previousCaretPosition;
     private boolean isEditMode;
+    private boolean isExecuteCommand;
+    private boolean isUndo;
+    private boolean isRedo;
+    private boolean isUserRevertAction;
 
     public void requestFocusForCommandBar() {
         commandBar.requestFocus();
@@ -115,7 +137,7 @@ public class RootLayoutController {
         initKeyboardListener();
         initCommandBarListener();
         initTabSelectionListener();
-        
+
     }
 
     /**
@@ -190,6 +212,9 @@ public class RootLayoutController {
                 } else if (keyEvent.getCode() == KeyCode.F1) {
                     handleFOneKey();
                     keyEvent.consume();
+                } else if (keyEvent.getCode() == KeyCode.F2) {
+                    handleFTwoKey();
+                    keyEvent.consume();
                 } else if (keyEvent.getCode() == KeyCode.DELETE) {
                     handleDeleteKey();
                     keyEvent.consume();
@@ -200,7 +225,7 @@ public class RootLayoutController {
                     keyEvent.consume();
                 }
 
-                System.out.println(keyEvent.getTarget());
+                // System.out.println(keyEvent.getTarget());
 
             }
         });
@@ -226,7 +251,7 @@ public class RootLayoutController {
         allTasks = controller.getAllTasks();
 
         for (int i = 0; i < allTasks.size(); i++) {
-            System.out.println(allTasks.get(i));
+            // System.out.println(allTasks.get(i));
             observableTaskList.add(i + 1 + ". " + allTasks.get(i));
         }
 
@@ -330,9 +355,32 @@ public class RootLayoutController {
     /**
      * 
      */
+    private void handleFTwoKey() {
+        if (!groupUndoRedo.isVisible()) {
+            return;
+        }
+
+        if (isUndo) {
+            isUndo = false;
+            isRedo = true;
+            labelUndoRedo.setText("undo");
+            controller.redo();
+        } else {
+            isUndo = true;
+            isRedo = false;
+            labelUndoRedo.setText("redo");
+            controller.undo();
+        }
+
+        refreshListView();
+    }
+
+    /**
+     * 
+     */
     private void handleKeyStrokes() {
         if (!isEditMode) {
-            userInput = commandBar.getCharacters().toString();
+            userInput = commandBar.getText();
             assert userInput != null;
             System.out.println(userInput);
 
@@ -384,6 +432,15 @@ public class RootLayoutController {
         clearFeedback();
         clearStoredUserInput();
         commandBar.clear();
+        showUndoRedoButton();
+
+    }
+
+    /**
+     * 
+     */
+    private void showUndoRedoButton() {
+        groupUndoRedo.setVisible(true);
     }
 
     /**
@@ -395,6 +452,7 @@ public class RootLayoutController {
         saveSelectedTaskIndex();
         refreshListView();
         restoreListViewPreviousSelection();
+        showUndoRedoButton();
 
     }
 
@@ -440,7 +498,7 @@ public class RootLayoutController {
 
             case COMMAND_DELETE :
             case COMMAND_DELETE_SHORTHAND :
-                parseDelete();
+                parseDeleteImproved();
                 break;
 
             default :
@@ -456,15 +514,60 @@ public class RootLayoutController {
         showFeedback(true, MESSAGE_FEEDBACK_ACTION_ADD, inputFeedback);
     }
 
-    /**
-     * 
-     */
-    private void parseDelete() {
-        System.out.println("parseDelete");
+    private void parseDeleteImproved() {
         if (userInputArray.length <= 1) {
             inputFeedback = EMPTY_STRING;
             return;
         }
+
+        String parseResult = controller.parseCommand(userInput, Controller.FLOATING_TAB);
+        System.out.println("user arguments: " + userArguments);
+        System.out.println("parse result: " + parseResult);
+        String[] indexesToBeDeleted = parseResult.split(" ");
+
+        if (indexesToBeDeleted.length == 1) {
+            int taskIndex = 0;
+            try {
+                taskIndex = Integer.parseInt(indexesToBeDeleted[0]);
+            } catch (NumberFormatException nfe) {
+                showResult(true, String.format(MESSAGE_ERROR_RESULT_DELETE, userArguments));
+                return;
+            }
+
+            // if selected index is out of bound
+            if (taskIndex >= allTasks.size() || taskIndex < 0) {
+                showResult(true, String.format(MESSAGE_ERROR_RESULT_DELETE, taskIndex + 1));
+
+            } else {
+                inputFeedback = allTasks.get(taskIndex).toString();
+                showFeedback(true, MESSAGE_FEEDBACK_ACTION_DELETE, inputFeedback);
+            }
+
+            return;
+        }
+
+        // int[] indexArray = new int[indexesToBeDeleted.length];
+        // for (int i = 0; i < indexArray.length; i++) {
+        //
+        // }
+
+        showFeedback(true, MESSAGE_FEEDBACK_ACTION_DELETE,
+                userArguments + WHITESPACE + String.format(MESSAGE_FEEDBACK_TOTAL_TASK, indexesToBeDeleted.length));
+
+    }
+
+    /**
+     * 
+     */
+    private void parseDelete() {
+        // System.out.println("parseDelete");
+        if (userInputArray.length <= 1) {
+            inputFeedback = EMPTY_STRING;
+            return;
+        }
+
+        String parseResult = controller.parseCommand("del 100", Controller.FLOATING_TAB);
+        System.out.println(parseResult);
 
         int userIndex = 0;
         try {
@@ -484,10 +587,10 @@ public class RootLayoutController {
             inputFeedback = allTasks.get(actualIndex).toString();
             showFeedback(true, MESSAGE_FEEDBACK_ACTION_DELETE, inputFeedback);
             controller.parseCommand(COMMAND_DELETE + WHITESPACE + actualIndex, Controller.FLOATING_TAB);
-            
-//            saveSelectedTaskIndex();
-//            listView.getFocusModel().focus(actualIndex);
-//            listView.scrollTo(actualIndex);
+
+            // saveSelectedTaskIndex();
+            // listView.getFocusModel().focus(actualIndex);
+            // listView.scrollTo(actualIndex);
         }
 
     }
@@ -495,7 +598,7 @@ public class RootLayoutController {
     /**
      * 
      */
-    private void parseSearch() {//TODO to be implemented
+    private void parseSearch() {// TODO to be implemented
         if (userInputArray.length > 1) {
             inputFeedback = userArguments; // stub code
         } else {
@@ -546,7 +649,7 @@ public class RootLayoutController {
         labelUserAction.setVisible(isVisible);
         labelUserFeedback.setVisible(isVisible);
         labelUserAction.setText(userAction);
-        labelUserFeedback.setText(inputFeedback);
+        labelUserFeedback.setText(userFeedback);
     }
 
     /**
@@ -592,7 +695,7 @@ public class RootLayoutController {
     /**
      * @return String
      */
-    public String getSelectedTabName() {
+    private String getSelectedTabName() {
         return tabPane.getTabs().get(tabPane.getSelectionModel().getSelectedIndex()).getText();
     }
 
@@ -616,12 +719,12 @@ public class RootLayoutController {
     private void moveCaretPositionToLast() {
         commandBar.positionCaret(commandBar.getText().length());
     }
-    
-    public int getCaretCurrentPosition(){
+
+    private int getCaretCurrentPosition() {
         return commandBar.getCaretPosition();
     }
-    
-    public ArrayList<Task> getTaskList(){
+
+    public ArrayList<Task> getTaskList() {
         return allTasks;
     }
 
