@@ -1,8 +1,8 @@
 package test;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
 import static org.testfx.api.FxAssert.verifyThat;
 import static org.testfx.service.query.impl.NodeQueryUtils.hasText;
 
@@ -26,13 +26,15 @@ import javafx.scene.input.KeyCombination;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
+import main.logic.Logic;
 import main.ui.DoolehMainApp;
 import main.ui.RootLayoutController;
 
 public class TestGUI extends ApplicationTest {
     private Stage primaryStage;
     private AnchorPane rootLayout;
-    private RootLayoutController controller;
+    private RootLayoutController rootLayoutController;
+    private Logic logic;
 
     // Ctrl+Tab hotkey
     private static final KeyCodeCombination HOTKEY_CTRL_TAB = new KeyCodeCombination(KeyCode.TAB,
@@ -48,7 +50,7 @@ public class TestGUI extends ApplicationTest {
 
     @Before
     public void initTaskListWithOneItem() {
-      String json = "[[{\"title\": \"First task\",\"status\": false,\"priority\": 0},{\"title\": \"Second task\",\"status\": false,\"priority\": 0},{\"title\": \"Third task\",\"status\": false,\"priority\": 0},{\"title\": \"Forth task\",\"status\": false,\"priority\": 0}],[]]";
+        String json = "[[{\"title\": \"First task\",\"status\": false,\"priority\": 0},{\"title\": \"Second task\",\"status\": false,\"priority\": 0},{\"title\": \"Third task\",\"status\": false,\"priority\": 0},{\"title\": \"Forth task\",\"status\": false,\"priority\": 0}],[]]";
         ArrayList<String> lines = new ArrayList<String>();
         lines.add(json);
 
@@ -130,33 +132,28 @@ public class TestGUI extends ApplicationTest {
         write("Test task 6").push(KeyCode.ENTER);
         write("Test task 7").push(KeyCode.ENTER);
 
-        assertEquals(7, controller.getTaskList().size());
+        assertEquals(7, logic.getAllTasks().size());
     }
 
     @Test
     public void user_can_delete_task_using_delete_command() {
-        write("Test task 5").push(KeyCode.ENTER);
-        write("Test task 6").push(KeyCode.ENTER);
-        write("Test task 7").push(KeyCode.ENTER);
+        write("Test task 8").push(KeyCode.ENTER);
+        write("Test task 9").push(KeyCode.ENTER);
+        write("Test task 10").push(KeyCode.ENTER);
 
         write("del 5").push(KeyCode.ENTER);
         write("del 5").push(KeyCode.ENTER);
         write("del 5").push(KeyCode.ENTER);
 
-        assertEquals(4, controller.getTaskList().size());
+        assertEquals(7, logic.getAllTasks().size());
     }
 
     @Test
     public void user_can_select_task_using_up_or_down_arrow_hotkeys() {
         @SuppressWarnings("rawtypes")
         ListView listView = ((ListView) primaryStage.getScene().lookup("#listView"));
-        TextField commandBar = (TextField) primaryStage.getScene().lookup("#commandBar");
-        
+
         int previousTaskIndex = listView.getSelectionModel().getSelectedIndex();
-        
-        push(KeyCode.DOWN);
-        assertEquals(previousTaskIndex + 1, listView.getSelectionModel().getSelectedIndex());
-        previousTaskIndex = listView.getSelectionModel().getSelectedIndex();
 
         push(KeyCode.DOWN);
         assertEquals(previousTaskIndex + 1, listView.getSelectionModel().getSelectedIndex());
@@ -165,7 +162,11 @@ public class TestGUI extends ApplicationTest {
         push(KeyCode.DOWN);
         assertEquals(previousTaskIndex + 1, listView.getSelectionModel().getSelectedIndex());
         previousTaskIndex = listView.getSelectionModel().getSelectedIndex();
-        
+
+        push(KeyCode.DOWN);
+        assertEquals(previousTaskIndex + 1, listView.getSelectionModel().getSelectedIndex());
+        previousTaskIndex = listView.getSelectionModel().getSelectedIndex();
+
         push(KeyCode.UP);
         assertEquals(previousTaskIndex - 1, listView.getSelectionModel().getSelectedIndex());
         previousTaskIndex = listView.getSelectionModel().getSelectedIndex();
@@ -197,9 +198,10 @@ public class TestGUI extends ApplicationTest {
             primaryStage.show();
 
             // get a handle on the UI controller and set focus to the text field
-            controller = (RootLayoutController) loader.getController();
-            controller.requestFocusForCommandBar();
-            controller.selectFirstItemFromListView();
+            rootLayoutController = (RootLayoutController) loader.getController();
+            rootLayoutController.requestFocusForCommandBar();
+            rootLayoutController.selectFirstItemFromListView();
+            logic = Logic.getLogic();
 
         } catch (IOException e) {
             e.printStackTrace();
