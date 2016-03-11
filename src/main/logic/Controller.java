@@ -94,12 +94,14 @@ public class Controller {
 	
 	private ArrayList<Task> deleteTasksFromList(ArrayList<Task> list, ArrayList<Integer> indexes) {
 		int j = 0;
+		ArrayList<Task> previousTasks = new ArrayList<Task>();
 		for (int i = 0; i < indexes.size(); i++) {
 		    int indexToDelete = indexes.get(i-j);
 		    Task removedTask = list.remove(indexToDelete);
-		    command.getPreviousTasks().add(removedTask);
+		    previousTasks.add(removedTask);
 		    j++;
 		}
+		command.setPreviousTasks(previousTasks);
 		return list;
 	}
 	
@@ -274,7 +276,6 @@ public class Controller {
 	
 	public void redo() {
 	    Command redoCommand = redoHistory.pop();
-        undoHistory.push(redoCommand);
         String tab = redoCommand.getTab();
 
         switch (redoCommand.getCommandType().toLowerCase()) {
@@ -283,6 +284,7 @@ public class Controller {
                 executeCommand();
                 break;
             case COMMAND_TYPE_EDIT:
+                undoHistory.push(redoCommand);
                 deleteTask(tab,command.getIndexes());
                 addToList(tab,command.getIndexes().get(0),command.getTask());
                 saveTasks();
