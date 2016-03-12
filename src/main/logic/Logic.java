@@ -122,7 +122,7 @@ public class Logic {
 			case TODAY:
                 deleteTasksFromToday(indexes);
 			case NEXT_SEVEN_DAYS:
-            deleteTasksFromNextSevenDays(indexes);
+			    deleteTasksFromNextSevenDays(indexes);
 			default:
 				break;
 		}
@@ -149,7 +149,58 @@ public class Logic {
         	datedTasks.add(task);
         }
     }
+    
+    private void markTask(List type, ArrayList<Integer> indexes, boolean status) {
+        switch (type) {
+            case FLOATING:
+                markTasksFromList(floatingTasks, indexes, status);
+                break;
+            case DATED:
+                markTasksFromList(datedTasks, indexes, status);
+                break;
+            case TODAY:
+                markTasksFromToday(indexes, status);
+            case NEXT_SEVEN_DAYS:
+                markTasksFromNextSevenDays(indexes, status);
+            default:
+                break;
+        }
+    }
+    
+    private ArrayList<Task> markTasksFromList(ArrayList<Task> list, ArrayList<Integer> indexes, boolean status) {
+        ArrayList<Task> previousTasks = new ArrayList<Task>();
+        for (int i = 0; i < indexes.size(); i++) {
+            int indexToMark = indexes.get(i);
+            Task task = list.get(indexToMark);
+            task.setStatus(status);
+            previousTasks.add(task);
+        }
+        command.setPreviousTasks(previousTasks);
+        return list;
+    }
 	
+    private void markTasksFromNextSevenDays(ArrayList<Integer> indexes, boolean status) {
+        ArrayList<Task> temp = new ArrayList<Task>();
+        ArrayList<Task> newNextSevenDaysTasks = markTasksFromList(getNextSevenDays(), indexes, status);
+        temp.addAll(getTodayTasks());
+        temp.addAll(newNextSevenDaysTasks);
+        datedTasks = new ArrayList<Task>();
+        for (Task task : temp) {
+            datedTasks.add(task);
+        }
+    }
+
+    private void markTasksFromToday(ArrayList<Integer> indexes, boolean status) {
+        ArrayList<Task> temp = new ArrayList<Task>();
+        ArrayList<Task> newTodayTasks = markTasksFromList(getTodayTasks(), indexes, status);
+        temp.addAll(newTodayTasks);
+        temp.addAll(getNextSevenDays());
+        datedTasks = new ArrayList<Task>();
+        for (Task task : temp) {
+            datedTasks.add(task);
+        }
+    }
+    
 	private void addToList(List type, int index, Task task) {
 		switch (type) {
 			case FLOATING:
@@ -243,6 +294,9 @@ public class Logic {
             case DELETE:
                 deleteTask(Enum.valueOf(List.class, command.getListType()),command.getIndexes());
                 break;
+            case DONE:
+                markTask(Enum.valueOf(List.class, command.getListType()),command.getIndexes(), true);
+                break;
             default:
                 break;
 	    }
@@ -281,6 +335,12 @@ public class Logic {
 			        addToList(type, indexes.get(i), previousTasks.get(i));
 			    }
 				break;
+			case DONE:
+			    redoHistory.push(undoCommand);
+			    indexes = undoCommand.getIndexes();
+			    for (int i = 0; i < indexes.size(); i++) {
+			        markTask(Enum.valueOf(List.class, undoCommand.getListType()),undoCommand.getIndexes(), false);
+                }
 			default:
 				break;
 		}
@@ -302,6 +362,8 @@ public class Logic {
             case DELETE:
                 deleteTask(Enum.valueOf(List.class, command.getListType()),command.getIndexes());
                 break;
+            case DONE:
+                markTask(Enum.valueOf(List.class, command.getListType()),command.getIndexes(), true);
             default:
                 break;
         }
@@ -449,9 +511,9 @@ public class Logic {
 	 * Evaluates the given command and provide feedback
 	 * 
 	 * Examples of use: 
-     * add - parseCommand("cook dinner", Controller.NO_TAB);
-     * add - parseCommand("cook dinner #home", Controller.NO_TAB);
-     * delete - parseCommand("delete 5,6-7", Controller.FLOATING_TAB);
+     * add - parseCommand("cook dinner", null);
+     * add - parseCommand("cook dinner #home", Logic.List.FLOATING);
+     * delete - parseCommand("delete 5,6-7", Logic.List.FLOATING);
 	 * 
 	 * @param   userCommand 
 	 * 			the command to be evaluated
@@ -463,6 +525,8 @@ public class Logic {
 	 */
 	public String parseCommand(String userCommand, List type) {
 	    String feedback = null;
+	    ArrayList<Integer> indexArray = null;
+	    StringBuilder indexes = null;
 	    
 	    command = parser.parse(userCommand);
 		
@@ -476,8 +540,9 @@ public class Logic {
                 feedback = command.getTask().toString();
                 break;
             case DELETE:
-                ArrayList<Integer> indexArray = command.getIndexes();
-                StringBuilder indexes = new StringBuilder();
+                command.setListType(type.name());
+                indexArray = command.getIndexes();
+                indexes = new StringBuilder();
                 for (int i = 0; i < indexArray.size(); i++) {
                     indexes.append(indexArray.get(i));
                     if (i < indexArray.size() - 1) {
@@ -485,8 +550,18 @@ public class Logic {
                     }
                 }
                 feedback = indexes.toString();
-                command.setListType(type.name());
                 break;
+            case DONE:
+                command.setListType(type.name());
+                indexArray = command.getIndexes();
+                indexes = new StringBuilder();
+                for (int i = 0; i < indexArray.size(); i++) {
+                    indexes.append(indexArray.get(i));
+                    if (i < indexArray.size() - 1) {
+                        indexes.append(" ");
+                    }
+                }
+                feedback = indexes.toString();
             default:
                 break;
 		}

@@ -26,7 +26,7 @@ public class TestLogic {
 	Logic logic = null;
 	
 	//Edits task from different tabs
-	@Test
+	//@Test
 	public void editTaskTest() {
 		String title = "jUnit edit task";
 		String feedback = logic.parseCommand(title, null);
@@ -121,6 +121,15 @@ public class TestLogic {
         logic.editTask(Logic.List.FLOATING, 0);
         logic.undo();
         logic.redo();
+	}
+	
+	@Test
+	public void markTaskTest() {
+        logic.parseCommand("done 1", Logic.List.FLOATING);
+        logic.executeCommand();
+        logic.undo();
+        logic.redo();
+        logic.undo();
 	}
 	
 	@Before
