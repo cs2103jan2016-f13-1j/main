@@ -41,38 +41,68 @@ public class Task {
         return endDate;
     }
     
-    public boolean hasDate() {
-        return (startDate != null || endDate != null);
-    }
-    
     public String toString() {
         String feedback = null;
         SimpleDateFormat dateFormat = new SimpleDateFormat("d/M (EEE) HH:mm");
         
-        if (startDate == null) {
-            if (endDate == null) {
-                if (label == null) {
-                    feedback = title;
-                } else {
-                    feedback = title + " #" + label;
-                }
-            } else {
+        if (hasDate()) {
+        	if (isRangeDate()) {
+        		String startDateTime = dateFormat.format(startDate);
                 String endDateTime = dateFormat.format(endDate);
-                feedback =  title + " by " + endDateTime;
-                if (label != null) {
-                	feedback += " #" + label;
-                }
-            }
+        		feedback = title + " from " + startDateTime + " to " + endDateTime;
+        	} else {
+        		if (hasStartDate()) {
+        			//PENDING
+        			/*
+        			String startDateTime = dateFormat.format(startDate);
+        			feedback =  title + " from " + endDateTime;	 
+        			 */
+        		} else if (hasEndDate()) {
+        			String endDateTime = dateFormat.format(endDate);
+        			feedback =  title + " by " + endDateTime;	 
+        		}
+        	}
         } else {
-            String startDateTime = dateFormat.format(startDate);
-            String endDateTime = dateFormat.format(endDate);
-            feedback = title + " from " + startDateTime + " to " + endDateTime;
-            if (label != null) {
-            	feedback += " #" + label;
-            }
+        	feedback = title;	
         }
         
+        if (hasLabel()) {
+			feedback += " #" + label;
+		}
+        
         return feedback;
+    }
+    
+    public boolean hasDate() {
+        return (startDate != null || endDate != null);
+    }
+    
+    public boolean isRangeDate() {
+    	return (startDate != null && endDate != null);
+    }
+    
+    public boolean hasStartDate() {
+    	if (startDate == null) {
+    		return false;
+    	} else {
+    		return true;
+    	}
+    }
+    
+    public boolean hasEndDate() {
+    	if (endDate == null) {
+    		return false;
+    	} else {
+    		return true;
+    	}
+    }
+    
+    public boolean hasLabel() {
+    	if (label == null) {
+    		return false;
+    	} else {
+    		return true;
+    	}
     }
     
     private Task(TaskBuilder builder) {

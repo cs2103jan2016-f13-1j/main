@@ -1,13 +1,5 @@
-/**
- *
- */
 package main.parser;
 
-
-/**
- * @author Joleen
- *
- */
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -23,6 +15,11 @@ import org.ocpsoft.prettytime.nlp.PrettyTimeParser;
 import main.data.Command;
 import main.data.Command.Type;
 import main.data.Task;
+
+/**
+ * @author Joleen
+ *
+ */
 
 public class CommandParser {
     private final int LENGTH_DEL = 3;
@@ -102,14 +99,16 @@ public class CommandParser {
         	List<Date> dates = parseDate(commandString);
             numberOfDate = dates.size();
             
+            //kokodesu
             if (numberOfDate > 0) {
                 endDate = getDate(dates, DATE_END);
                 
                 if (numberOfDate == DATE_MAX_SIZE) {
                     startDate = getDate(dates, DATE_START_RANGED);
                     endDate = getDate(dates, DATE_END_RANGED);
-                    title = removeDateFromTitle(title, startDate, endDate);
                 }
+                
+                title = removeDateFromTitle(title, startDate, endDate);
             }
         }
         
@@ -199,7 +198,6 @@ public class CommandParser {
         return title;
     }
     
-    
     /**
      * From the date(s) obtained from title, different formats are generated.
      * Date information is removed from the title.
@@ -215,9 +213,14 @@ public class CommandParser {
     private String removeDateFromTitle(String title, Date startDate, Date endDate) {
     	List<Date> datesList = parseDate(title);
         int numberOfDate = datesList.size();
-   
-        LocalDateTime dateTime = endDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+        LocalDateTime dateTime;
         
+        if (startDate != null) {
+        	dateTime = startDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+        } else {
+        	dateTime = endDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+        }   
+
         for (int i = 0; i < numberOfDate; i++) {
         	 ArrayList<String> dates = getPossibleDates(dateTime);
              ArrayList<String> months = getPossibleMonths(dateTime);
@@ -229,8 +232,8 @@ public class CommandParser {
              title = checkAndRemove(title, days);
              title = checkAndRemove(title, timings);
              
-             if (numberOfDate == 2) {
-            	 dateTime = startDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+             if (numberOfDate == DATE_MAX_SIZE) {
+            	 dateTime = endDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
              }
         }
     	return title;
@@ -430,7 +433,7 @@ public class CommandParser {
         ArrayList<Integer> rangedIndexes = new ArrayList<Integer>();
         
         Collections.addAll(indexes, index.split(","));
-       // 1-3,4,5
+        
         for (int i = 0; i < indexes.size(); i++) {
             if (indexes.get(i).contains("-")) {
                 Collections.addAll(tempRangedIndexes, indexes.get(i).split("-"));
