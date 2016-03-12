@@ -25,6 +25,10 @@ public class Task {
         return status;
     }
     
+    public void setStatus(boolean status) {
+        this.status = status;
+    }
+    
     public int getPriority() {
         return priority;
     }

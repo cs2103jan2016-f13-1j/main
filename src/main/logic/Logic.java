@@ -5,7 +5,7 @@
  * 
  * Controller();
  * parseCommand(String userCommand, String tab);
- * editTask(String tab, int index);
+ * editTask(Logic.List, int index);
  * executeCommand();
  * undo();
  * redo();
