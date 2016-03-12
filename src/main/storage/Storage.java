@@ -24,9 +24,11 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Scanner;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -39,6 +41,9 @@ public class Storage {
 	private static Storage storage;
 	private String OS = System.getProperty("os.name").toLowerCase();
 	
+	private final String USER_SETTINGS = "settings.txt";
+	private final String USER_DIR = System.getProperty("user.dir");
+	
 	private final String WINDOWS_DIR_SYMBOL = "\\";
 	private final String MAC_DIR_SYMBOL = "/";
 	private final String UNIX_DIR_SYMBOL = "/";
@@ -46,14 +51,12 @@ public class Storage {
 	
 	private final String FILE_PATH_FORMAT = "%s%s%s";
 	
-	String fileDirectory = System.getProperty("user.dir");
 	String fileName = "storage.txt";
 	String filePath = null;
 
-
 	private Storage() {
-		buildFilePath();
-		createFile();
+	    readUserSettings();
+		prepareFile();
 	}
 
 	public static synchronized Storage getStorage() {
@@ -68,9 +71,9 @@ public class Storage {
 	}
 	
 	//Open file if it exists, otherwise create a new file
-	private void createFile() {
+	private void prepareFile() {
 		File file = new File(filePath);
-
+		
 		try {
 			if (!file.exists()) {
 				ArrayList<ArrayList<Task>> allTasks = new ArrayList<ArrayList<Task>>();
@@ -110,37 +113,60 @@ public class Storage {
 		}
 	}
 	
-	private void buildFilePath() {
+	private String getDefaultFilePath() {
+	    String path = null;
 		if (isWindows()) {
-			filePath = String.format(FILE_PATH_FORMAT,fileDirectory,WINDOWS_DIR_SYMBOL,fileName);
+			path = String.format(FILE_PATH_FORMAT,USER_DIR,WINDOWS_DIR_SYMBOL,fileName);
         } else if (isMac()) {
-        	filePath = String.format(FILE_PATH_FORMAT,fileDirectory,MAC_DIR_SYMBOL,fileName);
+        	path = String.format(FILE_PATH_FORMAT,USER_DIR,MAC_DIR_SYMBOL,fileName);
         } else if (isUnix()) {
-        	filePath = String.format(FILE_PATH_FORMAT,fileDirectory,UNIX_DIR_SYMBOL,fileName);
+        	path = String.format(FILE_PATH_FORMAT,USER_DIR,UNIX_DIR_SYMBOL,fileName);
         } else if (isSolaris()) {
-        	filePath = String.format(FILE_PATH_FORMAT,fileDirectory,SOLARIS_DIR_SYMBOL,fileName);
+        	path = String.format(FILE_PATH_FORMAT,USER_DIR,SOLARIS_DIR_SYMBOL,fileName);
         } 
         else {
         	System.out.println("OS is not supported");
         }
+		return path;
 	}
 	
-	public String getFileDirectory() {
-		return fileDirectory;
+	public void setFileLocation(String filePath) {
+	    this.filePath = filePath;
+	    
+	    try(PrintWriter out = new PrintWriter(USER_SETTINGS)){
+            out.print(filePath);
+            out.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
 	}
 	
-	public void setFileDirectory(String directory) {
-		this.fileDirectory = directory;
-		buildFilePath();
+	public String getFileLocation() {
+	    return filePath;
 	}
-
-	public String getFileName() {
-		return fileName;
+	
+	public void readUserSettings() {
+	    try {
+            Scanner sc = new Scanner(new File(USER_SETTINGS));
+            String path = sc.nextLine().trim();
+            sc.close();
+            if (validFilePath(path)) {
+                filePath = path;
+            } else {
+                setFileLocation(getDefaultFilePath());
+            }
+        } catch (Exception e) {
+            setFileLocation(getDefaultFilePath());
+        }
 	}
-
-	public void setFileName(String fileName) {
-		this.fileName = fileName;
-		buildFilePath();
+	
+	private boolean validFilePath(String path) {
+        File file = new File(path);
+        if (file.exists()) {
+            return true;
+        } else {
+            return false;
+        }
 	}
 	
 	private boolean isWindows() {

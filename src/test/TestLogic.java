@@ -33,12 +33,6 @@ public class TestLogic {
 		assertEquals(feedback,title);
 		logic.editTask(Logic.List.FLOATING, 0);
 		assertEquals(title,logic.getFloatingTasks().get(0).getTitle());
-		
-		//title = "Today task 1.1";
-		//feedback = logic.parseCommand(title, logic.Tab.NO_TAB);
-		//assertEquals(feedback,title);
-		//logic.editTask(logic.TODAY, 1);
-		//assertEquals(title,logic.getTodayTasks().get(0).getTitle());
 	}
 	
 	//Retrieves tasks for next seven days

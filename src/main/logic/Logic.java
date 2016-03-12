@@ -14,13 +14,11 @@
  * getDatedTasks();
  * getTodayTasks();
  * getNextSevenDays();
- * getFileDirectory();
- * getFileName();
+ * getFileLocation();
  * getUndoCount();
  * getRedoCount();
  * 
- * setFileDirectory(String fileDirectory);
- * setFileName(String fileName);
+ * setFileLocation(String fileLocation);
  * 
  */
 package main.logic;
@@ -46,11 +44,6 @@ public class Logic {
     private static Logic logic;
     
 	public static final String DATE_FORMAT_DDMMYY = "ddMMyyyy";
-	
-//	public static final String FLOATING_TAB = "floating";
-//	public static final String DATED_TAB = "dated";
-//	public static final String TODAY_TAB = "today";
-//	public static final String NEXT_SEVEN_DAYS_TAB = "nextSevenDays";
 	
 	public static enum List {
 	    FLOATING, DATED, TODAY, NEXT_SEVEN_DAYS
@@ -379,14 +372,6 @@ public class Logic {
 		return calendar.getTime();
 	}
 	
-	public String getFileDirectory() {
-		return storage.getFileDirectory();
-	}
-	
-	public String getFileName() {
-		return storage.getFileName();
-	}
-
 	/**
 	 * @return the list of floating tasks
 	 */
@@ -520,12 +505,18 @@ public class Logic {
 		}
 	}
 	
-	public void setFileDirectory(String fileDirectory) {
-		storage.setFileDirectory(fileDirectory);
+	/**
+	 * Update user's settings.txt file to reflect new file location
+	 * 
+	 * @param fileLocation
+	 *        new location to store user settings
+	 */
+	public void setFileLocation(String fileLocation) {
+		storage.setFileLocation(fileLocation);
 	}
 	
-	public void setFileName(String fileName) {
-		storage.setFileName(fileName);
+	public String getFileLocation() {
+		return storage.getFileLocation();
 	}
 	
 	public int getUndoCount() {
