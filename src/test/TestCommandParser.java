@@ -44,7 +44,7 @@ public class TestCommandParser {
         command = parser.parse("Send 100 email before I sleep");
         assertEquals(false, command.getTask().hasDate());
         
-        command = parser.parse("Watch day after tomorrow movie");
+        command = parser.parse("Watch \"day after tomorrow\" movie");
         assertEquals(false, command.getTask().hasDate());
     }
     
@@ -114,6 +114,9 @@ public class TestCommandParser {
     	assertEquals("Attend meeting by 26/3 (Sat) 19:00", command.getTask().toString());
 
     	command = parser.parse("Attend meeting from 4 to 6pm on 25 Mar");
+    	assertEquals("Attend meeting from 25/3 (Fri) 16:00 to 25/3 (Fri) 18:00",command.getTask().toString());
+    	
+    	command = parser.parse("Attend meeting 4 to 6pm on 25 Mar");
     	assertEquals("Attend meeting from 25/3 (Fri) 16:00 to 25/3 (Fri) 18:00",command.getTask().toString()); 	
     }
     
@@ -170,16 +173,13 @@ public class TestCommandParser {
     @Test
     public void testDetectStartEndTime() {
     	CommandParser parser = new CommandParser();
-    	Command command = parser.parse("Attempt quiz from 5pm");
+    	Command command = parser.parse("Attempt quiz from 5pm 14 MARCH");
+    	assertEquals("Attempt quiz", command.getTask().getTitle());  	
+    	assertEquals("Attempt quiz from 14/3 (Mon) 17:00 onwards", command.getTask().toString());
     	
-    	command = parser.parse("Sleep after 3am");
-    	
-    	
-    	//PENDING
-    	System.out.println(command.getTask().getTitle());
-    	System.out.println(command.getTask().toString());
-    	System.out.println(command.getTask().getStartDate());
-    	System.out.println(command.getTask().getEndDate());
+    	command = parser.parse("Watch webcast after 3am on 15 MAR");
+    	assertEquals("Watch webcast", command.getTask().getTitle());  	
+    	assertEquals("Watch webcast from 15/3 (Tue) 03:00 onwards", command.getTask().toString());
     }
     
     @Test

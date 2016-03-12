@@ -56,11 +56,9 @@ public class Task {
         		feedback = title + " from " + startDateTime + " to " + endDateTime;
         	} else {
         		if (hasStartDate()) {
-        			//PENDING
-        			/*
         			String startDateTime = dateFormat.format(startDate);
-        			feedback =  title + " from " + endDateTime;	 
-        			 */
+        			feedback =  title + " from " + startDateTime;
+        			feedback += " onwards";
         		} else if (hasEndDate()) {
         			String endDateTime = dateFormat.format(endDate);
         			feedback =  title + " by " + endDateTime;	 
