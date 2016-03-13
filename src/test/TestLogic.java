@@ -26,19 +26,13 @@ public class TestLogic {
 	Logic logic = null;
 	
 	//Edits task from different tabs
-	@Test
+	//@Test
 	public void editTaskTest() {
 		String title = "jUnit edit task";
 		String feedback = logic.parseCommand(title, null);
 		assertEquals(feedback,title);
 		logic.editTask(Logic.List.FLOATING, 0);
 		assertEquals(title,logic.getFloatingTasks().get(0).getTitle());
-		
-		//title = "Today task 1.1";
-		//feedback = logic.parseCommand(title, logic.Tab.NO_TAB);
-		//assertEquals(feedback,title);
-		//logic.editTask(logic.TODAY, 1);
-		//assertEquals(title,logic.getTodayTasks().get(0).getTitle());
 	}
 	
 	//Retrieves tasks for next seven days
@@ -127,6 +121,20 @@ public class TestLogic {
         logic.editTask(Logic.List.FLOATING, 0);
         logic.undo();
         logic.redo();
+	}
+	
+	@Test
+	public void markTaskTest() {
+        logic.parseCommand("done 1", Logic.List.FLOATING);
+        logic.executeCommand();
+        logic.undo();
+        logic.redo();
+        logic.undo();
+	}
+	
+	@Test
+	public void setFilePathTest() {
+	    logic.setFileLocation("invalid\\path");
 	}
 	
 	@Before

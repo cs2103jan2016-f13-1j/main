@@ -1,15 +1,11 @@
-/**
- * 
- */
 package main.data;
+
+import java.util.ArrayList;
 
 /**
  * @author Joleen
  *
  */
-import java.util.ArrayList;
-
-import main.logic.Logic;
 
 public class Command {
     
@@ -18,11 +14,11 @@ public class Command {
     }
     
     private Type commandType = null;
-    private Logic.List listType = null;
     private Task task = null;
-    private Logic.List previousListType = null;
-    private ArrayList<Task> previousTasks = new ArrayList<Task>();
     private ArrayList<Integer> indexes = new ArrayList<Integer>();
+    private String listType = null;
+    private String previousListType = null;
+    private ArrayList<Task> previousTasks = new ArrayList<Task>();
     
     public Command(Type commandType, Task task) {
         this.commandType = commandType;
@@ -33,6 +29,7 @@ public class Command {
         this.commandType = commandType;
         this.indexes = indexes;
     }
+    
     public Type getCommandType() {
         return commandType;
     }
@@ -45,20 +42,28 @@ public class Command {
         return task;
     }
     
-    public Logic.List getListType() {
-        return listType;
-    }
-    
-    public void setListType(Logic.List listType) {
-        this.listType = listType;
-    }
-    
     public ArrayList<Integer> getIndexes() {
         return indexes;
     }
     
     public void setIndexes(ArrayList<Integer> indexes) {
         this.indexes = indexes;
+    }
+    
+    public String getListType() {
+        return listType;
+    }
+    
+    public void setListType(String listType) {
+        this.listType = listType;
+    }
+    
+    public String getPreviousListType() {
+        return previousListType;
+    }
+
+    public void setPreviousListType(String previousListType) {
+        this.previousListType = previousListType;
     }
 
     public ArrayList<Task> getPreviousTasks() {
@@ -67,13 +72,5 @@ public class Command {
 
     public void setPreviousTasks(ArrayList<Task> previousTasks) {
         this.previousTasks = previousTasks;
-    }
-
-    public Logic.List getPreviousListType() {
-        return previousListType;
-    }
-
-    public void setPreviousListType(Logic.List previousListType) {
-        this.previousListType = previousListType;
     }
 }
