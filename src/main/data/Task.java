@@ -11,8 +11,7 @@ import java.util.Date;
 
 public class Task {
     private String title;
-    
-    boolean status;
+    private boolean done;
     private int priority;
     private String label;
     private Date startDate;
@@ -22,12 +21,12 @@ public class Task {
         return title;
     }
     
-    public boolean getStatus() {
-        return status;
+    public boolean getDone() {
+        return done;
     }
     
-    public void setStatus(boolean status) {
-        this.status = status;
+    public void setDone(boolean done) {
+        this.done = done;
     }
     
     public int getPriority() {
@@ -51,27 +50,27 @@ public class Task {
         SimpleDateFormat dateFormat = new SimpleDateFormat("d/M (EEE) HH:mm");
         
         if (hasDate()) {
-        	if (hasDateRange()) {
-        		String startDateTime = dateFormat.format(startDate);
+            if (hasDateRange()) {
+                String startDateTime = dateFormat.format(startDate);
                 String endDateTime = dateFormat.format(endDate);
-        		feedback = title + " from " + startDateTime + " to " + endDateTime;
-        	} else {
-        		if (hasStartDate()) {
-        			String startDateTime = dateFormat.format(startDate);
-        			feedback =  title + " from " + startDateTime;
-        			feedback += " onwards";
-        		} else if (hasEndDate()) {
-        			String endDateTime = dateFormat.format(endDate);
-        			feedback =  title + " by " + endDateTime;	 
-        		}
-        	}
+                feedback = title + " from " + startDateTime + " to " + endDateTime;
+            } else {
+                if (hasStartDate()) {
+                    String startDateTime = dateFormat.format(startDate);
+                    feedback =  title + " from " + startDateTime;
+                    feedback += " onwards";
+                } else if (hasEndDate()) {
+                    String endDateTime = dateFormat.format(endDate);
+                    feedback =  title + " by " + endDateTime;    
+                }
+            }
         } else {
-        	feedback = title;	
+            feedback = title;   
         }
         
         if (hasLabel()) {
-			feedback += " #" + label;
-		}
+            feedback += " #" + label;
+        }
         
         return feedback;
     }
@@ -137,36 +136,36 @@ public class Task {
     }
     
     public boolean hasDateRange() {
-    	return (startDate != null && endDate != null);
+        return (startDate != null && endDate != null);
     }
     
     public boolean hasStartDate() {
-    	if (startDate == null) {
-    		return false;
-    	} else {
-    		return true;
-    	}
+        if (startDate == null) {
+            return false;
+        } else {
+            return true;
+        }
     }
     
     public boolean hasEndDate() {
-    	if (endDate == null) {
-    		return false;
-    	} else {
-    		return true;
-    	}
+        if (endDate == null) {
+            return false;
+        } else {
+            return true;
+        }
     }
     
     public boolean hasLabel() {
-    	if (label == null) {
-    		return false;
-    	} else {
-    		return true;
-    	}
+        if (label == null) {
+            return false;
+        } else {
+            return true;
+        }
     }
     
     private Task(TaskBuilder builder) {
         this.title = builder.title;
-        this.status = builder.status;
+        this.done = builder.done;
         this.priority = builder.priority;
         this.label = builder.label;
         this.startDate = builder.startDate;
@@ -175,7 +174,7 @@ public class Task {
     
     public static class TaskBuilder {
         private String title = null;
-        private boolean status = false;
+        private boolean done = false;
         private int priority = 0;
         private String label = null;
         private Date startDate = null;
@@ -185,8 +184,8 @@ public class Task {
             this.title = title;
         }
         
-        public TaskBuilder setStatus(boolean status) {
-            this.status = status;
+        public TaskBuilder setDone(boolean done) {
+            this.done = done;
             return this;
         }
         

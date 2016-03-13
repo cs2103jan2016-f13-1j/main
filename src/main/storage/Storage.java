@@ -54,8 +54,8 @@ public class Storage {
 	
 	private final String FILE_PATH_FORMAT = "%s%s%s";
 	
-	String fileName = null;
-	String filePath = null;
+	private String fileName = null;
+	private String filePath = null;
 
 	private Storage() {
 	    readUserSettings();
