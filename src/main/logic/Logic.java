@@ -28,11 +28,11 @@ package main.logic;
  *
  */
 import java.io.FileNotFoundException;
-import java.nio.file.InvalidPathException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.EmptyStackException;
 import java.util.Stack;
 
 import main.data.Command;
@@ -74,12 +74,15 @@ public class Logic {
         ArrayList<ArrayList<Task>> tasksFromStorage = storage.readTasks();;
         floatingTasks = tasksFromStorage.get(FLOATING_TASKS_INDEX);
         datedTasks = tasksFromStorage.get(DATED_TASKS_INDEX);
+        assert(floatingTasks != null);
+        assert(datedTasks != null);
     }
 
     public static synchronized Logic getLogic() {
         if (logic == null) {
             logic = new Logic();
         }
+        assert(logic != null);
         return logic;
     }
 
@@ -109,6 +112,7 @@ public class Logic {
 		    previousTasks.add(removedTask);
 		    j++;
 		}
+		assert(command != null);
 		command.setPreviousTasks(previousTasks);
 		return list;
 	}
@@ -177,6 +181,7 @@ public class Logic {
             task.setStatus(status);
             previousTasks.add(task);
         }
+        assert(command != null);
         command.setPreviousTasks(previousTasks);
         return list;
     }
@@ -252,12 +257,14 @@ public class Logic {
 	 * 			the index of the task
 	 */
 	public void editTask(List type, int index) {
+	    assert(command != null);
 	    command.setCommandType(Command.Type.EDIT);
 	    command.setPreviousTasks(new ArrayList<Task>());
 	    command.getPreviousTasks().add(getTaskAtIndex(type,index));
 	    command.setIndexes(new ArrayList<Integer>());
 	    command.getIndexes().add(index);
 	    
+	    assert(command.getTask() != null);
 		Task task = command.getTask();
 		
 		deleteTask(type,command.getIndexes());
@@ -278,6 +285,7 @@ public class Logic {
 	}
 
     private void addToHistory() {
+        assert(command != null);
         undoHistory.push(command);
 		redoHistory = new Stack<Command>();
     }
@@ -289,6 +297,7 @@ public class Logic {
 	 * Used for add and delete operations.
 	 */
 	public void executeCommand() {
+	    assert(command != null);
 	    switch (command.getCommandType()) {
             case ADD:
                 addTask(Enum.valueOf(List.class, command.getListType()),command.getTask());
@@ -307,6 +316,11 @@ public class Logic {
 	}
 	
 	public void undo() {
+	    if (undoHistory.size() == 0) {
+	        throw new EmptyStackException();
+	    }
+	    assert(undoHistory.size() > 0);
+	    
 		Command undoCommand = undoHistory.pop();
 		
 		List type = Enum.valueOf(List.class, undoCommand.getListType());
@@ -350,6 +364,11 @@ public class Logic {
 	}
 	
 	public void redo() {
+	    if (redoHistory.size() == 0) {
+            throw new EmptyStackException();
+        }
+        assert(redoHistory.size() > 0);
+        
 	    Command redoCommand = redoHistory.pop();
 	    command = redoCommand;
 	    undoHistory.push(command);
@@ -419,10 +438,10 @@ public class Logic {
 	 * @return  the combined list of tasks
 	 */
 	public ArrayList<Task> getAllTasks() {
-		ArrayList<Task> allTasks = new ArrayList<Task>();
-		allTasks.addAll(floatingTasks);
-		allTasks.addAll(datedTasks);
-		return allTasks;
+		ArrayList<Task> tasks = new ArrayList<Task>();
+		tasks.addAll(floatingTasks);
+		tasks.addAll(datedTasks);
+		return tasks;
 	}
 	
 	private Date getEigthDay() {
@@ -440,7 +459,7 @@ public class Logic {
 	 * @return the list of floating tasks
 	 */
 	public ArrayList<Task> getFloatingTasks() {
-		return floatingTasks;
+        return floatingTasks;
 	}
 	
 	/**
@@ -495,7 +514,7 @@ public class Logic {
 	 * @return the list of tasks with dates
 	 */
 	public ArrayList<Task> getDatedTasks() {
-		return datedTasks;
+        return datedTasks;
 	}
 
 	private Date getTomorrow() {
@@ -531,7 +550,8 @@ public class Logic {
 	    StringBuilder indexes = null;
 	    
 	    command = parser.parse(userCommand);
-		
+	    assert(command != null);
+	    
 		switch (command.getCommandType()) {
             case ADD:
                 if (command.getTask().hasDate()) {
@@ -573,10 +593,10 @@ public class Logic {
 	
 	private void saveTasks() {
 		try {
-			ArrayList<ArrayList<Task>> allTasks = new ArrayList<ArrayList<Task>>();
-			allTasks.add(floatingTasks);
-			allTasks.add(datedTasks);
-			storage.writeTasks(allTasks);
+			ArrayList<ArrayList<Task>> tasks = new ArrayList<ArrayList<Task>>();
+			tasks.add(floatingTasks);
+			tasks.add(datedTasks);
+			storage.writeTasks(tasks);
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
@@ -589,11 +609,7 @@ public class Logic {
 	 *        new location to store user settings
 	 */
 	public void setFileLocation(String fileLocation) {
-	    try {
-	        storage.setFileLocation(fileLocation);
-	    } catch (InvalidPathException e) {
-	        System.out.println("Enter valid path");
-	    }
+        storage.setFileLocation(fileLocation);
 	}
 	
 	public String getFileLocation() {
