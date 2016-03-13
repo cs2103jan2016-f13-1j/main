@@ -287,24 +287,32 @@ public class RootLayoutController {
      * 
      */
     private void handleArrowKeys(KeyEvent keyEvent) {
-        if (keyEvent.getCode() == KeyCode.UP) {
-            listViewAll.getSelectionModel().selectPrevious();
-            adjustViewportForListView();
-            System.out.println("current index " + getSelectedTaskIndex());
+        Platform.runLater(new Runnable() {
 
-        } else if (keyEvent.getCode() == KeyCode.DOWN) {
-            listViewAll.getSelectionModel().selectNext();
-            adjustViewportForListView();
-            System.out.println("current index " + getSelectedTaskIndex());
+            @Override
+            public void run() {
+                if (keyEvent.getCode() == KeyCode.UP) {
+                    listViewAll.getSelectionModel().selectPrevious();
+                    adjustViewportForListView();
+                    System.out.println("current index " + getSelectedTaskIndex());
 
-        }
+                } else if (keyEvent.getCode() == KeyCode.DOWN) {
+                    listViewAll.getSelectionModel().selectNext();
+                    adjustViewportForListView();
+                    System.out.println("current index " + getSelectedTaskIndex());
 
-        // only set currently selected item to command bar when in
-        // Edit mode
-        if (isEditMode) {
-            commandBar.setText(allTasks.get(getSelectedTaskIndex()).toString());
-            moveCaretPositionToLast();
-        }
+                }
+
+                // only set currently selected item to command bar when in
+                // Edit mode
+                if (isEditMode) {
+                    commandBar.setText(allTasks.get(getSelectedTaskIndex()).toString());
+                    moveCaretPositionToLast();
+                }
+
+            }
+        });
+
     }
 
     /**
