@@ -28,10 +28,7 @@ package main.logic;
  *
  */
 import java.io.FileNotFoundException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.EmptyStackException;
 import java.util.Stack;
 import java.util.logging.Level;
@@ -51,8 +48,6 @@ public class Logic {
     private static final Logger logger = Logger.getLogger(Logic.class.getName());
     
 	private static Logic logic;
-	
-	public static final String DATE_FORMAT_DDMMYY = "ddMMyyyy";
 	
 	private static final int FLOATING_TASKS_INDEX = 0;
 	private static final int DATED_TASKS_INDEX = 1;
@@ -193,19 +188,12 @@ public class Logic {
 	 * @return the list of tasks due in the next seven days
 	 */
 	public ArrayList<Task> getNextSevenDays() {
-		Date tomorrow = getTomorrow();
-		Date eighthDay = getEigthDay();
-		
 		ArrayList<Task> result = new ArrayList<Task>();
 		
 		for (Task task : getAllTasks()) {
-			if (task.getEndDate() != null) {
-				if (task.getEndDate().compareTo(tomorrow) >= 0) {
-					if (task.getEndDate().compareTo(eighthDay) < 0) {
-						result.add(task);
-					}
-				}
-			}
+		    if (task.isThisWeek()) {
+		        result.add(task);
+		    }
 		}
 		return result;
 	}
@@ -221,17 +209,11 @@ public class Logic {
 	 * @return the list of tasks due today
 	 */
 	public ArrayList<Task> getTodayTasks() {
-		SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT_DDMMYY);
-		String today = dateFormat.format(new Date());
-		
 		ArrayList<Task> result = new ArrayList<Task>();
 		
 		for (Task task : getAllTasks()) {
-			if (task.getEndDate() != null) {
-				String endDate = dateFormat.format(task.getEndDate());
-				if (today.equals(endDate)) {
-					result.add(task);
-				}
+			if (task.isToday()) {
+				result.add(task);
 			}
 		}
 		return result;
@@ -504,17 +486,6 @@ public class Logic {
         	datedTasks.add(task);
         }
     }
-
-	private Date getEigthDay() {
-		Calendar calendar = Calendar.getInstance();
-		calendar.setTime(new Date());
-		calendar.add(Calendar.DATE,8);
-		calendar.set(Calendar.HOUR_OF_DAY,0);
-		calendar.set(Calendar.MINUTE,0);
-		calendar.set(Calendar.SECOND,0);
-		calendar.set(Calendar.MILLISECOND,0);
-		return calendar.getTime();
-	}
 	
 	private int getLastIndexOf(List type) {
 	    int index = 0;
@@ -556,17 +527,6 @@ public class Logic {
             }
             return task;
         }
-	
-	private Date getTomorrow() {
-		Calendar calendar = Calendar.getInstance();
-		calendar.setTime(new Date());
-		calendar.add(Calendar.DATE,1);
-		calendar.set(Calendar.HOUR_OF_DAY,0);
-		calendar.set(Calendar.MINUTE,0);
-		calendar.set(Calendar.SECOND,0);
-		calendar.set(Calendar.MILLISECOND,0);
-		return calendar.getTime();
-	}
 	
 	private void markTask(List type, ArrayList<Integer> indexes, boolean status) {
         switch (type) {

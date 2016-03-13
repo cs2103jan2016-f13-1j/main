@@ -1,6 +1,7 @@
 package main.data;
 
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 
 /**
@@ -50,7 +51,7 @@ public class Task {
         SimpleDateFormat dateFormat = new SimpleDateFormat("d/M (EEE) HH:mm");
         
         if (hasDate()) {
-        	if (isRangeDate()) {
+        	if (hasDateRange()) {
         		String startDateTime = dateFormat.format(startDate);
                 String endDateTime = dateFormat.format(endDate);
         		feedback = title + " from " + startDateTime + " to " + endDateTime;
@@ -75,11 +76,67 @@ public class Task {
         return feedback;
     }
     
+    public boolean isThisWeek() {
+        Date tomorrow = getTomorrow();
+        Date eighthDay = getEigthDay();
+        
+        if (hasEndDate()) {
+            if (endDate.compareTo(tomorrow) >= 0 && endDate.compareTo(eighthDay) < 0) {
+                return true;
+            }
+        } else if (hasStartDate()) {
+            if (startDate.compareTo(tomorrow) >= 0 && startDate.compareTo(eighthDay) < 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public boolean isToday() {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("ddMMyyyy");
+        String today = dateFormat.format(new Date());
+        
+        if (hasEndDate()) {
+            String end = dateFormat.format(endDate);
+            if (today.equals(end)) {
+                return true;
+            }
+        } else if (hasStartDate()) {
+            String start = dateFormat.format(startDate);
+            if (today.equals(start)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    private Date getTomorrow() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(new Date());
+        calendar.add(Calendar.DATE,1);
+        calendar.set(Calendar.HOUR_OF_DAY,0);
+        calendar.set(Calendar.MINUTE,0);
+        calendar.set(Calendar.SECOND,0);
+        calendar.set(Calendar.MILLISECOND,0);
+        return calendar.getTime();
+    }
+    
+    private Date getEigthDay() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(new Date());
+        calendar.add(Calendar.DATE,8);
+        calendar.set(Calendar.HOUR_OF_DAY,0);
+        calendar.set(Calendar.MINUTE,0);
+        calendar.set(Calendar.SECOND,0);
+        calendar.set(Calendar.MILLISECOND,0);
+        return calendar.getTime();
+    }
+    
     public boolean hasDate() {
         return (startDate != null || endDate != null);
     }
     
-    public boolean isRangeDate() {
+    public boolean hasDateRange() {
     	return (startDate != null && endDate != null);
     }
     
