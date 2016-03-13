@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.logging.Level;
+import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.time.*;
@@ -43,6 +44,8 @@ public class CommandParser {
     private static final Logger logger = Logger.getLogger(CommandParser.class.getName());
     
     public Command parse(String commandString) {
+    	LogManager.getLogManager().reset();
+    	
         String command = getFirstWord(commandString);
         Type commandType = getCommandType(command);
         logger.log(Level.INFO, "Starting " + commandType + " command preparations.");
@@ -50,20 +53,29 @@ public class CommandParser {
     }
     
     private String getFirstWord(String commandString) {
-        return commandString.split(" ")[0];
+    	String word = "";
+    	try {
+    		word = commandString.split(" ")[0];
+    	} catch (IndexOutOfBoundsException e ) {
+    		e.printStackTrace();
+    	}
+    	return word;
     }
     
     private Type getCommandType(String command) {
+    	assert(!command.equals(null));
         if (command.equalsIgnoreCase("delete") || (command.equalsIgnoreCase("del"))) {
             return Command.Type.DELETE;
         } else if (command.equalsIgnoreCase("done")) {
         	return Command.Type.DONE;
         } else {
+        	//add does not require a command
         	return Command.Type.ADD;
         }
     }
     
     private Command commandPreparations(Type type, String commandString) {
+    	assert(type.equals(Command.Type.ADD) || type.equals(Command.Type.DELETE) || type.equals(Command.Type.DONE));
         switch (type) {
             case ADD :
                 return prepareForAdd(type, commandString);
@@ -328,7 +340,9 @@ public class CommandParser {
 		ArrayList<String> timings = new ArrayList<String>();
 		int hour = dateTime.getHour();
 		int min = dateTime.getMinute();
-
+		assert(hour >= 0);
+		assert(min >= 0);
+		
 		String minute = ":";
 		if (min == 0) {
 			minute = minute.concat("0");
@@ -467,7 +481,7 @@ public class CommandParser {
         
         String indexString = commandString.substring(index, commandString.length());
         indexString = removeWhiteSpace(indexString);
-        
+        assert(!indexString.isEmpty());
         return indexString;
     }
     
@@ -490,27 +504,30 @@ public class CommandParser {
         ArrayList<Integer> rangedIndexes = new ArrayList<Integer>();
         
         Collections.addAll(indexes, index.split(","));
-        
-        for (int i = 0; i < indexes.size(); i++) {
-            if (indexes.get(i).contains("-")) {
-                Collections.addAll(tempRangedIndexes, indexes.get(i).split("-"));
-                
-                for (int j = 0; j < tempRangedIndexes.size(); j++) {
-                    rangedIndexes.add(Integer.parseInt(tempRangedIndexes.get(j)));
-                }
-                
-                for (int k = rangedIndexes.get(0); k <= rangedIndexes.get(1); k++) {
-                    multipleIndexes.add(k - INDEX_OFFSET);
-                }
-                
-                tempRangedIndexes.clear();
-                rangedIndexes.clear();
-            } else {
-            	int indexToAdd;
-            	indexToAdd = Integer.parseInt(indexes.get(i));
-            	indexToAdd = indexToAdd - INDEX_OFFSET;
-                multipleIndexes.add(indexToAdd);
-            }
+        try {
+	        for (int i = 0; i < indexes.size(); i++) {
+	            if (indexes.get(i).contains("-")) {
+	                Collections.addAll(tempRangedIndexes, indexes.get(i).split("-"));
+	                
+	                for (int j = 0; j < tempRangedIndexes.size(); j++) {
+	                    rangedIndexes.add(Integer.parseInt(tempRangedIndexes.get(j)));
+	                }
+	                
+	                for (int k = rangedIndexes.get(0); k <= rangedIndexes.get(1); k++) {
+	                    multipleIndexes.add(k - INDEX_OFFSET);
+	                }
+	                
+	                tempRangedIndexes.clear();
+	                rangedIndexes.clear();
+	            } else {
+	            	int indexToAdd;
+	            	indexToAdd = Integer.parseInt(indexes.get(i));
+	            	indexToAdd = indexToAdd - INDEX_OFFSET;
+	                multipleIndexes.add(indexToAdd);
+	            }
+	        }
+        } catch (NumberFormatException e) {
+        	e.printStackTrace();
         }
         
         return multipleIndexes;
