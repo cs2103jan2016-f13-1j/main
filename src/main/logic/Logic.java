@@ -190,7 +190,7 @@ public class Logic {
 	public ArrayList<Task> getNextSevenDays() {
 		ArrayList<Task> result = new ArrayList<Task>();
 		
-		for (Task task : getAllTasks()) {
+		for (Task task : getDatedTasks()) {
 		    if (task.isThisWeek()) {
 		        result.add(task);
 		    }
@@ -211,7 +211,7 @@ public class Logic {
 	public ArrayList<Task> getTodayTasks() {
 		ArrayList<Task> result = new ArrayList<Task>();
 		
-		for (Task task : getAllTasks()) {
+		for (Task task : getDatedTasks()) {
 			if (task.isToday()) {
 				result.add(task);
 			}
