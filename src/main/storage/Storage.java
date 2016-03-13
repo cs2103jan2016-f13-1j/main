@@ -98,9 +98,9 @@ public class Storage {
 				filePath), "UTF-8")) {
 			Gson gson = new GsonBuilder().setPrettyPrinting().create();
 			gson.toJson(tasks, writer);
-			logger.log(Level.INFO,"Successfully saved tasks to: " + fileName);
+			logger.log(Level.INFO,"Saved tasks to: " + fileName);
 		} catch (Exception e) {
-			logger.log(Level.INFO,"Error while saving tasks to: " + fileName);
+			logger.log(Level.INFO,"Corrupted file location: " + filePath);
 			setFileLocation(DEFAULT_FILE_NAME);
 			writeTasks(tasks);
 		}

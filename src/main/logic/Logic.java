@@ -34,6 +34,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.EmptyStackException;
 import java.util.Stack;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import main.data.Command;
 import main.data.Task;
@@ -41,29 +43,30 @@ import main.parser.CommandParser;
 import main.storage.Storage;
 
 public class Logic {
-	
-    private static Logic logic;
     
-	public static final String DATE_FORMAT_DDMMYY = "ddMMyyyy";
-	
-	public static enum List {
+    public static enum List {
 	    FLOATING, DATED, TODAY, NEXT_SEVEN_DAYS
 	}
+	
+    private static final Logger logger = Logger.getLogger(Logic.class.getName());
+    
+	private static Logic logic;
+	
+	public static final String DATE_FORMAT_DDMMYY = "ddMMyyyy";
 	
 	private static final int FLOATING_TASKS_INDEX = 0;
 	private static final int DATED_TASKS_INDEX = 1;
 	
 	CommandParser parser = null;
-	Storage storage = null;
-	
-	Stack<Command> undoHistory = new Stack<Command>();
-	Stack<Command> redoHistory = new Stack<Command>();
-	ArrayList<Task> floatingTasks = new ArrayList<Task>();
-	ArrayList<Task> datedTasks = new ArrayList<Task>();
-	
+    Storage storage = null;
 	Command command = null;
 	
-	/**
+	Stack<Command> undoHistory = new Stack<Command>();
+    Stack<Command> redoHistory = new Stack<Command>();
+    ArrayList<Task> floatingTasks = new ArrayList<Task>();
+    ArrayList<Task> datedTasks = new ArrayList<Task>();
+	
+    /**
 	 * Initializes a newly created {@code Controller} object.
 	 */
     private Logic() {
@@ -77,7 +80,7 @@ public class Logic {
         assert(floatingTasks != null);
         assert(datedTasks != null);
     }
-
+    
     public static synchronized Logic getLogic() {
         if (logic == null) {
             logic = new Logic();
@@ -88,165 +91,6 @@ public class Logic {
 
     public Object clone() throws CloneNotSupportedException {
         throw new CloneNotSupportedException();
-    }
-	
-	private void addTask(List type, Task task) {
-		switch (type) {
-			case FLOATING:
-				floatingTasks.add(task);
-				break;
-			case DATED:
-				datedTasks.add(task);
-				break;
-			default:
-				break;
-		}
-	}
-	
-	private ArrayList<Task> deleteTasksFromList(ArrayList<Task> list, ArrayList<Integer> indexes) {
-		int j = 0;
-		ArrayList<Task> previousTasks = new ArrayList<Task>();
-		for (int i = 0; i < indexes.size(); i++) {
-		    int indexToDelete = indexes.get(i-j);
-		    Task removedTask = list.remove(indexToDelete);
-		    previousTasks.add(removedTask);
-		    j++;
-		}
-		assert(command != null);
-		command.setPreviousTasks(previousTasks);
-		return list;
-	}
-	
-	private void deleteTask(List type, ArrayList<Integer> indexes) {
-		switch (type) {
-			case FLOATING:
-				deleteTasksFromList(floatingTasks, indexes);
-				break;
-			case DATED:
-				deleteTasksFromList(datedTasks, indexes);
-				break;
-			case TODAY:
-                deleteTasksFromToday(indexes);
-			case NEXT_SEVEN_DAYS:
-			    deleteTasksFromNextSevenDays(indexes);
-			default:
-				break;
-		}
-	}
-
-    private void deleteTasksFromNextSevenDays(ArrayList<Integer> indexes) {
-        ArrayList<Task> temp = new ArrayList<Task>();
-        ArrayList<Task> newNextSevenDaysTasks = deleteTasksFromList(getNextSevenDays(), indexes);
-        temp.addAll(getTodayTasks());
-        temp.addAll(newNextSevenDaysTasks);
-        datedTasks = new ArrayList<Task>();
-        for (Task task : temp) {
-        	datedTasks.add(task);
-        }
-    }
-
-    private void deleteTasksFromToday(ArrayList<Integer> indexes) {
-        ArrayList<Task> temp = new ArrayList<Task>();
-        ArrayList<Task> newTodayTasks = deleteTasksFromList(getTodayTasks(), indexes);
-        temp.addAll(newTodayTasks);
-        temp.addAll(getNextSevenDays());
-        datedTasks = new ArrayList<Task>();
-        for (Task task : temp) {
-        	datedTasks.add(task);
-        }
-    }
-    
-    private void markTask(List type, ArrayList<Integer> indexes, boolean status) {
-        switch (type) {
-            case FLOATING:
-                markTasksFromList(floatingTasks, indexes, status);
-                break;
-            case DATED:
-                markTasksFromList(datedTasks, indexes, status);
-                break;
-            case TODAY:
-                markTasksFromToday(indexes, status);
-            case NEXT_SEVEN_DAYS:
-                markTasksFromNextSevenDays(indexes, status);
-            default:
-                break;
-        }
-    }
-    
-    private ArrayList<Task> markTasksFromList(ArrayList<Task> list, ArrayList<Integer> indexes, boolean status) {
-        ArrayList<Task> previousTasks = new ArrayList<Task>();
-        for (int i = 0; i < indexes.size(); i++) {
-            int indexToMark = indexes.get(i);
-            Task task = list.get(indexToMark);
-            task.setStatus(status);
-            previousTasks.add(task);
-        }
-        assert(command != null);
-        command.setPreviousTasks(previousTasks);
-        return list;
-    }
-	
-    private void markTasksFromNextSevenDays(ArrayList<Integer> indexes, boolean status) {
-        ArrayList<Task> temp = new ArrayList<Task>();
-        ArrayList<Task> newNextSevenDaysTasks = markTasksFromList(getNextSevenDays(), indexes, status);
-        temp.addAll(getTodayTasks());
-        temp.addAll(newNextSevenDaysTasks);
-        datedTasks = new ArrayList<Task>();
-        for (Task task : temp) {
-            datedTasks.add(task);
-        }
-    }
-
-    private void markTasksFromToday(ArrayList<Integer> indexes, boolean status) {
-        ArrayList<Task> temp = new ArrayList<Task>();
-        ArrayList<Task> newTodayTasks = markTasksFromList(getTodayTasks(), indexes, status);
-        temp.addAll(newTodayTasks);
-        temp.addAll(getNextSevenDays());
-        datedTasks = new ArrayList<Task>();
-        for (Task task : temp) {
-            datedTasks.add(task);
-        }
-    }
-    
-	private void addToList(List type, int index, Task task) {
-		switch (type) {
-			case FLOATING:
-				floatingTasks.add(index,task);
-				break;
-			case DATED:
-				datedTasks.add(index,task);
-				break;
-			case TODAY:
-                addToToday(index, task);
-			case NEXT_SEVEN_DAYS:
-                addToNextSevenDays(index, task);
-			default:
-				break;
-		}
-	}
-
-    private void addToNextSevenDays(int index, Task task) {
-        ArrayList<Task> temp = new ArrayList<Task>();
-        ArrayList<Task> newNextSevenDaysTasks = getNextSevenDays();
-        newNextSevenDaysTasks.add(index,task);
-        temp.addAll(getTodayTasks());
-        temp.addAll(newNextSevenDaysTasks);
-        datedTasks = new ArrayList<Task>();
-        for (Task t : temp) {
-            datedTasks.add(t);
-        }
-    }
-
-    private void addToToday(int index, Task task) {
-        ArrayList<Task> temp = new ArrayList<Task>();
-        ArrayList<Task> newTodayTasks = getTodayTasks();
-        newTodayTasks.add(index,task);
-        temp.addAll(newTodayTasks);
-        temp.addAll(getNextSevenDays());
-        datedTasks = new ArrayList<Task>();
-        for (Task t : temp) {
-            datedTasks.add(t);
-        }
     }
 	
 	/**
@@ -280,16 +124,11 @@ public class Logic {
 		    }
 		}
 		command.setPreviousListType(type.name());
+		logger.log(Level.INFO,"Edited index " + index + " to " + task.getTitle());
 		saveTasks();
 		addToHistory();
 	}
-
-    private void addToHistory() {
-        assert(command != null);
-        undoHistory.push(command);
-		redoHistory = new Stack<Command>();
-    }
-
+	
 	/**
 	 * Executes the last command stored when parseCommand was called,
 	 * and stores it in a {@code Command} history stack.
@@ -311,127 +150,11 @@ public class Logic {
             default:
                 break;
 	    }
+	    logger.log(Level.INFO,"Executed " + command.getCommandType().name() + " command");
 	    saveTasks();
 		addToHistory();
 	}
 	
-	public void undo() {
-	    if (undoHistory.size() == 0) {
-	        throw new EmptyStackException();
-	    }
-	    assert(undoHistory.size() > 0);
-	    
-		Command undoCommand = undoHistory.pop();
-		
-		List type = Enum.valueOf(List.class, undoCommand.getListType());
-		
-		ArrayList<Integer> indexes = null;
-		
-		switch (undoCommand.getCommandType()) {
-			case ADD:
-			    redoHistory.push(undoCommand);
-			    ArrayList<Integer> indexToDelete = new ArrayList<Integer>();
-			    indexToDelete.add(getLastIndexOf(type));
-			    deleteTask(type,indexToDelete);
-				break;
-			case EDIT:
-                //delete task and add previous task at index
-			    Task previousTask = undoCommand.getPreviousTasks().get(0);
-			    indexes = undoCommand.getIndexes();
-			    deleteTask(type,indexes);
-			    addToList(Enum.valueOf(List.class, undoCommand.getPreviousListType()),indexes.get(0),previousTask);
-			    undoCommand.setListType(type.name());
-			    redoHistory.push(undoCommand);
-                break;
-			case DELETE:
-			    redoHistory.push(undoCommand);
-			    ArrayList<Task> previousTasks = undoCommand.getPreviousTasks();
-			    indexes = undoCommand.getIndexes();
-			    for (int i = 0; i < previousTasks.size(); i++) {
-			        addToList(type, indexes.get(i), previousTasks.get(i));
-			    }
-				break;
-			case DONE:
-			    redoHistory.push(undoCommand);
-			    indexes = undoCommand.getIndexes();
-			    for (int i = 0; i < indexes.size(); i++) {
-			        markTask(Enum.valueOf(List.class, undoCommand.getListType()),undoCommand.getIndexes(), false);
-                }
-			default:
-				break;
-		}
-		saveTasks();
-	}
-	
-	public void redo() {
-	    if (redoHistory.size() == 0) {
-            throw new EmptyStackException();
-        }
-        assert(redoHistory.size() > 0);
-        
-	    Command redoCommand = redoHistory.pop();
-	    command = redoCommand;
-	    undoHistory.push(command);
-
-        switch (redoCommand.getCommandType()) {
-            case ADD:
-                addTask(Enum.valueOf(List.class, command.getListType()),command.getTask());             
-                break;
-            case EDIT:
-                editTask(Enum.valueOf(List.class, command.getPreviousListType()),command.getIndexes().get(0));
-                break;
-            case DELETE:
-                deleteTask(Enum.valueOf(List.class, command.getListType()),command.getIndexes());
-                break;
-            case DONE:
-                markTask(Enum.valueOf(List.class, command.getListType()),command.getIndexes(), true);
-            default:
-                break;
-        }
-        saveTasks();
-	}
-	
-	private int getLastIndexOf(List type) {
-	    int index = 0;
-	    
-	    switch (type) {
-    	    case FLOATING:
-                index = floatingTasks.size();
-                break;
-            case DATED:
-                index = datedTasks.size();
-                break;
-            case TODAY:
-                index = getTodayTasks().size();
-            case NEXT_SEVEN_DAYS:
-                index = getNextSevenDays().size();
-            default:
-                break;
-	    }
-	    index--;
-	    return index;
-	}
-	
-   private Task getTaskAtIndex(List type, int index) {
-        Task task = null;
-        
-        switch (type) {
-            case FLOATING:
-                task = floatingTasks.get(index);
-                break;
-            case DATED:
-                task = datedTasks.get(index);
-                break;
-            case TODAY:
-                task = getTodayTasks().get(index);
-            case NEXT_SEVEN_DAYS:
-                task = getNextSevenDays().get(index);
-            default:
-                break;
-        }
-        return task;
-    }
-
 	/**
 	 * Combines all floating and dated tasks
 	 * 
@@ -443,26 +166,27 @@ public class Logic {
 		tasks.addAll(datedTasks);
 		return tasks;
 	}
-	
-	private Date getEigthDay() {
-		Calendar calendar = Calendar.getInstance();
-		calendar.setTime(new Date());
-		calendar.add(Calendar.DATE,8);
-		calendar.set(Calendar.HOUR_OF_DAY,0);
-		calendar.set(Calendar.MINUTE,0);
-		calendar.set(Calendar.SECOND,0);
-		calendar.set(Calendar.MILLISECOND,0);
-		return calendar.getTime();
+
+    /**
+	 * Use to retrieve every task which has the date field
+	 * @return the list of tasks with dates
+	 */
+	public ArrayList<Task> getDatedTasks() {
+        return datedTasks;
 	}
-	
-	/**
+
+    public String getFileLocation() {
+		return storage.getFileLocation();
+	}
+    
+    /**
 	 * @return the list of floating tasks
 	 */
 	public ArrayList<Task> getFloatingTasks() {
         return floatingTasks;
 	}
-	
-	/**
+    
+    /**
 	 * Creates a new list of tasks that are within the next seven days
 	 * of the current system date
 	 * 
@@ -485,8 +209,12 @@ public class Logic {
 		}
 		return result;
 	}
+	
+    public int getRedoCount() {
+        return redoHistory.size();
+    }
 
-	/**
+    /**
 	 * Creates a new list of tasks that have the same date as the 
 	 * current system date
 	 * 
@@ -508,27 +236,12 @@ public class Logic {
 		}
 		return result;
 	}
-	
-	/**
-	 * Use to retrieve every task which has the date field
-	 * @return the list of tasks with dates
-	 */
-	public ArrayList<Task> getDatedTasks() {
-        return datedTasks;
+    
+	public int getUndoCount() {
+	    return undoHistory.size();
 	}
 
-	private Date getTomorrow() {
-		Calendar calendar = Calendar.getInstance();
-		calendar.setTime(new Date());
-		calendar.add(Calendar.DATE,1);
-		calendar.set(Calendar.HOUR_OF_DAY,0);
-		calendar.set(Calendar.MINUTE,0);
-		calendar.set(Calendar.SECOND,0);
-		calendar.set(Calendar.MILLISECOND,0);
-		return calendar.getTime();
-	}
-	
-	/**
+    /**
 	 * Evaluates the given command and provide feedback
 	 * 
 	 * Examples of use: 
@@ -590,16 +303,34 @@ public class Logic {
 		
 		return feedback;
 	}
-	
-	private void saveTasks() {
-		try {
-			ArrayList<ArrayList<Task>> tasks = new ArrayList<ArrayList<Task>>();
-			tasks.add(floatingTasks);
-			tasks.add(datedTasks);
-			storage.writeTasks(tasks);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
+
+    public void redo() {
+	    if (redoHistory.size() == 0) {
+            throw new EmptyStackException();
+        }
+        assert(redoHistory.size() > 0);
+        
+	    Command redoCommand = redoHistory.pop();
+	    command = redoCommand;
+	    undoHistory.push(command);
+
+        switch (redoCommand.getCommandType()) {
+            case ADD:
+                addTask(Enum.valueOf(List.class, command.getListType()),command.getTask());             
+                break;
+            case EDIT:
+                editTask(Enum.valueOf(List.class, command.getPreviousListType()),command.getIndexes().get(0));
+                break;
+            case DELETE:
+                deleteTask(Enum.valueOf(List.class, command.getListType()),command.getIndexes());
+                break;
+            case DONE:
+                markTask(Enum.valueOf(List.class, command.getListType()),command.getIndexes(), true);
+            default:
+                break;
+        }
+        logger.log(Level.INFO,"Redone " + command.getCommandType().name() + " command");
+        saveTasks();
 	}
 	
 	/**
@@ -611,16 +342,292 @@ public class Logic {
 	public void setFileLocation(String fileLocation) {
         storage.setFileLocation(fileLocation);
 	}
-	
-	public String getFileLocation() {
-		return storage.getFileLocation();
+
+    public void undo() {
+	    if (undoHistory.size() == 0) {
+	        throw new EmptyStackException();
+	    }
+	    assert(undoHistory.size() > 0);
+	    
+		Command undoCommand = undoHistory.pop();
+		
+		List type = Enum.valueOf(List.class, undoCommand.getListType());
+		
+		ArrayList<Integer> indexes = null;
+		
+		switch (undoCommand.getCommandType()) {
+			case ADD:
+			    redoHistory.push(undoCommand);
+			    ArrayList<Integer> indexToDelete = new ArrayList<Integer>();
+			    indexToDelete.add(getLastIndexOf(type));
+			    deleteTask(type,indexToDelete);
+				break;
+			case EDIT:
+                //delete task and add previous task at index
+			    Task previousTask = undoCommand.getPreviousTasks().get(0);
+			    indexes = undoCommand.getIndexes();
+			    deleteTask(type,indexes);
+			    addToList(Enum.valueOf(List.class, undoCommand.getPreviousListType()),indexes.get(0),previousTask);
+			    undoCommand.setListType(type.name());
+			    redoHistory.push(undoCommand);
+                break;
+			case DELETE:
+			    redoHistory.push(undoCommand);
+			    ArrayList<Task> previousTasks = undoCommand.getPreviousTasks();
+			    indexes = undoCommand.getIndexes();
+			    for (int i = 0; i < previousTasks.size(); i++) {
+			        addToList(type, indexes.get(i), previousTasks.get(i));
+			    }
+				break;
+			case DONE:
+			    redoHistory.push(undoCommand);
+			    indexes = undoCommand.getIndexes();
+			    for (int i = 0; i < indexes.size(); i++) {
+			        markTask(Enum.valueOf(List.class, undoCommand.getListType()),undoCommand.getIndexes(), false);
+                }
+			default:
+				break;
+		}
+		logger.log(Level.INFO,"Undone " + undoCommand.getCommandType().name() + " command");
+		saveTasks();
+	}
+
+	private void addTask(List type, Task task) {
+		switch (type) {
+			case FLOATING:
+				floatingTasks.add(task);
+				break;
+			case DATED:
+				datedTasks.add(task);
+				break;
+			default:
+				break;
+		}
 	}
 	
-	public int getUndoCount() {
-	    return undoHistory.size();
-	}
-	
-	public int getRedoCount() {
-        return redoHistory.size();
+	private void addToHistory() {
+        assert(command != null);
+        undoHistory.push(command);
+		redoHistory = new Stack<Command>();
     }
+	
+	private void addToList(List type, int index, Task task) {
+		switch (type) {
+			case FLOATING:
+				floatingTasks.add(index,task);
+				break;
+			case DATED:
+				datedTasks.add(index,task);
+				break;
+			case TODAY:
+                addToToday(index, task);
+			case NEXT_SEVEN_DAYS:
+                addToNextSevenDays(index, task);
+			default:
+				break;
+		}
+	}
+	
+	private void addToNextSevenDays(int index, Task task) {
+        ArrayList<Task> temp = new ArrayList<Task>();
+        ArrayList<Task> newNextSevenDaysTasks = getNextSevenDays();
+        newNextSevenDaysTasks.add(index,task);
+        temp.addAll(getTodayTasks());
+        temp.addAll(newNextSevenDaysTasks);
+        datedTasks = new ArrayList<Task>();
+        for (Task t : temp) {
+            datedTasks.add(t);
+        }
+    }
+	
+   private void addToToday(int index, Task task) {
+        ArrayList<Task> temp = new ArrayList<Task>();
+        ArrayList<Task> newTodayTasks = getTodayTasks();
+        newTodayTasks.add(index,task);
+        temp.addAll(newTodayTasks);
+        temp.addAll(getNextSevenDays());
+        datedTasks = new ArrayList<Task>();
+        for (Task t : temp) {
+            datedTasks.add(t);
+        }
+   }
+
+	private void deleteTask(List type, ArrayList<Integer> indexes) {
+		switch (type) {
+			case FLOATING:
+				deleteTasksFromList(floatingTasks, indexes);
+				break;
+			case DATED:
+				deleteTasksFromList(datedTasks, indexes);
+				break;
+			case TODAY:
+                deleteTasksFromToday(indexes);
+			case NEXT_SEVEN_DAYS:
+			    deleteTasksFromNextSevenDays(indexes);
+			default:
+				break;
+		}
+	}
+	
+	private ArrayList<Task> deleteTasksFromList(ArrayList<Task> list, ArrayList<Integer> indexes) {
+		int j = 0;
+		ArrayList<Task> previousTasks = new ArrayList<Task>();
+		for (int i = 0; i < indexes.size(); i++) {
+		    int indexToDelete = indexes.get(i-j);
+		    Task removedTask = list.remove(indexToDelete);
+		    previousTasks.add(removedTask);
+		    j++;
+		}
+		assert(command != null);
+		command.setPreviousTasks(previousTasks);
+		return list;
+	}
+	
+	private void deleteTasksFromNextSevenDays(ArrayList<Integer> indexes) {
+        ArrayList<Task> temp = new ArrayList<Task>();
+        ArrayList<Task> newNextSevenDaysTasks = deleteTasksFromList(getNextSevenDays(), indexes);
+        temp.addAll(getTodayTasks());
+        temp.addAll(newNextSevenDaysTasks);
+        datedTasks = new ArrayList<Task>();
+        for (Task task : temp) {
+        	datedTasks.add(task);
+        }
+    }
+	
+	private void deleteTasksFromToday(ArrayList<Integer> indexes) {
+        ArrayList<Task> temp = new ArrayList<Task>();
+        ArrayList<Task> newTodayTasks = deleteTasksFromList(getTodayTasks(), indexes);
+        temp.addAll(newTodayTasks);
+        temp.addAll(getNextSevenDays());
+        datedTasks = new ArrayList<Task>();
+        for (Task task : temp) {
+        	datedTasks.add(task);
+        }
+    }
+
+	private Date getEigthDay() {
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(new Date());
+		calendar.add(Calendar.DATE,8);
+		calendar.set(Calendar.HOUR_OF_DAY,0);
+		calendar.set(Calendar.MINUTE,0);
+		calendar.set(Calendar.SECOND,0);
+		calendar.set(Calendar.MILLISECOND,0);
+		return calendar.getTime();
+	}
+	
+	private int getLastIndexOf(List type) {
+	    int index = 0;
+	    
+	    switch (type) {
+    	    case FLOATING:
+                index = floatingTasks.size();
+                break;
+            case DATED:
+                index = datedTasks.size();
+                break;
+            case TODAY:
+                index = getTodayTasks().size();
+            case NEXT_SEVEN_DAYS:
+                index = getNextSevenDays().size();
+            default:
+                break;
+	    }
+	    index--;
+	    return index;
+	}
+
+	private Task getTaskAtIndex(List type, int index) {
+            Task task = null;
+            
+            switch (type) {
+                case FLOATING:
+                    task = floatingTasks.get(index);
+                    break;
+                case DATED:
+                    task = datedTasks.get(index);
+                    break;
+                case TODAY:
+                    task = getTodayTasks().get(index);
+                case NEXT_SEVEN_DAYS:
+                    task = getNextSevenDays().get(index);
+                default:
+                    break;
+            }
+            return task;
+        }
+	
+	private Date getTomorrow() {
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(new Date());
+		calendar.add(Calendar.DATE,1);
+		calendar.set(Calendar.HOUR_OF_DAY,0);
+		calendar.set(Calendar.MINUTE,0);
+		calendar.set(Calendar.SECOND,0);
+		calendar.set(Calendar.MILLISECOND,0);
+		return calendar.getTime();
+	}
+	
+	private void markTask(List type, ArrayList<Integer> indexes, boolean status) {
+        switch (type) {
+            case FLOATING:
+                markTasksFromList(floatingTasks, indexes, status);
+                break;
+            case DATED:
+                markTasksFromList(datedTasks, indexes, status);
+                break;
+            case TODAY:
+                markTasksFromToday(indexes, status);
+            case NEXT_SEVEN_DAYS:
+                markTasksFromNextSevenDays(indexes, status);
+            default:
+                break;
+        }
+    }
+	
+	private ArrayList<Task> markTasksFromList(ArrayList<Task> list, ArrayList<Integer> indexes, boolean status) {
+        ArrayList<Task> previousTasks = new ArrayList<Task>();
+        for (int i = 0; i < indexes.size(); i++) {
+            int indexToMark = indexes.get(i);
+            Task task = list.get(indexToMark);
+            task.setStatus(status);
+            previousTasks.add(task);
+        }
+        assert(command != null);
+        command.setPreviousTasks(previousTasks);
+        return list;
+    }
+	
+	private void markTasksFromNextSevenDays(ArrayList<Integer> indexes, boolean status) {
+        ArrayList<Task> temp = new ArrayList<Task>();
+        ArrayList<Task> newNextSevenDaysTasks = markTasksFromList(getNextSevenDays(), indexes, status);
+        temp.addAll(getTodayTasks());
+        temp.addAll(newNextSevenDaysTasks);
+        datedTasks = new ArrayList<Task>();
+        for (Task task : temp) {
+            datedTasks.add(task);
+        }
+    }
+	
+	private void markTasksFromToday(ArrayList<Integer> indexes, boolean status) {
+        ArrayList<Task> temp = new ArrayList<Task>();
+        ArrayList<Task> newTodayTasks = markTasksFromList(getTodayTasks(), indexes, status);
+        temp.addAll(newTodayTasks);
+        temp.addAll(getNextSevenDays());
+        datedTasks = new ArrayList<Task>();
+        for (Task task : temp) {
+            datedTasks.add(task);
+        }
+    }
+	
+	private void saveTasks() {
+		try {
+			ArrayList<ArrayList<Task>> tasks = new ArrayList<ArrayList<Task>>();
+			tasks.add(floatingTasks);
+			tasks.add(datedTasks);
+			storage.writeTasks(tasks);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+	}
 }
