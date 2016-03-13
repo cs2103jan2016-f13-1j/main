@@ -76,6 +76,7 @@ public class CommandParser {
             	
             default :
             	logger.log(Level.WARNING, "Command type not detected. Null returned.");
+            	assert(false);
                 return null;
         }
     }
