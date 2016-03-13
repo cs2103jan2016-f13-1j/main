@@ -6,6 +6,10 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
@@ -37,27 +41,41 @@ public class CommandParser {
     private final boolean PREPOSITION_ALL = true;
     private final boolean PREPOSITION_SELECTIVE = false;
     
+    private static final Logger logger = Logger.getLogger(CommandParser.class.getName());
+    
     public Command parse(String commandString) {
+    	LogManager.getLogManager().reset();
+    	
         String command = getFirstWord(commandString);
         Type commandType = getCommandType(command);
+        logger.log(Level.INFO, "Starting " + commandType + " command preparations.");
         return commandPreparations(commandType, commandString);
     }
     
     private String getFirstWord(String commandString) {
-        return commandString.split(" ")[0];
+    	String word = "";
+    	try {
+    		word = commandString.split(" ")[0];
+    	} catch (IndexOutOfBoundsException e ) {
+    		e.printStackTrace();
+    	}
+    	return word;
     }
     
     private Type getCommandType(String command) {
+    	assert(!command.equals(null));
         if (command.equalsIgnoreCase("delete") || (command.equalsIgnoreCase("del"))) {
             return Command.Type.DELETE;
         } else if (command.equalsIgnoreCase("done")) {
         	return Command.Type.DONE;
         } else {
+        	//add does not require a command
         	return Command.Type.ADD;
         }
     }
     
     private Command commandPreparations(Type type, String commandString) {
+    	assert(type.equals(Command.Type.ADD) || type.equals(Command.Type.DELETE) || type.equals(Command.Type.DONE));
         switch (type) {
             case ADD :
                 return prepareForAdd(type, commandString);
@@ -69,6 +87,8 @@ public class CommandParser {
             	return prepareIndexes(type, commandString);
             	
             default :
+            	logger.log(Level.WARNING, "Command type not detected. Null returned.");
+            	assert(false);
                 return null;
         }
     }
@@ -99,10 +119,10 @@ public class CommandParser {
 
         hasPreposition = checkForPrepositions(commandString, PREPOSITION_ALL);
         if (hasPreposition) {
+        	commandString = detectAndCorrectDateInput(commandString);
         	List<Date> dates = parseDate(commandString);
             numberOfDate = dates.size();
             
-            //kokodesu
             if (numberOfDate > 0) {
             	if (numberOfDate == DATE_MAX_SIZE) {
                     startDate = getDate(dates, DATE_START_RANGED);
@@ -170,6 +190,40 @@ public class CommandParser {
     	return prepositions;
     }
     
+    /**
+     * Corrects user input of dd/mm into mm/dd for parser
+     * 
+     * @param commandString
+     * 			user input string
+     * @return String with the date fields swapped
+     */
+    private String detectAndCorrectDateInput(String commandString) {
+		boolean match = false;
+		String swapped = "";
+		
+		//Preserve capitalization by not using toLowerCase
+		List<String> words = new ArrayList<String>(Arrays.asList(commandString.split(" ")));
+		
+		String pattern = "(0?[1-9]|[12][0-9]|3[01])(/|-)(0?[1-9]|1[012])";
+		
+		for (int i = 0; i< words.size(); i++) {
+			match = Pattern.matches(pattern, words.get(i));
+			if (match) {
+				if (words.get(i).contains("/")) {
+					List<String> date = new ArrayList<String>(Arrays.asList(words.get(i).split("/")));
+					swapped = date.get(1).concat("/").concat(date.get(0));
+				} else if (words.get(i).contains("-")) {
+					List<String> date = new ArrayList<String>(Arrays.asList(words.get(i).split("-")));
+					swapped = date.get(1).concat("-").concat(date.get(0));
+				}
+				
+				words.set(i, swapped);
+				break;
+			}
+		}
+
+		return String.join(" ", words);
+	} 
     private List<Date> parseDate(String commandString) {
         PrettyTimeParser parser = new PrettyTimeParser();
         List<Date> dates = parser.parse(commandString);
@@ -257,10 +311,10 @@ public class CommandParser {
 	private ArrayList<String> getPossibleDates(LocalDateTime dateTime) {
 		ArrayList<String> dates = new ArrayList<String>();
 		dates.add(Integer.toString(dateTime.getDayOfMonth()));
-		dates.add(dateTime.format(DateTimeFormatter.ofPattern("M/dd")));
-		dates.add(dateTime.format(DateTimeFormatter.ofPattern("MM/dd")));
-		dates.add(dateTime.format(DateTimeFormatter.ofPattern("M-dd")));
-		dates.add(dateTime.format(DateTimeFormatter.ofPattern("MM-dd")));
+		dates.add(dateTime.format(DateTimeFormatter.ofPattern("dd/M")));
+		dates.add(dateTime.format(DateTimeFormatter.ofPattern("dd/MM")));
+		dates.add(dateTime.format(DateTimeFormatter.ofPattern("dd-M")));
+		dates.add(dateTime.format(DateTimeFormatter.ofPattern("dd-MM")));
 		return dates;
 	}
 	
@@ -286,7 +340,9 @@ public class CommandParser {
 		ArrayList<String> timings = new ArrayList<String>();
 		int hour = dateTime.getHour();
 		int min = dateTime.getMinute();
-
+		assert(hour >= 0);
+		assert(min >= 0);
+		
 		String minute = ":";
 		if (min == 0) {
 			minute = minute.concat("0");
@@ -425,7 +481,7 @@ public class CommandParser {
         
         String indexString = commandString.substring(index, commandString.length());
         indexString = removeWhiteSpace(indexString);
-        
+        assert(!indexString.isEmpty());
         return indexString;
     }
     
@@ -448,27 +504,30 @@ public class CommandParser {
         ArrayList<Integer> rangedIndexes = new ArrayList<Integer>();
         
         Collections.addAll(indexes, index.split(","));
-        
-        for (int i = 0; i < indexes.size(); i++) {
-            if (indexes.get(i).contains("-")) {
-                Collections.addAll(tempRangedIndexes, indexes.get(i).split("-"));
-                
-                for (int j = 0; j < tempRangedIndexes.size(); j++) {
-                    rangedIndexes.add(Integer.parseInt(tempRangedIndexes.get(j)));
-                }
-                
-                for (int k = rangedIndexes.get(0); k <= rangedIndexes.get(1); k++) {
-                    multipleIndexes.add(k - INDEX_OFFSET);
-                }
-                
-                tempRangedIndexes.clear();
-                rangedIndexes.clear();
-            } else {
-            	int indexToAdd;
-            	indexToAdd = Integer.parseInt(indexes.get(i));
-            	indexToAdd = indexToAdd - INDEX_OFFSET;
-                multipleIndexes.add(indexToAdd);
-            }
+        try {
+	        for (int i = 0; i < indexes.size(); i++) {
+	            if (indexes.get(i).contains("-")) {
+	                Collections.addAll(tempRangedIndexes, indexes.get(i).split("-"));
+	                
+	                for (int j = 0; j < tempRangedIndexes.size(); j++) {
+	                    rangedIndexes.add(Integer.parseInt(tempRangedIndexes.get(j)));
+	                }
+	                
+	                for (int k = rangedIndexes.get(0); k <= rangedIndexes.get(1); k++) {
+	                    multipleIndexes.add(k - INDEX_OFFSET);
+	                }
+	                
+	                tempRangedIndexes.clear();
+	                rangedIndexes.clear();
+	            } else {
+	            	int indexToAdd;
+	            	indexToAdd = Integer.parseInt(indexes.get(i));
+	            	indexToAdd = indexToAdd - INDEX_OFFSET;
+	                multipleIndexes.add(indexToAdd);
+	            }
+	        }
+        } catch (NumberFormatException e) {
+        	e.printStackTrace();
         }
         
         return multipleIndexes;
