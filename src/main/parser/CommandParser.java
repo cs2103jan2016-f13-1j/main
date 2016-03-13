@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Pattern;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
@@ -99,10 +100,10 @@ public class CommandParser {
 
         hasPreposition = checkForPrepositions(commandString, PREPOSITION_ALL);
         if (hasPreposition) {
+        	commandString = detectAndCorrectDateInput(commandString);
         	List<Date> dates = parseDate(commandString);
             numberOfDate = dates.size();
             
-            //kokodesu
             if (numberOfDate > 0) {
             	if (numberOfDate == DATE_MAX_SIZE) {
                     startDate = getDate(dates, DATE_START_RANGED);
@@ -170,6 +171,40 @@ public class CommandParser {
     	return prepositions;
     }
     
+    /**
+     * Corrects user input of dd/mm into mm/dd for parser
+     * 
+     * @param commandString
+     * 			user input string
+     * @return String with the date fields swapped
+     */
+    private String detectAndCorrectDateInput(String commandString) {
+		boolean match = false;
+		String swapped = "";
+		
+		//Preserve capitalization by not using toLowerCase
+		List<String> words = new ArrayList<String>(Arrays.asList(commandString.split(" ")));
+		
+		String pattern = "(0?[1-9]|[12][0-9]|3[01])(/|-)(0?[1-9]|1[012])";
+		
+		for (int i = 0; i< words.size(); i++) {
+			match = Pattern.matches(pattern, words.get(i));
+			if (match) {
+				if (words.get(i).contains("/")) {
+					List<String> date = new ArrayList<String>(Arrays.asList(words.get(i).split("/")));
+					swapped = date.get(1).concat("/").concat(date.get(0));
+				} else if (words.get(i).contains("-")) {
+					List<String> date = new ArrayList<String>(Arrays.asList(words.get(i).split("-")));
+					swapped = date.get(1).concat("-").concat(date.get(0));
+				}
+				
+				words.set(i, swapped);
+				break;
+			}
+		}
+
+		return String.join(" ", words);
+	} 
     private List<Date> parseDate(String commandString) {
         PrettyTimeParser parser = new PrettyTimeParser();
         List<Date> dates = parser.parse(commandString);

@@ -61,7 +61,7 @@ public class TestCommandParser {
         assertEquals(false, command.getTask().hasDate());
         assertEquals("Attack enemy base on signal", command.getTask().getTitle());
     }
-    
+
     @Test
     public void testAdd() throws ParseException {
         CommandParser parser = new CommandParser();
@@ -100,17 +100,17 @@ public class TestCommandParser {
 
     	command = parser.parse("Cook dinner on 24 Mar 7pm #home");
     	assertEquals("Cook dinner by 24/3 (Thu) 19:00 #home", command.getTask().toString());
-    	
-    	command = parser.parse("Cook dinner on 3/24 7pm");
+
+    	command = parser.parse("Cook dinner on 24/3 7pm");
     	assertEquals("Cook dinner by 24/3 (Thu) 19:00", command.getTask().toString());
     	
-    	command = parser.parse("Cook dinner on 3/24 7:15");
+    	command = parser.parse("Cook dinner on 24/3 7:15");
     	assertEquals("Cook dinner by 24/3 (Thu) 07:15", command.getTask().toString());
     	
-    	command = parser.parse("Cook dinner on 3/24 7:15pm");
+    	command = parser.parse("Cook dinner on 24/3 7:15pm");
     	assertEquals("Cook dinner by 24/3 (Thu) 19:15", command.getTask().toString());
     	
-    	command = parser.parse("Attend meeting on 3-26 7pm");
+    	command = parser.parse("Attend meeting on 26-3 7pm");
     	assertEquals("Attend meeting by 26/3 (Sat) 19:00", command.getTask().toString());
 
     	command = parser.parse("Attend meeting from 4 to 6pm on 25 Mar");
