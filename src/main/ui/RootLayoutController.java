@@ -356,47 +356,63 @@ public class RootLayoutController {
      * 
      */
     private void handleFOneKey() {
-        if (isEditMode) {
-            isEditMode = false;
-            labelCurrentMode.setText(getSelectedTabName());
-            restoreCommandBarText();
-            restoreCaretPosition();
+        Platform.runLater(new Runnable() {
 
-        } else {
-            isEditMode = true;
-            saveCommandBarText();
-            saveCaretPosition();
-            showFeedback(false);
-            labelCurrentMode.setText(MESSAGE_LABEL_MODE_EDIT);
-            commandBar.setText(allTasks.get(getSelectedTaskIndex()).toString());
-            moveCaretPositionToLast();
-        }
+            @Override
+            public void run() {
+                if (isEditMode) {
+                    isEditMode = false;
+                    labelCurrentMode.setText(getSelectedTabName());
+                    restoreCommandBarText();
+                    restoreCaretPosition();
+
+                } else {
+                    isEditMode = true;
+                    saveCommandBarText();
+                    saveCaretPosition();
+                    showFeedback(false);
+                    labelCurrentMode.setText(MESSAGE_LABEL_MODE_EDIT);
+                    commandBar.setText(allTasks.get(getSelectedTaskIndex()).toString());
+                    moveCaretPositionToLast();
+                }
+
+            }
+        });
+
     }
 
     /**
      * 
      */
     private void handleFTwoKey() {
-        saveSelectedTaskIndex();
+        Platform.runLater(new Runnable() {
 
-        if (!groupUndoRedo.isVisible()) {
-            return;
-        }
+            @Override
+            public void run() {
+                saveSelectedTaskIndex();
 
-        if (isUndo) {
-            isUndo = false;
-            isRedo = true;
-            labelUndoRedo.setText("undo");
-            logic.redo();
-        } else {
-            isUndo = true;
-            isRedo = false;
-            labelUndoRedo.setText("redo");
-            logic.undo();
-        }
+                if (!groupUndoRedo.isVisible()) {
+                    return;
+                }
 
-        refreshListView();
-        restoreListViewPreviousSelection();
+                if (isUndo) {
+                    isUndo = false;
+                    isRedo = true;
+                    labelUndoRedo.setText("undo");
+                    logic.redo();
+                } else {
+                    isUndo = true;
+                    isRedo = false;
+                    labelUndoRedo.setText("redo");
+                    logic.undo();
+                }
+
+                refreshListView();
+                restoreListViewPreviousSelection();
+
+            }
+        });
+
     }
 
     /**
@@ -438,34 +454,40 @@ public class RootLayoutController {
      * 
      */
     private void handleEnterKey() {
+        Platform.runLater(new Runnable() {
 
-        if (!isEditMode) {
-            logic.executeCommand();
+            @Override
+            public void run() {
+                if (!isEditMode) {
+                    logic.executeCommand();
 
-            // add operation
-            if (!userCommand.equals(COMMAND_DELETE) && !userCommand.equals(COMMAND_DELETE_SHORTHAND)) {
-                refreshListView();
-                listViewAll.getSelectionModel().selectLast();
-                listViewAll.scrollTo(allTasks.size() - 1);
-            } else {
-                saveSelectedTaskIndex();
-                refreshListView();
-                restoreListViewPreviousSelection();
+                    // add operation
+                    if (!userCommand.equals(COMMAND_DELETE) && !userCommand.equals(COMMAND_DELETE_SHORTHAND)) {
+                        refreshListView();
+                        listViewAll.getSelectionModel().selectLast();
+                        listViewAll.scrollTo(allTasks.size() - 1);
+                    } else {
+                        saveSelectedTaskIndex();
+                        refreshListView();
+                        restoreListViewPreviousSelection();
+                    }
+
+                } else {
+                    // something is wrong with this logic.editTask API
+                    logic.editTask(Logic.List.FLOATING, getSelectedTaskIndex());
+                    saveSelectedTaskIndex();
+                    refreshListView();
+                    restoreListViewPreviousSelection();
+                }
+
+                showFeedback(false);
+                clearFeedback();
+                clearStoredUserInput();
+                commandBar.clear();
+                showUndoRedoButton();
+
             }
-
-        } else {
-            // something is wrong with this logic.editTask API
-            logic.editTask(Logic.List.FLOATING, getSelectedTaskIndex());
-            saveSelectedTaskIndex();
-            refreshListView();
-            restoreListViewPreviousSelection();
-        }
-
-        showFeedback(false);
-        clearFeedback();
-        clearStoredUserInput();
-        commandBar.clear();
-        showUndoRedoButton();
+        });
 
     }
 
@@ -480,12 +502,19 @@ public class RootLayoutController {
      * 
      */
     private void handleDeleteKey() {
-        logic.parseCommand(COMMAND_DELETE + WHITESPACE + (getSelectedTaskIndex() + 1), Logic.List.FLOATING);
-        logic.executeCommand();
-        saveSelectedTaskIndex();
-        refreshListView();
-        restoreListViewPreviousSelection();
-        showUndoRedoButton();
+        Platform.runLater(new Runnable() {
+
+            @Override
+            public void run() {
+                logic.parseCommand(COMMAND_DELETE + WHITESPACE + (getSelectedTaskIndex() + 1), Logic.List.FLOATING);
+                logic.executeCommand();
+                saveSelectedTaskIndex();
+                refreshListView();
+                restoreListViewPreviousSelection();
+                showUndoRedoButton();
+
+            }
+        });
 
     }
 
@@ -493,17 +522,25 @@ public class RootLayoutController {
      * 
      */
     private void handleCtrlTab() {
-        SingleSelectionModel<Tab> selectionModel = tabPane.getSelectionModel();
+        Platform.runLater(new Runnable() {
 
-        // already at the last tab, lets bounce back to first tab
-        if (selectionModel.getSelectedIndex() == tabPane.getTabs().size() - 1) {
-            selectionModel.selectFirst();
-        } else {
-            selectionModel.selectNext();
-        }
+            @Override
+            public void run() {
+                SingleSelectionModel<Tab> selectionModel = tabPane.getSelectionModel();
 
-        requestFocusForCommandBar();
-        restoreCaretPosition();
+                // already at the last tab, lets bounce back to first tab
+                if (selectionModel.getSelectedIndex() == tabPane.getTabs().size() - 1) {
+                    selectionModel.selectFirst();
+                } else {
+                    selectionModel.selectNext();
+                }
+
+                requestFocusForCommandBar();
+                restoreCaretPosition();
+
+            }
+        });
+
     }
 
     /**
