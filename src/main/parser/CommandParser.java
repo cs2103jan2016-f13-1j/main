@@ -6,6 +6,8 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
@@ -38,9 +40,12 @@ public class CommandParser {
     private final boolean PREPOSITION_ALL = true;
     private final boolean PREPOSITION_SELECTIVE = false;
     
+    private static final Logger logger = Logger.getLogger(CommandParser.class.getName());
+    
     public Command parse(String commandString) {
         String command = getFirstWord(commandString);
         Type commandType = getCommandType(command);
+        logger.log(Level.INFO, "Starting " + commandType + " command preparations.");
         return commandPreparations(commandType, commandString);
     }
     
@@ -70,6 +75,7 @@ public class CommandParser {
             	return prepareIndexes(type, commandString);
             	
             default :
+            	logger.log(Level.WARNING, "Command type not detected. Null returned.");
                 return null;
         }
     }
