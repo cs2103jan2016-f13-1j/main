@@ -28,6 +28,7 @@ package main.logic;
  *
  */
 import java.io.FileNotFoundException;
+import java.nio.file.InvalidPathException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -68,7 +69,8 @@ public class Logic {
     private Logic() {
         parser = new CommandParser();
         storage = Storage.getStorage();
-         
+        assert(storage != null);
+        
         ArrayList<ArrayList<Task>> tasksFromStorage = storage.readTasks();;
         floatingTasks = tasksFromStorage.get(FLOATING_TASKS_INDEX);
         datedTasks = tasksFromStorage.get(DATED_TASKS_INDEX);
@@ -587,7 +589,11 @@ public class Logic {
 	 *        new location to store user settings
 	 */
 	public void setFileLocation(String fileLocation) {
-		storage.setFileLocation(fileLocation);
+	    try {
+	        storage.setFileLocation(fileLocation);
+	    } catch (InvalidPathException e) {
+	        System.out.println("Enter valid path");
+	    }
 	}
 	
 	public String getFileLocation() {

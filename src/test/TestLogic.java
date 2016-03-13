@@ -132,6 +132,11 @@ public class TestLogic {
         logic.undo();
 	}
 	
+	@Test
+	public void setFilePathTest() {
+	    logic.setFileLocation("invalid\\path");
+	}
+	
 	@Before
 	public void initialize() {
 		logic = Logic.getLogic();
