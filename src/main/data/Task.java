@@ -1,6 +1,7 @@
 package main.data;
 
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 
 /**
@@ -25,6 +26,10 @@ public class Task {
         return status;
     }
     
+    public void setStatus(boolean status) {
+        this.status = status;
+    }
+    
     public int getPriority() {
         return priority;
     }
@@ -41,38 +46,122 @@ public class Task {
         return endDate;
     }
     
-    public boolean hasDate() {
-        return (startDate != null || endDate != null);
-    }
-    
     public String toString() {
         String feedback = null;
         SimpleDateFormat dateFormat = new SimpleDateFormat("d/M (EEE) HH:mm");
         
-        if (startDate == null) {
-            if (endDate == null) {
-                if (label == null) {
-                    feedback = title;
-                } else {
-                    feedback = title + " #" + label;
-                }
-            } else {
+        if (hasDate()) {
+        	if (hasDateRange()) {
+        		String startDateTime = dateFormat.format(startDate);
                 String endDateTime = dateFormat.format(endDate);
-                feedback =  title + " by " + endDateTime;
-                if (label != null) {
-                	feedback += " #" + label;
-                }
-            }
+        		feedback = title + " from " + startDateTime + " to " + endDateTime;
+        	} else {
+        		if (hasStartDate()) {
+        			String startDateTime = dateFormat.format(startDate);
+        			feedback =  title + " from " + startDateTime;
+        			feedback += " onwards";
+        		} else if (hasEndDate()) {
+        			String endDateTime = dateFormat.format(endDate);
+        			feedback =  title + " by " + endDateTime;	 
+        		}
+        	}
         } else {
-            String startDateTime = dateFormat.format(startDate);
-            String endDateTime = dateFormat.format(endDate);
-            feedback = title + " from " + startDateTime + " to " + endDateTime;
-            if (label != null) {
-            	feedback += " #" + label;
-            }
+        	feedback = title;	
         }
         
+        if (hasLabel()) {
+			feedback += " #" + label;
+		}
+        
         return feedback;
+    }
+    
+    public boolean isThisWeek() {
+        Date tomorrow = getTomorrow();
+        Date eighthDay = getEigthDay();
+        
+        if (hasEndDate()) {
+            if (endDate.compareTo(tomorrow) >= 0 && endDate.compareTo(eighthDay) < 0) {
+                return true;
+            }
+        } else if (hasStartDate()) {
+            if (startDate.compareTo(tomorrow) >= 0 && startDate.compareTo(eighthDay) < 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public boolean isToday() {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("ddMMyyyy");
+        String today = dateFormat.format(new Date());
+        
+        if (hasEndDate()) {
+            String end = dateFormat.format(endDate);
+            if (today.equals(end)) {
+                return true;
+            }
+        } else if (hasStartDate()) {
+            String start = dateFormat.format(startDate);
+            if (today.equals(start)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    private Date getTomorrow() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(new Date());
+        calendar.add(Calendar.DATE,1);
+        calendar.set(Calendar.HOUR_OF_DAY,0);
+        calendar.set(Calendar.MINUTE,0);
+        calendar.set(Calendar.SECOND,0);
+        calendar.set(Calendar.MILLISECOND,0);
+        return calendar.getTime();
+    }
+    
+    private Date getEigthDay() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(new Date());
+        calendar.add(Calendar.DATE,8);
+        calendar.set(Calendar.HOUR_OF_DAY,0);
+        calendar.set(Calendar.MINUTE,0);
+        calendar.set(Calendar.SECOND,0);
+        calendar.set(Calendar.MILLISECOND,0);
+        return calendar.getTime();
+    }
+    
+    public boolean hasDate() {
+        return (startDate != null || endDate != null);
+    }
+    
+    public boolean hasDateRange() {
+    	return (startDate != null && endDate != null);
+    }
+    
+    public boolean hasStartDate() {
+    	if (startDate == null) {
+    		return false;
+    	} else {
+    		return true;
+    	}
+    }
+    
+    public boolean hasEndDate() {
+    	if (endDate == null) {
+    		return false;
+    	} else {
+    		return true;
+    	}
+    }
+    
+    public boolean hasLabel() {
+    	if (label == null) {
+    		return false;
+    	} else {
+    		return true;
+    	}
     }
     
     private Task(TaskBuilder builder) {
