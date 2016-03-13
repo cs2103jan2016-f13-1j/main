@@ -7,7 +7,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.logging.Level;
-import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.time.*;
@@ -44,8 +43,6 @@ public class CommandParser {
     private static final Logger logger = Logger.getLogger(CommandParser.class.getName());
     
     public Command parse(String commandString) {
-    	LogManager.getLogManager().reset();
-    	
         String command = getFirstWord(commandString);
         Type commandType = getCommandType(command);
         logger.log(Level.INFO, "Starting " + commandType + " command preparations.");
