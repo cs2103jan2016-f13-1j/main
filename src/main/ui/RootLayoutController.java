@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import com.jfoenix.controls.JFXListView;
 import com.sun.javafx.scene.control.skin.VirtualFlow;
 
+import javafx.application.Platform;
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.SimpleListProperty;
 import javafx.collections.FXCollections;
@@ -68,10 +69,10 @@ public class RootLayoutController {
 
     @FXML // fx:id="listView"
     private JFXListView<String> listViewAll; // Value injected by FXMLLoader
-    
+
     @FXML // fx:id="listView"
     private JFXListView<String> listViewToday; // Value injected by FXMLLoader
-    
+
     @FXML // fx:id="listView"
     private JFXListView<String> listViewWeek; // Value injected by FXMLLoader
 
@@ -402,26 +403,35 @@ public class RootLayoutController {
      * 
      */
     private void handleKeyStrokes() {
-        if (!isEditMode) {
-            userInput = commandBar.getText();
-            assert userInput != null;
-            System.out.println(userInput);
+        Platform.runLater(new Runnable() {
 
-            if (userInput.length() == 0) {
-                showFeedback(false);
-                showResult(false, EMPTY_STRING);
-                clearFeedback();
-                clearStoredUserInput();
-                return;
+            @Override
+            public void run() {
+                // TODO Auto-generated method stub
+                if (!isEditMode) {
+                    userInput = commandBar.getText();
+                    assert userInput != null;
+                    System.out.println(userInput);
+
+                    if (userInput.length() == 0) {
+                        showFeedback(false);
+                        showResult(false, EMPTY_STRING);
+                        clearFeedback();
+                        clearStoredUserInput();
+                        return;
+                    }
+
+                    extractUserInput();
+                    parseUserInput();
+                    System.out.println(inputFeedback);
+
+                } else {
+                    logic.parseCommand(commandBar.getText(), Logic.List.FLOATING);
+                }
+
             }
+        });
 
-            extractUserInput();
-            parseUserInput();
-            System.out.println(inputFeedback);
-
-        } else {
-            logic.parseCommand(commandBar.getText(), Logic.List.FLOATING);
-        }
     }
 
     /**
@@ -721,12 +731,12 @@ public class RootLayoutController {
     private String getSelectedTabName() {
         return tabPane.getTabs().get(tabPane.getSelectionModel().getSelectedIndex()).getText();
     }
-    
-    private void saveCommandBarText(){
+
+    private void saveCommandBarText() {
         previousTextInCommandBar = commandBar.getText();
     }
-    
-    private void restoreCommandBarText(){
+
+    private void restoreCommandBarText() {
         commandBar.setText(previousTextInCommandBar);
     }
 
@@ -735,14 +745,14 @@ public class RootLayoutController {
      */
     private void saveCaretPosition() {
         previousCaretPosition = commandBar.getCaretPosition();
-        System.out.println("Saving caret position: "+previousCaretPosition);
+        System.out.println("Saving caret position: " + previousCaretPosition);
     }
 
     /**
      * 
      */
     private void restoreCaretPosition() {
-        System.out.println("Restoring caret position: "+previousCaretPosition);
+        System.out.println("Restoring caret position: " + previousCaretPosition);
         commandBar.positionCaret(previousCaretPosition);
     }
 
