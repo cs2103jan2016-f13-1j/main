@@ -52,14 +52,14 @@ public class Logic {
 	private static final int FLOATING_TASKS_INDEX = 0;
 	private static final int DATED_TASKS_INDEX = 1;
 	
-	CommandParser parser = null;
-    Storage storage = null;
-	Command command = null;
+	private CommandParser parser = null;
+	private Storage storage = null;
+	private Command command = null;
 	
-	Stack<Command> undoHistory = new Stack<Command>();
-    Stack<Command> redoHistory = new Stack<Command>();
-    ArrayList<Task> floatingTasks = new ArrayList<Task>();
-    ArrayList<Task> datedTasks = new ArrayList<Task>();
+	private Stack<Command> undoHistory = new Stack<Command>();
+	private Stack<Command> redoHistory = new Stack<Command>();
+	private ArrayList<Task> floatingTasks = new ArrayList<Task>();
+	private ArrayList<Task> datedTasks = new ArrayList<Task>();
 	
     /**
 	 * Initializes a newly created {@code Controller} object.
@@ -550,7 +550,7 @@ public class Logic {
         for (int i = 0; i < indexes.size(); i++) {
             int indexToMark = indexes.get(i);
             Task task = list.get(indexToMark);
-            task.setStatus(status);
+            task.setDone(status);
             previousTasks.add(task);
         }
         assert(command != null);
