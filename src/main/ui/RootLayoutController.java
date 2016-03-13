@@ -121,6 +121,7 @@ public class RootLayoutController {
     private String[] userInputArray;
     private String userCommand;
     private String userArguments;
+    private String previousTextInCommandBar;
     private int previousSelectedTaskIndex;
     private int previousCaretPosition;
     private boolean isEditMode;
@@ -194,7 +195,6 @@ public class RootLayoutController {
             @Override
             public void handle(Event event) {
                 handleKeyStrokes();
-                saveCaretPosition();
 
             }
         });
@@ -358,10 +358,14 @@ public class RootLayoutController {
         if (isEditMode) {
             isEditMode = false;
             labelCurrentMode.setText(getSelectedTabName());
-            commandBar.clear();
+            restoreCommandBarText();
+            restoreCaretPosition();
 
         } else {
             isEditMode = true;
+            saveCommandBarText();
+            saveCaretPosition();
+            showFeedback(false);
             labelCurrentMode.setText(MESSAGE_LABEL_MODE_EDIT);
             commandBar.setText(allTasks.get(getSelectedTaskIndex()).toString());
             moveCaretPositionToLast();
@@ -717,18 +721,28 @@ public class RootLayoutController {
     private String getSelectedTabName() {
         return tabPane.getTabs().get(tabPane.getSelectionModel().getSelectedIndex()).getText();
     }
+    
+    private void saveCommandBarText(){
+        previousTextInCommandBar = commandBar.getText();
+    }
+    
+    private void restoreCommandBarText(){
+        commandBar.setText(previousTextInCommandBar);
+    }
 
     /**
      * 
      */
     private void saveCaretPosition() {
         previousCaretPosition = commandBar.getCaretPosition();
+        System.out.println("Saving caret position: "+previousCaretPosition);
     }
 
     /**
      * 
      */
     private void restoreCaretPosition() {
+        System.out.println("Restoring caret position: "+previousCaretPosition);
         commandBar.positionCaret(previousCaretPosition);
     }
 
