@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import com.jfoenix.controls.JFXListView;
 import com.sun.javafx.scene.control.skin.VirtualFlow;
 
+import javafx.application.Platform;
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.SimpleListProperty;
 import javafx.collections.FXCollections;
@@ -68,10 +69,10 @@ public class RootLayoutController {
 
     @FXML // fx:id="listView"
     private JFXListView<String> listViewAll; // Value injected by FXMLLoader
-    
+
     @FXML // fx:id="listView"
     private JFXListView<String> listViewToday; // Value injected by FXMLLoader
-    
+
     @FXML // fx:id="listView"
     private JFXListView<String> listViewWeek; // Value injected by FXMLLoader
 
@@ -121,6 +122,7 @@ public class RootLayoutController {
     private String[] userInputArray;
     private String userCommand;
     private String userArguments;
+    private String previousTextInCommandBar;
     private int previousSelectedTaskIndex;
     private int previousCaretPosition;
     private boolean isEditMode;
@@ -194,7 +196,6 @@ public class RootLayoutController {
             @Override
             public void handle(Event event) {
                 handleKeyStrokes();
-                saveCaretPosition();
 
             }
         });
@@ -286,24 +287,32 @@ public class RootLayoutController {
      * 
      */
     private void handleArrowKeys(KeyEvent keyEvent) {
-        if (keyEvent.getCode() == KeyCode.UP) {
-            listViewAll.getSelectionModel().selectPrevious();
-            adjustViewportForListView();
-            System.out.println("current index " + getSelectedTaskIndex());
+        Platform.runLater(new Runnable() {
 
-        } else if (keyEvent.getCode() == KeyCode.DOWN) {
-            listViewAll.getSelectionModel().selectNext();
-            adjustViewportForListView();
-            System.out.println("current index " + getSelectedTaskIndex());
+            @Override
+            public void run() {
+                if (keyEvent.getCode() == KeyCode.UP) {
+                    listViewAll.getSelectionModel().selectPrevious();
+                    adjustViewportForListView();
+                    System.out.println("current index " + getSelectedTaskIndex());
 
-        }
+                } else if (keyEvent.getCode() == KeyCode.DOWN) {
+                    listViewAll.getSelectionModel().selectNext();
+                    adjustViewportForListView();
+                    System.out.println("current index " + getSelectedTaskIndex());
 
-        // only set currently selected item to command bar when in
-        // Edit mode
-        if (isEditMode) {
-            commandBar.setText(allTasks.get(getSelectedTaskIndex()).toString());
-            moveCaretPositionToLast();
-        }
+                }
+
+                // only set currently selected item to command bar when in
+                // Edit mode
+                if (isEditMode) {
+                    commandBar.setText(allTasks.get(getSelectedTaskIndex()).toString());
+                    moveCaretPositionToLast();
+                }
+
+            }
+        });
+
     }
 
     /**
@@ -355,103 +364,138 @@ public class RootLayoutController {
      * 
      */
     private void handleFOneKey() {
-        if (isEditMode) {
-            isEditMode = false;
-            labelCurrentMode.setText(getSelectedTabName());
-            commandBar.clear();
+        Platform.runLater(new Runnable() {
 
-        } else {
-            isEditMode = true;
-            labelCurrentMode.setText(MESSAGE_LABEL_MODE_EDIT);
-            commandBar.setText(allTasks.get(getSelectedTaskIndex()).toString());
-            moveCaretPositionToLast();
-        }
+            @Override
+            public void run() {
+                if (isEditMode) {
+                    isEditMode = false;
+                    labelCurrentMode.setText(getSelectedTabName());
+                    restoreCommandBarText();
+                    restoreCaretPosition();
+
+                } else {
+                    isEditMode = true;
+                    saveCommandBarText();
+                    saveCaretPosition();
+                    showFeedback(false);
+                    labelCurrentMode.setText(MESSAGE_LABEL_MODE_EDIT);
+                    commandBar.setText(allTasks.get(getSelectedTaskIndex()).toString());
+                    moveCaretPositionToLast();
+                }
+
+            }
+        });
+
     }
 
     /**
      * 
      */
     private void handleFTwoKey() {
-        saveSelectedTaskIndex();
+        Platform.runLater(new Runnable() {
 
-        if (!groupUndoRedo.isVisible()) {
-            return;
-        }
+            @Override
+            public void run() {
+                saveSelectedTaskIndex();
 
-        if (isUndo) {
-            isUndo = false;
-            isRedo = true;
-            labelUndoRedo.setText("undo");
-            logic.redo();
-        } else {
-            isUndo = true;
-            isRedo = false;
-            labelUndoRedo.setText("redo");
-            logic.undo();
-        }
+                if (!groupUndoRedo.isVisible()) {
+                    return;
+                }
 
-        refreshListView();
-        restoreListViewPreviousSelection();
+                if (isUndo) {
+                    isUndo = false;
+                    isRedo = true;
+                    labelUndoRedo.setText("undo");
+                    logic.redo();
+                } else {
+                    isUndo = true;
+                    isRedo = false;
+                    labelUndoRedo.setText("redo");
+                    logic.undo();
+                }
+
+                refreshListView();
+                restoreListViewPreviousSelection();
+
+            }
+        });
+
     }
 
     /**
      * 
      */
     private void handleKeyStrokes() {
-        if (!isEditMode) {
-            userInput = commandBar.getText();
-            assert userInput != null;
-            System.out.println(userInput);
+        Platform.runLater(new Runnable() {
 
-            if (userInput.length() == 0) {
-                showFeedback(false);
-                showResult(false, EMPTY_STRING);
-                clearFeedback();
-                clearStoredUserInput();
-                return;
+            @Override
+            public void run() {
+                // TODO Auto-generated method stub
+                if (!isEditMode) {
+                    userInput = commandBar.getText();
+                    assert userInput != null;
+                    System.out.println(userInput);
+
+                    if (userInput.length() == 0) {
+                        showFeedback(false);
+                        showResult(false, EMPTY_STRING);
+                        clearFeedback();
+                        clearStoredUserInput();
+                        return;
+                    }
+
+                    extractUserInput();
+                    parseUserInput();
+                    System.out.println(inputFeedback);
+
+                } else {
+                    logic.parseCommand(commandBar.getText(), Logic.List.FLOATING);
+                }
+
             }
+        });
 
-            extractUserInput();
-            parseUserInput();
-            System.out.println(inputFeedback);
-
-        } else {
-            logic.parseCommand(commandBar.getText(), Logic.List.FLOATING);
-        }
     }
 
     /**
      * 
      */
     private void handleEnterKey() {
+        Platform.runLater(new Runnable() {
 
-        if (!isEditMode) {
-            logic.executeCommand();
+            @Override
+            public void run() {
+                if (!isEditMode) {
+                    logic.executeCommand();
 
-            // add operation
-            if (!userCommand.equals(COMMAND_DELETE) && !userCommand.equals(COMMAND_DELETE_SHORTHAND)) {
-                refreshListView();
-                listViewAll.getSelectionModel().selectLast();
-                listViewAll.scrollTo(allTasks.size() - 1);
-            } else {
-                saveSelectedTaskIndex();
-                refreshListView();
-                restoreListViewPreviousSelection();
+                    // add operation
+                    if (!userCommand.equals(COMMAND_DELETE) && !userCommand.equals(COMMAND_DELETE_SHORTHAND)) {
+                        refreshListView();
+                        listViewAll.getSelectionModel().selectLast();
+                        listViewAll.scrollTo(allTasks.size() - 1);
+                    } else {
+                        saveSelectedTaskIndex();
+                        refreshListView();
+                        restoreListViewPreviousSelection();
+                    }
+
+                } else {
+                    // something is wrong with this logic.editTask API
+                    logic.editTask(Logic.List.FLOATING, getSelectedTaskIndex());
+                    saveSelectedTaskIndex();
+                    refreshListView();
+                    restoreListViewPreviousSelection();
+                }
+
+                showFeedback(false);
+                clearFeedback();
+                clearStoredUserInput();
+                commandBar.clear();
+                showUndoRedoButton();
+
             }
-
-        } else {
-            // something is wrong with this logic.editTask API
-            logic.editTask(Logic.List.FLOATING, getSelectedTaskIndex());
-            saveSelectedTaskIndex();
-            refreshListView();
-            restoreListViewPreviousSelection();
-        }
-
-        showFeedback(false);
-        clearFeedback();
-        clearStoredUserInput();
-        commandBar.clear();
-        showUndoRedoButton();
+        });
 
     }
 
@@ -466,12 +510,19 @@ public class RootLayoutController {
      * 
      */
     private void handleDeleteKey() {
-        logic.parseCommand(COMMAND_DELETE + WHITESPACE + (getSelectedTaskIndex() + 1), Logic.List.FLOATING);
-        logic.executeCommand();
-        saveSelectedTaskIndex();
-        refreshListView();
-        restoreListViewPreviousSelection();
-        showUndoRedoButton();
+        Platform.runLater(new Runnable() {
+
+            @Override
+            public void run() {
+                logic.parseCommand(COMMAND_DELETE + WHITESPACE + (getSelectedTaskIndex() + 1), Logic.List.FLOATING);
+                logic.executeCommand();
+                saveSelectedTaskIndex();
+                refreshListView();
+                restoreListViewPreviousSelection();
+                showUndoRedoButton();
+
+            }
+        });
 
     }
 
@@ -479,17 +530,25 @@ public class RootLayoutController {
      * 
      */
     private void handleCtrlTab() {
-        SingleSelectionModel<Tab> selectionModel = tabPane.getSelectionModel();
+        Platform.runLater(new Runnable() {
 
-        // already at the last tab, lets bounce back to first tab
-        if (selectionModel.getSelectedIndex() == tabPane.getTabs().size() - 1) {
-            selectionModel.selectFirst();
-        } else {
-            selectionModel.selectNext();
-        }
+            @Override
+            public void run() {
+                SingleSelectionModel<Tab> selectionModel = tabPane.getSelectionModel();
 
-        requestFocusForCommandBar();
-        restoreCaretPosition();
+                // already at the last tab, lets bounce back to first tab
+                if (selectionModel.getSelectedIndex() == tabPane.getTabs().size() - 1) {
+                    selectionModel.selectFirst();
+                } else {
+                    selectionModel.selectNext();
+                }
+
+                requestFocusForCommandBar();
+                restoreCaretPosition();
+
+            }
+        });
+
     }
 
     /**
@@ -718,17 +777,27 @@ public class RootLayoutController {
         return tabPane.getTabs().get(tabPane.getSelectionModel().getSelectedIndex()).getText();
     }
 
+    private void saveCommandBarText() {
+        previousTextInCommandBar = commandBar.getText();
+    }
+
+    private void restoreCommandBarText() {
+        commandBar.setText(previousTextInCommandBar);
+    }
+
     /**
      * 
      */
     private void saveCaretPosition() {
         previousCaretPosition = commandBar.getCaretPosition();
+        System.out.println("Saving caret position: " + previousCaretPosition);
     }
 
     /**
      * 
      */
     private void restoreCaretPosition() {
+        System.out.println("Restoring caret position: " + previousCaretPosition);
         commandBar.positionCaret(previousCaretPosition);
     }
 
