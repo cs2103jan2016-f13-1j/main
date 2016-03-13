@@ -19,6 +19,8 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.IndexedCell;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
 import javafx.scene.control.SingleSelectionModel;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
@@ -29,6 +31,7 @@ import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
+import javafx.util.Callback;
 import main.data.Task;
 import main.logic.Logic;
 
@@ -68,7 +71,7 @@ public class RootLayoutController {
     private Tab tabWeek; // Value injected by FXMLLoader
 
     @FXML // fx:id="listView"
-    private JFXListView<String> listViewAll; // Value injected by FXMLLoader
+    private JFXListView<Task> listViewAll; // Value injected by FXMLLoader
 
     @FXML // fx:id="listView"
     private JFXListView<String> listViewToday; // Value injected by FXMLLoader
@@ -116,7 +119,7 @@ public class RootLayoutController {
     private Logic logic;
     private ArrayList<Task> allTasks;
     private ListProperty<String> listProperty;
-    private ObservableList<String> observableTaskList = FXCollections.observableArrayList();
+    private ObservableList<Task> observableTaskList = FXCollections.observableArrayList();
     private String inputFeedback;
     private String userInput;
     private String[] userInputArray;
@@ -248,6 +251,33 @@ public class RootLayoutController {
         });
     }
 
+//    /**
+//     * 
+//     */
+//    private void populateListView() {
+//        if (logic == null) {
+//            logic = Logic.getLogic();
+//        }
+//
+//        // ListView only allow binding of a OberservableList of String
+//        if (listProperty == null) {
+//            listProperty = new SimpleListProperty<String>();
+//        }
+//
+//        listViewAll.itemsProperty().bind(listProperty);
+//        listViewAll.setPlaceholder(new Label(MESSAGE_LISTVIEW_EMPTY));
+//
+//        // retrieve all task and add into an ObservableList
+//        allTasks = logic.getAllTasks();
+//
+//        for (int i = 0; i < allTasks.size(); i++) {
+//            // System.out.println(allTasks.get(i));
+//            observableTaskList.add(i + 1 + ". " + allTasks.get(i));
+//        }
+//
+//        listProperty.set(observableTaskList);
+//    }
+    
     /**
      * 
      */
@@ -256,23 +286,23 @@ public class RootLayoutController {
             logic = Logic.getLogic();
         }
 
-        // ListView only allow binding of a OberservableList of String
-        if (listProperty == null) {
-            listProperty = new SimpleListProperty<String>();
-        }
-
-        listViewAll.itemsProperty().bind(listProperty);
+       
         listViewAll.setPlaceholder(new Label(MESSAGE_LISTVIEW_EMPTY));
 
         // retrieve all task and add into an ObservableList
         allTasks = logic.getAllTasks();
+        observableTaskList.setAll(logic.getAllTasks());
+        listViewAll.setItems(observableTaskList);
+        listViewAll.setCellFactory(new Callback<ListView<Task>, ListCell<Task>>() {
+            
+            @Override
+            public ListCell<Task> call(ListView<Task> param) {
+                // TODO Auto-generated method stub
+                return new CustomListCellController();
+            }
+        });
 
-        for (int i = 0; i < allTasks.size(); i++) {
-            // System.out.println(allTasks.get(i));
-            observableTaskList.add(i + 1 + ". " + allTasks.get(i));
-        }
-
-        listProperty.set(observableTaskList);
+        
     }
 
     /**
