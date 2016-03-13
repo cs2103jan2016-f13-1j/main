@@ -34,6 +34,7 @@ public class CommandParser {
     private final int DATE_START_RANGED = 0;
     private final int DATE_END_RANGED = 1;
     private final int DATE_MAX_SIZE = 2;
+    private final String DATE_STRING_PATTERN = "(0?[1-9]|[12][0-9]|3[01])(/|-)(0?[1-9]|1[012])";
     private final int INDEX_OFFSET = 1;
     private final String STRING_AM = "am";
     private final String STRING_PM = "pm";
@@ -204,10 +205,8 @@ public class CommandParser {
 		//Preserve capitalization by not using toLowerCase
 		List<String> words = new ArrayList<String>(Arrays.asList(commandString.split(" ")));
 		
-		String pattern = "(0?[1-9]|[12][0-9]|3[01])(/|-)(0?[1-9]|1[012])";
-		
 		for (int i = 0; i< words.size(); i++) {
-			match = Pattern.matches(pattern, words.get(i));
+			match = Pattern.matches(DATE_STRING_PATTERN, words.get(i));
 			if (match) {
 				if (words.get(i).contains("/")) {
 					List<String> date = new ArrayList<String>(Arrays.asList(words.get(i).split("/")));
