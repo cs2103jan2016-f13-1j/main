@@ -2,6 +2,11 @@ package main.data;
 
 import java.text.DateFormatSymbols;
 import java.text.SimpleDateFormat;
+import java.time.DayOfWeek;
+import java.time.LocalDateTime;
+import java.time.Month;
+import java.time.ZoneId;
+import java.time.format.TextStyle;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -12,6 +17,10 @@ import java.util.Locale;
  *
  */
 
+/**
+ * @author Joleeen
+ *
+ */
 public class Task {
     private String title;
     private boolean done;
@@ -67,16 +76,32 @@ public class Task {
         return feedback;
     }
     
+    /**
+     * getParameters that is in task object.
+     * 
+     * In order:
+     * 0 - Title
+     * 1 - Start Date
+     * 2 - Start Time
+     * 3 - End Date
+     * 4 - End Time
+     * 6 - Label
+     * 
+     * @return ArrayList<String> of size 6
+     */
     public ArrayList<String> getParameters() {
         ArrayList<String> feedback = new ArrayList<String>();
 
         feedback.add(title);
         
         if (hasDate()) {
-        	//missing date
+        	feedback.add(convertDate(startDate));
         	feedback.add(convertTime(startDate));
+        	feedback.add(convertDate(endDate));
         	feedback.add(convertTime(endDate));
         } else {
+        	feedback.add(null);
+        	feedback.add(null);
         	feedback.add(null);
         	feedback.add(null);
         }
@@ -91,8 +116,69 @@ public class Task {
     }
     
     private String convertDate(Date date) {
+    	if (isToday()) {
+    		return "today";
+    	}
     	
-    	return null;
+    	if (dateIsThisWeek(date)) {
+    		return "this ".concat(getDay(date));
+    	} else if (dateIsNextWeek(date)){
+    		return "next ".concat(getDay(date));
+    	} else {
+    		return getDate(date).concat(" ").concat(getMonth(date));
+    	}
+    }
+    
+    private boolean dateIsThisWeek(Date date) {
+    	Calendar calendar = Calendar.getInstance();
+		calendar.setFirstDayOfWeek(Calendar.MONDAY);
+		
+		int currentWeek = calendar.get(Calendar.WEEK_OF_YEAR);
+		
+		calendar.setTime(date);
+		int dateWeek = calendar.get(Calendar.WEEK_OF_YEAR);
+		
+		if (dateWeek == currentWeek) {
+			return true;
+		} else {
+			return false;
+		}
+    }
+    
+    private boolean dateIsNextWeek(Date date) {
+    	Calendar calendar = Calendar.getInstance();
+		calendar.setFirstDayOfWeek(Calendar.MONDAY);
+		
+		int currentWeek = calendar.get(Calendar.WEEK_OF_YEAR);
+		
+		calendar.setTime(date);
+		int dateWeek = calendar.get(Calendar.WEEK_OF_YEAR);
+		int difference = dateWeek - currentWeek;
+		
+		if (difference == 1) {
+			return true;
+		} else {
+			return false;
+		}
+    }
+    
+    private String getDay(Date date) {
+    	Locale locale = Locale.getDefault();
+    	LocalDateTime dateTime = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+    	DayOfWeek day = dateTime.getDayOfWeek();
+		return day.getDisplayName(TextStyle.SHORT, locale);
+    }
+    
+    private String getDate(Date date) {
+    	LocalDateTime dateTime = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+		return Integer.toString(dateTime.getDayOfMonth());
+    }
+    
+    private String getMonth(Date date) {
+		Locale locale = Locale.getDefault();
+    	LocalDateTime dateTime = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+    	Month month = dateTime.getMonth();
+		return month.getDisplayName(TextStyle.SHORT, locale);
     }
     
     private String convertTime(Date date) {
