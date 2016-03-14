@@ -40,10 +40,13 @@ public class CommandParser {
     private final String STRING_TWELVE = "12";
     private final boolean PREPOSITION_ALL = true;
     private final boolean PREPOSITION_SELECTIVE = false;
-    
+    private final String NOW = "NOW";
+    private final int ONE_HOUR = 1;
     private static final Logger logger = Logger.getLogger(CommandParser.class.getName());
     
     public Command parse(String commandString) {
+    	//logger.setLevel(Level.OFF);
+    	
         String command = getFirstWord(commandString);
         Type commandType = getCommandType(command);
         logger.log(Level.INFO, "Starting " + commandType + " command preparations.");
@@ -97,6 +100,9 @@ public class CommandParser {
      * Words with prepositions might not be dated.
      * Dated task will always contain prepositions.
      * 
+     * If only start date is specified, task will only last for an hour.
+     * If only end date is specified, task will have the current date as the start date.
+     * 
      * @param type
      * 			command type that is determined
      * @param commandString
@@ -129,11 +135,12 @@ public class CommandParser {
                 	hasStartDate = checkForPrepositions(commandString, PREPOSITION_SELECTIVE);
                 	if (hasStartDate) {
                 		startDate = getDate(dates, DATE_INDEX);
+                		endDate = addOneHour(startDate);
                 	} else {
+                		startDate = getCurrentDate();
                 		endDate = getDate(dates, DATE_INDEX);
                 	}
                 }
-            	 
                 title = removeDateFromTitle(title, startDate, endDate);
             }
         }
@@ -177,12 +184,14 @@ public class CommandParser {
 	    	prepositions.add("on");
 	    	prepositions.add("by");
 	    	prepositions.add("before");
+	    	prepositions.add("after");
 	    	prepositions.add("to");
 	    	prepositions.add("-");
-	    	prepositions.add("after");
     	} else {
     		prepositions.add("from");
         	prepositions.add("after");
+        	prepositions.add("at");
+        	prepositions.add("on");
     	}
     	
     	return prepositions;
@@ -219,7 +228,8 @@ public class CommandParser {
 		}
 
 		return String.join(" ", words);
-	} 
+	}
+    
     private List<Date> parseDate(String commandString) {
         PrettyTimeParser parser = new PrettyTimeParser();
         List<Date> dates = parser.parse(commandString);
@@ -230,37 +240,15 @@ public class CommandParser {
         return dates.get(index);
     }
     
-    private boolean checkForLabel(String commandString) {
-        if (commandString.contains("#")) {
-            return true;
-        } else {
-            return false;
-        }
+    private Date addOneHour(Date date) {
+    	 LocalDateTime dateTime = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+    	 dateTime = dateTime.plusHours(ONE_HOUR);
+    	 Date convertToDate = Date.from(dateTime.atZone(ZoneId.systemDefault()).toInstant());
+    	 return convertToDate;
     }
     
-    private String extractLabel(String commandString) {
-        int index = commandString.indexOf("#");
-        index = index + LENGTH_OFFSET;
-        String substring = commandString.substring(index);
-        String label = substring.trim();
-        label = getFirstWord(label);
-        return label;
-    }
-   
-    private String removeLabelFromTitle(String title, String label) {
-        String tag = "#".concat(label);
-        
-        int index = title.indexOf(tag);
-        index = index + label.length() + LENGTH_OFFSET;
-        
-        if (title.length() != index) {
-            tag = tag.concat(" ");
-        } else if (title.length() == index) {
-            tag = " ".concat(tag);
-        }
-        
-        title = title.replace(tag, "");
-        return title;
+    private Date getCurrentDate() {
+    	return parseDate(NOW).get(DATE_INDEX);
     }
     
     /**
@@ -276,17 +264,10 @@ public class CommandParser {
      * @return String title without date information
      */
     private String removeDateFromTitle(String title, Date startDate, Date endDate) {
-    	List<Date> datesList = parseDate(title);
-        int numberOfDate = datesList.size();
         LocalDateTime dateTime;
-        
-        if (startDate != null) {
-        	dateTime = startDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-        } else {
-        	dateTime = endDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-        }   
-
-        for (int i = 0; i < numberOfDate; i++) {
+    	dateTime = startDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+       
+        for (int i = 0; i < DATE_MAX_SIZE; i++) {
         	 ArrayList<String> dates = getPossibleDates(dateTime);
              ArrayList<String> months = getPossibleMonths(dateTime);
              ArrayList<String> days = getPossibleDays(dateTime);
@@ -297,9 +278,7 @@ public class CommandParser {
              title = checkAndRemove(title, days);
              title = checkAndRemove(title, timings);
              
-             if (numberOfDate == DATE_MAX_SIZE) {
-            	 dateTime = endDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-             }
+             dateTime = endDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
         }
     	return title;
     }
@@ -436,7 +415,40 @@ public class CommandParser {
     	}
     	return false;
     }
+    
+    private boolean checkForLabel(String commandString) {
+        if (commandString.contains("#")) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
+    private String extractLabel(String commandString) {
+        int index = commandString.indexOf("#");
+        index = index + LENGTH_OFFSET;
+        String substring = commandString.substring(index);
+        String label = substring.trim();
+        label = getFirstWord(label);
+        return label;
+    }
    
+    private String removeLabelFromTitle(String title, String label) {
+        String tag = "#".concat(label);
+        
+        int index = title.indexOf(tag);
+        index = index + label.length() + LENGTH_OFFSET;
+        
+        if (title.length() != index) {
+            tag = tag.concat(" ");
+        } else if (title.length() == index) {
+            tag = " ".concat(tag);
+        }
+        
+        title = title.replace(tag, "");
+        return title;
+    }
+
     private Task buildTask(String title, Date startDate, Date endDate, String label) {
         Task task = new Task.TaskBuilder(title).setStartDate(startDate).setEndDate(endDate)
         .setLabel(label).build();
