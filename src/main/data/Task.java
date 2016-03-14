@@ -17,10 +17,6 @@ import java.util.Locale;
  *
  */
 
-/**
- * @author Joleeen
- *
- */
 public class Task {
     private String title;
     private boolean done;
@@ -56,23 +52,23 @@ public class Task {
     public Date getEndDate() {
         return endDate;
     }
-    
+
     public String toString() {
-        String feedback = null;
-        SimpleDateFormat dateFormat = new SimpleDateFormat("d/M (EEE) HH:mm");
-        
-        if (hasDate()) {
-        	 String startDateTime = dateFormat.format(startDate);
-             String endDateTime = dateFormat.format(endDate);
-             feedback = title + " from " + startDateTime + " to " + endDateTime;
-        } else {
-        	feedback = title;
-        }
-        
-        if (hasLabel()) {
-            feedback += " #" + label;
-        }
-        
+       ArrayList<String> fields = getParameters();
+       String feedback = fields.get(0);
+       
+       if (fields.get(1) != null) {
+    	   feedback = feedback.concat(" from ").concat(fields.get(1));
+    	   feedback = feedback.concat(" ").concat(fields.get(2));
+    	   
+    	   feedback = feedback.concat(" to ").concat(fields.get(3));
+    	   feedback = feedback.concat(" ").concat(fields.get(4));    	  
+       }
+	   
+       if (fields.get(5) != null) {
+    	   feedback = feedback.concat(" #").concat(fields.get(5));
+       }
+       
         return feedback;
     }
     
@@ -85,7 +81,7 @@ public class Task {
      * 2 - Start Time
      * 3 - End Date
      * 4 - End Time
-     * 6 - Label
+     * 5 - Label
      * 
      * @return ArrayList<String> of size 6
      */
