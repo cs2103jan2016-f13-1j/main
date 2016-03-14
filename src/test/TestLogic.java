@@ -29,10 +29,13 @@ public class TestLogic {
 	//@Test
 	public void editTaskTest() {
 		String title = "jUnit edit task";
-		String feedback = logic.parseCommand(title, null);
+		String feedback = logic.parseCommand(title, Logic.List.ALL);
+		logic.executeCommand();
 		assertEquals(feedback,title);
-		logic.editTask(Logic.List.FLOATING, 0);
+		logic.editTask(Logic.List.ALL, 0);
 		assertEquals(title,logic.getFloatingTasks().get(0).getTitle());
+		logic.parseCommand("delete 1", Logic.List.ALL);
+		logic.executeCommand();
 	}
 	
 	//Retrieves tasks for next seven days
@@ -61,22 +64,22 @@ public class TestLogic {
 		String feedback = null;
 		int lastIndex = -1;
 		
-		feedback = logic.parseCommand("cook dinner #home", null);
+		feedback = logic.parseCommand("cook dinner #home", Logic.List.ALL);
 		assertEquals(feedback,"cook dinner #home");
 		logic.executeCommand();
 		logic.executeCommand();
 		
-		feedback = logic.parseCommand("cook dinner", null);
+		feedback = logic.parseCommand("cook dinner", Logic.List.ALL);
 		assertEquals(feedback,"cook dinner");
 		logic.executeCommand();
 		
 		//delete last 3 floating tasks
-		lastIndex = logic.getFloatingTasks().size() - 1;
-		feedback = logic.parseCommand("delete " + lastIndex, Logic.List.FLOATING);
+		lastIndex = logic.getAllTasks().size();
+		feedback = logic.parseCommand("delete " + lastIndex, Logic.List.ALL);
         logic.executeCommand();
 		
-        lastIndex = logic.getFloatingTasks().size() - 1;
-		feedback = logic.parseCommand("delete " + (lastIndex-1) + "-" + lastIndex, Logic.List.FLOATING);
+        lastIndex = logic.getAllTasks().size();
+		feedback = logic.parseCommand("delete " + (lastIndex-1) + "-" + lastIndex, Logic.List.ALL);
 		logic.executeCommand();
 		
 		//feedback = logic.parseCommand("delete 1", logic.Tab.TODAY);
@@ -89,47 +92,54 @@ public class TestLogic {
 	    int lastIndex = -1;
 	    
 	    //undo and redo an add operation
-	    logic.parseCommand("undo task", Logic.List.FLOATING);
+	    logic.parseCommand("undo task", Logic.List.ALL);
         logic.executeCommand();
         logic.undo();
         logic.redo();
         
         
         //undo a delete operation of one task
-        lastIndex = logic.getFloatingTasks().size() - 1;
-        logic.parseCommand("delete " + lastIndex, Logic.List.FLOATING);
+        lastIndex = logic.getFloatingTasks().size();
+        logic.parseCommand("delete " + lastIndex, Logic.List.ALL);
         logic.executeCommand();
         logic.undo();
         logic.redo();
         
         //undo a delete operation of multiple task  
-        logic.parseCommand("undo task", Logic.List.FLOATING);
+        logic.parseCommand("undo task", Logic.List.ALL);
         logic.executeCommand();
         logic.executeCommand();
         
-        int secondLastIndex = logic.getFloatingTasks().size() - 2;
-        lastIndex = logic.getFloatingTasks().size() - 1;
+        int secondLastIndex = logic.getFloatingTasks().size() - 1;
+        lastIndex = logic.getFloatingTasks().size();
         
-        logic.parseCommand("delete " + secondLastIndex + "-" + lastIndex, Logic.List.FLOATING);
+        logic.parseCommand("delete " + secondLastIndex + "-" + lastIndex, Logic.List.ALL);
         logic.executeCommand();
         logic.undo();
         logic.redo();
         
         //undo and redo an edit task
         String title = "Floating task 0.1";
-        logic.parseCommand(title, null);
-        logic.editTask(Logic.List.FLOATING, 0);
+        logic.parseCommand(title, Logic.List.ALL);
+        logic.executeCommand();
+        logic.editTask(Logic.List.ALL, 0);
         logic.undo();
         logic.redo();
+        logic.parseCommand("delete 1", Logic.List.ALL);
+        logic.executeCommand();
 	}
 	
 	@Test
 	public void markTaskTest() {
-        logic.parseCommand("done 1", Logic.List.FLOATING);
+        logic.parseCommand("Floating task 0.1", Logic.List.ALL);
+        logic.executeCommand();
+        logic.parseCommand("done 1", Logic.List.ALL);
         logic.executeCommand();
         logic.undo();
         logic.redo();
         logic.undo();
+        logic.parseCommand("delete 1", Logic.List.ALL);
+        logic.executeCommand();
 	}
 	
 	@Test

@@ -480,7 +480,7 @@ public class RootLayoutController {
                     System.out.println(inputFeedback);
 
                 } else {
-                    logic.parseCommand(commandBar.getText(), Logic.List.FLOATING);
+                    logic.parseCommand(commandBar.getText(), Logic.List.ALL);
                 }
 
             }
@@ -512,7 +512,7 @@ public class RootLayoutController {
 
                 } else {
                     // something is wrong with this logic.editTask API
-                    logic.editTask(Logic.List.FLOATING, getSelectedTaskIndex());
+                    logic.editTask(Logic.List.ALL, getSelectedTaskIndex());
                     saveSelectedTaskIndex();
                     refreshListView();
                     restoreListViewPreviousSelection();
@@ -544,7 +544,7 @@ public class RootLayoutController {
 
             @Override
             public void run() {
-                logic.parseCommand(COMMAND_DELETE + WHITESPACE + (getSelectedTaskIndex() + 1), Logic.List.FLOATING);
+                logic.parseCommand(COMMAND_DELETE + WHITESPACE + (getSelectedTaskIndex() + 1), Logic.List.ALL);
                 logic.executeCommand();
                 saveSelectedTaskIndex();
                 refreshListView();
@@ -618,7 +618,7 @@ public class RootLayoutController {
      * 
      */
     private void parseAdd() {
-        inputFeedback = logic.parseCommand(userInput, null);
+        inputFeedback = logic.parseCommand(userInput, Logic.List.ALL);
         showFeedback(true, MESSAGE_FEEDBACK_ACTION_ADD, inputFeedback);
     }
 

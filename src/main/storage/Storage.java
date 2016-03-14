@@ -77,6 +77,11 @@ public class Storage {
 		BufferedReader reader = null;
 		try {
 			reader = new BufferedReader(new FileReader(filePath));
+			if (reader.readLine() == null) {
+			    reader.close();
+			    logger.log(Level.INFO,"Output file is empty: " + fileName);
+			    throw new Exception("Output file is empty!");
+			}
 			Gson gson = new GsonBuilder().create();
 	        tasks = gson.fromJson(reader,
 	                new TypeToken<ArrayList<ArrayList<Task>>>() {

@@ -247,18 +247,13 @@ public class Logic {
 	    
 	    command = parser.parse(userCommand);
 	    assert(command != null);
+	    command.setListType(type.name());
 	    
 		switch (command.getCommandType()) {
             case ADD:
-                if (command.getTask().hasDate()) {
-                    command.setListType(List.DATED.name());
-                } else {
-                    command.setListType(List.FLOATING.name());
-                }
                 feedback = command.getTask().toString();
                 break;
             case DELETE:
-                command.setListType(type.name());
                 indexArray = command.getIndexes();
                 indexes = new StringBuilder();
                 for (int i = 0; i < indexArray.size(); i++) {
@@ -270,7 +265,6 @@ public class Logic {
                 feedback = indexes.toString();
                 break;
             case DONE:
-                command.setListType(type.name());
                 indexArray = command.getIndexes();
                 indexes = new StringBuilder();
                 for (int i = 0; i < indexArray.size(); i++) {
@@ -346,7 +340,6 @@ public class Logic {
 			    deleteTask(type,indexToDelete);
 				break;
 			case EDIT:
-                //delete task and add previous task at index
 			    Task previousTask = undoCommand.getPreviousTasks().get(0);
 			    indexes = undoCommand.getIndexes();
 			    deleteTask(type,indexes);
@@ -376,16 +369,11 @@ public class Logic {
 	}
 
 	private void addTask(List type, Task task) {
-		switch (type) {
-			case FLOATING:
-				floatingTasks.add(task);
-				break;
-			case DATED:
-				datedTasks.add(task);
-				break;
-			default:
-				break;
-		}
+		if (task.hasDate()) {
+		    datedTasks.add(task);
+        } else {
+            floatingTasks.add(task);
+        }
 	}
 	
 	private void addToHistory() {
@@ -396,12 +384,13 @@ public class Logic {
 	
 	private void addToList(List type, int index, Task task) {
 		switch (type) {
-			case FLOATING:
-				floatingTasks.add(index,task);
-				break;
-			case DATED:
-				datedTasks.add(index,task);
-				break;
+		    case ALL:
+		        if (task.hasDate()) {
+		            datedTasks.add(index, task);
+		        } else {
+		            floatingTasks.add(index, task);
+		        }
+		        break;
 			case TODAY:
                 addToToday(index, task);
 			case THIS_WEEK:
@@ -438,23 +427,14 @@ public class Logic {
 	private void deleteTask(List type, ArrayList<Integer> indexes) {
 		switch (type) {
 		    case ALL:
-		        ArrayList<Integer> floatingIndexes = new ArrayList<Integer>();
-		        ArrayList<Integer> datedIndexes = new ArrayList<Integer>();
-		        int size = floatingTasks.size();
-		        for (int i : indexes) {
-		            if (i < size) {
-		                floatingIndexes.add(i);
-		            } else {
-		                datedIndexes.add(i - size);
-		            }
-		        }
-		        deleteTasksFromList(floatingTasks, floatingIndexes);
-		        deleteTasksFromList(datedTasks, datedIndexes);
+		        deleteTasksFromAll(indexes);
 				break;
 			case TODAY:
                 deleteTasksFromToday(indexes);
+                break;
 			case THIS_WEEK:
 			    deleteTasksFromThisWeek(indexes);
+			    break;
 			default:
 				break;
 		}
@@ -473,6 +453,37 @@ public class Logic {
 		command.setPreviousTasks(previousTasks);
 		return list;
 	}
+	
+	private void deleteTasksFromAll(ArrayList<Integer> indexes) {
+	    ArrayList<Integer> floatingIndexes = new ArrayList<Integer>();
+        ArrayList<Integer> datedIndexes = new ArrayList<Integer>();
+        int size = floatingTasks.size();
+        for (int i : indexes) {
+            if (i < size) {
+                floatingIndexes.add(i);
+            } else {
+                datedIndexes.add(i - size);
+            }
+        }
+        
+        int j = 0;
+        ArrayList<Task> previousTasks = new ArrayList<Task>();
+        for (int i = 0; i < floatingIndexes.size(); i++) {
+            int indexToDelete = floatingIndexes.get(i-j);
+            Task removedTask = floatingTasks.remove(indexToDelete);
+            previousTasks.add(removedTask);
+            j++;
+        }
+        j = 0;
+        for (int i = 0; i < datedIndexes.size(); i++) {
+            int indexToDelete = datedIndexes.get(i-j);
+            Task removedTask = datedTasks.remove(indexToDelete);
+            previousTasks.add(removedTask);
+            j++;
+        }
+        assert(command != null);
+        command.setPreviousTasks(previousTasks);
+    }
 	
 	private void deleteTasksFromThisWeek(ArrayList<Integer> indexes) {
         ArrayList<Task> temp = new ArrayList<Task>();
@@ -500,6 +511,9 @@ public class Logic {
 	    int index = 0;
 	    
 	    switch (type) {
+    	    case ALL:
+    	        index = getAllTasks().size();
+    	        break;
     	    case FLOATING:
                 index = floatingTasks.size();
                 break;
@@ -539,16 +553,15 @@ public class Logic {
 	
 	private void markTask(List type, ArrayList<Integer> indexes, boolean status) {
         switch (type) {
-            case FLOATING:
-                markTasksFromList(floatingTasks, indexes, status);
-                break;
-            case DATED:
-                markTasksFromList(datedTasks, indexes, status);
+            case ALL:
+                markTasksFromAll(indexes, status);
                 break;
             case TODAY:
                 markTasksFromToday(indexes, status);
+                break;
             case THIS_WEEK:
                 markTasksFromThisWeek(indexes, status);
+                break;
             default:
                 break;
         }
@@ -565,6 +578,35 @@ public class Logic {
         assert(command != null);
         command.setPreviousTasks(previousTasks);
         return list;
+    }
+	
+   private void markTasksFromAll(ArrayList<Integer> indexes, boolean status) {
+        ArrayList<Integer> floatingIndexes = new ArrayList<Integer>();
+        ArrayList<Integer> datedIndexes = new ArrayList<Integer>();
+        int size = floatingTasks.size();
+        for (int i : indexes) {
+            if (i < size) {
+                floatingIndexes.add(i);
+            } else {
+                datedIndexes.add(i - size);
+            }
+        }
+        
+        ArrayList<Task> previousTasks = new ArrayList<Task>();
+        for (int i = 0; i < floatingIndexes.size(); i++) {
+            int indexToMark = floatingIndexes.get(i);
+            Task task = floatingTasks.get(indexToMark);
+            task.setDone(status);
+            previousTasks.add(task);
+        }
+        for (int i = 0; i < datedIndexes.size(); i++) {
+            int indexToMark = datedIndexes.get(i);
+            Task task = datedTasks.get(indexToMark);
+            task.setDone(status);
+            previousTasks.add(task);
+        }
+        assert(command != null);
+        command.setPreviousTasks(previousTasks);
     }
 	
 	private void markTasksFromThisWeek(ArrayList<Integer> indexes, boolean status) {
