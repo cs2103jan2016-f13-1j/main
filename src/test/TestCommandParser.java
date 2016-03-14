@@ -91,7 +91,7 @@ public class TestCommandParser {
         assertEquals("home", command.getTask().getLabel());
     }
     
-    @Ignore @Test
+    @Test
     public void testTaskToString() {
     	CommandParser parser = new CommandParser();
 
@@ -101,30 +101,24 @@ public class TestCommandParser {
     	command = parser.parse("Cook dinner #home");
     	assertEquals("Cook dinner #home", command.getTask().toString());
 
-    	command = parser.parse("Cook dinner on 24 Mar 7pm #home");
-    	System.out.println(command.getTask().toString());
-    	System.out.println(command.getTask().getTitle());
-    	System.out.println(command.getTask().getStartDate());
-    	System.out.println(command.getTask().getEndDate());
-    	assertEquals("Cook dinner by 24/3 (Thu) 19:00 #home", command.getTask().toString());
+    	command = parser.parse("Cook dinner 24/3 at 7pm #home");
+    	  	
+    	assertEquals("Cook dinner from next Thu 7:00pm to next Thu 8:00pm #home", command.getTask().toString());
 
     	command = parser.parse("Cook dinner on 24/3 7pm");
-    	assertEquals("Cook dinner by 24/3 (Thu) 19:00", command.getTask().toString());
-    	
-    	command = parser.parse("Cook dinner on 24/3 7:15");
-    	assertEquals("Cook dinner by 24/3 (Thu) 07:15", command.getTask().toString());
+    	assertEquals("Cook dinner from next Thu 7:00pm to next Thu 8:00pm", command.getTask().toString());
     	
     	command = parser.parse("Cook dinner on 24/3 7:15pm");
-    	assertEquals("Cook dinner by 24/3 (Thu) 19:15", command.getTask().toString());
+    	assertEquals("Cook dinner from next Thu 7:15pm to next Thu 8:15pm", command.getTask().toString());
     	
     	command = parser.parse("Attend meeting on 26-3 7pm");
-    	assertEquals("Attend meeting by 26/3 (Sat) 19:00", command.getTask().toString());
+    	assertEquals("Attend meeting from next Sat 7:00pm to next Sat 8:00pm", command.getTask().toString());
 
     	command = parser.parse("Attend meeting from 4 to 6pm on 25 Mar");
-    	assertEquals("Attend meeting from 25/3 (Fri) 16:00 to 25/3 (Fri) 18:00",command.getTask().toString());
+    	assertEquals("Attend meeting from next Fri 4:00pm to next Fri 6:00pm",command.getTask().toString());
     	
     	command = parser.parse("Attend meeting 4 to 6pm on 25 Mar");
-    	assertEquals("Attend meeting from 25/3 (Fri) 16:00 to 25/3 (Fri) 18:00",command.getTask().toString()); 	
+    	assertEquals("Attend meeting from next Fri 4:00pm to next Fri 6:00pm",command.getTask().toString()); 	
     }
     
     @Test
@@ -182,11 +176,11 @@ public class TestCommandParser {
     	CommandParser parser = new CommandParser();
     	Command command = parser.parse("Attempt quiz from 5pm 14 MARCH");
     	assertEquals("Attempt quiz", command.getTask().getTitle());  	
-    	assertEquals("Attempt quiz from 14/3 (Mon) 17:00 to 14/3 (Mon) 18:00", command.getTask().toString());
+    	assertEquals("Attempt quiz from today 5:00pm to today 6:00pm", command.getTask().toString());
     	
     	command = parser.parse("Watch webcast after 3am on 15 MAR");
     	assertEquals("Watch webcast", command.getTask().getTitle());  	
-    	assertEquals("Watch webcast from 15/3 (Tue) 03:00 to 15/3 (Tue) 04:00", command.getTask().toString());
+    	assertEquals("Watch webcast from this Tue 3:00am to this Tue 4:00am", command.getTask().toString());
     }
     
     @Test
