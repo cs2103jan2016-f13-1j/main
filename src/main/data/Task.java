@@ -1,9 +1,11 @@
 package main.data;
 
+import java.text.DateFormatSymbols;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 
 /**
  * @author Joleen
@@ -67,13 +69,13 @@ public class Task {
     
     public ArrayList<String> getParameters() {
         ArrayList<String> feedback = new ArrayList<String>();
-        SimpleDateFormat dateFormat = new SimpleDateFormat("d/M (EEE) HH:mm");
 
         feedback.add(title);
         
         if (hasDate()) {
-        	 feedback.add(dateFormat.format(startDate));
-        	 feedback.add(dateFormat.format(endDate));
+        	//missing date
+        	feedback.add(convertTime(startDate));
+        	feedback.add(convertTime(endDate));
         } else {
         	feedback.add(null);
         	feedback.add(null);
@@ -86,6 +88,19 @@ public class Task {
         }
         
         return feedback;
+    }
+    
+    private String convertDate(Date date) {
+    	
+    	return null;
+    }
+    
+    private String convertTime(Date date) {
+	    SimpleDateFormat timeFormat = new SimpleDateFormat("h:mma");
+	    DateFormatSymbols symbols = new DateFormatSymbols(Locale.getDefault());
+        symbols.setAmPmStrings(new String[] {"am", "pm"});
+        timeFormat.setDateFormatSymbols(symbols);
+	    return timeFormat.format(date);
     }
     
     public boolean isThisWeek() {

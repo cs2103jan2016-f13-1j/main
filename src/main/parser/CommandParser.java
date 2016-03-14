@@ -42,10 +42,11 @@ public class CommandParser {
     private final boolean PREPOSITION_SELECTIVE = false;
     private final String NOW = "NOW";
     private final int ONE_HOUR = 1;
+    private final int DOUBLE_DIGIT = 10;
     private static final Logger logger = Logger.getLogger(CommandParser.class.getName());
     
     public Command parse(String commandString) {
-    	//logger.setLevel(Level.OFF);
+    	logger.setLevel(Level.OFF);
     	
         String command = getFirstWord(commandString);
         Type commandType = getCommandType(command);
@@ -319,7 +320,7 @@ public class CommandParser {
 		assert(min >= 0);
 		
 		String minute = ":";
-		if (min == 0) {
+		if (min < DOUBLE_DIGIT) {
 			minute = minute.concat("0");
 		}
 
@@ -370,7 +371,7 @@ public class CommandParser {
     	boolean isPreposition;
     	
     	List<String> words = new ArrayList<String>(Arrays.asList(title.toLowerCase().split(" ")));
-
+    //	System.out.println(toBeRemoved);
     	for (int i = 0; i < toBeRemoved.size(); i++) {
     		if (words.contains(toBeRemoved.get(i))) {
     			toBeReplaced = toBeReplaced.concat(" ");
