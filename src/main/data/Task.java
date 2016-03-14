@@ -1,8 +1,16 @@
 package main.data;
 
+import java.text.DateFormatSymbols;
 import java.text.SimpleDateFormat;
+import java.time.DayOfWeek;
+import java.time.LocalDateTime;
+import java.time.Month;
+import java.time.ZoneId;
+import java.time.format.TextStyle;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 
 /**
  * @author Joleen
@@ -10,6 +18,14 @@ import java.util.Date;
  */
 
 public class Task {
+	private final int INDEX_TITLE = 0;
+	private final int INDEX_START_DATE = 1;
+	private final int INDEX_START_TIME = 2;
+	private final int INDEX_END_DATE = 3;
+	private final int INDEX_END_TIME = 4;
+	private final int INDEX_LABEL = 5;
+	
+	
     private String title;
     private boolean done;
     private int priority;
@@ -44,35 +60,137 @@ public class Task {
     public Date getEndDate() {
         return endDate;
     }
-    
+
     public String toString() {
-        String feedback = null;
-        SimpleDateFormat dateFormat = new SimpleDateFormat("d/M (EEE) HH:mm");
+       ArrayList<String> fields = getParameters();
+       String feedback = fields.get(INDEX_TITLE);
+       
+       if (fields.get(1) != null) {
+    	   feedback = feedback.concat(" from ").concat(fields.get(INDEX_START_DATE));
+    	   feedback = feedback.concat(" ").concat(fields.get(INDEX_START_TIME));
+    	   
+    	   feedback = feedback.concat(" to ").concat(fields.get(INDEX_END_DATE));
+    	   feedback = feedback.concat(" ").concat(fields.get(INDEX_END_TIME));    	  
+       }
+	   
+       if (fields.get(5) != null) {
+    	   feedback = feedback.concat(" #").concat(fields.get(INDEX_LABEL));
+       }
+       
+        return feedback;
+    }
+    
+    /**
+     * getParameters that is in task object.
+     * 
+     * In order:
+     * 0 - Title
+     * 1 - Start Date
+     * 2 - Start Time
+     * 3 - End Date
+     * 4 - End Time
+     * 5 - Label
+     * 
+     * @return ArrayList<String> of size 6
+     */
+    public ArrayList<String> getParameters() {
+        ArrayList<String> feedback = new ArrayList<String>();
+
+        feedback.add(title);
         
         if (hasDate()) {
-            if (hasDateRange()) {
-                String startDateTime = dateFormat.format(startDate);
-                String endDateTime = dateFormat.format(endDate);
-                feedback = title + " from " + startDateTime + " to " + endDateTime;
-            } else {
-                if (hasStartDate()) {
-                    String startDateTime = dateFormat.format(startDate);
-                    feedback =  title + " from " + startDateTime;
-                    feedback += " onwards";
-                } else if (hasEndDate()) {
-                    String endDateTime = dateFormat.format(endDate);
-                    feedback =  title + " by " + endDateTime;    
-                }
-            }
+        	feedback.add(convertDate(startDate));
+        	feedback.add(convertTime(startDate));
+        	feedback.add(convertDate(endDate));
+        	feedback.add(convertTime(endDate));
         } else {
-            feedback = title;   
+        	feedback.add(null);
+        	feedback.add(null);
+        	feedback.add(null);
+        	feedback.add(null);
         }
         
         if (hasLabel()) {
-            feedback += " #" + label;
+            feedback.add(label);
+        } else {
+        	feedback.add(null);
         }
         
         return feedback;
+    }
+    
+    private String convertDate(Date date) {
+    	if (isToday()) {
+    		return "today";
+    	}
+    	
+    	if (dateIsThisWeek(date)) {
+    		return "this ".concat(getDay(date));
+    	} else if (dateIsNextWeek(date)){
+    		return "next ".concat(getDay(date));
+    	} else {
+    		return getDate(date).concat(" ").concat(getMonth(date));
+    	}
+    }
+    
+    private boolean dateIsThisWeek(Date date) {
+    	Calendar calendar = Calendar.getInstance();
+		calendar.setFirstDayOfWeek(Calendar.MONDAY);
+		
+		int currentWeek = calendar.get(Calendar.WEEK_OF_YEAR);
+		
+		calendar.setTime(date);
+		int dateWeek = calendar.get(Calendar.WEEK_OF_YEAR);
+		
+		if (dateWeek == currentWeek) {
+			return true;
+		} else {
+			return false;
+		}
+    }
+    
+    private boolean dateIsNextWeek(Date date) {
+    	Calendar calendar = Calendar.getInstance();
+		calendar.setFirstDayOfWeek(Calendar.MONDAY);
+		
+		int currentWeek = calendar.get(Calendar.WEEK_OF_YEAR);
+		
+		calendar.setTime(date);
+		int dateWeek = calendar.get(Calendar.WEEK_OF_YEAR);
+		int difference = dateWeek - currentWeek;
+		
+		if (difference == 1) {
+			return true;
+		} else {
+			return false;
+		}
+    }
+    
+    private String getDay(Date date) {
+    	Locale locale = Locale.getDefault();
+    	LocalDateTime dateTime = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+    	DayOfWeek day = dateTime.getDayOfWeek();
+		return day.getDisplayName(TextStyle.SHORT, locale);
+    }
+    
+    private String getDate(Date date) {
+    	LocalDateTime dateTime = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+		return Integer.toString(dateTime.getDayOfMonth());
+    }
+    
+    private String getMonth(Date date) {
+		Locale locale = Locale.getDefault();
+    	LocalDateTime dateTime = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+    	Month month = dateTime.getMonth();
+		return month.getDisplayName(TextStyle.SHORT, locale);
+    }
+    
+    private String convertTime(Date date) {
+	    SimpleDateFormat timeFormat = new SimpleDateFormat("h:mma");
+	    DateFormatSymbols symbols = new DateFormatSymbols(Locale.getDefault());
+        symbols.setAmPmStrings(new String[] {"am", "pm"});
+        timeFormat.setDateFormatSymbols(symbols);
+	    return timeFormat.format(date);
     }
     
     public boolean isThisWeek() {

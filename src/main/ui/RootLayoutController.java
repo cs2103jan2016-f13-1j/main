@@ -608,7 +608,7 @@ public class RootLayoutController {
 
             case COMMAND_DELETE :
             case COMMAND_DELETE_SHORTHAND :
-                parseDeleteImproved();
+                parseDelete();
                 break;
 
             default :
@@ -624,14 +624,13 @@ public class RootLayoutController {
         showFeedback(true, MESSAGE_FEEDBACK_ACTION_ADD, inputFeedback);
     }
 
-    private void parseDeleteImproved() {
+    private void parseDelete() {
         if (userInputArray.length <= 1) {
             inputFeedback = EMPTY_STRING;
             return;
         }
 
-        String parseResult = logic.parseCommand(userInput, Logic.List.DATED);
-
+        String parseResult = logic.parseCommand(userInput, Logic.List.ALL);
         System.out.println("user arguments: " + userArguments);
         System.out.println("parse result: " + parseResult);
         String[] indexesToBeDeleted = parseResult.split(" ");
@@ -664,45 +663,6 @@ public class RootLayoutController {
 
         showFeedback(true, MESSAGE_FEEDBACK_ACTION_DELETE,
                 userArguments + WHITESPACE + String.format(MESSAGE_FEEDBACK_TOTAL_TASK, indexesToBeDeleted.length));
-
-    }
-
-    /**
-     * 
-     */
-    private void parseDelete() {
-        // System.out.println("parseDelete");
-        if (userInputArray.length <= 1) {
-            inputFeedback = EMPTY_STRING;
-            return;
-        }
-
-        String parseResult = logic.parseCommand("del 100", Logic.List.FLOATING);
-        System.out.println(parseResult);
-
-        int userIndex = 0;
-        try {
-            userIndex = Integer.parseInt(userArguments);
-        } catch (NumberFormatException nfe) {
-            showResult(true, String.format(MESSAGE_ERROR_RESULT_DELETE, userArguments));
-            return;
-        }
-
-        int actualIndex = userIndex - 1;
-
-        // if selected index is out of bound
-        if (actualIndex >= allTasks.size() || actualIndex < 0) {
-            showResult(true, String.format(MESSAGE_ERROR_RESULT_DELETE, userIndex));
-
-        } else {
-            inputFeedback = allTasks.get(actualIndex).toString();
-            showFeedback(true, MESSAGE_FEEDBACK_ACTION_DELETE, inputFeedback);
-            logic.parseCommand(COMMAND_DELETE + WHITESPACE + actualIndex, Logic.List.FLOATING);
-
-            // saveSelectedTaskIndex();
-            // listView.getFocusModel().focus(actualIndex);
-            // listView.scrollTo(actualIndex);
-        }
 
     }
 

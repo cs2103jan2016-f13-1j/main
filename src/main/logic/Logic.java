@@ -13,7 +13,7 @@
  * getFloatingTasks();
  * getDatedTasks();
  * getTodayTasks();
- * getNextSevenDays();
+ * getThisWeek();
  * getFileLocation();
  * getUndoCount();
  * getRedoCount();
@@ -42,7 +42,7 @@ import main.storage.Storage;
 public class Logic {
     
     public static enum List {
-	    FLOATING, DATED, TODAY, NEXT_SEVEN_DAYS
+	    ALL, FLOATING, DATED, TODAY, THIS_WEEK
 	}
 	
     private static final Logger logger = Logger.getLogger(Logic.class.getName());
@@ -54,13 +54,14 @@ public class Logic {
 	
 	private CommandParser parser = null;
 	private Storage storage = null;
-	private Command command = null;
 	
+	private Command command = null;
 	private Stack<Command> undoHistory = new Stack<Command>();
 	private Stack<Command> redoHistory = new Stack<Command>();
 	private ArrayList<Task> floatingTasks = new ArrayList<Task>();
-	private ArrayList<Task> datedTasks = new ArrayList<Task>();
 	
+    private ArrayList<Task> datedTasks = new ArrayList<Task>();
+    
     /**
 	 * Initializes a newly created {@code Controller} object.
 	 */
@@ -181,13 +182,17 @@ public class Logic {
         return floatingTasks;
 	}
     
+    public int getRedoCount() {
+        return redoHistory.size();
+    }
+	
     /**
 	 * Creates a new list of tasks that are within the next seven days
 	 * of the current system date
 	 * 
 	 * @return the list of tasks due in the next seven days
 	 */
-	public ArrayList<Task> getNextSevenDays() {
+	public ArrayList<Task> getThisWeek() {
 		ArrayList<Task> result = new ArrayList<Task>();
 		
 		for (Task task : getDatedTasks()) {
@@ -197,10 +202,6 @@ public class Logic {
 		}
 		return result;
 	}
-	
-    public int getRedoCount() {
-        return redoHistory.size();
-    }
 
     /**
 	 * Creates a new list of tasks that have the same date as the 
@@ -403,19 +404,19 @@ public class Logic {
 				break;
 			case TODAY:
                 addToToday(index, task);
-			case NEXT_SEVEN_DAYS:
-                addToNextSevenDays(index, task);
+			case THIS_WEEK:
+                addToThisWeek(index, task);
 			default:
 				break;
 		}
 	}
 	
-	private void addToNextSevenDays(int index, Task task) {
+	private void addToThisWeek(int index, Task task) {
         ArrayList<Task> temp = new ArrayList<Task>();
-        ArrayList<Task> newNextSevenDaysTasks = getNextSevenDays();
-        newNextSevenDaysTasks.add(index,task);
+        ArrayList<Task> newThisWeekTasks = getThisWeek();
+        newThisWeekTasks.add(index,task);
         temp.addAll(getTodayTasks());
-        temp.addAll(newNextSevenDaysTasks);
+        temp.addAll(newThisWeekTasks);
         datedTasks = new ArrayList<Task>();
         for (Task t : temp) {
             datedTasks.add(t);
@@ -427,7 +428,7 @@ public class Logic {
         ArrayList<Task> newTodayTasks = getTodayTasks();
         newTodayTasks.add(index,task);
         temp.addAll(newTodayTasks);
-        temp.addAll(getNextSevenDays());
+        temp.addAll(getThisWeek());
         datedTasks = new ArrayList<Task>();
         for (Task t : temp) {
             datedTasks.add(t);
@@ -436,16 +437,24 @@ public class Logic {
 
 	private void deleteTask(List type, ArrayList<Integer> indexes) {
 		switch (type) {
-			case FLOATING:
-				deleteTasksFromList(floatingTasks, indexes);
-				break;
-			case DATED:
-				deleteTasksFromList(datedTasks, indexes);
+		    case ALL:
+		        ArrayList<Integer> floatingIndexes = new ArrayList<Integer>();
+		        ArrayList<Integer> datedIndexes = new ArrayList<Integer>();
+		        int size = floatingTasks.size();
+		        for (int i : indexes) {
+		            if (i < size) {
+		                floatingIndexes.add(i);
+		            } else {
+		                datedIndexes.add(i - size);
+		            }
+		        }
+		        deleteTasksFromList(floatingTasks, floatingIndexes);
+		        deleteTasksFromList(datedTasks, datedIndexes);
 				break;
 			case TODAY:
                 deleteTasksFromToday(indexes);
-			case NEXT_SEVEN_DAYS:
-			    deleteTasksFromNextSevenDays(indexes);
+			case THIS_WEEK:
+			    deleteTasksFromThisWeek(indexes);
 			default:
 				break;
 		}
@@ -465,11 +474,11 @@ public class Logic {
 		return list;
 	}
 	
-	private void deleteTasksFromNextSevenDays(ArrayList<Integer> indexes) {
+	private void deleteTasksFromThisWeek(ArrayList<Integer> indexes) {
         ArrayList<Task> temp = new ArrayList<Task>();
-        ArrayList<Task> newNextSevenDaysTasks = deleteTasksFromList(getNextSevenDays(), indexes);
+        ArrayList<Task> newThisWeekTasks = deleteTasksFromList(getThisWeek(), indexes);
         temp.addAll(getTodayTasks());
-        temp.addAll(newNextSevenDaysTasks);
+        temp.addAll(newThisWeekTasks);
         datedTasks = new ArrayList<Task>();
         for (Task task : temp) {
         	datedTasks.add(task);
@@ -480,7 +489,7 @@ public class Logic {
         ArrayList<Task> temp = new ArrayList<Task>();
         ArrayList<Task> newTodayTasks = deleteTasksFromList(getTodayTasks(), indexes);
         temp.addAll(newTodayTasks);
-        temp.addAll(getNextSevenDays());
+        temp.addAll(getThisWeek());
         datedTasks = new ArrayList<Task>();
         for (Task task : temp) {
         	datedTasks.add(task);
@@ -499,8 +508,8 @@ public class Logic {
                 break;
             case TODAY:
                 index = getTodayTasks().size();
-            case NEXT_SEVEN_DAYS:
-                index = getNextSevenDays().size();
+            case THIS_WEEK:
+                index = getThisWeek().size();
             default:
                 break;
 	    }
@@ -520,8 +529,8 @@ public class Logic {
                     break;
                 case TODAY:
                     task = getTodayTasks().get(index);
-                case NEXT_SEVEN_DAYS:
-                    task = getNextSevenDays().get(index);
+                case THIS_WEEK:
+                    task = getThisWeek().get(index);
                 default:
                     break;
             }
@@ -538,8 +547,8 @@ public class Logic {
                 break;
             case TODAY:
                 markTasksFromToday(indexes, status);
-            case NEXT_SEVEN_DAYS:
-                markTasksFromNextSevenDays(indexes, status);
+            case THIS_WEEK:
+                markTasksFromThisWeek(indexes, status);
             default:
                 break;
         }
@@ -558,11 +567,11 @@ public class Logic {
         return list;
     }
 	
-	private void markTasksFromNextSevenDays(ArrayList<Integer> indexes, boolean status) {
+	private void markTasksFromThisWeek(ArrayList<Integer> indexes, boolean status) {
         ArrayList<Task> temp = new ArrayList<Task>();
-        ArrayList<Task> newNextSevenDaysTasks = markTasksFromList(getNextSevenDays(), indexes, status);
+        ArrayList<Task> newThisWeekTasks = markTasksFromList(getThisWeek(), indexes, status);
         temp.addAll(getTodayTasks());
-        temp.addAll(newNextSevenDaysTasks);
+        temp.addAll(newThisWeekTasks);
         datedTasks = new ArrayList<Task>();
         for (Task task : temp) {
             datedTasks.add(task);
@@ -573,7 +582,7 @@ public class Logic {
         ArrayList<Task> temp = new ArrayList<Task>();
         ArrayList<Task> newTodayTasks = markTasksFromList(getTodayTasks(), indexes, status);
         temp.addAll(newTodayTasks);
-        temp.addAll(getNextSevenDays());
+        temp.addAll(getThisWeek());
         datedTasks = new ArrayList<Task>();
         for (Task task : temp) {
             datedTasks.add(task);

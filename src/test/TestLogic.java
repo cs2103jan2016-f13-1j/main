@@ -38,7 +38,7 @@ public class TestLogic {
 	//Retrieves tasks for next seven days
 	@Test
 	public void getNextSevenDaysTest() {
-		for (Task t : logic.getNextSevenDays()) {
+		for (Task t : logic.getThisWeek()) {
 			System.out.println(t.getTitle());
 		}
 	}
