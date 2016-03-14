@@ -18,6 +18,14 @@ import java.util.Locale;
  */
 
 public class Task {
+	private final int INDEX_TITLE = 0;
+	private final int INDEX_START_DATE = 1;
+	private final int INDEX_START_TIME = 2;
+	private final int INDEX_END_DATE = 3;
+	private final int INDEX_END_TIME = 4;
+	private final int INDEX_LABEL = 5;
+	
+	
     private String title;
     private boolean done;
     private int priority;
@@ -55,18 +63,18 @@ public class Task {
 
     public String toString() {
        ArrayList<String> fields = getParameters();
-       String feedback = fields.get(0);
+       String feedback = fields.get(INDEX_TITLE);
        
        if (fields.get(1) != null) {
-    	   feedback = feedback.concat(" from ").concat(fields.get(1));
-    	   feedback = feedback.concat(" ").concat(fields.get(2));
+    	   feedback = feedback.concat(" from ").concat(fields.get(INDEX_START_DATE));
+    	   feedback = feedback.concat(" ").concat(fields.get(INDEX_START_TIME));
     	   
-    	   feedback = feedback.concat(" to ").concat(fields.get(3));
-    	   feedback = feedback.concat(" ").concat(fields.get(4));    	  
+    	   feedback = feedback.concat(" to ").concat(fields.get(INDEX_END_DATE));
+    	   feedback = feedback.concat(" ").concat(fields.get(INDEX_END_TIME));    	  
        }
 	   
        if (fields.get(5) != null) {
-    	   feedback = feedback.concat(" #").concat(fields.get(5));
+    	   feedback = feedback.concat(" #").concat(fields.get(INDEX_LABEL));
        }
        
         return feedback;
