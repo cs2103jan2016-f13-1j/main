@@ -1,6 +1,7 @@
 package main.data;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -59,6 +60,29 @@ public class Task {
         
         if (hasLabel()) {
             feedback += " #" + label;
+        }
+        
+        return feedback;
+    }
+    
+    public ArrayList<String> getParameters() {
+        ArrayList<String> feedback = new ArrayList<String>();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("d/M (EEE) HH:mm");
+
+        feedback.add(title);
+        
+        if (hasDate()) {
+        	 feedback.add(dateFormat.format(startDate));
+        	 feedback.add(dateFormat.format(endDate));
+        } else {
+        	feedback.add(null);
+        	feedback.add(null);
+        }
+        
+        if (hasLabel()) {
+            feedback.add(label);
+        } else {
+        	feedback.add(null);
         }
         
         return feedback;
