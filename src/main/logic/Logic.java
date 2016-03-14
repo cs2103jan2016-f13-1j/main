@@ -42,7 +42,7 @@ import main.storage.Storage;
 public class Logic {
     
     public static enum List {
-	    FLOATING, DATED, TODAY, THIS_WEEK
+	    ALL, FLOATING, DATED, TODAY, THIS_WEEK
 	}
 	
     private static final Logger logger = Logger.getLogger(Logic.class.getName());
@@ -54,13 +54,14 @@ public class Logic {
 	
 	private CommandParser parser = null;
 	private Storage storage = null;
-	private Command command = null;
 	
+	private Command command = null;
 	private Stack<Command> undoHistory = new Stack<Command>();
 	private Stack<Command> redoHistory = new Stack<Command>();
 	private ArrayList<Task> floatingTasks = new ArrayList<Task>();
-	private ArrayList<Task> datedTasks = new ArrayList<Task>();
 	
+    private ArrayList<Task> datedTasks = new ArrayList<Task>();
+    
     /**
 	 * Initializes a newly created {@code Controller} object.
 	 */
@@ -181,6 +182,10 @@ public class Logic {
         return floatingTasks;
 	}
     
+    public int getRedoCount() {
+        return redoHistory.size();
+    }
+	
     /**
 	 * Creates a new list of tasks that are within the next seven days
 	 * of the current system date
@@ -197,10 +202,6 @@ public class Logic {
 		}
 		return result;
 	}
-	
-    public int getRedoCount() {
-        return redoHistory.size();
-    }
 
     /**
 	 * Creates a new list of tasks that have the same date as the 
@@ -436,11 +437,19 @@ public class Logic {
 
 	private void deleteTask(List type, ArrayList<Integer> indexes) {
 		switch (type) {
-			case FLOATING:
-				deleteTasksFromList(floatingTasks, indexes);
-				break;
-			case DATED:
-				deleteTasksFromList(datedTasks, indexes);
+		    case ALL:
+		        ArrayList<Integer> floatingIndexes = new ArrayList<Integer>();
+		        ArrayList<Integer> datedIndexes = new ArrayList<Integer>();
+		        int size = floatingTasks.size();
+		        for (int i : indexes) {
+		            if (i < size) {
+		                floatingIndexes.add(i);
+		            } else {
+		                datedIndexes.add(i - size);
+		            }
+		        }
+		        deleteTasksFromList(floatingTasks, floatingIndexes);
+		        deleteTasksFromList(datedTasks, datedIndexes);
 				break;
 			case TODAY:
                 deleteTasksFromToday(indexes);

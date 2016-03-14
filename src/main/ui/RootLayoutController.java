@@ -628,7 +628,7 @@ public class RootLayoutController {
             return;
         }
 
-        String parseResult = logic.parseCommand(userInput, Logic.List.FLOATING);
+        String parseResult = logic.parseCommand(userInput, Logic.List.ALL);
         System.out.println("user arguments: " + userArguments);
         System.out.println("parse result: " + parseResult);
         String[] indexesToBeDeleted = parseResult.split(" ");
