@@ -25,24 +25,25 @@ import main.data.Task;
  */
 
 public class CommandParser {
-    private final int LENGTH_DEL = 3;
-    private final int LENGTH_DELETE = 6;
-    private final int LENGTH_DONE = 4;
-    private final int LENGTH_OFFSET = 1;
+    private final boolean PREPOSITION_ALL = true;
+    private final boolean PREPOSITION_SELECTIVE = false;
     private final int DATE_INDEX = 0;
     private final int DATE_START_RANGED = 0;
     private final int DATE_END_RANGED = 1;
     private final int DATE_MAX_SIZE = 2;
     private final String DATE_STRING_PATTERN = "(0?[1-9]|[12][0-9]|3[01])(/|-)(0?[1-9]|1[012])";
-    private final int INDEX_OFFSET = 1;
     private final String STRING_AM = "am";
     private final String STRING_PM = "pm";
     private final String STRING_TWELVE = "12";
-    private final boolean PREPOSITION_ALL = true;
-    private final boolean PREPOSITION_SELECTIVE = false;
     private final String NOW = "NOW";
     private final int ONE_HOUR = 1;
     private final int DOUBLE_DIGIT = 10;
+    private final int LENGTH_DEL = 3;
+    private final int LENGTH_DELETE = 6;
+    private final int LENGTH_DONE = 4;
+    private final int LENGTH_OFFSET = 1;
+    private final int INDEX_OFFSET = 1;
+
     private static final Logger logger = Logger.getLogger(CommandParser.class.getName());
     
     public Command parse(String commandString) {
@@ -371,7 +372,7 @@ public class CommandParser {
     	boolean isPreposition;
     	
     	List<String> words = new ArrayList<String>(Arrays.asList(title.toLowerCase().split(" ")));
-    //	System.out.println(toBeRemoved);
+    
     	for (int i = 0; i < toBeRemoved.size(); i++) {
     		if (words.contains(toBeRemoved.get(i))) {
     			toBeReplaced = toBeReplaced.concat(" ");
