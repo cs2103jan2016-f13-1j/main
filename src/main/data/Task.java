@@ -50,22 +50,11 @@ public class Task {
         SimpleDateFormat dateFormat = new SimpleDateFormat("d/M (EEE) HH:mm");
         
         if (hasDate()) {
-            if (hasDateRange()) {
-                String startDateTime = dateFormat.format(startDate);
-                String endDateTime = dateFormat.format(endDate);
-                feedback = title + " from " + startDateTime + " to " + endDateTime;
-            } else {
-                if (hasStartDate()) {
-                    String startDateTime = dateFormat.format(startDate);
-                    feedback =  title + " from " + startDateTime;
-                    feedback += " onwards";
-                } else if (hasEndDate()) {
-                    String endDateTime = dateFormat.format(endDate);
-                    feedback =  title + " by " + endDateTime;    
-                }
-            }
+        	 String startDateTime = dateFormat.format(startDate);
+             String endDateTime = dateFormat.format(endDate);
+             feedback = title + " from " + startDateTime + " to " + endDateTime;
         } else {
-            feedback = title;   
+        	feedback = title;
         }
         
         if (hasLabel()) {
