@@ -251,33 +251,33 @@ public class RootLayoutController {
         });
     }
 
-//    /**
-//     * 
-//     */
-//    private void populateListView() {
-//        if (logic == null) {
-//            logic = Logic.getLogic();
-//        }
-//
-//        // ListView only allow binding of a OberservableList of String
-//        if (listProperty == null) {
-//            listProperty = new SimpleListProperty<String>();
-//        }
-//
-//        listViewAll.itemsProperty().bind(listProperty);
-//        listViewAll.setPlaceholder(new Label(MESSAGE_LISTVIEW_EMPTY));
-//
-//        // retrieve all task and add into an ObservableList
-//        allTasks = logic.getAllTasks();
-//
-//        for (int i = 0; i < allTasks.size(); i++) {
-//            // System.out.println(allTasks.get(i));
-//            observableTaskList.add(i + 1 + ". " + allTasks.get(i));
-//        }
-//
-//        listProperty.set(observableTaskList);
-//    }
-    
+    // /**
+    // *
+    // */
+    // private void populateListView() {
+    // if (logic == null) {
+    // logic = Logic.getLogic();
+    // }
+    //
+    // // ListView only allow binding of a OberservableList of String
+    // if (listProperty == null) {
+    // listProperty = new SimpleListProperty<String>();
+    // }
+    //
+    // listViewAll.itemsProperty().bind(listProperty);
+    // listViewAll.setPlaceholder(new Label(MESSAGE_LISTVIEW_EMPTY));
+    //
+    // // retrieve all task and add into an ObservableList
+    // allTasks = logic.getAllTasks();
+    //
+    // for (int i = 0; i < allTasks.size(); i++) {
+    // // System.out.println(allTasks.get(i));
+    // observableTaskList.add(i + 1 + ". " + allTasks.get(i));
+    // }
+    //
+    // listProperty.set(observableTaskList);
+    // }
+
     /**
      * 
      */
@@ -286,7 +286,6 @@ public class RootLayoutController {
             logic = Logic.getLogic();
         }
 
-       
         listViewAll.setPlaceholder(new Label(MESSAGE_LISTVIEW_EMPTY));
 
         // retrieve all task and add into an ObservableList
@@ -294,7 +293,7 @@ public class RootLayoutController {
         observableTaskList.setAll(logic.getAllTasks());
         listViewAll.setItems(observableTaskList);
         listViewAll.setCellFactory(new Callback<ListView<Task>, ListCell<Task>>() {
-            
+
             @Override
             public ListCell<Task> call(ListView<Task> param) {
                 // TODO Auto-generated method stub
@@ -302,7 +301,6 @@ public class RootLayoutController {
             }
         });
 
-        
     }
 
     /**
@@ -468,6 +466,7 @@ public class RootLayoutController {
                     System.out.println(userInput);
 
                     if (userInput.length() == 0) {
+                        System.out.println("handleKeyStrokes: userInput length is 0");
                         showFeedback(false);
                         showResult(false, EMPTY_STRING);
                         clearFeedback();
@@ -497,32 +496,35 @@ public class RootLayoutController {
             @Override
             public void run() {
                 if (!isEditMode) {
-                    logic.executeCommand();
+                    if (commandBar.getText().trim().length() > 0) {
+                        System.out.println("Command bar Text length: " + commandBar.getLength());
+                        logic.executeCommand();
 
-                    // add operation
-                    if (!userCommand.equals(COMMAND_DELETE) && !userCommand.equals(COMMAND_DELETE_SHORTHAND)) {
-                        refreshListView();
-                        listViewAll.getSelectionModel().selectLast();
-                        listViewAll.scrollTo(allTasks.size() - 1);
+                        // add operation
+                        if (!userCommand.equals(COMMAND_DELETE) && !userCommand.equals(COMMAND_DELETE_SHORTHAND)) {
+                            refreshListView();
+                            listViewAll.getSelectionModel().selectLast();
+                            listViewAll.scrollTo(allTasks.size() - 1);
+                        } else {
+                            saveSelectedTaskIndex();
+                            refreshListView();
+                            restoreListViewPreviousSelection();
+                        }
+
                     } else {
+                        // something is wrong with this logic.editTask API
+                        logic.editTask(Logic.List.FLOATING, getSelectedTaskIndex());
                         saveSelectedTaskIndex();
                         refreshListView();
                         restoreListViewPreviousSelection();
                     }
 
-                } else {
-                    // something is wrong with this logic.editTask API
-                    logic.editTask(Logic.List.FLOATING, getSelectedTaskIndex());
-                    saveSelectedTaskIndex();
-                    refreshListView();
-                    restoreListViewPreviousSelection();
+                    showFeedback(false);
+                    clearFeedback();
+                    clearStoredUserInput();
+                    commandBar.clear();
+                    showUndoRedoButton();
                 }
-
-                showFeedback(false);
-                clearFeedback();
-                clearStoredUserInput();
-                commandBar.clear();
-                showUndoRedoButton();
 
             }
         });
@@ -628,7 +630,8 @@ public class RootLayoutController {
             return;
         }
 
-        String parseResult = logic.parseCommand(userInput, Logic.List.FLOATING);
+        String parseResult = logic.parseCommand(userInput, Logic.List.DATED);
+
         System.out.println("user arguments: " + userArguments);
         System.out.println("parse result: " + parseResult);
         String[] indexesToBeDeleted = parseResult.split(" ");
