@@ -32,6 +32,7 @@ public class Task {
     private String label;
     private Date startDate;
     private Date endDate;
+    private Date completedDate;
     
     public String getTitle() {
         return title;
@@ -59,6 +60,18 @@ public class Task {
     
     public Date getEndDate() {
         return endDate;
+    }
+    
+    public Date getCompletedDate() {
+        return this.completedDate;
+    }
+    
+    public void setIsCompleted() {
+        this.completedDate = new Date();
+    }
+    
+    public void setNotCompleted() {
+        this.completedDate = null;
     }
 
     public String toString() {

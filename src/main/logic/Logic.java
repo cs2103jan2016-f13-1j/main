@@ -335,7 +335,6 @@ public class Logic {
 			case DONE:
 			    redoHistory.push(undoCommand);
 			    previousTasks = undoCommand.getPreviousTasks();
-			    System.out.println("PREVIOUS TASK: " + previousTasks);
 			    for (int i = 0; i < previousTasks.size(); i++) {
                     markFromTask(ListType.COMPLETED, previousTasks.get(i), false);
                 }
@@ -371,7 +370,6 @@ public class Logic {
         for (int i = 0; i < tasks.size(); i++) {
             Task t = tasks.get(i);
             if (t.getTitle().equals(task.getTitle())) {
-                System.out.println("SETTING " + task.getTitle() + " AS: " + status);
                 t.setDone(status);
             }
         }
@@ -481,6 +479,13 @@ public class Logic {
             indexToMark--;
             Task task = tasks.get(indexToMark);
             task.setDone(status);
+            
+            if (status == true) {
+                task.setIsCompleted();
+            } else {
+                task.setNotCompleted();
+            }
+            
             previousTasks.add(task);
         }
         assert(command != null);
@@ -538,8 +543,18 @@ public class Logic {
             }
         });
 	    
-	    System.out.println("ALL TASK: " + allTasks);
-	    System.out.println("COMPLETED TASK: " + completedTasks);
+	    Collections.sort(completedTasks, new Comparator<Task>() {
+            public int compare(Task t1, Task t2) {
+                if (t2.getCompletedDate().compareTo(t1.getCompletedDate()) == 0) {
+                    //If both tasks are set completed at the same time, compare the titles
+                    return t1.getTitle().compareTo(t2.getTitle());
+                } else {
+                    //Return the tasks that was completed later first
+                    return t2.getCompletedDate().compareTo(t1.getCompletedDate());
+                }
+            }
+        });
+	    
 	    logger.log(Level.INFO,"Tasks sorted");
 	}
 	
