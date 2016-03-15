@@ -294,8 +294,12 @@ public class CommandParser {
 	private ArrayList<String> getPossibleDates(LocalDateTime dateTime) {
 		ArrayList<String> dates = new ArrayList<String>();
 		dates.add(Integer.toString(dateTime.getDayOfMonth()));
+		dates.add(dateTime.format(DateTimeFormatter.ofPattern("d/M")));
+		dates.add(dateTime.format(DateTimeFormatter.ofPattern("d/MM")));
 		dates.add(dateTime.format(DateTimeFormatter.ofPattern("dd/M")));
 		dates.add(dateTime.format(DateTimeFormatter.ofPattern("dd/MM")));
+		dates.add(dateTime.format(DateTimeFormatter.ofPattern("d-M")));
+		dates.add(dateTime.format(DateTimeFormatter.ofPattern("d-MM")));
 		dates.add(dateTime.format(DateTimeFormatter.ofPattern("dd-M")));
 		dates.add(dateTime.format(DateTimeFormatter.ofPattern("dd-MM")));
 		return dates;
