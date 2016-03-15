@@ -227,7 +227,8 @@ public class Logic {
                 indexArray = command.getIndexes();
                 
                 if (indexArray.size() == 1) {
-                    feedback = getTaskAtIndex(type, indexArray.get(0)).getTitle();
+                    int arrayIndex = indexArray.get(0) - 1;
+                    feedback = getTaskAtIndex(type, arrayIndex).getTitle();
                 } else {
                     String message = userCommand.toLowerCase();
                     String done = "done ";
@@ -334,14 +335,16 @@ public class Logic {
 			case DONE:
 			    redoHistory.push(undoCommand);
 			    previousTasks = undoCommand.getPreviousTasks();
+			    System.out.println("PREVIOUS TASK: " + previousTasks);
 			    for (int i = 0; i < previousTasks.size(); i++) {
-                    markFromTask(ListType.COMPLETED, undoCommand.getTask(), false);
+                    markFromTask(ListType.COMPLETED, previousTasks.get(i), false);
                 }
+			    break;
 			case UNDONE:
 			    redoHistory.push(undoCommand);
                 previousTasks = undoCommand.getPreviousTasks();
                 for (int i = 0; i < previousTasks.size(); i++) {
-                    markFromTask(ListType.COMPLETED, undoCommand.getTask(), true);
+                    markFromTask(ListType.COMPLETED, previousTasks.get(i), true);
                 }
 			default:
 				break;
@@ -368,6 +371,7 @@ public class Logic {
         for (int i = 0; i < tasks.size(); i++) {
             Task t = tasks.get(i);
             if (t.getTitle().equals(task.getTitle())) {
+                System.out.println("SETTING " + task.getTitle() + " AS: " + status);
                 t.setDone(status);
             }
         }
@@ -534,6 +538,8 @@ public class Logic {
             }
         });
 	    
+	    System.out.println("ALL TASK: " + allTasks);
+	    System.out.println("COMPLETED TASK: " + completedTasks);
 	    logger.log(Level.INFO,"Tasks sorted");
 	}
 	

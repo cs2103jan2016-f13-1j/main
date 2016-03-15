@@ -8,15 +8,10 @@ package test;
  *
  */
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 import org.junit.Before;
 import org.junit.Test;
 
-import main.data.Task;
 import main.logic.Logic;
 
 
@@ -26,14 +21,15 @@ public class TestLogic {
 	Logic logic = null;
 	
 	/*
-	 * Tests adding a task, undo, then redo
-	 * Tests editing a task, undo, then redo
-	 * Tests deleting a task, undo, then redo
-	 * Tests deleting multiple tasks, undo, then redo
+	 * Tests add a task, undo, then redo
+	 * Tests edit a task, undo, then redo
+	 * Tests delete a task, undo, then redo
+	 * Tests delete multiple tasks, undo, then redo
 	 */
 	@Test
 	public void allFunctionsTest() {
 	    String feedback = null;
+	    
 	    //Add task
 	    feedback = logic.parseCommand("first test task", Logic.ListType.ALL);
 	    assertEquals(feedback, "first test task");
@@ -48,7 +44,7 @@ public class TestLogic {
         logic.undo();
         logic.redo();
         
-        //Delete one task
+        //Delete a task
         feedback = logic.parseCommand("del 1", Logic.ListType.ALL);
         assertEquals(feedback, "edited task");
         logic.executeCommand();
@@ -80,8 +76,41 @@ public class TestLogic {
         logic.executeCommand();
 	}
 	
-	//@Test
+	/*
+     * Tests mark a task, undo, then redo
+     * Tests mark multiple tasks, undo, then redo
+     */
+	@Test
 	public void markTaskTest() {
+	    String feedback = null;
+	    
+	    //Mark a task
+	    logic.parseCommand("mark task", Logic.ListType.ALL);
+        logic.executeCommand();
+        feedback = logic.parseCommand("done 1", Logic.ListType.ALL);
+        assertEquals(feedback, "mark task");
+        logic.executeCommand();
+        logic.undo();
+        logic.redo();
+        feedback = logic.parseCommand("del 1", Logic.ListType.COMPLETED);
+        assertEquals(feedback, "mark task");
+        logic.executeCommand();
+        
+        //Mark multiple tasks
+        logic.parseCommand("mark task 1", Logic.ListType.ALL);
+        logic.executeCommand();
+        logic.parseCommand("mark task 2", Logic.ListType.ALL);
+        logic.executeCommand();
+        logic.parseCommand("mark task 3", Logic.ListType.ALL);
+        logic.executeCommand();
+        feedback = logic.parseCommand("done 1-2,3", Logic.ListType.ALL);
+        assertEquals(feedback, "1-2,3 (3 tasks)");
+        logic.executeCommand();
+        logic.undo();
+        logic.redo();
+        feedback = logic.parseCommand("delete 1-2,3", Logic.ListType.COMPLETED);
+        assertEquals(feedback, "1-2,3 (3 tasks)");
+        logic.executeCommand();
 	}
 	
 	//@Test
