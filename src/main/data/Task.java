@@ -74,7 +74,7 @@ public class Task {
     	int indexEndTime = 4;
     	int indexLabel = 5;
     	
-    	ArrayList<String> fields = getParameters();
+    	ArrayList<String> fields = getTaskFields();
     	String title = fields.get(indexTitle);
     	String startDate = fields.get(indexStartDate);
     	String startTime = fields.get(indexStartTime);
@@ -104,7 +104,7 @@ public class Task {
     }
     
     /**
-     * getParameters that is in task object.
+     * Get attributes that is in task object to form feedback
      * 
      * In order:
      * 0 - Title
@@ -116,7 +116,7 @@ public class Task {
      * 
      * @return ArrayList<String> of size 6
      */
-    private ArrayList<String> getParameters() {
+    private ArrayList<String> getTaskFields() {
         ArrayList<String> feedback = new ArrayList<String>();
 
         feedback.add(title);
