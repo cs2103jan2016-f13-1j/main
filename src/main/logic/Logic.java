@@ -2,7 +2,7 @@
  * Summary of public methods that can be called:
  * 
  * Controller();
- * parseCommand(String userCommand, String tab);
+ * parseCommand(String userCommand, ListType type);
  * editTask(Logic.List, int index);
  * executeCommand();
  * undo();
