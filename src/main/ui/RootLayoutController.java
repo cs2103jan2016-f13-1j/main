@@ -7,7 +7,6 @@ import com.sun.javafx.scene.control.skin.VirtualFlow;
 
 import javafx.application.Platform;
 import javafx.beans.property.ListProperty;
-import javafx.beans.property.SimpleListProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -466,7 +465,6 @@ public class RootLayoutController {
                     System.out.println(userInput);
 
                     if (userInput.length() == 0) {
-                        System.out.println("handleKeyStrokes: userInput length is 0");
                         showFeedback(false);
                         showResult(false, EMPTY_STRING);
                         clearFeedback();
@@ -479,7 +477,7 @@ public class RootLayoutController {
                     System.out.println(inputFeedback);
 
                 } else {
-                    logic.parseCommand(commandBar.getText(), Logic.List.FLOATING);
+                    logic.parseCommand(commandBar.getText(), Logic.ListType.ALL);
                 }
 
             }
@@ -513,7 +511,7 @@ public class RootLayoutController {
 
                     } else {
                         // something is wrong with this logic.editTask API
-                        logic.editTask(Logic.List.FLOATING, getSelectedTaskIndex());
+                        logic.editTask(Logic.ListType.ALL, getSelectedTaskIndex());
                         saveSelectedTaskIndex();
                         refreshListView();
                         restoreListViewPreviousSelection();
@@ -546,7 +544,7 @@ public class RootLayoutController {
 
             @Override
             public void run() {
-                logic.parseCommand(COMMAND_DELETE + WHITESPACE + (getSelectedTaskIndex() + 1), Logic.List.FLOATING);
+                logic.parseCommand(COMMAND_DELETE + WHITESPACE + (getSelectedTaskIndex() + 1), Logic.ListType.ALL);
                 logic.executeCommand();
                 saveSelectedTaskIndex();
                 refreshListView();
@@ -620,7 +618,7 @@ public class RootLayoutController {
      * 
      */
     private void parseAdd() {
-        inputFeedback = logic.parseCommand(userInput, null);
+        inputFeedback = logic.parseCommand(userInput, Logic.ListType.ALL);
         showFeedback(true, MESSAGE_FEEDBACK_ACTION_ADD, inputFeedback);
     }
 
@@ -630,7 +628,7 @@ public class RootLayoutController {
             return;
         }
 
-        String parseResult = logic.parseCommand(userInput, Logic.List.ALL);
+        String parseResult = logic.parseCommand(userInput, Logic.ListType.ALL);
         System.out.println("user arguments: " + userArguments);
         System.out.println("parse result: " + parseResult);
         String[] indexesToBeDeleted = parseResult.split(" ");

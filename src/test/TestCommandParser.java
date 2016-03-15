@@ -144,15 +144,19 @@ public class TestCommandParser {
     	CommandParser parser = new CommandParser();
     	Command command = parser.parse("Attempt quiz from 5pm 14 MARCH");
     	assertEquals("Attempt quiz", command.getTask().getTitle());  	
-    	assertEquals("Attempt quiz from today 5:00pm to today 6:00pm", command.getTask().toString());
+    	assertEquals("Attempt quiz from this Mon 5pm to 6pm", command.getTask().toString());
     	
     	command = parser.parse("Watch webcast after 3am on 15 MAR");
     	assertEquals("Watch webcast", command.getTask().getTitle());  	
-    	assertEquals("Watch webcast from this Tue 3:00am to this Tue 4:00am", command.getTask().toString());
+    	assertEquals("Watch webcast from this Tue 3am to 4am", command.getTask().toString());
     	
     	command = parser.parse("Watch movie at 7pm");
     	assertEquals("Watch movie", command.getTask().getTitle());
-    	assertEquals("Watch movie from today 7:00pm to today 8:00pm", command.getTask().toString());
+    	assertEquals("Watch movie from today 7pm to 8pm", command.getTask().toString());
+    	
+    	command = parser.parse("Watch movie at 7:15pm");
+    	assertEquals("Watch movie", command.getTask().getTitle());
+    	assertEquals("Watch movie from today 7:15pm to 8:15pm", command.getTask().toString());
     }
     
     @Test
@@ -166,25 +170,28 @@ public class TestCommandParser {
     	assertEquals("Cook dinner #home", command.getTask().toString());
 
     	command = parser.parse("Cook dinner 14/3 at 7pm #home");
-    	assertEquals("Cook dinner from today 7:00pm to today 8:00pm #home", command.getTask().toString());
+    	assertEquals("Cook dinner from this Mon 7pm to 8pm #home", command.getTask().toString());
 
     	command = parser.parse("Cook dinner on 15/3 7pm");
-    	assertEquals("Cook dinner from this Tue 7:00pm to this Tue 8:00pm", command.getTask().toString());
+    	assertEquals("Cook dinner from this Tue 7pm to 8pm", command.getTask().toString());
     	
     	command = parser.parse("Cook dinner on 24/3 7:15pm");
-    	assertEquals("Cook dinner from next Thu 7:15pm to next Thu 8:15pm", command.getTask().toString());
+    	assertEquals("Cook dinner from next Thu 7:15pm to 8:15pm", command.getTask().toString());
     	
     	command = parser.parse("Attend meeting on 26-3 7pm");
-    	assertEquals("Attend meeting from next Sat 7:00pm to next Sat 8:00pm", command.getTask().toString());
+    	assertEquals("Attend meeting from next Sat 7pm to 8pm", command.getTask().toString());
 
     	command = parser.parse("Attend meeting from 4 to 6pm on 25 Mar");
-    	assertEquals("Attend meeting from next Fri 4:00pm to next Fri 6:00pm",command.getTask().toString());
+    	assertEquals("Attend meeting from next Fri 4pm to 6pm",command.getTask().toString());
     	
     	command = parser.parse("Attend meeting 4 to 6pm on 25 Mar");
-    	assertEquals("Attend meeting from next Fri 4:00pm to next Fri 6:00pm",command.getTask().toString()); 
+    	assertEquals("Attend meeting from next Fri 4pm to 6pm",command.getTask().toString()); 
     	
     	command = parser.parse("Attend meeting on 1 April 9am");
-    	assertEquals("Attend meeting from 1 Apr 9:00am to 1 Apr 10:00am", command.getTask().toString());
+    	assertEquals("Attend meeting from 1 Apr 9am to 10am", command.getTask().toString());
+    	
+    	command = parser.parse("Go camp from 1/3 8am to 3/3 9pm");
+    	assertEquals("Go camp from 1 Mar 8am to 3 Mar 9pm", command.getTask().toString());
     }
     
     @Test
@@ -193,23 +200,22 @@ public class TestCommandParser {
         Command command = parser.parse("delete 1");
         
         ArrayList<Integer> indexes = new ArrayList<Integer>();
-        indexes.add(0);
+        indexes.add(1);
         assertEquals(Command.Type.DELETE, command.getCommandType());
         assertEquals(indexes, command.getIndexes());
         
         command = parser.parse("del 1,3,5,7,9");
         indexes.clear();
-        indexes.add(0);
-        indexes.add(2);
-        indexes.add(4);
-        indexes.add(6);
-        indexes.add(8);
+        indexes.add(1);
+        indexes.add(3);
+        indexes.add(5);
+        indexes.add(7);
+        indexes.add(9);
         assertEquals(Command.Type.DELETE, command.getCommandType());
         assertEquals(indexes, command.getIndexes());
         
         command = parser.parse("delete 1-10");
         indexes.clear();
-        indexes.add(0);
         indexes.add(1);
         indexes.add(2);
         indexes.add(3);
@@ -219,6 +225,7 @@ public class TestCommandParser {
         indexes.add(7);
         indexes.add(8);
         indexes.add(9);
+        indexes.add(10);
         assertEquals(indexes, command.getIndexes());
         
         command = parser.parse("delete 1-3,4,5,6-9,10");
@@ -231,23 +238,22 @@ public class TestCommandParser {
         Command command = parser.parse("done 1");
         
         ArrayList<Integer> indexes = new ArrayList<Integer>();
-        indexes.add(0);
+        indexes.add(1);
         assertEquals(Command.Type.DONE, command.getCommandType());
         assertEquals(indexes, command.getIndexes());
         
         command = parser.parse("done 1,3,5,7,9");
         indexes.clear();
-        indexes.add(0);
-        indexes.add(2);
-        indexes.add(4);
-        indexes.add(6);
-        indexes.add(8);
+        indexes.add(1);
+        indexes.add(3);
+        indexes.add(5);
+        indexes.add(7);
+        indexes.add(9);
         assertEquals(Command.Type.DONE, command.getCommandType());
         assertEquals(indexes, command.getIndexes());
         
         command = parser.parse("done 1-10");
         indexes.clear();
-        indexes.add(0);
         indexes.add(1);
         indexes.add(2);
         indexes.add(3);
@@ -257,9 +263,48 @@ public class TestCommandParser {
         indexes.add(7);
         indexes.add(8);
         indexes.add(9);
+        indexes.add(10);
         assertEquals(indexes, command.getIndexes());
         
         command = parser.parse("done 1-3,4,5,6-9,10");
+        assertEquals(indexes, command.getIndexes());
+    }
+    
+    @Test
+    public void testUndone() {
+        CommandParser parser = new CommandParser();
+        Command command = parser.parse("undone 1");
+        
+        ArrayList<Integer> indexes = new ArrayList<Integer>();
+        indexes.add(1);
+        assertEquals(Command.Type.UNDONE, command.getCommandType());
+        assertEquals(indexes, command.getIndexes());
+        
+        command = parser.parse("undone 1,3,5,7,9");
+        indexes.clear();
+        indexes.add(1);
+        indexes.add(3);
+        indexes.add(5);
+        indexes.add(7);
+        indexes.add(9);
+        assertEquals(Command.Type.UNDONE, command.getCommandType());
+        assertEquals(indexes, command.getIndexes());
+        
+        command = parser.parse("undone 1-10");
+        indexes.clear();
+        indexes.add(1);
+        indexes.add(2);
+        indexes.add(3);
+        indexes.add(4);
+        indexes.add(5);
+        indexes.add(6);
+        indexes.add(7);
+        indexes.add(8);
+        indexes.add(9);
+        indexes.add(10);
+        assertEquals(indexes, command.getIndexes());
+        
+        command = parser.parse("undone 1-3,4,5,6-9,10");
         assertEquals(indexes, command.getIndexes());
     }
 }

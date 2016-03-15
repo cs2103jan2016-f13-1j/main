@@ -17,21 +17,14 @@ import java.util.Locale;
  *
  */
 
-public class Task {
-	private final int INDEX_TITLE = 0;
-	private final int INDEX_START_DATE = 1;
-	private final int INDEX_START_TIME = 2;
-	private final int INDEX_END_DATE = 3;
-	private final int INDEX_END_TIME = 4;
-	private final int INDEX_LABEL = 5;
-	
-	
+public class Task {	
     private String title;
     private boolean done;
     private int priority;
     private String label;
     private Date startDate;
     private Date endDate;
+    private Date completedDate;
     
     public String getTitle() {
         return title;
@@ -60,28 +53,58 @@ public class Task {
     public Date getEndDate() {
         return endDate;
     }
+    
+    public Date getCompletedDate() {
+        return this.completedDate;
+    }
+    
+    public void setIsCompleted() {
+        this.completedDate = new Date();
+    }
+    
+    public void setNotCompleted() {
+        this.completedDate = null;
+    }
 
     public String toString() {
-       ArrayList<String> fields = getParameters();
-       String feedback = fields.get(INDEX_TITLE);
-       
-       if (fields.get(1) != null) {
-    	   feedback = feedback.concat(" from ").concat(fields.get(INDEX_START_DATE));
-    	   feedback = feedback.concat(" ").concat(fields.get(INDEX_START_TIME));
-    	   
-    	   feedback = feedback.concat(" to ").concat(fields.get(INDEX_END_DATE));
-    	   feedback = feedback.concat(" ").concat(fields.get(INDEX_END_TIME));    	  
-       }
-	   
-       if (fields.get(5) != null) {
-    	   feedback = feedback.concat(" #").concat(fields.get(INDEX_LABEL));
-       }
-       
-        return feedback;
+    	int indexTitle = 0;
+    	int indexStartDate = 1;
+    	int indexStartTime = 2;
+    	int indexEndDate = 3;
+    	int indexEndTime = 4;
+    	int indexLabel = 5;
+    	
+    	ArrayList<String> fields = getTaskFields();
+    	String title = fields.get(indexTitle);
+    	String startDate = fields.get(indexStartDate);
+    	String startTime = fields.get(indexStartTime);
+    	String endDate = fields.get(indexEndDate);
+    	String endTime = fields.get(indexEndTime);
+    	String label = fields.get(indexLabel);
+    	
+    	String feedback = title;
+
+    	if (startDate != null) {
+    		feedback = feedback.concat(" from ").concat(startDate);
+    		feedback = feedback.concat(" ").concat(startTime);
+    		
+    		if (!startDate.equals(endDate)) {
+    			feedback = feedback.concat(" to ").concat(endDate);
+    			feedback = feedback.concat(" ").concat(endTime); 
+    		} else {
+    			feedback = feedback.concat(" to ").concat(endTime);
+    		}   	  
+    	}
+
+    	if (label != null) {
+    		feedback = feedback.concat(" #").concat(label);
+    	}
+
+    	return feedback;
     }
     
     /**
-     * getParameters that is in task object.
+     * Get attributes that is in task object to form feedback
      * 
      * In order:
      * 0 - Title
@@ -93,7 +116,7 @@ public class Task {
      * 
      * @return ArrayList<String> of size 6
      */
-    public ArrayList<String> getParameters() {
+    private ArrayList<String> getTaskFields() {
         ArrayList<String> feedback = new ArrayList<String>();
 
         feedback.add(title);
@@ -186,7 +209,15 @@ public class Task {
     }
     
     private String convertTime(Date date) {
-	    SimpleDateFormat timeFormat = new SimpleDateFormat("h:mma");
+    	SimpleDateFormat timeFormat = new SimpleDateFormat("mm");
+    	String minute = timeFormat.format(date);
+ 
+    	if (minute.equals("00")){
+    		timeFormat = new SimpleDateFormat("ha");
+    	} else {
+    		timeFormat = new SimpleDateFormat("h:mma");
+    	}
+	     
 	    DateFormatSymbols symbols = new DateFormatSymbols(Locale.getDefault());
         symbols.setAmPmStrings(new String[] {"am", "pm"});
         timeFormat.setDateFormatSymbols(symbols);
@@ -279,6 +310,14 @@ public class Task {
         } else {
             return true;
         }
+    }
+    
+    public boolean isDone() {
+        return done;
+    }
+    
+    public boolean hasStarted() {
+        return (startDate.compareTo(new Date()) < 0);
     }
     
     private Task(TaskBuilder builder) {

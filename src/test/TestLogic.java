@@ -8,15 +8,10 @@ package test;
  *
  */
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 import org.junit.Before;
 import org.junit.Test;
 
-import main.data.Task;
 import main.logic.Logic;
 
 
@@ -25,116 +20,102 @@ public class TestLogic {
 	
 	Logic logic = null;
 	
-	//Edits task from different tabs
-	//@Test
-	public void editTaskTest() {
-		String title = "jUnit edit task";
-		String feedback = logic.parseCommand(title, null);
-		assertEquals(feedback,title);
-		logic.editTask(Logic.List.FLOATING, 0);
-		assertEquals(title,logic.getFloatingTasks().get(0).getTitle());
-	}
-	
-	//Retrieves tasks for next seven days
+	/*
+	 * Tests add a task, undo, then redo
+	 * Tests edit a task, undo, then redo
+	 * Tests delete a task, undo, then redo
+	 * Tests delete multiple tasks, undo, then redo
+	 */
 	@Test
-	public void getNextSevenDaysTest() {
-		for (Task t : logic.getThisWeek()) {
-			System.out.println(t.getTitle());
-		}
-	}
-	
-	//Retrieves today's tasks
-	@Test
-	public void getTodayTasksTest() {
-		SimpleDateFormat dateFormat = new SimpleDateFormat("ddMMyyyy");
-		String today = dateFormat.format(new Date());
-		
-		for (Task t : logic.getTodayTasks()) {
-			assertTrue(dateFormat.format(t.getEndDate()).equals(today));
-		}
-	}
-	
-
-	//Test parse add and delete. Adds 3 cook dinner tasks and deletes them
-	@Test
-	public void parseAddAndDeleteTaskTest() {
-		String feedback = null;
-		int lastIndex = -1;
-		
-		feedback = logic.parseCommand("cook dinner #home", null);
-		assertEquals(feedback,"cook dinner #home");
-		logic.executeCommand();
-		logic.executeCommand();
-		
-		feedback = logic.parseCommand("cook dinner", null);
-		assertEquals(feedback,"cook dinner");
-		logic.executeCommand();
-		
-		//delete last 3 floating tasks
-		lastIndex = logic.getFloatingTasks().size() - 1;
-		feedback = logic.parseCommand("delete " + lastIndex, Logic.List.FLOATING);
-        logic.executeCommand();
-		
-        lastIndex = logic.getFloatingTasks().size() - 1;
-		feedback = logic.parseCommand("delete " + (lastIndex-1) + "-" + lastIndex, Logic.List.FLOATING);
-		logic.executeCommand();
-		
-		//feedback = logic.parseCommand("delete 1", logic.Tab.TODAY);
-		//assertEquals(feedback,"delete from today");
-		//logic.executeCommand();
-	}
-	
-	@Test
-	public void undoAndRedoTest() {
-	    int lastIndex = -1;
+	public void allFunctionsTest() {
+	    String feedback = null;
 	    
-	    //undo and redo an add operation
-	    logic.parseCommand("undo task", Logic.List.FLOATING);
+	    //Add task
+	    feedback = logic.parseCommand("first test task", Logic.ListType.ALL);
+	    assertEquals(feedback, "first test task");
+	    logic.executeCommand();
+	    logic.undo();
+	    logic.redo();
+	    
+	    //Edit task
+	    feedback = logic.parseCommand("edited task", Logic.ListType.ALL);
+        assertEquals(feedback, "edited task");
+        logic.editTask(Logic.ListType.ALL, 1);
+        logic.undo();
+        logic.redo();
+        
+        //Delete a task
+        feedback = logic.parseCommand("del 1", Logic.ListType.ALL);
+        assertEquals(feedback, "edited task");
         logic.executeCommand();
         logic.undo();
         logic.redo();
         
-        
-        //undo a delete operation of one task
-        lastIndex = logic.getFloatingTasks().size() - 1;
-        logic.parseCommand("delete " + lastIndex, Logic.List.FLOATING);
+        //Delete multiple task
+        logic.parseCommand("c multiple task", Logic.ListType.ALL);
+        logic.executeCommand();
+        logic.parseCommand("b multiple task", Logic.ListType.ALL);
+        logic.executeCommand();
+        logic.parseCommand("a multiple task", Logic.ListType.ALL);
+        logic.executeCommand();
+        feedback = logic.parseCommand("del 1-2,3", Logic.ListType.ALL);
+        assertEquals(feedback, "1-2,3 (3 tasks)");
         logic.executeCommand();
         logic.undo();
         logic.redo();
         
-        //undo a delete operation of multiple task  
-        logic.parseCommand("undo task", Logic.List.FLOATING);
+        //Sorting test
+        feedback = logic.parseCommand("c multiple task by 8", Logic.ListType.ALL);
         logic.executeCommand();
+        feedback = logic.parseCommand("a multiple task by 10", Logic.ListType.ALL);
         logic.executeCommand();
-        
-        int secondLastIndex = logic.getFloatingTasks().size() - 2;
-        lastIndex = logic.getFloatingTasks().size() - 1;
-        
-        logic.parseCommand("delete " + secondLastIndex + "-" + lastIndex, Logic.List.FLOATING);
+        feedback = logic.parseCommand("b multiple task by 8", Logic.ListType.ALL);
         logic.executeCommand();
-        logic.undo();
-        logic.redo();
-        
-        //undo and redo an edit task
-        String title = "Floating task 0.1";
-        logic.parseCommand(title, null);
-        logic.editTask(Logic.List.FLOATING, 0);
-        logic.undo();
-        logic.redo();
+        feedback = logic.parseCommand("del 1-2,3", Logic.ListType.ALL);
+        assertEquals(feedback, "1-2,3 (3 tasks)");
+        logic.executeCommand();
 	}
 	
+	/*
+     * Tests mark a task, undo, then redo
+     * Tests mark multiple tasks, undo, then redo
+     */
 	@Test
 	public void markTaskTest() {
-        logic.parseCommand("done 1", Logic.List.FLOATING);
+	    String feedback = null;
+	    
+	    //Mark a task
+	    logic.parseCommand("mark task", Logic.ListType.ALL);
+        logic.executeCommand();
+        feedback = logic.parseCommand("done 1", Logic.ListType.ALL);
+        assertEquals(feedback, "mark task");
         logic.executeCommand();
         logic.undo();
         logic.redo();
+        feedback = logic.parseCommand("del 1", Logic.ListType.COMPLETED);
+        assertEquals(feedback, "mark task");
+        logic.executeCommand();
+        
+        //Mark multiple tasks
+        logic.parseCommand("mark task 1", Logic.ListType.ALL);
+        logic.executeCommand();
+        logic.parseCommand("mark task 2", Logic.ListType.ALL);
+        logic.executeCommand();
+        logic.parseCommand("mark task 3", Logic.ListType.ALL);
+        logic.executeCommand();
+        feedback = logic.parseCommand("done 1-2,3", Logic.ListType.ALL);
+        assertEquals(feedback, "1-2,3 (3 tasks)");
+        logic.executeCommand();
         logic.undo();
+        logic.redo();
+        feedback = logic.parseCommand("delete 1-2,3", Logic.ListType.COMPLETED);
+        assertEquals(feedback, "1-2,3 (3 tasks)");
+        logic.executeCommand();
 	}
 	
-	@Test
+	//@Test
 	public void setFilePathTest() {
-	    logic.setFileLocation("invalid\\path");
+	    logic.setFileLocation("invalid$path");
 	}
 	
 	@Before
