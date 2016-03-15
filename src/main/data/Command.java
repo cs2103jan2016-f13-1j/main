@@ -10,7 +10,7 @@ import java.util.ArrayList;
 public class Command {
     
     public static enum Type {
-        ADD, EDIT, DELETE, DONE
+        ADD, EDIT, DELETE, DONE, UNDONE
     }
     
     private Type commandType = null;

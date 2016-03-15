@@ -480,7 +480,7 @@ public class RootLayoutController {
                     System.out.println(inputFeedback);
 
                 } else {
-                    logic.parseCommand(commandBar.getText(), Logic.List.ALL);
+                    logic.parseCommand(commandBar.getText(), Logic.ListType.ALL);
                 }
 
             }
@@ -512,7 +512,7 @@ public class RootLayoutController {
 
                 } else {
                     // something is wrong with this logic.editTask API
-                    logic.editTask(Logic.List.ALL, getSelectedTaskIndex());
+                    logic.editTask(Logic.ListType.ALL, getSelectedTaskIndex());
                     saveSelectedTaskIndex();
                     refreshListView();
                     restoreListViewPreviousSelection();
@@ -544,7 +544,7 @@ public class RootLayoutController {
 
             @Override
             public void run() {
-                logic.parseCommand(COMMAND_DELETE + WHITESPACE + (getSelectedTaskIndex() + 1), Logic.List.ALL);
+                logic.parseCommand(COMMAND_DELETE + WHITESPACE + (getSelectedTaskIndex() + 1), Logic.ListType.ALL);
                 logic.executeCommand();
                 saveSelectedTaskIndex();
                 refreshListView();
@@ -618,7 +618,7 @@ public class RootLayoutController {
      * 
      */
     private void parseAdd() {
-        inputFeedback = logic.parseCommand(userInput, Logic.List.ALL);
+        inputFeedback = logic.parseCommand(userInput, Logic.ListType.ALL);
         showFeedback(true, MESSAGE_FEEDBACK_ACTION_ADD, inputFeedback);
     }
 
@@ -628,7 +628,7 @@ public class RootLayoutController {
             return;
         }
 
-        String parseResult = logic.parseCommand(userInput, Logic.List.ALL);
+        String parseResult = logic.parseCommand(userInput, Logic.ListType.ALL);
         System.out.println("user arguments: " + userArguments);
         System.out.println("parse result: " + parseResult);
         String[] indexesToBeDeleted = parseResult.split(" ");
@@ -674,7 +674,7 @@ public class RootLayoutController {
             return;
         }
 
-        String parseResult = logic.parseCommand("del 100", Logic.List.FLOATING);
+        String parseResult = logic.parseCommand("del 100", Logic.ListType.FLOATING);
         System.out.println(parseResult);
 
         int userIndex = 0;
@@ -694,7 +694,7 @@ public class RootLayoutController {
         } else {
             inputFeedback = allTasks.get(actualIndex).toString();
             showFeedback(true, MESSAGE_FEEDBACK_ACTION_DELETE, inputFeedback);
-            logic.parseCommand(COMMAND_DELETE + WHITESPACE + actualIndex, Logic.List.FLOATING);
+            logic.parseCommand(COMMAND_DELETE + WHITESPACE + actualIndex, Logic.ListType.FLOATING);
 
             // saveSelectedTaskIndex();
             // listView.getFocusModel().focus(actualIndex);

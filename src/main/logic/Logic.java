@@ -1,6 +1,4 @@
 /**
- * TO BE DONE: mark tasks as done, sorting
- * 
  * Summary of public methods that can be called:
  * 
  * Controller();
@@ -10,10 +8,8 @@
  * undo();
  * redo();
  * 
- * getFloatingTasks();
- * getDatedTasks();
- * getTodayTasks();
- * getThisWeek();
+ * getAllTasks();
+ * getCompletedTasks();
  * getFileLocation();
  * getUndoCount();
  * getRedoCount();
@@ -29,10 +25,13 @@ package main.logic;
  */
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.EmptyStackException;
 import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.ocpsoft.prettytime.shade.edu.emory.mathcs.backport.java.util.Collections;
 
 import main.data.Command;
 import main.data.Task;
@@ -41,16 +40,16 @@ import main.storage.Storage;
 
 public class Logic {
     
-    public static enum List {
-	    ALL, FLOATING, DATED, TODAY, THIS_WEEK
+    public static enum ListType {
+	    ALL, COMPLETED
 	}
 	
     private static final Logger logger = Logger.getLogger(Logic.class.getName());
     
 	private static Logic logic;
 	
-	private static final int FLOATING_TASKS_INDEX = 0;
-	private static final int DATED_TASKS_INDEX = 1;
+	private static final int ALL_TASKS_INDEX = 0;
+	private static final int COMPLETED_TASKS_INDEX = 1;
 	
 	private CommandParser parser = null;
 	private Storage storage = null;
@@ -58,9 +57,8 @@ public class Logic {
 	private Command command = null;
 	private Stack<Command> undoHistory = new Stack<Command>();
 	private Stack<Command> redoHistory = new Stack<Command>();
-	private ArrayList<Task> floatingTasks = new ArrayList<Task>();
-	
-    private ArrayList<Task> datedTasks = new ArrayList<Task>();
+	private ArrayList<Task> allTasks = new ArrayList<Task>();
+    private ArrayList<Task> completedTasks = new ArrayList<Task>();
     
     /**
 	 * Initializes a newly created {@code Controller} object.
@@ -70,11 +68,11 @@ public class Logic {
         storage = Storage.getStorage();
         assert(storage != null);
         
-        ArrayList<ArrayList<Task>> tasksFromStorage = storage.readTasks();;
-        floatingTasks = tasksFromStorage.get(FLOATING_TASKS_INDEX);
-        datedTasks = tasksFromStorage.get(DATED_TASKS_INDEX);
-        assert(floatingTasks != null);
-        assert(datedTasks != null);
+        ArrayList<ArrayList<Task>> tasksFromStorage = storage.readTasks();
+        allTasks = tasksFromStorage.get(ALL_TASKS_INDEX);
+        completedTasks = tasksFromStorage.get(COMPLETED_TASKS_INDEX);
+        assert(allTasks != null);
+        assert(completedTasks != null);
     }
     
     public static synchronized Logic getLogic() {
@@ -96,31 +94,22 @@ public class Logic {
 	 * @param 	index
 	 * 			the index of the task
 	 */
-	public void editTask(List type, int index) {
+	public void editTask(ListType type, int index) {
+	    int arrayIndex = index - 1;
 	    assert(command != null);
 	    command.setCommandType(Command.Type.EDIT);
 	    command.setPreviousTasks(new ArrayList<Task>());
-	    command.getPreviousTasks().add(getTaskAtIndex(type,index));
+	    command.getPreviousTasks().add(getTaskAtIndex(type,arrayIndex));
 	    command.setIndexes(new ArrayList<Integer>());
 	    command.getIndexes().add(index);
 	    
 	    assert(command.getTask() != null);
-		Task task = command.getTask();
-		
 		deleteTask(type,command.getIndexes());
+		addTask(type,command.getTask());
 		
-		//if no change in tab, edit in position
-		if (type.name().equals(command.getListType())) {
-		    addToList(type,index,task);
-		} else {
-		    if (task.hasDate()) {
-		        datedTasks.add(task);
-		    } else {
-		        floatingTasks.add(task);
-		    }
-		}
 		command.setPreviousListType(type.name());
-		logger.log(Level.INFO,"Edited index " + index + " to " + task.getTitle());
+		logger.log(Level.INFO,"Edited task at index " + index + " to " + command.getTask().getTitle());
+		sortTasks();
 		saveTasks();
 		addToHistory();
 	}
@@ -131,95 +120,63 @@ public class Logic {
 	 * 
 	 * Used for add and delete operations.
 	 */
-	public void executeCommand() {
+	public String executeCommand() {
+	    String feedback = null;
 	    assert(command != null);
+	    
+	    ListType type = Enum.valueOf(ListType.class, command.getListType());
 	    switch (command.getCommandType()) {
             case ADD:
-                addTask(Enum.valueOf(List.class, command.getListType()),command.getTask());
+                addTask(type,command.getTask());
+                feedback = "Task added!";
                 break;
             case DELETE:
-                deleteTask(Enum.valueOf(List.class, command.getListType()),command.getIndexes());
+                deleteTask(type,command.getIndexes());
+                feedback = "Task deleted!";
                 break;
             case DONE:
-                markTask(Enum.valueOf(List.class, command.getListType()),command.getIndexes(), true);
+                markTask(type,command.getIndexes(), true);
+                feedback = "Marked " + command.getIndexes().size() + " tasks as completed";
+                break;
+            case UNDONE:
+                markTask(type,command.getIndexes(), false);
+                feedback = "Marked " + command.getIndexes().size() + " tasks as uncompleted";
                 break;
             default:
                 break;
 	    }
 	    logger.log(Level.INFO,"Executed " + command.getCommandType().name() + " command");
+	    sortTasks();
 	    saveTasks();
 		addToHistory();
+		return feedback;
 	}
 	
 	/**
-	 * Combines all floating and dated tasks
+	 * Use to retrieve all tasks that are yet to be done
 	 * 
 	 * @return  the combined list of tasks
 	 */
 	public ArrayList<Task> getAllTasks() {
-		ArrayList<Task> tasks = new ArrayList<Task>();
-		tasks.addAll(floatingTasks);
-		tasks.addAll(datedTasks);
-		return tasks;
+		return allTasks;
 	}
 
     /**
-	 * Use to retrieve every task which has the date field
+	 * Use to retrieve every task which was marked as done, sorted in latest date first order
 	 * @return the list of tasks with dates
 	 */
-	public ArrayList<Task> getDatedTasks() {
-        return datedTasks;
+	public ArrayList<Task> getCompletedTasks() {
+        return completedTasks;
 	}
 
     public String getFileLocation() {
 		return storage.getFileLocation();
 	}
     
-    /**
-	 * @return the list of floating tasks
-	 */
-	public ArrayList<Task> getFloatingTasks() {
-        return floatingTasks;
-	}
-    
     public int getRedoCount() {
         return redoHistory.size();
     }
-	
-    /**
-	 * Creates a new list of tasks that are within the next seven days
-	 * of the current system date
-	 * 
-	 * @return the list of tasks due in the next seven days
-	 */
-	public ArrayList<Task> getThisWeek() {
-		ArrayList<Task> result = new ArrayList<Task>();
-		
-		for (Task task : getDatedTasks()) {
-		    if (task.isThisWeek()) {
-		        result.add(task);
-		    }
-		}
-		return result;
-	}
 
-    /**
-	 * Creates a new list of tasks that have the same date as the 
-	 * current system date
-	 * 
-	 * @return the list of tasks due today
-	 */
-	public ArrayList<Task> getTodayTasks() {
-		ArrayList<Task> result = new ArrayList<Task>();
-		
-		for (Task task : getDatedTasks()) {
-			if (task.isToday()) {
-				result.add(task);
-			}
-		}
-		return result;
-	}
-    
 	public int getUndoCount() {
 	    return undoHistory.size();
 	}
@@ -227,23 +184,18 @@ public class Logic {
     /**
 	 * Evaluates the given command and provide feedback
 	 * 
-	 * Examples of use: 
-     * add - parseCommand("cook dinner", null);
-     * add - parseCommand("cook dinner #home", Logic.List.FLOATING);
-     * delete - parseCommand("delete 5,6-7", Logic.List.FLOATING);
-	 * 
 	 * @param   userCommand 
 	 * 			the command to be evaluated
 	 * 
-	 * @param   tab 
-	 * 			the tab affected by the command
+	 * @param   type
+	 * 			the List which is related to the command
 	 * 
 	 * @return	feedback resulting from the evaluation of the command
 	 */
-	public String parseCommand(String userCommand, List type) {
+	public String parseCommand(String userCommand, ListType type) {
 	    String feedback = null;
 	    ArrayList<Integer> indexArray = null;
-	    StringBuilder indexes = null;
+	    String indexes = null;
 	    
 	    command = parser.parse(userCommand);
 	    assert(command != null);
@@ -255,25 +207,50 @@ public class Logic {
                 break;
             case DELETE:
                 indexArray = command.getIndexes();
-                indexes = new StringBuilder();
-                for (int i = 0; i < indexArray.size(); i++) {
-                    indexes.append(indexArray.get(i));
-                    if (i < indexArray.size() - 1) {
-                        indexes.append(" ");
+                
+                if (indexArray.size() == 1) {
+                    int arrayIndex = indexArray.get(0) - 1;
+                    feedback = getTaskAtIndex(type, arrayIndex).getTitle();
+                } else {
+                    String message = userCommand.toLowerCase();
+                    String del = "del ";
+                    String delete = "delete ";
+                    if (message.contains(del)) {
+                        indexes = message.substring(del.length());
+                    } else if (message.contains("delete")) {
+                        indexes = message.substring(delete.length());
                     }
+                    feedback = indexes + " " + "(" + indexArray.size() + " tasks)";
                 }
-                feedback = indexes.toString();
                 break;
             case DONE:
                 indexArray = command.getIndexes();
-                indexes = new StringBuilder();
-                for (int i = 0; i < indexArray.size(); i++) {
-                    indexes.append(indexArray.get(i));
-                    if (i < indexArray.size() - 1) {
-                        indexes.append(" ");
-                    }
+                
+                if (indexArray.size() == 1) {
+                    feedback = getTaskAtIndex(type, indexArray.get(0)).getTitle();
+                } else {
+                    String message = userCommand.toLowerCase();
+                    String done = "done ";
+                    if (message.contains(done)) {
+                        indexes = message.substring(done.length());
+                    } 
+                    feedback = indexes + " " + "(" + indexArray.size() + " tasks)";
                 }
-                feedback = indexes.toString();
+                break;
+            case UNDONE:
+                indexArray = command.getIndexes();
+                
+                if (indexArray.size() == 1) {
+                    feedback = getTaskAtIndex(type, indexArray.get(0)).getTitle();
+                } else {
+                    String message = userCommand.toLowerCase();
+                    String undone = "undone ";
+                    if (message.contains(undone)) {
+                        indexes = message.substring(undone.length());
+                    } 
+                    feedback = indexes + " " + "(" + indexArray.size() + " tasks)";
+                }
+                break;
             default:
                 break;
 		}
@@ -293,20 +270,25 @@ public class Logic {
 
         switch (redoCommand.getCommandType()) {
             case ADD:
-                addTask(Enum.valueOf(List.class, command.getListType()),command.getTask());             
+                addTask(Enum.valueOf(ListType.class, command.getListType()),command.getTask());
                 break;
             case EDIT:
-                editTask(Enum.valueOf(List.class, command.getPreviousListType()),command.getIndexes().get(0));
+                editTask(Enum.valueOf(ListType.class, command.getPreviousListType()),command.getIndexes().get(0));
                 break;
             case DELETE:
-                deleteTask(Enum.valueOf(List.class, command.getListType()),command.getIndexes());
+                deleteTask(Enum.valueOf(ListType.class, command.getListType()),command.getIndexes());
                 break;
             case DONE:
-                markTask(Enum.valueOf(List.class, command.getListType()),command.getIndexes(), true);
+                markTask(Enum.valueOf(ListType.class, command.getListType()),command.getIndexes(), true);
+                break;
+            case UNDONE:
+                markTask(Enum.valueOf(ListType.class, command.getListType()),command.getIndexes(), false);
+                break;
             default:
                 break;
         }
         logger.log(Level.INFO,"Redone " + command.getCommandType().name() + " command");
+        sortTasks();
         saveTasks();
 	}
 	
@@ -327,53 +309,103 @@ public class Logic {
 	    assert(undoHistory.size() > 0);
 	    
 		Command undoCommand = undoHistory.pop();
-		
-		List type = Enum.valueOf(List.class, undoCommand.getListType());
-		
-		ArrayList<Integer> indexes = null;
+		ListType type = Enum.valueOf(ListType.class, undoCommand.getListType());
+		ArrayList<Task> previousTasks = null;
 		
 		switch (undoCommand.getCommandType()) {
 			case ADD:
 			    redoHistory.push(undoCommand);
-			    ArrayList<Integer> indexToDelete = new ArrayList<Integer>();
-			    indexToDelete.add(getLastIndexOf(type));
-			    deleteTask(type,indexToDelete);
+                deleteFromList(ListType.ALL, undoCommand.getTask());
 				break;
 			case EDIT:
-			    Task previousTask = undoCommand.getPreviousTasks().get(0);
-			    indexes = undoCommand.getIndexes();
-			    deleteTask(type,indexes);
-			    addToList(Enum.valueOf(List.class, undoCommand.getPreviousListType()),indexes.get(0),previousTask);
 			    undoCommand.setListType(type.name());
-			    redoHistory.push(undoCommand);
+                redoHistory.push(undoCommand);
+			    Task previousTask = undoCommand.getPreviousTasks().get(0);
+			    deleteFromList(type, undoCommand.getTask());
+		        addTask(type, previousTask);
                 break;
 			case DELETE:
 			    redoHistory.push(undoCommand);
-			    ArrayList<Task> previousTasks = undoCommand.getPreviousTasks();
-			    indexes = undoCommand.getIndexes();
+			    previousTasks = undoCommand.getPreviousTasks();
 			    for (int i = 0; i < previousTasks.size(); i++) {
-			        addToList(type, indexes.get(i), previousTasks.get(i));
+			        addTask(type, previousTasks.get(i));
 			    }
 				break;
 			case DONE:
 			    redoHistory.push(undoCommand);
-			    indexes = undoCommand.getIndexes();
-			    for (int i = 0; i < indexes.size(); i++) {
-			        markTask(Enum.valueOf(List.class, undoCommand.getListType()),undoCommand.getIndexes(), false);
+			    previousTasks = undoCommand.getPreviousTasks();
+			    for (int i = 0; i < previousTasks.size(); i++) {
+                    markFromTask(ListType.COMPLETED, undoCommand.getTask(), false);
+                }
+			case UNDONE:
+			    redoHistory.push(undoCommand);
+                previousTasks = undoCommand.getPreviousTasks();
+                for (int i = 0; i < previousTasks.size(); i++) {
+                    markFromTask(ListType.COMPLETED, undoCommand.getTask(), true);
                 }
 			default:
 				break;
 		}
 		logger.log(Level.INFO,"Undone " + undoCommand.getCommandType().name() + " command");
+		sortTasks();
 		saveTasks();
 	}
 
-	private void addTask(List type, Task task) {
-		if (task.hasDate()) {
-		    datedTasks.add(task);
-        } else {
-            floatingTasks.add(task);
+    private void markFromTask(ListType type, Task task, boolean status) {
+        ArrayList<Task> tasks = new ArrayList<Task>();
+        
+        switch (type) {
+            case ALL:
+                tasks = allTasks;
+                break;
+            case COMPLETED:
+                tasks = completedTasks;
+                break;
+            default:
+                break;
         }
+        
+        for (int i = 0; i < tasks.size(); i++) {
+            Task t = tasks.get(i);
+            if (t.getTitle().equals(task.getTitle())) {
+                t.setDone(status);
+            }
+        }
+    }
+
+    private void deleteFromList(ListType type, Task task) {
+        ArrayList<Task> tasks = new ArrayList<Task>();
+        
+        switch (type) {
+            case ALL:
+                tasks = allTasks;
+                break;
+            case COMPLETED:
+                tasks = completedTasks;
+                break;
+            default:
+                break;
+        }
+        
+        for (int i = 0; i < tasks.size(); i++) {
+            Task t = tasks.get(i);
+            if (t.getTitle().equals(task.getTitle())) {
+                tasks.remove(i);
+            }
+        }
+    }
+
+	private void addTask(ListType type, Task task) {
+	    switch (type) {
+            case ALL:
+                allTasks.add(task);
+                break;
+            case COMPLETED:
+                completedTasks.add(task);
+                break;
+            default:
+                break;
+	    }
 	}
 	
 	private void addToHistory() {
@@ -382,102 +414,26 @@ public class Logic {
 		redoHistory = new Stack<Command>();
     }
 	
-	private void addToList(List type, int index, Task task) {
+	private void deleteTask(ListType type, ArrayList<Integer> indexes) {
 		switch (type) {
 		    case ALL:
-		        if (task.hasDate()) {
-		            datedTasks.add(index, task);
-		        } else {
-		            floatingTasks.add(index, task);
-		        }
+		        deleteTasksFromList(allTasks, indexes);
+				break;
+		    case COMPLETED:
+		        deleteTasksFromList(completedTasks, indexes);
 		        break;
-			case TODAY:
-                addToToday(index, task);
-			case THIS_WEEK:
-                addToThisWeek(index, task);
 			default:
 				break;
 		}
 	}
 	
-	private void addToThisWeek(int index, Task task) {
-        ArrayList<Task> temp = new ArrayList<Task>();
-        ArrayList<Task> newThisWeekTasks = getThisWeek();
-        newThisWeekTasks.add(index,task);
-        temp.addAll(getTodayTasks());
-        temp.addAll(newThisWeekTasks);
-        datedTasks = new ArrayList<Task>();
-        for (Task t : temp) {
-            datedTasks.add(t);
-        }
-    }
-	
-   private void addToToday(int index, Task task) {
-        ArrayList<Task> temp = new ArrayList<Task>();
-        ArrayList<Task> newTodayTasks = getTodayTasks();
-        newTodayTasks.add(index,task);
-        temp.addAll(newTodayTasks);
-        temp.addAll(getThisWeek());
-        datedTasks = new ArrayList<Task>();
-        for (Task t : temp) {
-            datedTasks.add(t);
-        }
-   }
-
-	private void deleteTask(List type, ArrayList<Integer> indexes) {
-		switch (type) {
-		    case ALL:
-		        deleteTasksFromAll(indexes);
-				break;
-			case TODAY:
-                deleteTasksFromToday(indexes);
-                break;
-			case THIS_WEEK:
-			    deleteTasksFromThisWeek(indexes);
-			    break;
-			default:
-				break;
-		}
-	}
-	
-	private ArrayList<Task> deleteTasksFromList(ArrayList<Task> list, ArrayList<Integer> indexes) {
-		int j = 0;
-		ArrayList<Task> previousTasks = new ArrayList<Task>();
-		for (int i = 0; i < indexes.size(); i++) {
-		    int indexToDelete = indexes.get(i-j);
-		    Task removedTask = list.remove(indexToDelete);
-		    previousTasks.add(removedTask);
-		    j++;
-		}
-		assert(command != null);
-		command.setPreviousTasks(previousTasks);
-		return list;
-	}
-	
-	private void deleteTasksFromAll(ArrayList<Integer> indexes) {
-	    ArrayList<Integer> floatingIndexes = new ArrayList<Integer>();
-        ArrayList<Integer> datedIndexes = new ArrayList<Integer>();
-        int size = floatingTasks.size();
-        for (int i : indexes) {
-            if (i < size) {
-                floatingIndexes.add(i);
-            } else {
-                datedIndexes.add(i - size);
-            }
-        }
-        
+	private void deleteTasksFromList(ArrayList<Task> tasks, ArrayList<Integer> indexes) {
         int j = 0;
         ArrayList<Task> previousTasks = new ArrayList<Task>();
-        for (int i = 0; i < floatingIndexes.size(); i++) {
-            int indexToDelete = floatingIndexes.get(i-j);
-            Task removedTask = floatingTasks.remove(indexToDelete);
-            previousTasks.add(removedTask);
-            j++;
-        }
-        j = 0;
-        for (int i = 0; i < datedIndexes.size(); i++) {
-            int indexToDelete = datedIndexes.get(i-j);
-            Task removedTask = datedTasks.remove(indexToDelete);
+        for (int i = 0; i < indexes.size(); i++) {
+            int indexToDelete = indexes.get(i-j);
+            indexToDelete--;
+            Task removedTask = tasks.remove(indexToDelete);
             previousTasks.add(removedTask);
             j++;
         }
@@ -485,157 +441,108 @@ public class Logic {
         command.setPreviousTasks(previousTasks);
     }
 	
-	private void deleteTasksFromThisWeek(ArrayList<Integer> indexes) {
-        ArrayList<Task> temp = new ArrayList<Task>();
-        ArrayList<Task> newThisWeekTasks = deleteTasksFromList(getThisWeek(), indexes);
-        temp.addAll(getTodayTasks());
-        temp.addAll(newThisWeekTasks);
-        datedTasks = new ArrayList<Task>();
-        for (Task task : temp) {
-        	datedTasks.add(task);
-        }
-    }
-	
-	private void deleteTasksFromToday(ArrayList<Integer> indexes) {
-        ArrayList<Task> temp = new ArrayList<Task>();
-        ArrayList<Task> newTodayTasks = deleteTasksFromList(getTodayTasks(), indexes);
-        temp.addAll(newTodayTasks);
-        temp.addAll(getThisWeek());
-        datedTasks = new ArrayList<Task>();
-        for (Task task : temp) {
-        	datedTasks.add(task);
-        }
-    }
-	
-	private int getLastIndexOf(List type) {
-	    int index = 0;
-	    
-	    switch (type) {
-    	    case ALL:
-    	        index = getAllTasks().size();
-    	        break;
-    	    case FLOATING:
-                index = floatingTasks.size();
-                break;
-            case DATED:
-                index = datedTasks.size();
-                break;
-            case TODAY:
-                index = getTodayTasks().size();
-            case THIS_WEEK:
-                index = getThisWeek().size();
-            default:
-                break;
-	    }
-	    index--;
-	    return index;
-	}
-
-	private Task getTaskAtIndex(List type, int index) {
-            Task task = null;
-            
-            switch (type) {
-                case FLOATING:
-                    task = floatingTasks.get(index);
-                    break;
-                case DATED:
-                    task = datedTasks.get(index);
-                    break;
-                case TODAY:
-                    task = getTodayTasks().get(index);
-                case THIS_WEEK:
-                    task = getThisWeek().get(index);
-                default:
-                    break;
-            }
-            return task;
-        }
-	
-	private void markTask(List type, ArrayList<Integer> indexes, boolean status) {
+	private Task getTaskAtIndex(ListType type, int index) {
+        Task task = null;
+        
         switch (type) {
             case ALL:
-                markTasksFromAll(indexes, status);
+                task = allTasks.get(index);
                 break;
-            case TODAY:
-                markTasksFromToday(indexes, status);
+            case COMPLETED:
+                task = completedTasks.get(index);
                 break;
-            case THIS_WEEK:
-                markTasksFromThisWeek(indexes, status);
+            default:
                 break;
+        }
+        return task;
+    }
+	
+	private void markTask(ListType type, ArrayList<Integer> indexes, boolean status) {
+        switch (type) {
+            case ALL:
+                markTasksFromList(allTasks, indexes, status);
+                break;
+            case COMPLETED:
+                markTasksFromList(completedTasks, indexes, status);
+                break;    
             default:
                 break;
         }
     }
 	
-	private ArrayList<Task> markTasksFromList(ArrayList<Task> list, ArrayList<Integer> indexes, boolean status) {
+	private void markTasksFromList(ArrayList<Task> tasks, ArrayList<Integer> indexes, boolean status) {
         ArrayList<Task> previousTasks = new ArrayList<Task>();
         for (int i = 0; i < indexes.size(); i++) {
             int indexToMark = indexes.get(i);
-            Task task = list.get(indexToMark);
+            indexToMark--;
+            Task task = tasks.get(indexToMark);
             task.setDone(status);
             previousTasks.add(task);
         }
         assert(command != null);
         command.setPreviousTasks(previousTasks);
-        return list;
     }
 	
-   private void markTasksFromAll(ArrayList<Integer> indexes, boolean status) {
-        ArrayList<Integer> floatingIndexes = new ArrayList<Integer>();
-        ArrayList<Integer> datedIndexes = new ArrayList<Integer>();
-        int size = floatingTasks.size();
-        for (int i : indexes) {
-            if (i < size) {
-                floatingIndexes.add(i);
-            } else {
-                datedIndexes.add(i - size);
-            }
-        }
+	private void sortTasks() {
+	    ArrayList<Task> combinedTasks = new ArrayList<Task>();
+	    combinedTasks.addAll(allTasks);
+	    combinedTasks.addAll(completedTasks);
+	    allTasks = new ArrayList<Task>();
+	    completedTasks = new ArrayList<Task>();
         
-        ArrayList<Task> previousTasks = new ArrayList<Task>();
-        for (int i = 0; i < floatingIndexes.size(); i++) {
-            int indexToMark = floatingIndexes.get(i);
-            Task task = floatingTasks.get(indexToMark);
-            task.setDone(status);
-            previousTasks.add(task);
-        }
-        for (int i = 0; i < datedIndexes.size(); i++) {
-            int indexToMark = datedIndexes.get(i);
-            Task task = datedTasks.get(indexToMark);
-            task.setDone(status);
-            previousTasks.add(task);
-        }
-        assert(command != null);
-        command.setPreviousTasks(previousTasks);
-    }
-	
-	private void markTasksFromThisWeek(ArrayList<Integer> indexes, boolean status) {
-        ArrayList<Task> temp = new ArrayList<Task>();
-        ArrayList<Task> newThisWeekTasks = markTasksFromList(getThisWeek(), indexes, status);
-        temp.addAll(getTodayTasks());
-        temp.addAll(newThisWeekTasks);
-        datedTasks = new ArrayList<Task>();
-        for (Task task : temp) {
-            datedTasks.add(task);
-        }
-    }
-	
-	private void markTasksFromToday(ArrayList<Integer> indexes, boolean status) {
-        ArrayList<Task> temp = new ArrayList<Task>();
-        ArrayList<Task> newTodayTasks = markTasksFromList(getTodayTasks(), indexes, status);
-        temp.addAll(newTodayTasks);
-        temp.addAll(getThisWeek());
-        datedTasks = new ArrayList<Task>();
-        for (Task task : temp) {
-            datedTasks.add(task);
-        }
-    }
+	    //Separate the two types of tasks
+	    for (Task task : combinedTasks) {
+	        if (task.isDone()) {
+	            completedTasks.add(task);
+	        } else {
+	            allTasks.add(task);
+	        }
+	    }
+	    
+	    Collections.sort(allTasks, new Comparator<Task>() {
+            public int compare(Task t1, Task t2) {
+                if (!t1.hasDate() && !t2.hasDate()) {
+                    //If both are floating tasks, compare the titles
+                    return t1.getTitle().compareTo(t2.getTitle());
+                } else if (!t1.hasDate() && t2.hasDate()) {
+                    //If one is floating and the other is dated, return the floating task
+                    return -1;
+                } else if (t1.hasDate() && !t2.hasDate()) {
+                    //If one is floating and the other is dated, return the floating task
+                    return 1;
+                } else {
+                    //Both tasks has date
+                    if (t1.hasStarted() && t2.hasStarted()) {
+                        if (t1.getEndDate().compareTo(t2.getEndDate()) == 0) {
+                            return t1.getTitle().compareTo(t2.getTitle());
+                        } else {
+                            //If both tasks already started, return earlier deadline first
+                            return t1.getEndDate().compareTo(t2.getEndDate());
+                        }
+                    } else if (!t1.hasStarted() && !t2.hasStarted()) {
+                        //If both have not started yet
+                        return t1.getEndDate().compareTo(t2.getEndDate());
+                    } else if (t1.hasStarted()) {
+                        return -1;
+                    } else if (t2.hasStarted()) {
+                        return 1;
+                    } else {
+                        System.out.println("FAIL TO COMPARE");
+                        return 0;
+                    }
+                }
+            }
+        });
+	    
+	    logger.log(Level.INFO,"Tasks sorted");
+	}
 	
 	private void saveTasks() {
 		try {
+		    logger.log(Level.INFO,"Saving tasks");
 			ArrayList<ArrayList<Task>> tasks = new ArrayList<ArrayList<Task>>();
-			tasks.add(floatingTasks);
-			tasks.add(datedTasks);
+			tasks.add(allTasks);
+			tasks.add(completedTasks);
 			storage.writeTasks(tasks);
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();

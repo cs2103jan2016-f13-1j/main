@@ -281,6 +281,14 @@ public class Task {
         }
     }
     
+    public boolean isDone() {
+        return done;
+    }
+    
+    public boolean hasStarted() {
+        return (startDate.compareTo(new Date()) < 0);
+    }
+    
     private Task(TaskBuilder builder) {
         this.title = builder.title;
         this.done = builder.done;

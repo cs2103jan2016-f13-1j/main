@@ -41,6 +41,7 @@ public class CommandParser {
     private final int LENGTH_DEL = 3;
     private final int LENGTH_DELETE = 6;
     private final int LENGTH_DONE = 4;
+    private final int LENGTH_UNDONE = 6;
     private final int LENGTH_OFFSET = 1;
     private final int INDEX_OFFSET = 1;
 
@@ -71,6 +72,8 @@ public class CommandParser {
             return Command.Type.DELETE;
         } else if (command.equalsIgnoreCase("done")) {
         	return Command.Type.DONE;
+        } else if (command.equalsIgnoreCase("undone")) {
+            return Command.Type.UNDONE;
         } else {
         	//add does not require a command
         	return Command.Type.ADD;
@@ -78,7 +81,7 @@ public class CommandParser {
     }
     
     private Command commandPreparations(Type type, String commandString) {
-    	assert(type.equals(Command.Type.ADD) || type.equals(Command.Type.DELETE) || type.equals(Command.Type.DONE));
+    	assert(type.equals(Command.Type.ADD) || type.equals(Command.Type.DELETE) || type.equals(Command.Type.DONE) || type.equals(Command.Type.UNDONE));
         switch (type) {
             case ADD :
                 return prepareForAdd(type, commandString);
@@ -88,6 +91,9 @@ public class CommandParser {
                 
             case DONE :
             	return prepareIndexes(type, commandString);
+            	
+            case UNDONE :
+                return prepareIndexes(type, commandString);
             	
             default :
             	logger.log(Level.WARNING, "Command type not detected. Null returned.");
@@ -486,6 +492,8 @@ public class CommandParser {
             index = LENGTH_DEL;
         } else if (command.matches("done")) {
         	index = LENGTH_DONE;
+        } else if (command.matches("undone")) {
+            index = LENGTH_UNDONE;
         }
         index = index + LENGTH_OFFSET;
         
@@ -524,7 +532,7 @@ public class CommandParser {
 	                }
 	                
 	                for (int k = rangedIndexes.get(0); k <= rangedIndexes.get(1); k++) {
-	                    multipleIndexes.add(k - INDEX_OFFSET);
+	                    multipleIndexes.add(k);
 	                }
 	                
 	                tempRangedIndexes.clear();
@@ -532,7 +540,6 @@ public class CommandParser {
 	            } else {
 	            	int indexToAdd;
 	            	indexToAdd = Integer.parseInt(indexes.get(i));
-	            	indexToAdd = indexToAdd - INDEX_OFFSET;
 	                multipleIndexes.add(indexToAdd);
 	            }
 	        }
