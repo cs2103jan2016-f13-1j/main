@@ -35,7 +35,7 @@ public class CommandParser {
     private final String STRING_AM = "am";
     private final String STRING_PM = "pm";
     private final String STRING_TWELVE = "12";
-    private final String NOW = "NOW";
+    private final String STRING_NOW = "NOW";
     private final int ONE_HOUR = 1;
     private final int DOUBLE_DIGIT = 10;
     private final int LENGTH_DEL = 3;
@@ -256,7 +256,7 @@ public class CommandParser {
     }
     
     private Date getCurrentDate() {
-    	return parseDate(NOW).get(DATE_INDEX);
+    	return parseDate(STRING_NOW).get(DATE_INDEX);
     }
     
     /**
