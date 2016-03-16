@@ -24,13 +24,15 @@ public class Task {
     private String label = null;
     private boolean done = false;
     private int priority = 0;
-    private Date completedDate;
+    private Date createdDate = null;
+    private Date completedDate = null;
 
-    public Task(String title, Date startDate, Date endDate, String label) {
+    public Task(String title, Date startDate, Date endDate, String label, Date createdDate) {
     	this.title = title;
     	this.startDate = startDate;
     	this.endDate = endDate;
     	this.label = label;
+    	this.createdDate = createdDate;
     }
     
     public String getTitle() {
@@ -75,6 +77,10 @@ public class Task {
     
     public void setNotCompleted() {
         this.completedDate = null;
+    }
+    
+    public Date getCreatedDate() {
+        return createdDate;
     }
 
     public String toString() {
@@ -236,6 +242,11 @@ public class Task {
     }
     
     public int compareTo(Task task) {
+
+        if (!createdDate.equals(task.getCreatedDate())) {
+            return -1;
+        }
+        
     	if (!title.equals(task.getTitle())) {
     		return -1;
     	}
@@ -253,7 +264,6 @@ public class Task {
     	if (!(label == task.getLabel() || label != null && this.label.equals(task.getLabel()))) {
     		return -1;
     	}
-    	
     	return 0;
     }
     

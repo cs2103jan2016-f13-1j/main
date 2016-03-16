@@ -393,6 +393,7 @@ public class Logic {
             Task t = tasks.get(i);
             if (t.compareTo(task) == 0) {
                 tasks.remove(i);
+                i--;
             }
         }
     }

@@ -465,7 +465,7 @@ public class CommandParser {
     }
 
     private Task buildTask(String title, Date startDate, Date endDate, String label) {
-        Task task = new Task(title, startDate, endDate, label);
+        Task task = new Task(title, startDate, endDate, label, new Date());
         return task;
     }
     
