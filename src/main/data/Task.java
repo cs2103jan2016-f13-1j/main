@@ -17,17 +17,36 @@ import java.util.Locale;
  *
  */
 
-public class Task {	
-    private String title;
-    private boolean done;
-    private int priority;
-    private String label;
-    private Date startDate;
-    private Date endDate;
+public class Task {	   
+    private String title = null;
+    private Date startDate = null;
+    private Date endDate = null;
+    private String label = null;
+    private boolean done = false;
+    private int priority = 0;
     private Date completedDate;
+
+    public Task(String title, Date startDate, Date endDate, String label) {
+    	this.title = title;
+    	this.startDate = startDate;
+    	this.endDate = endDate;
+    	this.label = label;
+    }
     
     public String getTitle() {
         return title;
+    }
+    
+    public Date getStartDate() {
+        return startDate;
+    }
+    
+    public Date getEndDate() {
+        return endDate;
+    }
+    
+    public String getLabel() {
+        return label;
     }
     
     public boolean getDone() {
@@ -42,16 +61,8 @@ public class Task {
         return priority;
     }
     
-    public String getLabel() {
-        return label;
-    }
-    
-    public Date getStartDate() {
-        return startDate;
-    }
-    
-    public Date getEndDate() {
-        return endDate;
+    public void setPriority(int priority) {
+    	this.priority = priority;
     }
     
     public Date getCompletedDate() {
@@ -224,6 +235,29 @@ public class Task {
 	    return timeFormat.format(date);
     }
     
+    public int compareTo(Task task) {
+    	if (!this.title.equals(task.getTitle())) {
+    		return -1;
+    	}
+    	
+    	if (!(this.startDate == task.getStartDate() || 
+    			this.startDate != null && this.startDate.equals(task.getStartDate()))) {
+    		return -1;
+    	}
+    
+    	if (!(this.endDate == task.getEndDate() || 
+    			this.endDate != null && this.endDate.equals(task.getEndDate()))) {
+    		return -1;
+    	}
+    	
+    	if (!(this.label == task.getLabel() || 
+    		this.label != null && this.label.equals(task.getLabel()))) {
+    		return -1;
+    	}
+    	
+    	return 0;
+    }
+    
     public boolean isThisWeek() {
         Date tomorrow = getTomorrow();
         Date eighthDay = getEigthDay();
@@ -318,56 +352,5 @@ public class Task {
     
     public boolean hasStarted() {
         return (startDate.compareTo(new Date()) < 0);
-    }
-    
-    private Task(TaskBuilder builder) {
-        this.title = builder.title;
-        this.done = builder.done;
-        this.priority = builder.priority;
-        this.label = builder.label;
-        this.startDate = builder.startDate;
-        this.endDate = builder.endDate;
-    }
-    
-    public static class TaskBuilder {
-        private String title = null;
-        private boolean done = false;
-        private int priority = 0;
-        private String label = null;
-        private Date startDate = null;
-        private Date endDate = null;
-        
-        public TaskBuilder (String title) {
-            this.title = title;
-        }
-        
-        public TaskBuilder setDone(boolean done) {
-            this.done = done;
-            return this;
-        }
-        
-        public TaskBuilder setPriority(int priority) {
-            this.priority = priority;
-            return this;
-        }
-        
-        public TaskBuilder setLabel(String label) {
-            this.label = label;
-            return this;
-        }
-        
-        public TaskBuilder setStartDate(Date startDate) {
-            this.startDate = startDate;
-            return this;
-        }
-        
-        public TaskBuilder setEndDate(Date endDate) {
-            this.endDate = endDate;
-            return this;
-        }
-        
-        public Task build() {
-            return new Task(this);
-        }
     }
 }
