@@ -87,9 +87,7 @@ public class Task {
     	if (startDate != null) {
     		feedback.append(" from " + startDate);
     		feedback.append(" " + startTime);
-    		
-    		
-    		
+
     		if (!startDate.equals(endDate)) {
     			feedback.append(" to " + endDate);
     			feedback.append(" " + endTime);
