@@ -312,6 +312,7 @@ public class Logic {
 	    assert(undoHistory.size() > 0);
 	    
 		Command undoCommand = undoHistory.pop();
+		
 		ListType type = Enum.valueOf(ListType.class, undoCommand.getListType());
 		ArrayList<Task> previousTasks = null;
 		
@@ -390,7 +391,7 @@ public class Logic {
         
         for (int i = 0; i < tasks.size(); i++) {
             Task t = tasks.get(i);
-            if (t.getTitle().equals(task.getTitle())) {
+            if (t.compareTo(task) == 0) {
                 tasks.remove(i);
             }
         }
