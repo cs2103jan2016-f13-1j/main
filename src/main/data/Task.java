@@ -236,22 +236,21 @@ public class Task {
     }
     
     public int compareTo(Task task) {
-    	if (!this.title.equals(task.getTitle())) {
+    	if (!title.equals(task.getTitle())) {
     		return -1;
     	}
     	
-    	if (!(this.startDate == task.getStartDate() || 
-    			this.startDate != null && this.startDate.equals(task.getStartDate()))) {
+    	if (!(startDate == task.getStartDate() || 
+    			startDate != null && startDate.equals(task.getStartDate()))) {
     		return -1;
     	}
     
-    	if (!(this.endDate == task.getEndDate() || 
-    			this.endDate != null && this.endDate.equals(task.getEndDate()))) {
+    	if (!(endDate == task.getEndDate() || 
+    			endDate != null && endDate.equals(task.getEndDate()))) {
     		return -1;
     	}
     	
-    	if (!(this.label == task.getLabel() || 
-    		this.label != null && this.label.equals(task.getLabel()))) {
+    	if (!(label == task.getLabel() || label != null && this.label.equals(task.getLabel()))) {
     		return -1;
     	}
     	
