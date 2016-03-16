@@ -67,17 +67,20 @@ public class CommandParser {
     }
     
     private Type getCommandType(String command) {
-    	assert(!command.equals(null));
-        if (command.equalsIgnoreCase("delete") || (command.equalsIgnoreCase("del"))) {
-            return Command.Type.DELETE;
-        } else if (command.equalsIgnoreCase("done")) {
-        	return Command.Type.DONE;
-        } else if (command.equalsIgnoreCase("undone")) {
-            return Command.Type.UNDONE;
-        } else {
-        	//add does not require a command
-        	return Command.Type.ADD;
-        }
+    	String type = command.toLowerCase();
+    	
+    	switch (type) {
+    		case "del" :
+    			return Command.Type.DELETE;
+    		case "delete" :
+    			return Command.Type.DELETE;
+    		case "done" :
+    			return Command.Type.DONE;
+    		case "undone" :
+    			return Command.Type.UNDONE;
+    		default :
+    			return Command.Type.ADD;	
+    	}
     }
     
     private Command commandPreparations(Type type, String commandString) {
