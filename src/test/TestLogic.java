@@ -40,7 +40,7 @@ public class TestLogic {
 	    //Edit task
 	    feedback = logic.parseCommand("edited task", Logic.ListType.ALL);
         assertEquals(feedback, "edited task");
-        logic.editTask(1, Logic.ListType.ALL);
+        logic.editTask(1);
         logic.undo();
         logic.redo();
         

@@ -3,7 +3,7 @@
  * 
  * Controller();
  * parseCommand(String userCommand, ListType type);
- * editTask(int index, ListType. type);
+ * editTask(int index);
  * executeCommand();
  * undo();
  * redo();
@@ -95,9 +95,10 @@ public class Logic {
 	 * @param 	index
 	 * 			the index of the task
 	 */
-	public void editTask(int index, ListType type) {
+	public void editTask(int index) {
 	    int arrayIndex = index - 1;
 	    assert(command != null);
+	    ListType type = Enum.valueOf(ListType.class, command.getListType());
 	    command.setCommandType(Command.Type.EDIT);
 	    command.setPreviousTasks(new ArrayList<Task>());
 	    command.getPreviousTasks().add(getTaskAtIndex(type,arrayIndex));
@@ -275,7 +276,7 @@ public class Logic {
                 addTask(command.getTask(),Enum.valueOf(ListType.class, command.getListType()));
                 break;
             case EDIT:
-                editTask(command.getIndexes().get(0), Enum.valueOf(ListType.class, command.getPreviousListType()));
+                editTask(command.getIndexes().get(0));
                 break;
             case DELETE:
                 deleteTask(command.getIndexes(),Enum.valueOf(ListType.class, command.getListType()));

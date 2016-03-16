@@ -514,7 +514,8 @@ public class RootLayoutController {
                     // something is wrong with this logic.editTask API
                     // send me the index that you see, first task = index 1
                     // to synchronize the way delete does, send me index+1
-                    logic.editTask(getSelectedTaskIndex() + 1, Logic.ListType.ALL);
+                    //logic.editTask(getSelectedTaskIndex() + 1, Logic.ListType.ALL);
+                    logic.editTask(getSelectedTaskIndex() + 1);
                     saveSelectedTaskIndex();
                     refreshListView();
                     restoreListViewPreviousSelection();
