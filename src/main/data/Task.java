@@ -82,25 +82,27 @@ public class Task {
     	String endTime = fields.get(indexEndTime);
     	String label = fields.get(indexLabel);
     	
-    	String feedback = title;
+    	StringBuilder feedback = new StringBuilder(title);
 
     	if (startDate != null) {
-    		feedback = feedback.concat(" from ").concat(startDate);
-    		feedback = feedback.concat(" ").concat(startTime);
+    		feedback.append(" from " + startDate);
+    		feedback.append(" " + startTime);
+    		
+    		
     		
     		if (!startDate.equals(endDate)) {
-    			feedback = feedback.concat(" to ").concat(endDate);
-    			feedback = feedback.concat(" ").concat(endTime); 
+    			feedback.append(" to " + endDate);
+    			feedback.append(" " + endTime);
     		} else {
-    			feedback = feedback.concat(" to ").concat(endTime);
+    			feedback.append(" to " + endTime);
     		}   	  
     	}
 
     	if (label != null) {
-    		feedback = feedback.concat(" #").concat(label);
+    		feedback.append(" #" + label);
     	}
 
-    	return feedback;
+    	return feedback.toString();
     }
     
     /**
