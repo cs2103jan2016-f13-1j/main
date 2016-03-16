@@ -3,7 +3,7 @@
  * 
  * Controller();
  * parseCommand(String userCommand, ListType type);
- * editTask(Logic.List, int index);
+ * editTask(int index, ListType. type);
  * executeCommand();
  * undo();
  * redo();
@@ -95,7 +95,7 @@ public class Logic {
 	 * @param 	index
 	 * 			the index of the task
 	 */
-	public void editTask(ListType type, int index) {
+	public void editTask(int index, ListType type) {
 	    int arrayIndex = index - 1;
 	    assert(command != null);
 	    command.setCommandType(Command.Type.EDIT);
@@ -105,8 +105,8 @@ public class Logic {
 	    command.getIndexes().add(index);
 	    
 	    assert(command.getTask() != null);
-		deleteTask(type,command.getIndexes());
-		addTask(type,command.getTask());
+		deleteTask(command.getIndexes(),type);
+		addTask(command.getTask(),type);
 		
 		command.setPreviousListType(type.name());
 		logger.log(Level.INFO,"Edited task at index " + index + " to " + command.getTask().getTitle());
@@ -128,19 +128,19 @@ public class Logic {
 	    ListType type = Enum.valueOf(ListType.class, command.getListType());
 	    switch (command.getCommandType()) {
             case ADD:
-                addTask(type,command.getTask());
+                addTask(command.getTask(),type);
                 feedback = "Task added!";
                 break;
             case DELETE:
-                deleteTask(type,command.getIndexes());
+                deleteTask(command.getIndexes(),type);
                 feedback = "Task deleted!";
                 break;
             case DONE:
-                markTask(type,command.getIndexes(), true);
+                markTask(command.getIndexes(),true, type);
                 feedback = "Marked " + command.getIndexes().size() + " tasks as completed";
                 break;
             case UNDONE:
-                markTask(type,command.getIndexes(), false);
+                markTask(command.getIndexes(),false, type);
                 feedback = "Marked " + command.getIndexes().size() + " tasks as uncompleted";
                 break;
             default:
@@ -272,19 +272,19 @@ public class Logic {
 
         switch (redoCommand.getCommandType()) {
             case ADD:
-                addTask(Enum.valueOf(ListType.class, command.getListType()),command.getTask());
+                addTask(command.getTask(),Enum.valueOf(ListType.class, command.getListType()));
                 break;
             case EDIT:
-                editTask(Enum.valueOf(ListType.class, command.getPreviousListType()),command.getIndexes().get(0));
+                editTask(command.getIndexes().get(0), Enum.valueOf(ListType.class, command.getPreviousListType()));
                 break;
             case DELETE:
-                deleteTask(Enum.valueOf(ListType.class, command.getListType()),command.getIndexes());
+                deleteTask(command.getIndexes(),Enum.valueOf(ListType.class, command.getListType()));
                 break;
             case DONE:
-                markTask(Enum.valueOf(ListType.class, command.getListType()),command.getIndexes(), true);
+                markTask(command.getIndexes(),true, Enum.valueOf(ListType.class, command.getListType()));
                 break;
             case UNDONE:
-                markTask(Enum.valueOf(ListType.class, command.getListType()),command.getIndexes(), false);
+                markTask(command.getIndexes(),false, Enum.valueOf(ListType.class, command.getListType()));
                 break;
             default:
                 break;
@@ -324,13 +324,13 @@ public class Logic {
                 redoHistory.push(undoCommand);
 			    Task previousTask = undoCommand.getPreviousTasks().get(0);
 			    deleteFromList(type, undoCommand.getTask());
-		        addTask(type, previousTask);
+		        addTask(previousTask, type);
                 break;
 			case DELETE:
 			    redoHistory.push(undoCommand);
 			    previousTasks = undoCommand.getPreviousTasks();
 			    for (int i = 0; i < previousTasks.size(); i++) {
-			        addTask(type, previousTasks.get(i));
+			        addTask(previousTasks.get(i), type);
 			    }
 				break;
 			case DONE:
@@ -354,7 +354,7 @@ public class Logic {
 		saveTasks();
 	}
 
-    private void addTask(ListType type, Task task) {
+    private void addTask(Task task, ListType type) {
 	    switch (type) {
             case ALL:
                 allTasks.add(task);
@@ -395,7 +395,7 @@ public class Logic {
         }
     }
 	
-	private void deleteTask(ListType type, ArrayList<Integer> indexes) {
+	private void deleteTask(ArrayList<Integer> indexes, ListType type) {
 		switch (type) {
 		    case ALL:
 		        deleteTasksFromList(allTasks, indexes);
@@ -460,7 +460,7 @@ public class Logic {
         }
     }
 	
-	private void markTask(ListType type, ArrayList<Integer> indexes, boolean status) {
+	private void markTask(ArrayList<Integer> indexes, boolean status, ListType type) {
         switch (type) {
             case ALL:
                 markTasksFromList(allTasks, indexes, status);

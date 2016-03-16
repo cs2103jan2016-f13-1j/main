@@ -512,7 +512,9 @@ public class RootLayoutController {
 
                 } else {
                     // something is wrong with this logic.editTask API
-                    logic.editTask(Logic.ListType.ALL, getSelectedTaskIndex());
+                    // send me the index that you see, first task = index 1
+                    // to synchronize the way delete does, send me index+1
+                    logic.editTask(getSelectedTaskIndex() + 1, Logic.ListType.ALL);
                     saveSelectedTaskIndex();
                     refreshListView();
                     restoreListViewPreviousSelection();
@@ -674,7 +676,7 @@ public class RootLayoutController {
             return;
         }
 
-        String parseResult = logic.parseCommand("del 100", Logic.ListType.FLOATING);
+        String parseResult = logic.parseCommand("del 100", Logic.ListType.ALL);
         System.out.println(parseResult);
 
         int userIndex = 0;
@@ -694,7 +696,7 @@ public class RootLayoutController {
         } else {
             inputFeedback = allTasks.get(actualIndex).toString();
             showFeedback(true, MESSAGE_FEEDBACK_ACTION_DELETE, inputFeedback);
-            logic.parseCommand(COMMAND_DELETE + WHITESPACE + actualIndex, Logic.ListType.FLOATING);
+            logic.parseCommand(COMMAND_DELETE + WHITESPACE + actualIndex, Logic.ListType.ALL);
 
             // saveSelectedTaskIndex();
             // listView.getFocusModel().focus(actualIndex);
