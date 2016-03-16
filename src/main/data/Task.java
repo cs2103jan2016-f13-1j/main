@@ -82,25 +82,25 @@ public class Task {
     	String endTime = fields.get(indexEndTime);
     	String label = fields.get(indexLabel);
     	
-    	StringBuilder feedback = new StringBuilder(title);
+    	StringBuilder stringBuilder = new StringBuilder(title);
 
     	if (startDate != null) {
-    		feedback.append(" from " + startDate);
-    		feedback.append(" " + startTime);
+    		stringBuilder.append(" from " + startDate);
+    		stringBuilder.append(" " + startTime);
 
     		if (!startDate.equals(endDate)) {
-    			feedback.append(" to " + endDate);
-    			feedback.append(" " + endTime);
+    			stringBuilder.append(" to " + endDate);
+    			stringBuilder.append(" " + endTime);
     		} else {
-    			feedback.append(" to " + endTime);
+    			stringBuilder.append(" to " + endTime);
     		}   	  
     	}
 
     	if (label != null) {
-    		feedback.append(" #" + label);
+    		stringBuilder.append(" #" + label);
     	}
 
-    	return feedback.toString();
+    	return stringBuilder.toString();
     }
     
     /**
@@ -117,29 +117,29 @@ public class Task {
      * @return ArrayList<String> of size 6
      */
     private ArrayList<String> getTaskFields() {
-        ArrayList<String> feedback = new ArrayList<String>();
+        ArrayList<String> fields = new ArrayList<String>();
 
-        feedback.add(title);
+        fields.add(title);
         
         if (hasDate()) {
-        	feedback.add(convertDate(startDate));
-        	feedback.add(convertTime(startDate));
-        	feedback.add(convertDate(endDate));
-        	feedback.add(convertTime(endDate));
+        	fields.add(convertDate(startDate));
+        	fields.add(convertTime(startDate));
+        	fields.add(convertDate(endDate));
+        	fields.add(convertTime(endDate));
         } else {
-        	feedback.add(null);
-        	feedback.add(null);
-        	feedback.add(null);
-        	feedback.add(null);
+        	fields.add(null);
+        	fields.add(null);
+        	fields.add(null);
+        	fields.add(null);
         }
         
         if (hasLabel()) {
-            feedback.add(label);
+            fields.add(label);
         } else {
-        	feedback.add(null);
+        	fields.add(null);
         }
         
-        return feedback;
+        return fields;
     }
     
     private String convertDate(Date date) {
