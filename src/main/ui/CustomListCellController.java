@@ -35,9 +35,7 @@ public class CustomListCellController extends ListCell<Task> {
     private Label labelTaskTag; // Value injected by FXMLLoader
 
     public CustomListCellController() {
-        // TODO Auto-generated constructor stub
-
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/main/resources/layouts/CustomListCell.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/main/resources/layouts/CustomListCellLayout.fxml"));
         loader.setController(this);
         try {
             loader.load();
@@ -48,7 +46,6 @@ public class CustomListCellController extends ListCell<Task> {
 
     @Override
     protected void updateItem(Task item, boolean empty) {
-        // TODO Auto-generated method stub
         super.updateItem(item, empty);
 
         if (empty) {

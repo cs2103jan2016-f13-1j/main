@@ -6,7 +6,6 @@ import com.jfoenix.controls.JFXListView;
 import com.sun.javafx.scene.control.skin.VirtualFlow;
 
 import javafx.application.Platform;
-import javafx.beans.property.ListProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -117,7 +116,6 @@ public class RootLayoutController {
 
     private Logic logic;
     private ArrayList<Task> allTasks;
-    private ListProperty<String> listProperty;
     private ObservableList<Task> observableTaskList = FXCollections.observableArrayList();
     private String inputFeedback;
     private String userInput;
@@ -128,10 +126,8 @@ public class RootLayoutController {
     private int previousSelectedTaskIndex;
     private int previousCaretPosition;
     private boolean isEditMode;
-    private boolean isExecuteCommand;
     private boolean isUndo;
     private boolean isRedo;
-    private boolean isUserRevertAction;
 
     public void requestFocusForCommandBar() {
         commandBar.requestFocus();
@@ -241,6 +237,7 @@ public class RootLayoutController {
                     handleCtrlTab();
                     keyEvent.consume();
                 } else if (keyEvent.getCode() == KeyCode.TAB) {
+                    // do nothing here to prevent the ui from changing focus
                     keyEvent.consume();
                 }
 
@@ -249,33 +246,6 @@ public class RootLayoutController {
             }
         });
     }
-
-    // /**
-    // *
-    // */
-    // private void populateListView() {
-    // if (logic == null) {
-    // logic = Logic.getLogic();
-    // }
-    //
-    // // ListView only allow binding of a OberservableList of String
-    // if (listProperty == null) {
-    // listProperty = new SimpleListProperty<String>();
-    // }
-    //
-    // listViewAll.itemsProperty().bind(listProperty);
-    // listViewAll.setPlaceholder(new Label(MESSAGE_LISTVIEW_EMPTY));
-    //
-    // // retrieve all task and add into an ObservableList
-    // allTasks = logic.getAllTasks();
-    //
-    // for (int i = 0; i < allTasks.size(); i++) {
-    // // System.out.println(allTasks.get(i));
-    // observableTaskList.add(i + 1 + ". " + allTasks.get(i));
-    // }
-    //
-    // listProperty.set(observableTaskList);
-    // }
 
     /**
      * 
@@ -295,7 +265,6 @@ public class RootLayoutController {
 
             @Override
             public ListCell<Task> call(ListView<Task> param) {
-                // TODO Auto-generated method stub
                 return new CustomListCellController();
             }
         });
@@ -327,7 +296,6 @@ public class RootLayoutController {
                     listViewAll.getSelectionModel().selectNext();
                     adjustViewportForListView();
                     System.out.println("current index " + getSelectedTaskIndex());
-
                 }
 
                 // only set currently selected item to command bar when in
@@ -345,9 +313,9 @@ public class RootLayoutController {
     /**
      * This method currently accesses the private API, the VirtualFlow class.
      * This method can only be called after the Stage has been set in the
-     * DoolehMainApp class. Due to the lifecycle of the JavaFX framework, we can
-     * only to grab an instance of the VirtualFlow class from our ListView after
-     * the Stage has been set. This will allow us to adjust the viewport of the
+     * MainApp class. Due to the lifecycle of the JavaFX framework, we can only
+     * to grab an instance of the VirtualFlow class from our ListView after the
+     * Stage has been set. This will allow us to adjust the viewport of the
      * ListView programmatically whenever user hits the up/down arrow key to
      * select items from the ListView. See adjustViewportForListView() method to
      * find out more about the viewport adjusting algorithm
@@ -444,7 +412,6 @@ public class RootLayoutController {
 
                 refreshListView();
                 restoreListViewPreviousSelection();
-
             }
         });
 
@@ -458,7 +425,6 @@ public class RootLayoutController {
 
             @Override
             public void run() {
-                // TODO Auto-generated method stub
                 if (!isEditMode) {
                     userInput = commandBar.getText();
                     assert userInput != null;
@@ -475,11 +441,9 @@ public class RootLayoutController {
                     extractUserInput();
                     parseUserInput();
                     System.out.println(inputFeedback);
-
                 } else {
                     logic.parseCommand(commandBar.getText(), Logic.ListType.ALL);
                 }
-
             }
         });
 
@@ -523,10 +487,8 @@ public class RootLayoutController {
                     commandBar.clear();
                     showUndoRedoButton();
                 }
-
             }
         });
-
     }
 
     /**
@@ -550,10 +512,8 @@ public class RootLayoutController {
                 refreshListView();
                 restoreListViewPreviousSelection();
                 showUndoRedoButton();
-
             }
         });
-
     }
 
     /**
@@ -575,10 +535,8 @@ public class RootLayoutController {
 
                 requestFocusForCommandBar();
                 restoreCaretPosition();
-
             }
         });
-
     }
 
     /**
@@ -590,7 +548,6 @@ public class RootLayoutController {
         if (userInputArray.length > 1) {
             System.out.println(
                     userCommand + " " + userInput.indexOf(userCommand) + " " + userInput.lastIndexOf(userCommand));
-
             userArguments = userInput.substring(userInput.indexOf(userInputArray[1]));
         }
     }
@@ -635,6 +592,7 @@ public class RootLayoutController {
 
         if (indexesToBeDeleted.length == 1) {
             int taskIndex = 0;
+            
             try {
                 taskIndex = Integer.parseInt(indexesToBeDeleted[0]);
             } catch (NumberFormatException nfe) {
@@ -645,7 +603,6 @@ public class RootLayoutController {
             // if selected index is out of bound
             if (taskIndex >= allTasks.size() || taskIndex < 0) {
                 showResult(true, String.format(MESSAGE_ERROR_RESULT_DELETE, taskIndex + 1));
-
             } else {
                 inputFeedback = allTasks.get(taskIndex).toString();
                 showFeedback(true, MESSAGE_FEEDBACK_ACTION_DELETE, inputFeedback);
@@ -654,22 +611,16 @@ public class RootLayoutController {
             return;
         }
 
-        // int[] indexArray = new int[indexesToBeDeleted.length];
-        // for (int i = 0; i < indexArray.length; i++) {
-        //
-        // }
-
         showFeedback(true, MESSAGE_FEEDBACK_ACTION_DELETE,
                 userArguments + WHITESPACE + String.format(MESSAGE_FEEDBACK_TOTAL_TASK, indexesToBeDeleted.length));
-
     }
 
     /**
      * 
      */
-    private void parseSearch() {// TODO to be implemented
+    private void parseSearch() {
         if (userInputArray.length > 1) {
-            inputFeedback = userArguments; // stub code
+            inputFeedback = userArguments;
         } else {
             inputFeedback = EMPTY_STRING;
         }

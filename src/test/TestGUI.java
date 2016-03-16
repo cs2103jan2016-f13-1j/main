@@ -27,7 +27,7 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import main.logic.Logic;
-import main.ui.DoolehMainApp;
+import main.ui.MainApp;
 import main.ui.RootLayoutController;
 
 public class TestGUI extends ApplicationTest {
@@ -188,7 +188,7 @@ public class TestGUI extends ApplicationTest {
         try {
             // Load root layout from fxml file.
             FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(DoolehMainApp.class.getResource("/main/resources/layouts/RootLayout.fxml"));
+            loader.setLocation(MainApp.class.getResource("/main/resources/layouts/RootLayout.fxml"));
 
             rootLayout = (AnchorPane) loader.load();
 

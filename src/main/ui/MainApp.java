@@ -8,15 +8,15 @@ import javafx.scene.Scene;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 
-public class DoolehMainApp extends Application {
+public class MainApp extends Application {
+    private static final String WINDOW_TITLE = "Dooleh";
     private Stage primaryStage;
     private AnchorPane rootLayout;
 
     @Override
     public void start(Stage primaryStage) {
         this.primaryStage = primaryStage;
-        this.primaryStage.setTitle("Dooleh");
-
+        this.primaryStage.setTitle(WINDOW_TITLE);
         initRootLayout();
     }
 
@@ -27,7 +27,7 @@ public class DoolehMainApp extends Application {
         try {
             // Load root layout from fxml file.
             FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(DoolehMainApp.class.getResource("/main/resources/layouts/RootLayout.fxml"));
+            loader.setLocation(MainApp.class.getResource("/main/resources/layouts/RootLayout.fxml"));
 
             rootLayout = (AnchorPane) loader.load();
 
