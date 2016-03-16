@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import main.data.Command;
+import main.data.Task;
 import main.parser.CommandParser;
 
 /**
@@ -192,6 +193,29 @@ public class TestCommandParser {
     	
     	command = parser.parse("Go camp from 1/3 8am to 3/3 9pm");
     	assertEquals("Go camp from 1 Mar 8am to 3 Mar 9pm", command.getTask().toString());
+    }
+    
+    @Test
+    public void testCompareTo() {
+    	CommandParser parser = new CommandParser();
+    	Task task1, task2;
+    	
+    	Command command = parser.parse("Cook dinner at 7pm");
+    	task1 = command.getTask();
+    	command = parser.parse("Cook dinner at 7pm");
+    	task2 = command.getTask();
+    	assertEquals(0, task1.compareTo(task2));
+    	
+    	command = parser.parse("Cook dinner at 8pm");
+    	task1 = command.getTask();
+    	command = parser.parse("Cook dinner at 9pm");
+    	task2 = command.getTask();
+    	assertEquals(-1, task1.compareTo(task2));
+    	
+    	command = parser.parse("Attend meeting");
+    	task1 = command.getTask();
+    	command = parser.parse("Attend meeting #important");
+    	task2 = command.getTask();
     }
     
     @Test
