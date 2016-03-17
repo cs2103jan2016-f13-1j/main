@@ -17,17 +17,38 @@ import java.util.Locale;
  *
  */
 
-public class Task {	
-    private String title;
-    private boolean done;
-    private int priority;
-    private String label;
-    private Date startDate;
-    private Date endDate;
-    private Date completedDate;
+public class Task {	   
+    private String title = null;
+    private Date startDate = null;
+    private Date endDate = null;
+    private String label = null;
+    private boolean done = false;
+    private int priority = 0;
+    private Date createdDate = null;
+    private Date completedDate = null;
+
+    public Task(String title, Date startDate, Date endDate, String label, Date createdDate) {
+    	this.title = title;
+    	this.startDate = startDate;
+    	this.endDate = endDate;
+    	this.label = label;
+    	this.createdDate = createdDate;
+    }
     
     public String getTitle() {
         return title;
+    }
+    
+    public Date getStartDate() {
+        return startDate;
+    }
+    
+    public Date getEndDate() {
+        return endDate;
+    }
+    
+    public String getLabel() {
+        return label;
     }
     
     public boolean getDone() {
@@ -42,16 +63,11 @@ public class Task {
         return priority;
     }
     
-    public String getLabel() {
-        return label;
-    }
-    
-    public Date getStartDate() {
-        return startDate;
-    }
-    
-    public Date getEndDate() {
-        return endDate;
+    public int togglePriority() {
+    	int limit = 4;
+    	priority++;
+    	priority = priority % limit;
+    	return priority;
     }
     
     public Date getCompletedDate() {
@@ -64,6 +80,10 @@ public class Task {
     
     public void setNotCompleted() {
         this.completedDate = null;
+    }
+    
+    public Date getCreatedDate() {
+        return createdDate;
     }
 
     public String toString() {
@@ -82,25 +102,25 @@ public class Task {
     	String endTime = fields.get(indexEndTime);
     	String label = fields.get(indexLabel);
     	
-    	String feedback = title;
+    	StringBuilder stringBuilder = new StringBuilder(title);
 
     	if (startDate != null) {
-    		feedback = feedback.concat(" from ").concat(startDate);
-    		feedback = feedback.concat(" ").concat(startTime);
-    		
+    		stringBuilder.append(" from " + startDate);
+    		stringBuilder.append(" " + startTime);
+
     		if (!startDate.equals(endDate)) {
-    			feedback = feedback.concat(" to ").concat(endDate);
-    			feedback = feedback.concat(" ").concat(endTime); 
+    			stringBuilder.append(" to " + endDate);
+    			stringBuilder.append(" " + endTime);
     		} else {
-    			feedback = feedback.concat(" to ").concat(endTime);
+    			stringBuilder.append(" to " + endTime);
     		}   	  
     	}
 
     	if (label != null) {
-    		feedback = feedback.concat(" #").concat(label);
+    		stringBuilder.append(" #" + label);
     	}
 
-    	return feedback;
+    	return stringBuilder.toString();
     }
     
     /**
@@ -117,29 +137,29 @@ public class Task {
      * @return ArrayList<String> of size 6
      */
     private ArrayList<String> getTaskFields() {
-        ArrayList<String> feedback = new ArrayList<String>();
+        ArrayList<String> fields = new ArrayList<String>();
 
-        feedback.add(title);
+        fields.add(title);
         
         if (hasDate()) {
-        	feedback.add(convertDate(startDate));
-        	feedback.add(convertTime(startDate));
-        	feedback.add(convertDate(endDate));
-        	feedback.add(convertTime(endDate));
+        	fields.add(convertDate(startDate));
+        	fields.add(convertTime(startDate));
+        	fields.add(convertDate(endDate));
+        	fields.add(convertTime(endDate));
         } else {
-        	feedback.add(null);
-        	feedback.add(null);
-        	feedback.add(null);
-        	feedback.add(null);
+        	fields.add(null);
+        	fields.add(null);
+        	fields.add(null);
+        	fields.add(null);
         }
         
         if (hasLabel()) {
-            feedback.add(label);
+            fields.add(label);
         } else {
-        	feedback.add(null);
+        	fields.add(null);
         }
         
-        return feedback;
+        return fields;
     }
     
     private String convertDate(Date date) {
@@ -222,6 +242,15 @@ public class Task {
         symbols.setAmPmStrings(new String[] {"am", "pm"});
         timeFormat.setDateFormatSymbols(symbols);
 	    return timeFormat.format(date);
+    }
+    
+    public int compareTo(Task task) {
+
+        if (!createdDate.equals(task.getCreatedDate())) {
+            return -1;
+        }
+        
+    	return 0;
     }
     
     public boolean isThisWeek() {
@@ -318,56 +347,5 @@ public class Task {
     
     public boolean hasStarted() {
         return (startDate.compareTo(new Date()) < 0);
-    }
-    
-    private Task(TaskBuilder builder) {
-        this.title = builder.title;
-        this.done = builder.done;
-        this.priority = builder.priority;
-        this.label = builder.label;
-        this.startDate = builder.startDate;
-        this.endDate = builder.endDate;
-    }
-    
-    public static class TaskBuilder {
-        private String title = null;
-        private boolean done = false;
-        private int priority = 0;
-        private String label = null;
-        private Date startDate = null;
-        private Date endDate = null;
-        
-        public TaskBuilder (String title) {
-            this.title = title;
-        }
-        
-        public TaskBuilder setDone(boolean done) {
-            this.done = done;
-            return this;
-        }
-        
-        public TaskBuilder setPriority(int priority) {
-            this.priority = priority;
-            return this;
-        }
-        
-        public TaskBuilder setLabel(String label) {
-            this.label = label;
-            return this;
-        }
-        
-        public TaskBuilder setStartDate(Date startDate) {
-            this.startDate = startDate;
-            return this;
-        }
-        
-        public TaskBuilder setEndDate(Date endDate) {
-            this.endDate = endDate;
-            return this;
-        }
-        
-        public Task build() {
-            return new Task(this);
-        }
     }
 }

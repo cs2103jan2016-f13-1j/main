@@ -35,7 +35,7 @@ public class CommandParser {
     private final String STRING_AM = "am";
     private final String STRING_PM = "pm";
     private final String STRING_TWELVE = "12";
-    private final String NOW = "NOW";
+    private final String STRING_NOW = "NOW";
     private final int ONE_HOUR = 1;
     private final int DOUBLE_DIGIT = 10;
     private final int LENGTH_DEL = 3;
@@ -67,17 +67,20 @@ public class CommandParser {
     }
     
     private Type getCommandType(String command) {
-    	assert(!command.equals(null));
-        if (command.equalsIgnoreCase("delete") || (command.equalsIgnoreCase("del"))) {
-            return Command.Type.DELETE;
-        } else if (command.equalsIgnoreCase("done")) {
-        	return Command.Type.DONE;
-        } else if (command.equalsIgnoreCase("undone")) {
-            return Command.Type.UNDONE;
-        } else {
-        	//add does not require a command
-        	return Command.Type.ADD;
-        }
+    	String type = command.toLowerCase();
+    	
+    	switch (type) {
+    		case "del" :
+    			return Command.Type.DELETE;
+    		case "delete" :
+    			return Command.Type.DELETE;
+    		case "done" :
+    			return Command.Type.DONE;
+    		case "undone" :
+    			return Command.Type.UNDONE;
+    		default :
+    			return Command.Type.ADD;	
+    	}
     }
     
     private Command commandPreparations(Type type, String commandString) {
@@ -256,7 +259,7 @@ public class CommandParser {
     }
     
     private Date getCurrentDate() {
-    	return parseDate(NOW).get(DATE_INDEX);
+    	return parseDate(STRING_NOW).get(DATE_INDEX);
     }
     
     /**
@@ -462,8 +465,7 @@ public class CommandParser {
     }
 
     private Task buildTask(String title, Date startDate, Date endDate, String label) {
-        Task task = new Task.TaskBuilder(title).setStartDate(startDate).setEndDate(endDate)
-        .setLabel(label).build();
+        Task task = new Task(title, startDate, endDate, label, new Date());
         return task;
     }
     

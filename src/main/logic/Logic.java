@@ -3,7 +3,7 @@
  * 
  * Controller();
  * parseCommand(String userCommand, ListType type);
- * editTask(Logic.List, int index);
+ * editTask(int index);
  * executeCommand();
  * undo();
  * redo();
@@ -52,12 +52,13 @@ public class Logic {
 	private static final int COMPLETED_TASKS_INDEX = 1;
 	
 	private CommandParser parser = null;
-	private Storage storage = null;
 	
+	private Storage storage = null;
 	private Command command = null;
 	private Stack<Command> undoHistory = new Stack<Command>();
 	private Stack<Command> redoHistory = new Stack<Command>();
-	private ArrayList<Task> allTasks = new ArrayList<Task>();
+    private ArrayList<Task> allTasks = new ArrayList<Task>();
+    
     private ArrayList<Task> completedTasks = new ArrayList<Task>();
     
     /**
@@ -82,7 +83,7 @@ public class Logic {
         assert(logic != null);
         return logic;
     }
-
+    
     public Object clone() throws CloneNotSupportedException {
         throw new CloneNotSupportedException();
     }
@@ -94,9 +95,10 @@ public class Logic {
 	 * @param 	index
 	 * 			the index of the task
 	 */
-	public void editTask(ListType type, int index) {
+	public void editTask(int index) {
 	    int arrayIndex = index - 1;
 	    assert(command != null);
+	    ListType type = Enum.valueOf(ListType.class, command.getListType());
 	    command.setCommandType(Command.Type.EDIT);
 	    command.setPreviousTasks(new ArrayList<Task>());
 	    command.getPreviousTasks().add(getTaskAtIndex(type,arrayIndex));
@@ -104,8 +106,8 @@ public class Logic {
 	    command.getIndexes().add(index);
 	    
 	    assert(command.getTask() != null);
-		deleteTask(type,command.getIndexes());
-		addTask(type,command.getTask());
+		deleteTask(command.getIndexes(),type);
+		addTask(command.getTask(),type);
 		
 		command.setPreviousListType(type.name());
 		logger.log(Level.INFO,"Edited task at index " + index + " to " + command.getTask().getTitle());
@@ -127,19 +129,19 @@ public class Logic {
 	    ListType type = Enum.valueOf(ListType.class, command.getListType());
 	    switch (command.getCommandType()) {
             case ADD:
-                addTask(type,command.getTask());
+                addTask(command.getTask(),type);
                 feedback = "Task added!";
                 break;
             case DELETE:
-                deleteTask(type,command.getIndexes());
+                deleteTask(command.getIndexes(),type);
                 feedback = "Task deleted!";
                 break;
             case DONE:
-                markTask(type,command.getIndexes(), true);
+                markTask(command.getIndexes(),true, type);
                 feedback = "Marked " + command.getIndexes().size() + " tasks as completed";
                 break;
             case UNDONE:
-                markTask(type,command.getIndexes(), false);
+                markTask(command.getIndexes(),false, type);
                 feedback = "Marked " + command.getIndexes().size() + " tasks as uncompleted";
                 break;
             default:
@@ -271,19 +273,19 @@ public class Logic {
 
         switch (redoCommand.getCommandType()) {
             case ADD:
-                addTask(Enum.valueOf(ListType.class, command.getListType()),command.getTask());
+                addTask(command.getTask(),Enum.valueOf(ListType.class, command.getListType()));
                 break;
             case EDIT:
-                editTask(Enum.valueOf(ListType.class, command.getPreviousListType()),command.getIndexes().get(0));
+                editTask(command.getIndexes().get(0));
                 break;
             case DELETE:
-                deleteTask(Enum.valueOf(ListType.class, command.getListType()),command.getIndexes());
+                deleteTask(command.getIndexes(),Enum.valueOf(ListType.class, command.getListType()));
                 break;
             case DONE:
-                markTask(Enum.valueOf(ListType.class, command.getListType()),command.getIndexes(), true);
+                markTask(command.getIndexes(),true, Enum.valueOf(ListType.class, command.getListType()));
                 break;
             case UNDONE:
-                markTask(Enum.valueOf(ListType.class, command.getListType()),command.getIndexes(), false);
+                markTask(command.getIndexes(),false, Enum.valueOf(ListType.class, command.getListType()));
                 break;
             default:
                 break;
@@ -310,6 +312,7 @@ public class Logic {
 	    assert(undoHistory.size() > 0);
 	    
 		Command undoCommand = undoHistory.pop();
+		
 		ListType type = Enum.valueOf(ListType.class, undoCommand.getListType());
 		ArrayList<Task> previousTasks = null;
 		
@@ -323,27 +326,27 @@ public class Logic {
                 redoHistory.push(undoCommand);
 			    Task previousTask = undoCommand.getPreviousTasks().get(0);
 			    deleteFromList(type, undoCommand.getTask());
-		        addTask(type, previousTask);
+		        addTask(previousTask, type);
                 break;
 			case DELETE:
 			    redoHistory.push(undoCommand);
 			    previousTasks = undoCommand.getPreviousTasks();
 			    for (int i = 0; i < previousTasks.size(); i++) {
-			        addTask(type, previousTasks.get(i));
+			        addTask(previousTasks.get(i), type);
 			    }
 				break;
 			case DONE:
 			    redoHistory.push(undoCommand);
 			    previousTasks = undoCommand.getPreviousTasks();
 			    for (int i = 0; i < previousTasks.size(); i++) {
-                    markFromTask(ListType.COMPLETED, previousTasks.get(i), false);
+                    markFromList(ListType.COMPLETED, previousTasks.get(i), false);
                 }
 			    break;
 			case UNDONE:
 			    redoHistory.push(undoCommand);
                 previousTasks = undoCommand.getPreviousTasks();
                 for (int i = 0; i < previousTasks.size(); i++) {
-                    markFromTask(ListType.COMPLETED, previousTasks.get(i), true);
+                    markFromList(ListType.COMPLETED, previousTasks.get(i), true);
                 }
 			default:
 				break;
@@ -353,51 +356,7 @@ public class Logic {
 		saveTasks();
 	}
 
-    private void markFromTask(ListType type, Task task, boolean status) {
-        ArrayList<Task> tasks = new ArrayList<Task>();
-        
-        switch (type) {
-            case ALL:
-                tasks = allTasks;
-                break;
-            case COMPLETED:
-                tasks = completedTasks;
-                break;
-            default:
-                break;
-        }
-        
-        for (int i = 0; i < tasks.size(); i++) {
-            Task t = tasks.get(i);
-            if (t.getTitle().equals(task.getTitle())) {
-                t.setDone(status);
-            }
-        }
-    }
-
-    private void deleteFromList(ListType type, Task task) {
-        ArrayList<Task> tasks = new ArrayList<Task>();
-        
-        switch (type) {
-            case ALL:
-                tasks = allTasks;
-                break;
-            case COMPLETED:
-                tasks = completedTasks;
-                break;
-            default:
-                break;
-        }
-        
-        for (int i = 0; i < tasks.size(); i++) {
-            Task t = tasks.get(i);
-            if (t.getTitle().equals(task.getTitle())) {
-                tasks.remove(i);
-            }
-        }
-    }
-
-	private void addTask(ListType type, Task task) {
+    private void addTask(Task task, ListType type) {
 	    switch (type) {
             case ALL:
                 allTasks.add(task);
@@ -409,14 +368,37 @@ public class Logic {
                 break;
 	    }
 	}
-	
-	private void addToHistory() {
+
+    private void addToHistory() {
         assert(command != null);
         undoHistory.push(command);
 		redoHistory = new Stack<Command>();
     }
+
+	private void deleteFromList(ListType type, Task task) {
+        ArrayList<Task> tasks = new ArrayList<Task>();
+        
+        switch (type) {
+            case ALL:
+                tasks = allTasks;
+                break;
+            case COMPLETED:
+                tasks = completedTasks;
+                break;
+            default:
+                break;
+        }
+        
+        for (int i = 0; i < tasks.size(); i++) {
+            Task t = tasks.get(i);
+            if (t.compareTo(task) == 0) {
+                tasks.remove(i);
+                i--;
+            }
+        }
+    }
 	
-	private void deleteTask(ListType type, ArrayList<Integer> indexes) {
+	private void deleteTask(ArrayList<Integer> indexes, ListType type) {
 		switch (type) {
 		    case ALL:
 		        deleteTasksFromList(allTasks, indexes);
@@ -459,7 +441,29 @@ public class Logic {
         return task;
     }
 	
-	private void markTask(ListType type, ArrayList<Integer> indexes, boolean status) {
+	private void markFromList(ListType type, Task task, boolean status) {
+        ArrayList<Task> tasks = new ArrayList<Task>();
+        
+        switch (type) {
+            case ALL:
+                tasks = allTasks;
+                break;
+            case COMPLETED:
+                tasks = completedTasks;
+                break;
+            default:
+                break;
+        }
+        
+        for (int i = 0; i < tasks.size(); i++) {
+            Task t = tasks.get(i);
+            if (t.getTitle().equals(task.getTitle())) {
+                t.setDone(status);
+            }
+        }
+    }
+	
+	private void markTask(ArrayList<Integer> indexes, boolean status, ListType type) {
         switch (type) {
             case ALL:
                 markTasksFromList(allTasks, indexes, status);
@@ -491,6 +495,18 @@ public class Logic {
         assert(command != null);
         command.setPreviousTasks(previousTasks);
     }
+	
+	private void saveTasks() {
+		try {
+		    logger.log(Level.INFO,"Saving tasks");
+			ArrayList<ArrayList<Task>> tasks = new ArrayList<ArrayList<Task>>();
+			tasks.add(allTasks);
+			tasks.add(completedTasks);
+			storage.writeTasks(tasks);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+	}
 	
 	private void sortTasks() {
 	    ArrayList<Task> combinedTasks = new ArrayList<Task>();
@@ -556,17 +572,5 @@ public class Logic {
         });
 	    
 	    logger.log(Level.INFO,"Tasks sorted");
-	}
-	
-	private void saveTasks() {
-		try {
-		    logger.log(Level.INFO,"Saving tasks");
-			ArrayList<ArrayList<Task>> tasks = new ArrayList<ArrayList<Task>>();
-			tasks.add(allTasks);
-			tasks.add(completedTasks);
-			storage.writeTasks(tasks);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
 	}
 }

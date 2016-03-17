@@ -157,6 +157,7 @@ public class RootLayoutController {
         ObservableList<Tab> tabList = tabPane.getTabs();
         for (int i = 0; i < tabList.size(); i++) {
             tabList.get(i).setOnSelectionChanged(new EventHandler<Event>() {
+               
                 @Override
                 public void handle(Event event) {
                     if (getSelectedTabName().equals(STRING_TODAY)) {
@@ -166,7 +167,6 @@ public class RootLayoutController {
                     }
 
                     labelCurrentMode.setText(getSelectedTabName());
-
                 }
             });
         }
@@ -199,6 +199,7 @@ public class RootLayoutController {
         });
 
         commandBar.setOnAction(new EventHandler<ActionEvent>() {
+           
             @Override
             public void handle(ActionEvent event) {
                 // do nothing when there is no user input
@@ -240,9 +241,6 @@ public class RootLayoutController {
                     // do nothing here to prevent the ui from changing focus
                     keyEvent.consume();
                 }
-
-                // System.out.println(keyEvent.getTarget());
-
             }
         });
     }
@@ -473,12 +471,6 @@ public class RootLayoutController {
                             restoreListViewPreviousSelection();
                         }
 
-                    } else {
-                        // something is wrong with this logic.editTask API
-                        logic.editTask(Logic.ListType.ALL, getSelectedTaskIndex());
-                        saveSelectedTaskIndex();
-                        refreshListView();
-                        restoreListViewPreviousSelection();
                     }
 
                     showFeedback(false);
@@ -486,6 +478,17 @@ public class RootLayoutController {
                     clearStoredUserInput();
                     commandBar.clear();
                     showUndoRedoButton();
+
+                } else {
+                    // something is wrong with this logic.editTask API
+                    // send me the index that you see, first task = index 1
+                    // to synchronize the way delete does, send me index+1
+                    // logic.editTask(getSelectedTaskIndex() + 1,
+                    // Logic.ListType.ALL);
+                    logic.editTask(getSelectedTaskIndex() + 1);
+                    saveSelectedTaskIndex();
+                    refreshListView();
+                    restoreListViewPreviousSelection();
                 }
             }
         });
@@ -592,7 +595,7 @@ public class RootLayoutController {
 
         if (indexesToBeDeleted.length == 1) {
             int taskIndex = 0;
-            
+
             try {
                 taskIndex = Integer.parseInt(indexesToBeDeleted[0]);
             } catch (NumberFormatException nfe) {
@@ -613,6 +616,7 @@ public class RootLayoutController {
 
         showFeedback(true, MESSAGE_FEEDBACK_ACTION_DELETE,
                 userArguments + WHITESPACE + String.format(MESSAGE_FEEDBACK_TOTAL_TASK, indexesToBeDeleted.length));
+
     }
 
     /**
