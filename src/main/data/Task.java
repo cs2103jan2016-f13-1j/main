@@ -247,23 +247,6 @@ public class Task {
             return -1;
         }
         
-    	if (!title.equals(task.getTitle())) {
-    		return -1;
-    	}
-    	
-    	if (!(startDate == task.getStartDate() || 
-    			startDate != null && startDate.equals(task.getStartDate()))) {
-    		return -1;
-    	}
-    
-    	if (!(endDate == task.getEndDate() || 
-    			endDate != null && endDate.equals(task.getEndDate()))) {
-    		return -1;
-    	}
-    	
-    	if (!(label == task.getLabel() || label != null && this.label.equals(task.getLabel()))) {
-    		return -1;
-    	}
     	return 0;
     }
     
