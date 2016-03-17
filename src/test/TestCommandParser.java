@@ -204,7 +204,7 @@ public class TestCommandParser {
     	task1 = command.getTask();
     	command = parser.parse("Cook dinner at 7pm");
     	task2 = command.getTask();
-    	assertEquals(0, task1.compareTo(task2));
+    	assertEquals(-1, task1.compareTo(task2));
     	
     	command = parser.parse("Cook dinner at 8pm");
     	task1 = command.getTask();
@@ -216,6 +216,18 @@ public class TestCommandParser {
     	task1 = command.getTask();
     	command = parser.parse("Attend meeting #important");
     	task2 = command.getTask();
+    	assertEquals(-1, task1.compareTo(task2));	
+    }
+    
+    @Test
+    public void testPriority() {
+    	CommandParser parser = new CommandParser();
+        Command command = parser.parse("Cook dinner #home");
+        assertEquals(0, command.getTask().getPriority());
+        assertEquals(1, command.getTask().togglePriority());
+        assertEquals(2, command.getTask().togglePriority());
+        assertEquals(3, command.getTask().togglePriority());
+        assertEquals(0, command.getTask().togglePriority());
     }
     
     @Test
