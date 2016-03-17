@@ -1,6 +1,8 @@
 package main.ui;
 
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.jfoenix.controls.JFXListView;
 import com.sun.javafx.scene.control.skin.VirtualFlow;
@@ -32,6 +34,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.util.Callback;
 import main.data.Task;
 import main.logic.Logic;
+import main.storage.Storage;
 
 @SuppressWarnings("restriction")
 public class RootLayoutController {
@@ -129,12 +132,15 @@ public class RootLayoutController {
     private boolean isUndo;
     private boolean isRedo;
 
+    private static final Logger logger = Logger.getLogger(RootLayoutController.class.getName());
+
     public void requestFocusForCommandBar() {
+        logger.log(Level.INFO, "Set focus to command bar");
         commandBar.requestFocus();
-        restoreCaretPosition();
     }
 
     public void selectFirstItemFromListView() {
+        logger.log(Level.INFO, "Set Select the first item on the ListView");
         listViewAll.getSelectionModel().selectNext();
         initCustomViewportBehaviorForListView();
 
@@ -142,12 +148,13 @@ public class RootLayoutController {
 
     @FXML
     private void initialize() {
+        logger.log(Level.INFO, "Initializing the UI...");
         populateListView();
         initMouseListener();
         initKeyboardListener();
         initCommandBarListener();
         initTabSelectionListener();
-
+        logger.log(Level.INFO, "UI initialization complete");
     }
 
     /**
@@ -157,7 +164,7 @@ public class RootLayoutController {
         ObservableList<Tab> tabList = tabPane.getTabs();
         for (int i = 0; i < tabList.size(); i++) {
             tabList.get(i).setOnSelectionChanged(new EventHandler<Event>() {
-               
+
                 @Override
                 public void handle(Event event) {
                     if (getSelectedTabName().equals(STRING_TODAY)) {
@@ -181,6 +188,7 @@ public class RootLayoutController {
             @Override
             public void handle(Event event) {
                 requestFocusForCommandBar();
+                restoreCaretPosition();
             }
         });
     }
@@ -199,7 +207,7 @@ public class RootLayoutController {
         });
 
         commandBar.setOnAction(new EventHandler<ActionEvent>() {
-           
+
             @Override
             public void handle(ActionEvent event) {
                 // do nothing when there is no user input
@@ -241,6 +249,8 @@ public class RootLayoutController {
                     // do nothing here to prevent the ui from changing focus
                     keyEvent.consume();
                 }
+                
+                saveCaretPosition();
             }
         });
     }
@@ -257,7 +267,8 @@ public class RootLayoutController {
 
         // retrieve all task and add into an ObservableList
         allTasks = logic.getAllTasks();
-        observableTaskList.setAll(logic.getAllTasks());
+        assert allTasks != null;
+        observableTaskList.setAll(allTasks);
         listViewAll.setItems(observableTaskList);
         listViewAll.setCellFactory(new Callback<ListView<Task>, ListCell<Task>>() {
 
@@ -266,7 +277,7 @@ public class RootLayoutController {
                 return new CustomListCellController();
             }
         });
-
+        logger.log(Level.INFO, "Populated ListView: " + allTasks.size()+" task");
     }
 
     /**
@@ -288,21 +299,22 @@ public class RootLayoutController {
                 if (keyEvent.getCode() == KeyCode.UP) {
                     listViewAll.getSelectionModel().selectPrevious();
                     adjustViewportForListView();
-                    System.out.println("current index " + getSelectedTaskIndex());
-
                 } else if (keyEvent.getCode() == KeyCode.DOWN) {
                     listViewAll.getSelectionModel().selectNext();
                     adjustViewportForListView();
-                    System.out.println("current index " + getSelectedTaskIndex());
                 }
 
-                // only set currently selected item to command bar when in
-                // Edit mode
+                // Set current task title to command bar when in Edit mode
                 if (isEditMode) {
                     commandBar.setText(allTasks.get(getSelectedTaskIndex()).toString());
                     moveCaretPositionToLast();
+                    logger.log(Level.INFO, "(EDIT MODE) Pressed " + keyEvent.getCode()
+                            + " arrow key: currently selected index is " + getSelectedTaskIndex());
+                    return;
                 }
 
+                logger.log(Level.INFO, "Pressed " + keyEvent.getCode() + " arrow key: currently selected index is "
+                        + getSelectedTaskIndex());
             }
         });
 
@@ -366,6 +378,7 @@ public class RootLayoutController {
                     labelCurrentMode.setText(getSelectedTabName());
                     restoreCommandBarText();
                     restoreCaretPosition();
+                    logger.log(Level.INFO, "Pressed F1 key: Exit EDIT MODE");
 
                 } else {
                     isEditMode = true;
@@ -375,6 +388,7 @@ public class RootLayoutController {
                     labelCurrentMode.setText(MESSAGE_LABEL_MODE_EDIT);
                     commandBar.setText(allTasks.get(getSelectedTaskIndex()).toString());
                     moveCaretPositionToLast();
+                    logger.log(Level.INFO, "Pressed F1 key: Enter EDIT MODE");
                 }
 
             }
@@ -401,11 +415,13 @@ public class RootLayoutController {
                     isRedo = true;
                     labelUndoRedo.setText("undo");
                     logic.redo();
-                } else {
+                    logger.log(Level.INFO, "Pressed F2 key: REDO operation");
+                } else if (isRedo) {
                     isUndo = true;
                     isRedo = false;
                     labelUndoRedo.setText("redo");
                     logic.undo();
+                    logger.log(Level.INFO, "Pressed F2 key: UNDO operation");
                 }
 
                 refreshListView();
@@ -423,10 +439,11 @@ public class RootLayoutController {
 
             @Override
             public void run() {
+                userInput = commandBar.getText();
+                assert userInput != null;
+
                 if (!isEditMode) {
-                    userInput = commandBar.getText();
-                    assert userInput != null;
-                    System.out.println(userInput);
+                    logger.log(Level.INFO, "User is typing: " + userInput);
 
                     if (userInput.length() == 0) {
                         showFeedback(false);
@@ -438,9 +455,9 @@ public class RootLayoutController {
 
                     extractUserInput();
                     parseUserInput();
-                    System.out.println(inputFeedback);
                 } else {
-                    logic.parseCommand(commandBar.getText(), Logic.ListType.ALL);
+                    logger.log(Level.INFO, "(EDIT MODE) User is typing: " + userInput);
+                    logic.parseCommand(userInput, Logic.ListType.ALL);
                 }
             }
         });
@@ -457,15 +474,16 @@ public class RootLayoutController {
             public void run() {
                 if (!isEditMode) {
                     if (commandBar.getText().trim().length() > 0) {
-                        System.out.println("Command bar Text length: " + commandBar.getLength());
                         logic.executeCommand();
 
                         // add operation
                         if (!userCommand.equals(COMMAND_DELETE) && !userCommand.equals(COMMAND_DELETE_SHORTHAND)) {
+                            logger.log(Level.INFO, "(ADD TASK) Pressed ENTER key: " + commandBar.getText());
                             refreshListView();
                             listViewAll.getSelectionModel().selectLast();
                             listViewAll.scrollTo(allTasks.size() - 1);
                         } else {
+                            logger.log(Level.INFO, "(DELETE TASK) Pressed ENTER key: " + commandBar.getText());
                             saveSelectedTaskIndex();
                             refreshListView();
                             restoreListViewPreviousSelection();
@@ -480,15 +498,12 @@ public class RootLayoutController {
                     showUndoRedoButton();
 
                 } else {
-                    // something is wrong with this logic.editTask API
-                    // send me the index that you see, first task = index 1
-                    // to synchronize the way delete does, send me index+1
-                    // logic.editTask(getSelectedTaskIndex() + 1,
-                    // Logic.ListType.ALL);
+                    logger.log(Level.INFO, "(EDIT MODE) Pressed ENTER key: " + commandBar.getText());
                     logic.editTask(getSelectedTaskIndex() + 1);
                     saveSelectedTaskIndex();
                     refreshListView();
                     restoreListViewPreviousSelection();
+
                 }
             }
         });
@@ -509,6 +524,7 @@ public class RootLayoutController {
 
             @Override
             public void run() {
+                logger.log(Level.INFO, "Pressed DELETE key: task index  " + getSelectedTaskIndex());
                 logic.parseCommand(COMMAND_DELETE + WHITESPACE + (getSelectedTaskIndex() + 1), Logic.ListType.ALL);
                 logic.executeCommand();
                 saveSelectedTaskIndex();
@@ -538,6 +554,8 @@ public class RootLayoutController {
 
                 requestFocusForCommandBar();
                 restoreCaretPosition();
+                logger.log(Level.INFO,
+                        "Pressed CTRL+TAB key: current selected Tab is " + "\"" + getSelectedTabName() + "\"");
             }
         });
     }
@@ -578,6 +596,7 @@ public class RootLayoutController {
      * 
      */
     private void parseAdd() {
+        logger.log(Level.INFO, "Sending user input to logic: " + userInput);
         inputFeedback = logic.parseCommand(userInput, Logic.ListType.ALL);
         showFeedback(true, MESSAGE_FEEDBACK_ACTION_ADD, inputFeedback);
     }
@@ -588,6 +607,7 @@ public class RootLayoutController {
             return;
         }
 
+        logger.log(Level.INFO, "Sending user input to logic: " + userInput);
         String parseResult = logic.parseCommand(userInput, Logic.ListType.ALL);
         System.out.println("user arguments: " + userArguments);
         System.out.println("parse result: " + parseResult);
@@ -623,6 +643,7 @@ public class RootLayoutController {
      * 
      */
     private void parseSearch() {
+        logger.log(Level.INFO, "Searching: " + userInput);
         if (userInputArray.length > 1) {
             inputFeedback = userArguments;
         } else {
@@ -655,6 +676,7 @@ public class RootLayoutController {
      */
     private void showFeedback(boolean isVisible) {
         if (isVisible) {
+            logger.log(Level.INFO, "Showing user feedback");
             showResult(false, EMPTY_STRING);
         }
 
@@ -667,6 +689,7 @@ public class RootLayoutController {
      */
     private void showFeedback(boolean isVisible, String userAction, String userFeedback) {
         if (isVisible) {
+            logger.log(Level.INFO, "Showing user feedback: " + userFeedback);
             showResult(false, EMPTY_STRING);
         }
 
@@ -681,6 +704,7 @@ public class RootLayoutController {
      */
     private void showResult(boolean isVisible, String resultString) {
         if (isVisible) {
+            logger.log(Level.INFO, "Showing result: " + resultString);
             showFeedback(false);
         }
 
@@ -703,9 +727,11 @@ public class RootLayoutController {
         if (previousSelectedTaskIndex == allTasks.size()) {
             listViewAll.getSelectionModel().selectLast();
             listViewAll.scrollTo(allTasks.size() - 1);
+            logger.log(Level.INFO, "Restore ListView selection to last item");
         } else {
             listViewAll.getSelectionModel().select(previousSelectedTaskIndex);
             listViewAll.scrollTo(previousSelectedTaskIndex);
+            logger.log(Level.INFO, "Restore ListView selection to previous to previous item");
         }
     }
 
@@ -736,14 +762,14 @@ public class RootLayoutController {
      */
     private void saveCaretPosition() {
         previousCaretPosition = commandBar.getCaretPosition();
-        System.out.println("Saving caret position: " + previousCaretPosition);
+        logger.log(Level.INFO, "Save caret position to " + previousCaretPosition);
     }
 
     /**
      * 
      */
     private void restoreCaretPosition() {
-        System.out.println("Restoring caret position: " + previousCaretPosition);
+        logger.log(Level.INFO, "Restore caret position to " + previousCaretPosition);
         commandBar.positionCaret(previousCaretPosition);
     }
 
@@ -751,6 +777,7 @@ public class RootLayoutController {
      * 
      */
     private void moveCaretPositionToLast() {
+        logger.log(Level.INFO, "Move caret position to " + commandBar.getText().length());
         commandBar.positionCaret(commandBar.getText().length());
     }
 
