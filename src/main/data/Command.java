@@ -35,11 +35,15 @@ public class Command {
     }
     
     public void setCommandType(Type commandType) {
-    	this.commandType = commandType;
+        this.commandType = commandType;
     }
     
     public Task getTask() {
         return task;
+    }
+    
+    public void setTask(Task task) {
+        this.task = task;
     }
     
     public ArrayList<Integer> getIndexes() {

@@ -76,17 +76,17 @@ public class Storage {
 	    ArrayList<ArrayList<Task>> tasks = null;
 		BufferedReader reader = null;
 		try {
-		    File file = new File(filePath);
-		    if (file.length() == 0) {
-		        logger.log(Level.INFO,"Output file is empty: " + fileName);
-                throw new Exception("Output file is empty!");
-		    }
 			reader = new BufferedReader(new FileReader(filePath));
 			Gson gson = new GsonBuilder().create();
 	        tasks = gson.fromJson(reader,
 	                new TypeToken<ArrayList<ArrayList<Task>>>() {
 	                }.getType());
 	        reader.close();
+	        
+	        if (tasks.size() < 2) {
+	            logger.log(Level.WARNING,"ERROR READING FILE: " + fileName);
+                throw new Exception("ERROR READING FILE");
+	        }
 	        logger.log(Level.INFO,"Successfully read tasks from: " + fileName);
 		} catch (Exception e) {
 		    ArrayList<ArrayList<Task>> allTasks = new ArrayList<ArrayList<Task>>();

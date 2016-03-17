@@ -55,10 +55,6 @@ public class Task {
         return done;
     }
     
-    public void setDone(boolean done) {
-        this.done = done;
-    }
-    
     public int getPriority() {
         return priority;
     }
@@ -75,10 +71,12 @@ public class Task {
     }
     
     public void setIsCompleted() {
+        this.done = true;
         this.completedDate = new Date();
     }
     
     public void setNotCompleted() {
+        this.done = false;
         this.completedDate = null;
     }
     
