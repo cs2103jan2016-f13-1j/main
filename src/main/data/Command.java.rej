@@ -1,0 +1,20 @@
+diff a/src/main/data/Command.java b/src/main/data/Command.java	(rejected hunks)
+@@ -35,13 +35,17 @@
+     }
+     
+     public void setCommandType(Type commandType) {
+-    	this.commandType = commandType;
++        this.commandType = commandType;
+     }
+     
+     public Task getTask() {
+         return task;
+     }
+     
++    public void setTask(Task task) {
++        this.task = task;
++    }
++    
+     public ArrayList<Integer> getIndexes() {
+         return indexes;
+     }
