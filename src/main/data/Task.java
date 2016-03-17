@@ -63,8 +63,11 @@ public class Task {
         return priority;
     }
     
-    public void setPriority(int priority) {
-    	this.priority = priority;
+    public int togglePriority() {
+    	int limit = 4;
+    	priority++;
+    	priority = priority % limit;
+    	return priority;
     }
     
     public Date getCompletedDate() {
