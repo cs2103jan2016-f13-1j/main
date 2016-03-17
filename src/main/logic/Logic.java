@@ -3,8 +3,10 @@
  * 
  * Controller();
  * parseCommand(String userCommand, ListType type);
- * editTask(int index);
+ * editTask(Task task);
  * executeCommand();
+ * executeCommand(Task task);
+ * executeCommand(ArrayList<Task> tasks);
  * undo();
  * redo();
  * 
@@ -95,53 +97,68 @@ public class Logic {
 	 * @param 	index
 	 * 			the index of the task
 	 */
-	public void editTask(int index) {
-	    int arrayIndex = index - 1;
+	public void editTask(Task task) {
 	    assert(command != null);
 	    ListType type = Enum.valueOf(ListType.class, command.getListType());
 	    command.setCommandType(Command.Type.EDIT);
-	    command.setPreviousTasks(new ArrayList<Task>());
-	    command.getPreviousTasks().add(getTaskAtIndex(type,arrayIndex));
-	    command.setIndexes(new ArrayList<Integer>());
-	    command.getIndexes().add(index);
-	    
 	    assert(command.getTask() != null);
-		deleteTask(command.getIndexes(),type);
-		addTask(command.getTask(),type);
+	    
+	    replaceTask(task,command.getTask(),type);
 		
 		command.setPreviousListType(type.name());
-		logger.log(Level.INFO,"Edited task at index " + index + " to " + command.getTask().getTitle());
+		logger.log(Level.INFO,"Edited task " + task.getTitle() + " to " + command.getTask().getTitle());
 		sortTasks();
 		saveTasks();
 		addToHistory();
 	}
 	
 	/**
-	 * Executes the last command stored when parseCommand was called,
-	 * and stores it in a {@code Command} history stack.
-	 * 
-	 * Used for add and delete operations.
-	 */
+     * Executes the command that is parsed just before this command is called,
+     * and stores it in a {@code Command} history stack.
+     * 
+     * Used for add operations.
+     */
 	public String executeCommand() {
+        String feedback = null;
+        assert(command != null);
+        
+        ListType type = Enum.valueOf(ListType.class, command.getListType());
+        if (command.getCommandType().equals(Command.Type.ADD)) {
+            addTask(command.getTask(),type);
+            feedback = "Task added!";
+        }
+        logger.log(Level.INFO,"Executed " + command.getCommandType().name() + " command");
+        sortTasks();
+        saveTasks();
+        addToHistory();
+        return feedback;
+    }
+	
+	/**
+     * Executes the command that is parsed just before this command is called,
+     * and stores it in a {@code Command} history stack.
+     * 
+     * Used for delete/done/undone operations.
+     * 
+     * @param   task
+     *          the task to be deleted/marked/unmarked
+     */
+	public String executeCommand(Task task) {
 	    String feedback = null;
 	    assert(command != null);
 	    
 	    ListType type = Enum.valueOf(ListType.class, command.getListType());
 	    switch (command.getCommandType()) {
-            case ADD:
-                addTask(command.getTask(),type);
-                feedback = "Task added!";
-                break;
             case DELETE:
-                deleteTask(command.getIndexes(),type);
+                deleteTask(task);
                 feedback = "Task deleted!";
                 break;
             case DONE:
-                markTask(command.getIndexes(),true, type);
+                markTask(task, true, type);
                 feedback = "Marked " + command.getIndexes().size() + " tasks as completed";
                 break;
             case UNDONE:
-                markTask(command.getIndexes(),false, type);
+                markTask(task, false, type);
                 feedback = "Marked " + command.getIndexes().size() + " tasks as uncompleted";
                 break;
             default:
@@ -153,6 +170,42 @@ public class Logic {
 		addToHistory();
 		return feedback;
 	}
+	
+	/**
+     * Executes the command that is parsed just before this command is called,
+     * and stores it in a {@code Command} history stack.
+     * 
+     * Used for delete/done/undone operations for multiple tasks at once.
+     * 
+     * @param   tasks
+     *          the tasks to be deleted/marked/unmarked
+     */
+	public String executeCommand(ArrayList<Task> tasks) {
+        String feedback = null;
+        assert(command != null);
+        
+        switch (command.getCommandType()) {
+            case DELETE:
+                deleteMultipleTasks(tasks);
+                feedback = "Task deleted!";
+                break;
+            case DONE:
+                markMultipleTasks(tasks, true);
+                feedback = "Marked " + command.getIndexes().size() + " tasks as done";
+                break;
+            case UNDONE:
+                markMultipleTasks(tasks, false);
+                feedback = "Marked " + command.getIndexes().size() + " tasks as undone";
+                break;
+            default:
+                break;
+        }
+        logger.log(Level.INFO,"Executed " + command.getCommandType().name() + " command");
+        sortTasks();
+        saveTasks();
+        addToHistory();
+        return feedback;
+    }
 	
 	/**
 	 * Use to retrieve all tasks that are yet to be done
@@ -198,8 +251,6 @@ public class Logic {
 	    String feedback = null;
 	    ArrayList<Integer> indexes = null;
 	    StringBuilder sb = new StringBuilder();
-	    //ArrayList<Integer> indexArray = null;
-	    //String indexes = null;
 	    
 	    command = parser.parse(userCommand);
 	    assert(command != null);
@@ -213,61 +264,11 @@ public class Logic {
             case DONE:
             case UNDONE:
                 indexes = command.getIndexes();
-                
                 for (int i : indexes) {
                     sb.append(i + " ");
                 }
-                
                 feedback = sb.toString().trim();
                 break;
-//                indexArray = command.getIndexes();
-//                
-//                if (indexArray.size() == 1) {
-//                    int arrayIndex = indexArray.get(0) - 1;
-//                    feedback = getTaskAtIndex(type, arrayIndex).getTitle();
-//                } else {
-//                    String message = userCommand.toLowerCase();
-//                    String del = "del ";
-//                    String delete = "delete ";
-//                    if (message.contains(del)) {
-//                        indexes = message.substring(del.length());
-//                    } else if (message.contains("delete")) {
-//                        indexes = message.substring(delete.length());
-//                    }
-//                    feedback = indexes + " " + "(" + indexArray.size() + " tasks)";
-//                }
-//                break;
-//            case DONE:
-//                indexes = command.getIndexes();
-//                indexArray = command.getIndexes();
-//                
-//                if (indexArray.size() == 1) {
-//                    int arrayIndex = indexArray.get(0) - 1;
-//                    feedback = getTaskAtIndex(type, arrayIndex).getTitle();
-//                } else {
-//                    String message = userCommand.toLowerCase();
-//                    String done = "done ";
-//                    if (message.contains(done)) {
-//                        indexes = message.substring(done.length());
-//                    } 
-//                    feedback = indexes + " " + "(" + indexArray.size() + " tasks)";
-//                }
-//                break;
-//            case UNDONE:
-//                indexes = command.getIndexes();
-//                indexArray = command.getIndexes();
-//                
-//                if (indexArray.size() == 1) {
-//                    feedback = getTaskAtIndex(type, indexArray.get(0)).getTitle();
-//                } else {
-//                    String message = userCommand.toLowerCase();
-//                    String undone = "undone ";
-//                    if (message.contains(undone)) {
-//                        indexes = message.substring(undone.length());
-//                    } 
-//                    feedback = indexes + " " + "(" + indexArray.size() + " tasks)";
-//                }
-//                break;
             default:
                 break;
 		}
@@ -290,16 +291,18 @@ public class Logic {
                 addTask(command.getTask(),Enum.valueOf(ListType.class, command.getListType()));
                 break;
             case EDIT:
-                editTask(command.getIndexes().get(0));
+                replaceTask(command.getTask(), command.getPreviousTasks().get(0), Enum.valueOf(ListType.class, command.getListType()));
                 break;
             case DELETE:
-                deleteTask(command.getIndexes(),Enum.valueOf(ListType.class, command.getListType()));
+                for (Task task : command.getPreviousTasks()) {
+                    deleteTask(task);
+                }
                 break;
             case DONE:
-                markTask(command.getIndexes(),true, Enum.valueOf(ListType.class, command.getListType()));
+                markMultipleTasks(command.getPreviousTasks(), true);
                 break;
             case UNDONE:
-                markTask(command.getIndexes(),false, Enum.valueOf(ListType.class, command.getListType()));
+                markMultipleTasks(command.getPreviousTasks(), false);
                 break;
             default:
                 break;
@@ -327,20 +330,21 @@ public class Logic {
 	    
 		Command undoCommand = undoHistory.pop();
 		
+		
 		ListType type = Enum.valueOf(ListType.class, undoCommand.getListType());
 		ArrayList<Task> previousTasks = null;
 		
 		switch (undoCommand.getCommandType()) {
 			case ADD:
 			    redoHistory.push(undoCommand);
-                deleteFromList(ListType.ALL, undoCommand.getTask());
+                deleteTask(undoCommand.getTask());
 				break;
 			case EDIT:
 			    undoCommand.setListType(type.name());
-                redoHistory.push(undoCommand);
 			    Task previousTask = undoCommand.getPreviousTasks().get(0);
-			    deleteFromList(type, undoCommand.getTask());
-		        addTask(previousTask, type);
+			    Task tempTask = replaceTask(undoCommand.getTask(), previousTask, type);
+			    undoCommand.setTask(tempTask);
+			    redoHistory.push(undoCommand);
                 break;
 			case DELETE:
 			    redoHistory.push(undoCommand);
@@ -351,17 +355,11 @@ public class Logic {
 				break;
 			case DONE:
 			    redoHistory.push(undoCommand);
-			    previousTasks = undoCommand.getPreviousTasks();
-			    for (int i = 0; i < previousTasks.size(); i++) {
-                    markFromList(ListType.COMPLETED, previousTasks.get(i), false);
-                }
+			    markMultipleTasks(undoCommand.getPreviousTasks(), false);
 			    break;
 			case UNDONE:
 			    redoHistory.push(undoCommand);
-                previousTasks = undoCommand.getPreviousTasks();
-                for (int i = 0; i < previousTasks.size(); i++) {
-                    markFromList(ListType.COMPLETED, previousTasks.get(i), true);
-                }
+			    markMultipleTasks(undoCommand.getPreviousTasks(), true);
 			default:
 				break;
 		}
@@ -388,123 +386,151 @@ public class Logic {
         undoHistory.push(command);
 		redoHistory = new Stack<Command>();
     }
-
-	private void deleteFromList(ListType type, Task task) {
-        ArrayList<Task> tasks = new ArrayList<Task>();
-        
-        switch (type) {
-            case ALL:
-                tasks = allTasks;
-                break;
-            case COMPLETED:
-                tasks = completedTasks;
-                break;
-            default:
-                break;
-        }
-        
-        for (int i = 0; i < tasks.size(); i++) {
-            Task t = tasks.get(i);
-            if (t.compareTo(task) == 0) {
-                tasks.remove(i);
+	
+    private Task replaceTask(Task oldTask, Task newTask, ListType type) {
+        System.out.println(oldTask + " with " + newTask);
+        ArrayList<Task> previousTasks = new ArrayList<Task>();
+        for (int i = 0; i < allTasks.size(); i++) {
+            Task t = allTasks.get(i);
+            if (t.equals(oldTask)) {
+                Task removedTask = allTasks.remove(i);
+                previousTasks.add(removedTask);
                 i--;
             }
         }
+
+        for (int i = 0; i < completedTasks.size(); i++) {
+            Task t = completedTasks.get(i);
+            if (t.equals(oldTask)) {
+                Task removedTask = completedTasks.remove(i);
+                previousTasks.add(removedTask);
+                i--;
+            }
+        }
+        
+        assert(command != null);
+        command.setPreviousTasks(previousTasks);   
+        
+        switch (type) {
+            case ALL:
+                allTasks.add(newTask);
+                break;
+            case COMPLETED:
+                completedTasks.add(newTask);
+                break;
+            default:
+                break;
+        }
+        return newTask;
     }
-	
-	private void deleteTask(ArrayList<Integer> indexes, ListType type) {
-		switch (type) {
-		    case ALL:
-		        deleteTasksFromList(allTasks, indexes);
-				break;
-		    case COMPLETED:
-		        deleteTasksFromList(completedTasks, indexes);
-		        break;
-			default:
-				break;
-		}
+    
+	private void deleteTask(Task task) {
+	    ArrayList<Task> previousTasks = new ArrayList<Task>();
+        for (int i = 0; i < allTasks.size(); i++) {
+            Task t = allTasks.get(i);
+            if (t.equals(task)) {
+                Task removedTask = allTasks.remove(i);
+                previousTasks.add(removedTask);
+                i--;
+            }
+        }
+
+        for (int i = 0; i < completedTasks.size(); i++) {
+            Task t = completedTasks.get(i);
+            if (t.equals(task)) {
+                Task removedTask = completedTasks.remove(i);
+                previousTasks.add(removedTask);
+                i--;
+            }
+        }
+        
+        assert(command != null);
+        command.setPreviousTasks(previousTasks);   
 	}
 	
-	private void deleteTasksFromList(ArrayList<Task> tasks, ArrayList<Integer> indexes) {
-        int j = 0;
+	private void deleteMultipleTasks(ArrayList<Task> tasks) {
         ArrayList<Task> previousTasks = new ArrayList<Task>();
-        for (int i = 0; i < indexes.size(); i++) {
-            int indexToDelete = indexes.get(i-j);
-            indexToDelete--;
-            Task removedTask = tasks.remove(indexToDelete);
-            previousTasks.add(removedTask);
-            j++;
+        for (int i = 0; i < allTasks.size(); i++) {
+            Task t1 = allTasks.get(i);
+            for (Task t2 : tasks) {
+                if (t1.equals(t2)) {
+                    Task removedTask = allTasks.remove(i);
+                    previousTasks.add(removedTask);
+                    i--;
+                }
+            }
         }
+
+        for (int i = 0; i < completedTasks.size(); i++) {
+            Task t1 = completedTasks.get(i);
+            for (Task t2 : tasks) {
+                if (t1.equals(t2)) {
+                    Task removedTask = completedTasks.remove(i);
+                    previousTasks.add(removedTask);
+                    i--;
+                }
+            }
+        }
+        
         assert(command != null);
+        command.setPreviousTasks(previousTasks);   
+    }
+	
+	private void markTask(Task task, boolean status, ListType type) {
+	    ArrayList<Task> previousTasks = new ArrayList<Task>();
+	    for (Task t : allTasks) {
+	        if (t.equals(task)) {
+	            if (status == true) {
+	                t.setIsCompleted();
+	            } else {
+	                t.setNotCompleted();
+	            }
+	            previousTasks.add(t);
+	        }
+	    }
+	    
+	    for (Task t : completedTasks) {
+            if (t.equals(task)) {
+                if (status == true) {
+                    t.setIsCompleted();
+                } else {
+                    t.setNotCompleted();
+                }
+                previousTasks.add(t);
+            }
+        }
+	    assert(command != null);
         command.setPreviousTasks(previousTasks);
     }
 	
-	private Task getTaskAtIndex(ListType type, int index) {
-        Task task = null;
-        
-        switch (type) {
-            case ALL:
-                task = allTasks.get(index);
-                break;
-            case COMPLETED:
-                task = completedTasks.get(index);
-                break;
-            default:
-                break;
-        }
-        return task;
-    }
-	
-	private void markFromList(ListType type, Task task, boolean status) {
-        ArrayList<Task> tasks = new ArrayList<Task>();
-        
-        switch (type) {
-            case ALL:
-                tasks = allTasks;
-                break;
-            case COMPLETED:
-                tasks = completedTasks;
-                break;
-            default:
-                break;
-        }
-        
-        for (int i = 0; i < tasks.size(); i++) {
-            Task t = tasks.get(i);
-            if (t.getTitle().equals(task.getTitle())) {
-                t.setDone(status);
+	private void markMultipleTasks(ArrayList<Task> tasks, boolean status) {
+	    ArrayList<Task> previousTasks = new ArrayList<Task>();
+        for (int i = 0; i < allTasks.size(); i++) {
+            Task t1 = allTasks.get(i);
+            for (Task t2 : tasks) {
+                if (t1.equals(t2)) {
+                    if (status == true) {
+                        t1.setIsCompleted();
+                    } else {
+                        t1.setNotCompleted();
+                    }
+                    previousTasks.add(t1);
+                }
             }
         }
-    }
-	
-	private void markTask(ArrayList<Integer> indexes, boolean status, ListType type) {
-        switch (type) {
-            case ALL:
-                markTasksFromList(allTasks, indexes, status);
-                break;
-            case COMPLETED:
-                markTasksFromList(completedTasks, indexes, status);
-                break;    
-            default:
-                break;
-        }
-    }
-	
-	private void markTasksFromList(ArrayList<Task> tasks, ArrayList<Integer> indexes, boolean status) {
-        ArrayList<Task> previousTasks = new ArrayList<Task>();
-        for (int i = 0; i < indexes.size(); i++) {
-            int indexToMark = indexes.get(i);
-            indexToMark--;
-            Task task = tasks.get(indexToMark);
-            task.setDone(status);
-            
-            if (status == true) {
-                task.setIsCompleted();
-            } else {
-                task.setNotCompleted();
+        
+        for (int i = 0; i < completedTasks.size(); i++) {
+            Task t1 = completedTasks.get(i);
+            for (Task t2 : tasks) {
+                if (t1.equals(t2)) {
+                    if (status == true) {
+                        t1.setIsCompleted();
+                    } else {
+                        t1.setNotCompleted();
+                    }
+                    previousTasks.add(t1);
+                }
             }
-            
-            previousTasks.add(task);
         }
         assert(command != null);
         command.setPreviousTasks(previousTasks);
