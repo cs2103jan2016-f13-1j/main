@@ -46,7 +46,7 @@ public class TestLogic {
         
         //Delete a task
         feedback = logic.parseCommand("del 1", Logic.ListType.ALL);
-        assertEquals(feedback, "edited task");
+        assertEquals(feedback, "1");
         logic.executeCommand();
         logic.undo();
         logic.redo();
@@ -59,7 +59,7 @@ public class TestLogic {
         logic.parseCommand("a multiple task", Logic.ListType.ALL);
         logic.executeCommand();
         feedback = logic.parseCommand("del 1-2,3", Logic.ListType.ALL);
-        assertEquals(feedback, "1-2,3 (3 tasks)");
+        assertEquals(feedback, "1 2 3");
         logic.executeCommand();
         logic.undo();
         logic.redo();
@@ -72,7 +72,7 @@ public class TestLogic {
         feedback = logic.parseCommand("b multiple task by 8", Logic.ListType.ALL);
         logic.executeCommand();
         feedback = logic.parseCommand("del 1-2,3", Logic.ListType.ALL);
-        assertEquals(feedback, "1-2,3 (3 tasks)");
+        assertEquals(feedback, "1 2 3");
         logic.executeCommand();
 	}
 	
@@ -88,12 +88,12 @@ public class TestLogic {
 	    logic.parseCommand("mark task", Logic.ListType.ALL);
         logic.executeCommand();
         feedback = logic.parseCommand("done 1", Logic.ListType.ALL);
-        assertEquals(feedback, "mark task");
+        assertEquals(feedback, "1");
         logic.executeCommand();
         logic.undo();
         logic.redo();
         feedback = logic.parseCommand("del 1", Logic.ListType.COMPLETED);
-        assertEquals(feedback, "mark task");
+        assertEquals(feedback, "1");
         logic.executeCommand();
         
         //Mark multiple tasks
@@ -104,12 +104,12 @@ public class TestLogic {
         logic.parseCommand("mark task 3", Logic.ListType.ALL);
         logic.executeCommand();
         feedback = logic.parseCommand("done 1-2,3", Logic.ListType.ALL);
-        assertEquals(feedback, "1-2,3 (3 tasks)");
+        assertEquals(feedback, "1 2 3");
         logic.executeCommand();
         logic.undo();
         logic.redo();
         feedback = logic.parseCommand("delete 1-2,3", Logic.ListType.COMPLETED);
-        assertEquals(feedback, "1-2,3 (3 tasks)");
+        assertEquals(feedback, "1 2 3");
         logic.executeCommand();
 	}
 	

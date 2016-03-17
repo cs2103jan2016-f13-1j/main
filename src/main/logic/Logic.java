@@ -196,8 +196,10 @@ public class Logic {
 	 */
 	public String parseCommand(String userCommand, ListType type) {
 	    String feedback = null;
-	    ArrayList<Integer> indexArray = null;
-	    String indexes = null;
+	    ArrayList<Integer> indexes = null;
+	    StringBuilder sb = new StringBuilder();
+	    //ArrayList<Integer> indexArray = null;
+	    //String indexes = null;
 	    
 	    command = parser.parse(userCommand);
 	    assert(command != null);
@@ -208,52 +210,64 @@ public class Logic {
                 feedback = command.getTask().toString();
                 break;
             case DELETE:
-                indexArray = command.getIndexes();
-                
-                if (indexArray.size() == 1) {
-                    int arrayIndex = indexArray.get(0) - 1;
-                    feedback = getTaskAtIndex(type, arrayIndex).getTitle();
-                } else {
-                    String message = userCommand.toLowerCase();
-                    String del = "del ";
-                    String delete = "delete ";
-                    if (message.contains(del)) {
-                        indexes = message.substring(del.length());
-                    } else if (message.contains("delete")) {
-                        indexes = message.substring(delete.length());
-                    }
-                    feedback = indexes + " " + "(" + indexArray.size() + " tasks)";
-                }
-                break;
             case DONE:
-                indexArray = command.getIndexes();
-                
-                if (indexArray.size() == 1) {
-                    int arrayIndex = indexArray.get(0) - 1;
-                    feedback = getTaskAtIndex(type, arrayIndex).getTitle();
-                } else {
-                    String message = userCommand.toLowerCase();
-                    String done = "done ";
-                    if (message.contains(done)) {
-                        indexes = message.substring(done.length());
-                    } 
-                    feedback = indexes + " " + "(" + indexArray.size() + " tasks)";
-                }
-                break;
             case UNDONE:
-                indexArray = command.getIndexes();
+                indexes = command.getIndexes();
                 
-                if (indexArray.size() == 1) {
-                    feedback = getTaskAtIndex(type, indexArray.get(0)).getTitle();
-                } else {
-                    String message = userCommand.toLowerCase();
-                    String undone = "undone ";
-                    if (message.contains(undone)) {
-                        indexes = message.substring(undone.length());
-                    } 
-                    feedback = indexes + " " + "(" + indexArray.size() + " tasks)";
+                for (int i : indexes) {
+                    sb.append(i + " ");
                 }
+                
+                feedback = sb.toString().trim();
                 break;
+//                indexArray = command.getIndexes();
+//                
+//                if (indexArray.size() == 1) {
+//                    int arrayIndex = indexArray.get(0) - 1;
+//                    feedback = getTaskAtIndex(type, arrayIndex).getTitle();
+//                } else {
+//                    String message = userCommand.toLowerCase();
+//                    String del = "del ";
+//                    String delete = "delete ";
+//                    if (message.contains(del)) {
+//                        indexes = message.substring(del.length());
+//                    } else if (message.contains("delete")) {
+//                        indexes = message.substring(delete.length());
+//                    }
+//                    feedback = indexes + " " + "(" + indexArray.size() + " tasks)";
+//                }
+//                break;
+//            case DONE:
+//                indexes = command.getIndexes();
+//                indexArray = command.getIndexes();
+//                
+//                if (indexArray.size() == 1) {
+//                    int arrayIndex = indexArray.get(0) - 1;
+//                    feedback = getTaskAtIndex(type, arrayIndex).getTitle();
+//                } else {
+//                    String message = userCommand.toLowerCase();
+//                    String done = "done ";
+//                    if (message.contains(done)) {
+//                        indexes = message.substring(done.length());
+//                    } 
+//                    feedback = indexes + " " + "(" + indexArray.size() + " tasks)";
+//                }
+//                break;
+//            case UNDONE:
+//                indexes = command.getIndexes();
+//                indexArray = command.getIndexes();
+//                
+//                if (indexArray.size() == 1) {
+//                    feedback = getTaskAtIndex(type, indexArray.get(0)).getTitle();
+//                } else {
+//                    String message = userCommand.toLowerCase();
+//                    String undone = "undone ";
+//                    if (message.contains(undone)) {
+//                        indexes = message.substring(undone.length());
+//                    } 
+//                    feedback = indexes + " " + "(" + indexArray.size() + " tasks)";
+//                }
+//                break;
             default:
                 break;
 		}
