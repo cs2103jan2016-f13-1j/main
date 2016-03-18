@@ -223,7 +223,7 @@ public class TestCommandParser {
     }
     
     @Test
-    public void testPriority() {
+    public void testTogglePriority() {
     	CommandParser parser = new CommandParser();
         Command command = parser.parse("Cook dinner #home");
         assertEquals(0, command.getTask().getPriority());
@@ -307,6 +307,26 @@ public class TestCommandParser {
         
         command = parser.parse("done 1-3,4,5,6-9,10");
         assertEquals(indexes, command.getIndexes());
+    }
+    
+    @Test
+    public void testToggleDone() {
+    	 CommandParser parser = new CommandParser();
+         Command command = parser.parse("Do assignment");
+         Task task = command.getTask();
+         assertEquals(false, task.isDone());
+         
+         task.setIsCompleted();
+         assertEquals(true, task.isDone());
+         
+         task.setNotCompleted();
+         assertEquals(false, task.isDone());
+         
+         task.toggleDone();
+         assertEquals(true, task.isDone());
+         
+         task.toggleDone();
+         assertEquals(false, task.isDone());
     }
     
     @Test
