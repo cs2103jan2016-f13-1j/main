@@ -162,8 +162,7 @@ public class CommandParser {
             title = removeLabelFromTitle(title, label);
         }
 
-        task = buildTask(title, startDate, endDate, label);
-        Command command = new Command(type, task);
+        Command command = new Command(type, title, startDate, endDate, label);
         return command;
     }
     
@@ -462,11 +461,6 @@ public class CommandParser {
         
         title = title.replace(tag, "");
         return title;
-    }
-
-    private Task buildTask(String title, Date startDate, Date endDate, String label) {
-        Task task = new Task(title, startDate, endDate, label, new Date());
-        return task;
     }
     
     /**
