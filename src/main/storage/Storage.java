@@ -72,46 +72,43 @@ public class Storage {
 		throw new CloneNotSupportedException();
 	}
 	
-	public ArrayList<ArrayList<Task>> readTasks() {
-	    ArrayList<ArrayList<Task>> tasks = null;
-		BufferedReader reader = null;
-		try {
-			reader = new BufferedReader(new FileReader(filePath));
-			Gson gson = new GsonBuilder().create();
-	        tasks = gson.fromJson(reader,
-	                new TypeToken<ArrayList<ArrayList<Task>>>() {
-	                }.getType());
-	        reader.close();
-	        
-	        if (tasks.size() < 2) {
-	            logger.log(Level.WARNING,"ERROR READING FILE: " + fileName);
+	public ArrayList<Task> readTasks() {
+        ArrayList<Task> tasks = null;
+        BufferedReader reader = null;
+        try {
+            reader = new BufferedReader(new FileReader(filePath));
+            Gson gson = new GsonBuilder().create();
+            tasks = gson.fromJson(reader,
+                    new TypeToken<ArrayList<Task>>() {
+                    }.getType());
+            reader.close();
+            
+            if (tasks.size() == 0) {
+                logger.log(Level.WARNING,"ERROR READING FILE: " + fileName);
                 throw new Exception("ERROR READING FILE");
-	        }
-	        logger.log(Level.INFO,"Successfully read tasks from: " + fileName);
-		} catch (Exception e) {
-		    ArrayList<ArrayList<Task>> allTasks = new ArrayList<ArrayList<Task>>();
-            allTasks.add(new ArrayList<Task>());
-            allTasks.add(new ArrayList<Task>());
-			tasks = allTasks;
-			logger.log(Level.INFO,"Application clean start. Tasks will be saved in: " + DEFAULT_FILE_NAME);
-		}
-		assert(tasks != null);
-		return tasks;
-	}
+            }
+            logger.log(Level.INFO,"Successfully read tasks from: " + fileName);
+        } catch (Exception e) {
+            tasks = new ArrayList<Task>();
+            logger.log(Level.INFO,"Application clean start. Tasks will be saved in: " + DEFAULT_FILE_NAME);
+        }
+        assert(tasks != null);
+        return tasks;
+    }
 
-	public void writeTasks(ArrayList<ArrayList<Task>> tasks) throws FileNotFoundException {
-		try (Writer writer = new OutputStreamWriter(new FileOutputStream(
-				filePath), "UTF-8")) {
-			Gson gson = new GsonBuilder().setPrettyPrinting().create();
-			gson.toJson(tasks, writer);
-			logger.log(Level.INFO,"Saved tasks to: " + fileName);
-		} catch (Exception e) {
-			logger.log(Level.INFO,"Corrupted file location: " + filePath);
-			setFileLocation(DEFAULT_FILE_NAME);
-			writeTasks(tasks);
-		}
-		assert((new File(filePath)).exists());
-	}
+    public void writeTasks(ArrayList<Task> tasks) throws FileNotFoundException {
+        try (Writer writer = new OutputStreamWriter(new FileOutputStream(
+                filePath), "UTF-8")) {
+            Gson gson = new GsonBuilder().setPrettyPrinting().create();
+            gson.toJson(tasks, writer);
+            logger.log(Level.INFO,"Saved tasks to: " + fileName);
+        } catch (Exception e) {
+            logger.log(Level.INFO,"Corrupted file location: " + filePath);
+            setFileLocation(DEFAULT_FILE_NAME);
+            writeTasks(tasks);
+        }
+        assert((new File(filePath)).exists());
+    }
 	
 	private String getDefaultFilePath() {
 	    String path = null;

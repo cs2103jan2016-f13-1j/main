@@ -50,9 +50,6 @@ public class Logic {
     
 	private static Logic logic;
 	
-	private static final int ALL_TASKS_INDEX = 0;
-	private static final int COMPLETED_TASKS_INDEX = 1;
-	
 	private CommandParser parser = null;
 	
 	private Storage storage = null;
@@ -60,7 +57,6 @@ public class Logic {
 	private Stack<Command> undoHistory = new Stack<Command>();
 	private Stack<Command> redoHistory = new Stack<Command>();
     private ArrayList<Task> allTasks = new ArrayList<Task>();
-    
     private ArrayList<Task> completedTasks = new ArrayList<Task>();
     
     /**
@@ -71,9 +67,9 @@ public class Logic {
         storage = Storage.getStorage();
         assert(storage != null);
         
-        ArrayList<ArrayList<Task>> tasksFromStorage = storage.readTasks();
-        allTasks = tasksFromStorage.get(ALL_TASKS_INDEX);
-        completedTasks = tasksFromStorage.get(COMPLETED_TASKS_INDEX);
+        ArrayList<Task> tasksFromStorage = storage.readTasks();
+        assert(tasksFromStorage != null);
+        categorizeTasks(tasksFromStorage);
         assert(allTasks != null);
         assert(completedTasks != null);
     }
@@ -388,7 +384,6 @@ public class Logic {
     }
 	
     private Task replaceTask(Task oldTask, Task newTask, ListType type) {
-        System.out.println(oldTask + " with " + newTask);
         ArrayList<Task> previousTasks = new ArrayList<Task>();
         for (int i = 0; i < allTasks.size(); i++) {
             Task t = allTasks.get(i);
@@ -539,13 +534,23 @@ public class Logic {
 	private void saveTasks() {
 		try {
 		    logger.log(Level.INFO,"Saving tasks");
-			ArrayList<ArrayList<Task>> tasks = new ArrayList<ArrayList<Task>>();
-			tasks.add(allTasks);
-			tasks.add(completedTasks);
+		    ArrayList<Task> tasks = new ArrayList<Task>();
+	        tasks.addAll(allTasks);
+	        tasks.addAll(completedTasks);
 			storage.writeTasks(tasks);
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	private void categorizeTasks(ArrayList<Task> tasks) {
+	    for (Task task : tasks) {
+	        if (task.isDone()) {
+                completedTasks.add(task);
+            } else {
+                allTasks.add(task);
+            }
+	    }
 	}
 	
 	private void sortTasks() {
