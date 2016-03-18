@@ -17,7 +17,6 @@ import org.ocpsoft.prettytime.nlp.PrettyTimeParser;
 
 import main.data.Command;
 import main.data.Command.Type;
-import main.data.Task;
 
 /**
  * @author Joleen
@@ -122,7 +121,6 @@ public class CommandParser {
      */
     private Command prepareForAdd(Type type, String commandString) {
         String title = null;
-        Task task = null;
         String label = null;
         int numberOfDate = 0;
         Date startDate = null;
