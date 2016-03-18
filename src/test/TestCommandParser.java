@@ -196,27 +196,30 @@ public class TestCommandParser {
     }
     
     @Test
-    public void testCompareTo() {
+    public void testCompareTo() throws InterruptedException {
     	CommandParser parser = new CommandParser();
     	Task task1, task2;
     	
     	Command command = parser.parse("Cook dinner at 7pm");
     	task1 = command.getTask();
+    	Thread.sleep(2000);
     	command = parser.parse("Cook dinner at 7pm");
     	task2 = command.getTask();
     	assertEquals(-1, task1.compareTo(task2));
     	
     	command = parser.parse("Cook dinner at 8pm");
     	task1 = command.getTask();
+    	Thread.sleep(2000);
     	command = parser.parse("Cook dinner at 9pm");
     	task2 = command.getTask();
     	assertEquals(-1, task1.compareTo(task2));
     	
     	command = parser.parse("Attend meeting");
     	task1 = command.getTask();
+    	Thread.sleep(2000);
     	command = parser.parse("Attend meeting #important");
     	task2 = command.getTask();
-    	assertEquals(-1, task1.compareTo(task2));	
+    	assertEquals(-1, task1.compareTo(task2));
     }
     
     @Test
