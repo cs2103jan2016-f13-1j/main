@@ -343,6 +343,14 @@ public class Task {
         return done;
     }
     
+    public void toggleDone() {
+    	if (isDone()) {
+    		setNotCompleted();
+    	} else {
+    		setIsCompleted();
+    	}
+    }
+    
     public boolean hasStarted() {
         return (startDate.compareTo(new Date()) < 0);
     }
