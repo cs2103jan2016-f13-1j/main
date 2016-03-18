@@ -135,8 +135,8 @@ public class Storage {
             out.print(path);
             out.close();
             logger.log(Level.INFO,"Updated user settings with: " + path);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+        	logger.log(Level.WARNING,"Failed to write to: " + path);
         }
 	    assert((new File(USER_SETTINGS)).exists());
 	}
