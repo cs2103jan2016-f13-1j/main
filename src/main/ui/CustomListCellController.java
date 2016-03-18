@@ -51,7 +51,7 @@ public class CustomListCellController extends ListCell<Task> {
         if (empty) {
             setGraphic(null);
         } else {
-            setLabelTaskIndex(item);
+            setLabelTaskIndex(getIndex()+1);
             setLabelTaskTitle(item);
             setLabelTaskTime(item);
             setLabelTaskTag(item);
@@ -63,8 +63,8 @@ public class CustomListCellController extends ListCell<Task> {
         return horizontalBox;
     }
 
-    public void setLabelTaskIndex(Task task) {
-//        this.labelTaskIndex.setText(task.getId());
+    public void setLabelTaskIndex(int index) {
+        this.labelTaskIndex.setText(index+"");
     }
 
     public void setLabelTaskTime(Task task) {

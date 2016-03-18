@@ -34,7 +34,6 @@ import javafx.scene.layout.AnchorPane;
 import javafx.util.Callback;
 import main.data.Task;
 import main.logic.Logic;
-import main.storage.Storage;
 
 @SuppressWarnings("restriction")
 public class RootLayoutController {
@@ -62,23 +61,17 @@ public class RootLayoutController {
     @FXML // fx:id="tabPane"
     private TabPane tabPane; // Value injected by FXMLLoader
 
-    @FXML // fx:id="tabAll"
-    private Tab tabAll; // Value injected by FXMLLoader
+    @FXML // fx:id="tabTodo"
+    private Tab tabTodo; // Value injected by FXMLLoader
 
-    @FXML // fx:id="tabToday"
-    private Tab tabToday; // Value injected by FXMLLoader
+    @FXML // fx:id="tabCompleted"
+    private Tab tabCompleted; // Value injected by FXMLLoader
 
-    @FXML // fx:id="tabWeek"
-    private Tab tabWeek; // Value injected by FXMLLoader
+    @FXML // fx:id="listViewTodo"
+    private JFXListView<Task> listViewTodo; // Value injected by FXMLLoader
 
-    @FXML // fx:id="listView"
-    private JFXListView<Task> listViewAll; // Value injected by FXMLLoader
-
-    @FXML // fx:id="listView"
-    private JFXListView<String> listViewToday; // Value injected by FXMLLoader
-
-    @FXML // fx:id="listView"
-    private JFXListView<String> listViewWeek; // Value injected by FXMLLoader
+    @FXML // fx:id="listViewCompleted"
+    private JFXListView<Task> listViewCompleted; // Value injected by FXMLLoader
 
     @FXML // fx:id="commandBar"
     private TextField commandBar; // Value injected by FXMLLoader
@@ -141,7 +134,7 @@ public class RootLayoutController {
 
     public void selectFirstItemFromListView() {
         logger.log(Level.INFO, "Set Select the first item on the ListView");
-        listViewAll.getSelectionModel().selectNext();
+        listViewTodo.getSelectionModel().selectNext();
         initCustomViewportBehaviorForListView();
 
     }
@@ -249,7 +242,7 @@ public class RootLayoutController {
                     // do nothing here to prevent the ui from changing focus
                     keyEvent.consume();
                 }
-                
+
                 saveCaretPosition();
             }
         });
@@ -263,21 +256,21 @@ public class RootLayoutController {
             logic = Logic.getLogic();
         }
 
-        listViewAll.setPlaceholder(new Label(MESSAGE_LISTVIEW_EMPTY));
+        listViewTodo.setPlaceholder(new Label(MESSAGE_LISTVIEW_EMPTY));
 
         // retrieve all task and add into an ObservableList
         allTasks = logic.getAllTasks();
         assert allTasks != null;
         observableTaskList.setAll(allTasks);
-        listViewAll.setItems(observableTaskList);
-        listViewAll.setCellFactory(new Callback<ListView<Task>, ListCell<Task>>() {
+        listViewTodo.setItems(observableTaskList);
+        listViewTodo.setCellFactory(new Callback<ListView<Task>, ListCell<Task>>() {
 
             @Override
             public ListCell<Task> call(ListView<Task> param) {
                 return new CustomListCellController();
             }
         });
-        logger.log(Level.INFO, "Populated ListView: " + allTasks.size()+" task");
+        logger.log(Level.INFO, "Populated ListView: " + allTasks.size() + " task");
     }
 
     /**
@@ -297,10 +290,10 @@ public class RootLayoutController {
             @Override
             public void run() {
                 if (keyEvent.getCode() == KeyCode.UP) {
-                    listViewAll.getSelectionModel().selectPrevious();
+                    listViewTodo.getSelectionModel().selectPrevious();
                     adjustViewportForListView();
                 } else if (keyEvent.getCode() == KeyCode.DOWN) {
-                    listViewAll.getSelectionModel().selectNext();
+                    listViewTodo.getSelectionModel().selectNext();
                     adjustViewportForListView();
                 }
 
@@ -332,7 +325,7 @@ public class RootLayoutController {
      */
     @SuppressWarnings("unchecked")
     private void initCustomViewportBehaviorForListView() {
-        for (Node node : listViewAll.getChildrenUnmodifiable()) {
+        for (Node node : listViewTodo.getChildrenUnmodifiable()) {
             if (node instanceof VirtualFlow) {
                 // get an instance of VirtualFlow. this is essentially the
                 // viewport for ListView
@@ -357,11 +350,11 @@ public class RootLayoutController {
         if (getSelectedTaskIndex() < firstVisibleIndexedCell.getIndex()) {
 
             // viewport will scroll and show the current item at the top
-            listViewAll.scrollTo(getSelectedTaskIndex());
+            listViewTodo.scrollTo(getSelectedTaskIndex());
         } else if (getSelectedTaskIndex() > lastVisibleIndexedCell.getIndex()) {
 
             // viewport will scroll and show the current item at the bottom
-            listViewAll.scrollTo(firstVisibleIndexedCell.getIndex() + 1);
+            listViewTodo.scrollTo(firstVisibleIndexedCell.getIndex() + 1);
         }
     }
 
@@ -480,8 +473,8 @@ public class RootLayoutController {
                         if (!userCommand.equals(COMMAND_DELETE) && !userCommand.equals(COMMAND_DELETE_SHORTHAND)) {
                             logger.log(Level.INFO, "(ADD TASK) Pressed ENTER key: " + commandBar.getText());
                             refreshListView();
-                            listViewAll.getSelectionModel().selectLast();
-                            listViewAll.scrollTo(allTasks.size() - 1);
+                            listViewTodo.getSelectionModel().selectLast();
+                            listViewTodo.scrollTo(allTasks.size() - 1);
                         } else {
                             logger.log(Level.INFO, "(DELETE TASK) Pressed ENTER key: " + commandBar.getText());
                             saveSelectedTaskIndex();
@@ -725,12 +718,12 @@ public class RootLayoutController {
     private void restoreListViewPreviousSelection() {
         // if previous selected index was the last index in the previous list
         if (previousSelectedTaskIndex == allTasks.size()) {
-            listViewAll.getSelectionModel().selectLast();
-            listViewAll.scrollTo(allTasks.size() - 1);
+            listViewTodo.getSelectionModel().selectLast();
+            listViewTodo.scrollTo(allTasks.size() - 1);
             logger.log(Level.INFO, "Restore ListView selection to last item");
         } else {
-            listViewAll.getSelectionModel().select(previousSelectedTaskIndex);
-            listViewAll.scrollTo(previousSelectedTaskIndex);
+            listViewTodo.getSelectionModel().select(previousSelectedTaskIndex);
+            listViewTodo.scrollTo(previousSelectedTaskIndex);
             logger.log(Level.INFO, "Restore ListView selection to previous to previous item");
         }
     }
@@ -739,7 +732,7 @@ public class RootLayoutController {
      * 
      */
     private int getSelectedTaskIndex() {
-        return listViewAll.getSelectionModel().getSelectedIndex();
+        return listViewTodo.getSelectionModel().getSelectedIndex();
     }
 
     /**

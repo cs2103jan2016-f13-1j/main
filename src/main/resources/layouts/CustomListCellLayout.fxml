@@ -5,7 +5,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.text.Font?>
 
-<HBox fx:id="horizontalBox" alignment="CENTER_LEFT" maxHeight="-Infinity" maxWidth="520.0" minHeight="-Infinity" minWidth="-Infinity" nodeOrientation="LEFT_TO_RIGHT" spacing="10.0" style="-fx-border-radius: 6 6 6 6; -fx-background-radius: 6 6 6 6; -fx-border-color: black;" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1">
+<HBox fx:id="horizontalBox" alignment="CENTER_LEFT" maxHeight="-Infinity" maxWidth="520.0" minHeight="-Infinity" minWidth="-Infinity" nodeOrientation="LEFT_TO_RIGHT" spacing="10.0" style="-fx-border-radius: 4 4 4 4; -fx-background-radius: 4 4 4 4; -fx-border-color: black;" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1">
    <children>
       <Label fx:id="labelTaskIndex" contentDisplay="CENTER" style="-fx-background-color: grey; -fx-border-radius: 6 6 6 6; -fx-background-radius: 6 6 6 6;" text="00" textAlignment="CENTER" textFill="WHITE">
          <font>
@@ -15,7 +15,7 @@
             <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
          </padding>
       </Label>
-      <Label fx:id="labelTaskTime" text="08:00 - 09:00">
+      <Label fx:id="labelTaskTime" text="08:00 - 09:00" textFill="#000000b2">
          <font>
             <Font name="Noto Sans" size="13.0" />
          </font>

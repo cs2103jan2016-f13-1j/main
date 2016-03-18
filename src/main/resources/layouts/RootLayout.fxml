@@ -14,29 +14,20 @@
    <children>
       <TabPane fx:id="tabPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="481.0" prefWidth="600.0" tabClosingPolicy="UNAVAILABLE" tabMinWidth="180.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <tabs>
-            <Tab fx:id="tabAll" text="All">
+            <Tab fx:id="tabTodo" text="To-do">
                <content>
                   <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="412.0" prefWidth="591.0">
                      <children>
-                        <JFXListView fx:id="listViewAll" layoutY="89.0" prefHeight="333.0" prefWidth="520.0" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="40.0" AnchorPane.topAnchor="80.0" />
+                        <JFXListView fx:id="listViewTodo" layoutY="89.0" prefHeight="333.0" prefWidth="520.0" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="40.0" AnchorPane.topAnchor="80.0" />
                      </children>
                   </AnchorPane>
                </content>
             </Tab>
-            <Tab fx:id="tabToday" text="Today">
+            <Tab fx:id="tabCompleted" text="Completed">
                <content>
                   <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="412.0" prefWidth="591.0">
                      <children>
-                        <JFXListView fx:id="listViewToday" layoutY="89.0" prefHeight="333.0" prefWidth="520.0" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="40.0" AnchorPane.topAnchor="80.0" />
-                     </children>
-                  </AnchorPane>
-               </content>
-            </Tab>
-            <Tab fx:id="tabWeek" text="This week">
-               <content>
-                  <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="412.0" prefWidth="591.0">
-                     <children>
-                        <JFXListView fx:id="listViewWeek" layoutY="89.0" prefHeight="333.0" prefWidth="520.0" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="40.0" AnchorPane.topAnchor="80.0" />
+                        <JFXListView fx:id="listViewCompleted" layoutY="89.0" prefHeight="333.0" prefWidth="520.0" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="40.0" AnchorPane.topAnchor="80.0" />
                      </children>
                   </AnchorPane>
                </content>
@@ -47,7 +38,7 @@
          <font>
             <Font name="Noto Sans" size="13.0" />
          </font></TextField>
-      <Label fx:id="labelCurrentMode" alignment="BASELINE_LEFT" layoutX="40.0" layoutY="48.0" prefHeight="52.0" text="All">
+      <Label fx:id="labelCurrentMode" alignment="BASELINE_LEFT" layoutX="40.0" layoutY="48.0" prefHeight="52.0" text="To-do">
          <font>
             <Font name="Noto Sans" size="36.0" />
          </font>
