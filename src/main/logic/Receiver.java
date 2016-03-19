@@ -120,7 +120,7 @@ public class Receiver {
         initiateSave();
     }
     
-    public void attatch(Observer observer) {
+    public void attach(Observer observer) {
         observers.add(observer);
     }
     
