@@ -8,5 +8,4 @@ package main.logic;
 public interface Command {
 	public void execute();
 	public void undo();
-	public void redo();
 }

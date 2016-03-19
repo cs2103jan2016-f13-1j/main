@@ -25,6 +25,7 @@ import java.io.FileReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Writer;
+import java.nio.file.InvalidPathException;
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.logging.Level;
@@ -83,20 +84,20 @@ public class Storage {
                     }.getType());
             reader.close();
             
-            if (tasks.size() == 0) {
+            if (tasks.isEmpty()) {
                 logger.log(Level.WARNING,"ERROR READING FILE: " + fileName);
                 throw new Exception("ERROR READING FILE");
             }
             logger.log(Level.INFO,"Successfully read tasks from: " + fileName);
         } catch (Exception e) {
             tasks = new ArrayList<Task>();
-            logger.log(Level.INFO,"Application clean start. Tasks will be saved in: " + DEFAULT_FILE_NAME);
+            logger.log(Level.INFO,"Application clean start.");
         }
         assert(tasks != null);
         return tasks;
     }
 
-    public void writeTasks(ArrayList<Task> tasks) throws FileNotFoundException {
+    public void writeTasks(ArrayList<Task> tasks) {
         try (Writer writer = new OutputStreamWriter(new FileOutputStream(
                 filePath), "UTF-8")) {
             Gson gson = new GsonBuilder().setPrettyPrinting().create();
@@ -160,7 +161,7 @@ public class Storage {
 	    return filePath;
 	}
 	
-	public void readUserSettings() {
+	private void readUserSettings() {
 	    try {
             Scanner sc = new Scanner(new File(USER_SETTINGS));
             String path = sc.nextLine().trim();
@@ -171,9 +172,8 @@ public class Storage {
                 updateFileName(path);
                 logger.log(Level.INFO,"Valid file location: " + path);
             } else {
-                fileName = DEFAULT_FILE_NAME;
-                setFileLocation(getDefaultFilePath());
-                logger.log(Level.INFO,"Corrupted file location from settings.txt. Set as default location.");
+                logger.log(Level.INFO,"Invalid file location: " + path);
+                throw new InvalidPathException(path, "Invalid file location");
             }
         } catch (Exception e) {
             fileName = DEFAULT_FILE_NAME;
@@ -185,11 +185,7 @@ public class Storage {
 	
 	private boolean validFilePath(String path) {
         File file = new File(path);
-        if (file.exists()) {
-            return true;
-        } else {
-            return false;
-        }
+        return file.exists();
 	}
 	
 	private boolean isWindows() {

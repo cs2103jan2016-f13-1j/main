@@ -101,7 +101,7 @@ public class CommandParser {
             title = removeLabelFromTitle(title, label);
         }
 
-        Task task = new Task (title, startDate, endDate, label, new Date());
+        Task task = new Task (title, startDate, endDate, label);
         logger.log(Level.INFO, "Task object built.");
         return task;
     }

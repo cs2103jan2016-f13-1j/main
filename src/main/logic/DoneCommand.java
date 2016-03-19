@@ -41,8 +41,4 @@ public class DoneCommand implements Command {
             receiver.undone(tasks);
         }
     }
-    
-    public void redo() {
-        execute();
-    }
 }

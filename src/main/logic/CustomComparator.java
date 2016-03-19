@@ -27,12 +27,11 @@ class lastAddedFirst implements Comparator<Task> {
                 //If both have not started yet
                 return t1.getEndDate().compareTo(t2.getEndDate());
             } else if (t1.hasStarted()) {
+                //t1 has started but not t2
                 return -1;
-            } else if (t2.hasStarted()) {
-                return 1;
             } else {
-                System.out.println("FAIL TO COMPARE");
-                return 0;
+                //t2 has started but not t1
+                return 1;
             }
         }
     }
@@ -40,7 +39,6 @@ class lastAddedFirst implements Comparator<Task> {
 
 class LastCompletedFirst implements Comparator<Task> {
     public int compare(Task t1, Task t2) {
-        System.out.println("SORTING COMPLETED");
         if (t2.getCompletedDate().compareTo(t1.getCompletedDate()) == 0) {
             //If both tasks are set completed at the same time, compare the titles
             return t1.getTitle().compareTo(t2.getTitle());

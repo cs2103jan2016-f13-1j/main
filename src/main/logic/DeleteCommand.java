@@ -36,19 +36,11 @@ public class DeleteCommand implements Command {
     
     public void undo() {
         if (task != null) {
-            ArrayList<Task> allTasks = receiver.getAllTasks();
-            allTasks.add(task);
-            receiver.setAllTasks(allTasks);
+            receiver.add(task);
         } else if (tasks != null){
-            ArrayList<Task> allTasks = receiver.getAllTasks();
             for (Task t : tasks) {
-                allTasks.add(t);
+                receiver.add(t);
             }
-            receiver.setAllTasks(allTasks);
         }
-    }
-    
-    public void redo() {
-        execute();
     }
 }

@@ -27,8 +27,4 @@ public class EditCommand implements Command {
     public void undo() {
         receiver.edit(newTask, oldTask);
     }
-    
-    public void redo() {
-        execute();
-    }
 }

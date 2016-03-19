@@ -1,6 +1,5 @@
 package main.logic;
 
-import java.util.ArrayList;
 import main.data.Task;
 
 /**
@@ -25,12 +24,6 @@ public class AddCommand implements Command {
     }
     
     public void undo() {
-        ArrayList<Task> allTasks = receiver.getAllTasks();
-        allTasks.remove(task);
-        receiver.setAllTasks(allTasks);
-    }
-    
-    public void redo() {
-        execute();
+        receiver.delete(task);
     }
 }

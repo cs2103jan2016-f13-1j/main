@@ -1,5 +1,4 @@
 package main.logic;
-import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.logging.Level;
@@ -22,7 +21,8 @@ public class Receiver {
     
     private static Receiver receiver;
     
-    Storage storage;
+    private ArrayList<Observer> observers = new ArrayList<Observer>();
+    private Storage storage;
     private ArrayList<Task> allTasks;
     private ArrayList<Task> todoTasks;
     private ArrayList<Task> completedTasks;
@@ -45,6 +45,7 @@ public class Receiver {
     }
     
     public Object clone() throws CloneNotSupportedException {
+        logger.log(Level.WARNING, "Clone not supported. This is a singleton class.");
         throw new CloneNotSupportedException();
     }
     
@@ -118,6 +119,16 @@ public class Receiver {
         }
         initiateSave();
     }
+    
+    public void attach(Observer observer) {
+        observers.add(observer);
+    }
+    
+    public void notifyAllObservers() {
+        for (Observer observer : observers) {
+            observer.update();
+        }
+    }
 
     /**
      * Use to retrieve all tasks
@@ -146,16 +157,6 @@ public class Receiver {
         return completedTasks;
     }
     
-    /**
-     * Replaces current task list with given task list
-     * 
-     * @param  new list of tasks
-     */
-    public void setAllTasks(ArrayList<Task> tasks) {
-        allTasks = tasks;
-        initiateSave();
-    }
-    
     public void setFileLocation(String fileLocation) {
         storage.setFileLocation(fileLocation);
         initiateSave();
@@ -165,14 +166,11 @@ public class Receiver {
         return storage.getFileLocation();
     }
     
-    public void save() {
-        initiateSave();
-    }
-    
     private void initiateSave() {
         categorizeTasks();
         sortTasks();
         saveToStorage();
+        notifyAllObservers();
     }
     
     private void categorizeTasks() {
@@ -195,11 +193,7 @@ public class Receiver {
     }
     
     private void saveToStorage() {
-        try {
-            logger.log(Level.INFO,"Saving tasks: " + allTasks);
-            storage.writeTasks(allTasks);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
+        logger.log(Level.INFO,"Saving tasks: " + allTasks);
+        storage.writeTasks(allTasks);
     }
 }

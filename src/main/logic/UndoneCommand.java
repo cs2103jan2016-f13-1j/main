@@ -41,8 +41,4 @@ public class UndoneCommand implements Command {
             receiver.done(tasks);
         }
     }
-    
-    public void redo() {
-        execute();
-    }
 }

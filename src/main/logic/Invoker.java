@@ -24,7 +24,6 @@ public class Invoker {
 		c.execute();
 		undoHistory.push(c);
 		redoHistory.clear();
-		logger.log(Level.INFO, "add to undo stack, clear redo stack");
 	}
 
 	/** Returns true if there is at least one undoable Command
@@ -47,7 +46,6 @@ public class Invoker {
     		Command command = undoHistory.pop();
     		command.undo();
     		redoHistory.push(command);
-    		logger.log(Level.INFO, "pop from undo stack, add to redo stack");
 	    } catch (Exception e) {
 	        logger.log(Level.WARNING, "Stack is empty, check if undo is available before calling");
 	        throw new EmptyStackException();
@@ -74,7 +72,6 @@ public class Invoker {
     		Command command = redoHistory.pop();
     		command.execute();
     		undoHistory.push(command);
-    		logger.log(Level.INFO, "pop from redo stack, add to undo stack");
 	    } catch (Exception e) {
 	        logger.log(Level.WARNING, "Stack is empty, check if redo is available before calling");
 	        throw new EmptyStackException();
