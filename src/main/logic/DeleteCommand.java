@@ -43,8 +43,4 @@ public class DeleteCommand implements Command {
             }
         }
     }
-    
-    public void redo() {
-        execute();
-    }
 }

@@ -26,8 +26,4 @@ public class AddCommand implements Command {
     public void undo() {
         receiver.delete(task);
     }
-    
-    public void redo() {
-        execute();
-    }
 }

@@ -1,5 +1,4 @@
 package main.logic;
-import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.logging.Level;
@@ -46,6 +45,7 @@ public class Receiver {
     }
     
     public Object clone() throws CloneNotSupportedException {
+        logger.log(Level.WARNING, "Clone not supported. This is a singleton class.");
         throw new CloneNotSupportedException();
     }
     
@@ -170,6 +170,7 @@ public class Receiver {
         categorizeTasks();
         sortTasks();
         saveToStorage();
+        notifyAllObservers();
     }
     
     private void categorizeTasks() {
@@ -192,11 +193,7 @@ public class Receiver {
     }
     
     private void saveToStorage() {
-        try {
-            logger.log(Level.INFO,"Saving tasks: " + allTasks);
-            storage.writeTasks(allTasks);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
+        logger.log(Level.INFO,"Saving tasks: " + allTasks);
+        storage.writeTasks(allTasks);
     }
 }

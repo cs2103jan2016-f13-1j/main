@@ -24,10 +24,19 @@
  * getCompletedTasks();
  * 
  */
+
+/**
+ * @author Bevin Seetoh Jia Jin
+ *
+ */
+
 package test;
+
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.EmptyStackException;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -52,6 +61,43 @@ public class TestLogic {
 	Invoker invoker;
 	
 	@Test
+	public void getMethodsTest() {
+	    assertNotNull(receiver.getAllTasks());
+	    assertNotNull(receiver.getTodoTasks());
+	    assertNotNull(receiver.getCompletedTasks());
+	}
+	
+	@Test
+    public void receiverCloneTest() {
+        try {
+            receiver.clone();
+        } catch (CloneNotSupportedException e) {
+        }
+    }
+	
+	@Test
+	public void emptyUndoStackTest() {
+	    try {
+	        while (invoker.isUndoAvailable()) {
+    	        invoker.undo();
+	        }
+	        invoker.undo();
+	    } catch (EmptyStackException e) {
+        }
+	}
+	
+	@Test
+    public void emptyRedoStackTest() {
+	    try {
+            while (invoker.isRedoAvailable()) {
+                invoker.redo();
+            }
+            invoker.redo();
+        } catch (EmptyStackException e) {
+        }
+    }
+	
+	@Test
 	public void allFunctionsTest() {
 	    Task task = new Task("example");
         Task task1 = new Task("new task");
@@ -62,14 +108,11 @@ public class TestLogic {
         Command add = new AddCommand(receiver, task);
         Command add1 = new AddCommand(receiver, task1);
         Command edit = new EditCommand(receiver, task, task1);
-//        Command delete = new DeleteCommand(receiver, task);
-        Command delete1 = new DeleteCommand(receiver, task1);
+        Command delete = new DeleteCommand(receiver, task1);
         Command deleteMultiple = new DeleteCommand(receiver, tasks);
-//        Command done = new DoneCommand(receiver, task);
-        Command done1 = new DoneCommand(receiver, task1);
+        Command done = new DoneCommand(receiver, task1);
         Command doneMultiple = new DoneCommand(receiver, tasks);
-//        Command undone = new UndoneCommand(receiver, task);
-        Command undone1 = new UndoneCommand(receiver, task1);
+        Command undone = new UndoneCommand(receiver, task1);
         Command undoneMultiple = new UndoneCommand(receiver, tasks);
 
         invoker.execute(add);
@@ -78,13 +121,13 @@ public class TestLogic {
         invoker.execute(edit);
         invoker.undo();
         invoker.redo();
-        invoker.execute(done1);
+        invoker.execute(done);
         invoker.undo();
         invoker.redo();
-        invoker.execute(undone1);
+        invoker.execute(undone);
         invoker.undo();
         invoker.redo();
-        invoker.execute(delete1);
+        invoker.execute(delete);
         invoker.undo();
         invoker.redo();
         invoker.execute(add);
@@ -101,9 +144,29 @@ public class TestLogic {
 	}
 	
 	@Test
+	public void comparatorTest() {
+	    invoker.execute(new AddCommand(receiver, parser.parseAdd("a")));
+	    invoker.execute(new DoneCommand(receiver, receiver.getAllTasks().get(0)));
+	    invoker.execute(new AddCommand(receiver, parser.parseAdd("b")));
+	    invoker.execute(new AddCommand(receiver, parser.parseAdd("c by 1")));
+	    invoker.execute(new AddCommand(receiver, parser.parseAdd("a by 1")));
+	    invoker.execute(new AddCommand(receiver, parser.parseAdd("d by 5")));
+	    invoker.execute(new AddCommand(receiver, parser.parseAdd("e from 2-3")));
+	    invoker.execute(new AddCommand(receiver, parser.parseAdd("a from 2-3")));
+	    invoker.execute(new AddCommand(receiver, parser.parseAdd("b from 1-3")));
+	    invoker.execute(new AddCommand(receiver, parser.parseAdd("q at 4")));
+	    invoker.execute(new AddCommand(receiver, parser.parseAdd("g at 4")));
+	    invoker.execute(new AddCommand(receiver, parser.parseAdd("a at 3")));
+	    invoker.execute(new DoneCommand(receiver, receiver.getAllTasks().get(0)));
+	    receiver.getAllTasks().clear();
+	}
+	
+	@Test
 	public void setFilePathTest() {
 	    Command setLocation = new SetFileLocationCommand(receiver, "test.txt");
 	    invoker.execute(setLocation);
+	    invoker.undo();
+	    invoker.redo();
 	    invoker.undo();
 	    try {
 	        File file = new File("test.txt");
@@ -111,6 +174,14 @@ public class TestLogic {
 	    } catch (Exception e) {
 	        System.out.println("Failed to delete test.txt file");
 	    }
+	    try {
+            File file = new File("storage.txt");
+            file.delete();
+        } catch (Exception e) {
+            System.out.println("Failed to delete storage.txt file");
+        }
+	    Command setCorrupted = new SetFileLocationCommand(receiver, "?");
+        invoker.execute(setCorrupted);
 	}
 	
 	@Before

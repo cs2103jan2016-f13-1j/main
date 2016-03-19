@@ -26,8 +26,4 @@ public class SetFileLocationCommand implements Command {
     public void undo() {
         receiver.setFileLocation(oldLocation);
     }
-    
-    public void redo() {
-        execute();
-    }
 }
