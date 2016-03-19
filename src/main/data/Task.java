@@ -128,7 +128,6 @@ public class Task {
         if (!createdDate.equals(task.getCreatedDate())) {
             return -1;
         }
-        
     	return 0;
     }
 
@@ -310,43 +309,5 @@ public class Task {
             }
         }
         return false;
-    }
-    
-    public boolean isThisWeek() {
-        Date tomorrow = getTomorrow();
-        Date eighthDay = getEigthDay();
-        
-        if (hasEndDate()) {
-            if (endDate.compareTo(tomorrow) >= 0 && endDate.compareTo(eighthDay) < 0) {
-                return true;
-            }
-        } else if (hasStartDate()) {
-            if (startDate.compareTo(tomorrow) >= 0 && startDate.compareTo(eighthDay) < 0) {
-                return true;
-            }
-        }
-        return false;
-    }    
-    
-    private Date getTomorrow() {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(new Date());
-        calendar.add(Calendar.DATE,1);
-        calendar.set(Calendar.HOUR_OF_DAY,0);
-        calendar.set(Calendar.MINUTE,0);
-        calendar.set(Calendar.SECOND,0);
-        calendar.set(Calendar.MILLISECOND,0);
-        return calendar.getTime();
-    }
-    
-    private Date getEigthDay() {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(new Date());
-        calendar.add(Calendar.DATE,8);
-        calendar.set(Calendar.HOUR_OF_DAY,0);
-        calendar.set(Calendar.MINUTE,0);
-        calendar.set(Calendar.SECOND,0);
-        calendar.set(Calendar.MILLISECOND,0);
-        return calendar.getTime();
     }
 }

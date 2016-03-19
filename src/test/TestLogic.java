@@ -43,15 +43,16 @@ import main.logic.Invoker;
 import main.logic.Receiver;
 import main.logic.SetFileLocationCommand;
 import main.logic.UndoneCommand;
+import main.parser.CommandParser;
 
 
 
 public class TestLogic {
-	
+	CommandParser parser;
 	Receiver receiver;
 	Invoker invoker;
 	
-	@Test
+	//@Test
 	public void allFunctionsTest() {
 	    Task task = new Task("example", null, null, null, new Date());
         Task task1 = new Task("new task", null, null, null, new Date());
@@ -101,6 +102,25 @@ public class TestLogic {
 	}
 	
 	@Test
+	public void sortOrderTest() throws InterruptedException {
+	    Task task = parser.parseAdd("b");
+	    Thread.sleep(1000);
+	    Task task1 = parser.parseAdd("c");
+	    Thread.sleep(1000);
+	    Task task2 = parser.parseAdd("a");
+        ArrayList<Task> tasks = new ArrayList<Task>();
+        tasks.add(task2);
+        tasks.add(task1);
+        tasks.add(task);
+	    Command add = new AddCommand(receiver, task);
+        Command add1 = new AddCommand(receiver, task1);
+        Command add2 = new AddCommand(receiver, task2);
+        invoker.execute(add);
+        invoker.execute(add1);
+        invoker.execute(add2);
+	}
+	
+	@Test
 	public void setFilePathTest() {
 	    Command setLocation = new SetFileLocationCommand(receiver, "test.txt");
 	    invoker.execute(setLocation);
@@ -117,5 +137,6 @@ public class TestLogic {
 	public void initialize() {
 	    invoker = new Invoker();
         receiver = Receiver.getReceiver();
+        parser = new CommandParser();
 	}
 }
