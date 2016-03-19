@@ -1,6 +1,7 @@
 package main.data;
 
 import java.util.ArrayList;
+import java.util.Date;
 
 /**
  * @author Joleen
@@ -20,7 +21,8 @@ public class Command {
     private String previousListType = null;
     private ArrayList<Task> previousTasks = new ArrayList<Task>();
     
-    public Command(Type commandType, Task task) {
+    public Command(Type commandType, String title, Date startDate, Date endDate, String label) {
+    	Task task = new Task(title, startDate, endDate, label, new Date());
         this.commandType = commandType;
         this.task = task;
     }

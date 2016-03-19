@@ -47,12 +47,52 @@ public class Task {
         return endDate;
     }
     
+    public boolean hasDate() {
+        return (startDate != null || endDate != null);
+    }
+    
+    public boolean hasDateRange() {
+        return (startDate != null && endDate != null);
+    }
+    
+    public boolean hasStartDate() {
+        if (startDate == null) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+    
+    public boolean hasEndDate() {
+        if (endDate == null) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+    
     public String getLabel() {
         return label;
     }
     
-    public boolean getDone() {
+    public boolean hasLabel() {
+        if (label == null) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+    
+    public boolean isDone() {
         return done;
+    }
+    
+    public void toggleDone() {
+    	if (isDone()) {
+    		setNotCompleted();
+    	} else {
+    		setIsCompleted();
+    	}
     }
     
     public int getPriority() {
@@ -82,6 +122,14 @@ public class Task {
     
     public Date getCreatedDate() {
         return createdDate;
+    }
+    
+    public int compareTo(Task task) {
+        if (!createdDate.equals(task.getCreatedDate())) {
+            return -1;
+        }
+        
+    	return 0;
     }
 
     public String toString() {
@@ -242,29 +290,8 @@ public class Task {
 	    return timeFormat.format(date);
     }
     
-    public int compareTo(Task task) {
-
-        if (!createdDate.equals(task.getCreatedDate())) {
-            return -1;
-        }
-        
-    	return 0;
-    }
-    
-    public boolean isThisWeek() {
-        Date tomorrow = getTomorrow();
-        Date eighthDay = getEigthDay();
-        
-        if (hasEndDate()) {
-            if (endDate.compareTo(tomorrow) >= 0 && endDate.compareTo(eighthDay) < 0) {
-                return true;
-            }
-        } else if (hasStartDate()) {
-            if (startDate.compareTo(tomorrow) >= 0 && startDate.compareTo(eighthDay) < 0) {
-                return true;
-            }
-        }
-        return false;
+    public boolean hasStarted() {
+        return (startDate.compareTo(new Date()) < 0);
     }
     
     public boolean isToday() {
@@ -284,6 +311,22 @@ public class Task {
         }
         return false;
     }
+    
+    public boolean isThisWeek() {
+        Date tomorrow = getTomorrow();
+        Date eighthDay = getEigthDay();
+        
+        if (hasEndDate()) {
+            if (endDate.compareTo(tomorrow) >= 0 && endDate.compareTo(eighthDay) < 0) {
+                return true;
+            }
+        } else if (hasStartDate()) {
+            if (startDate.compareTo(tomorrow) >= 0 && startDate.compareTo(eighthDay) < 0) {
+                return true;
+            }
+        }
+        return false;
+    }    
     
     private Date getTomorrow() {
         Calendar calendar = Calendar.getInstance();
@@ -305,45 +348,5 @@ public class Task {
         calendar.set(Calendar.SECOND,0);
         calendar.set(Calendar.MILLISECOND,0);
         return calendar.getTime();
-    }
-    
-    public boolean hasDate() {
-        return (startDate != null || endDate != null);
-    }
-    
-    public boolean hasDateRange() {
-        return (startDate != null && endDate != null);
-    }
-    
-    public boolean hasStartDate() {
-        if (startDate == null) {
-            return false;
-        } else {
-            return true;
-        }
-    }
-    
-    public boolean hasEndDate() {
-        if (endDate == null) {
-            return false;
-        } else {
-            return true;
-        }
-    }
-    
-    public boolean hasLabel() {
-        if (label == null) {
-            return false;
-        } else {
-            return true;
-        }
-    }
-    
-    public boolean isDone() {
-        return done;
-    }
-    
-    public boolean hasStarted() {
-        return (startDate.compareTo(new Date()) < 0);
     }
 }
