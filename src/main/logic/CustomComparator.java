@@ -40,7 +40,6 @@ class lastAddedFirst implements Comparator<Task> {
 
 class LastCompletedFirst implements Comparator<Task> {
     public int compare(Task t1, Task t2) {
-        System.out.println("SORTING COMPLETED");
         if (t2.getCompletedDate().compareTo(t1.getCompletedDate()) == 0) {
             //If both tasks are set completed at the same time, compare the titles
             return t1.getTitle().compareTo(t2.getTitle());

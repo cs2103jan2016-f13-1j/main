@@ -52,7 +52,7 @@ public class TestLogic {
 	Receiver receiver;
 	Invoker invoker;
 	
-	//@Test
+	@Test
 	public void allFunctionsTest() {
 	    Task task = new Task("example", null, null, null, new Date());
         Task task1 = new Task("new task", null, null, null, new Date());

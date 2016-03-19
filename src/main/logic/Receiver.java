@@ -22,7 +22,7 @@ public class Receiver {
     
     private static Receiver receiver;
     
-    Storage storage;
+    private Storage storage;
     private ArrayList<Task> allTasks;
     private ArrayList<Task> todoTasks;
     private ArrayList<Task> completedTasks;
@@ -146,16 +146,6 @@ public class Receiver {
         return completedTasks;
     }
     
-    /**
-     * Replaces current task list with given task list
-     * 
-     * @param  new list of tasks
-     */
-    public void setAllTasks(ArrayList<Task> tasks) {
-        allTasks = tasks;
-        initiateSave();
-    }
-    
     public void setFileLocation(String fileLocation) {
         storage.setFileLocation(fileLocation);
         initiateSave();
@@ -163,10 +153,6 @@ public class Receiver {
     
     public String getFileLocation() {
         return storage.getFileLocation();
-    }
-    
-    public void save() {
-        initiateSave();
     }
     
     private void initiateSave() {
