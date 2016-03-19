@@ -14,7 +14,7 @@ public class EditCommand implements Command {
     Task oldTask;
     Task newTask;
     
-    EditCommand(Receiver receiver, Task oldTask, Task newTask) {
+    public EditCommand(Receiver receiver, Task oldTask, Task newTask) {
         this.receiver = receiver;
         this.oldTask = oldTask;
         this.newTask = newTask;

@@ -16,12 +16,12 @@ public class DeleteCommand implements Command {
     Task task;
     ArrayList<Task> tasks;
     
-    DeleteCommand(Receiver receiver, Task task) {
+    public DeleteCommand(Receiver receiver, Task task) {
         this.receiver = receiver;
         this.task = task;
     }
     
-    DeleteCommand(Receiver receiver, ArrayList<Task> tasks) {
+    public DeleteCommand(Receiver receiver, ArrayList<Task> tasks) {
         this.receiver = receiver;
         this.tasks = tasks;
     }
@@ -35,9 +35,17 @@ public class DeleteCommand implements Command {
     }
     
     public void undo() {
-        ArrayList<Task> allTasks = receiver.getAllTasks();
-        allTasks.add(task);
-        receiver.setAllTasks(allTasks);
+        if (task != null) {
+            ArrayList<Task> allTasks = receiver.getAllTasks();
+            allTasks.add(task);
+            receiver.setAllTasks(allTasks);
+        } else if (tasks != null){
+            ArrayList<Task> allTasks = receiver.getAllTasks();
+            for (Task t : tasks) {
+                allTasks.add(t);
+            }
+            receiver.setAllTasks(allTasks);
+        }
     }
     
     public void redo() {

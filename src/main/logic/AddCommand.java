@@ -15,7 +15,7 @@ public class AddCommand implements Command {
     Receiver receiver;
     Task task;
     
-    AddCommand(Receiver receiver, Task task) {
+    public AddCommand(Receiver receiver, Task task) {
         this.receiver = receiver;
         this.task = task;
     }

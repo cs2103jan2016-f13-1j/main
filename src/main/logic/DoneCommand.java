@@ -16,12 +16,12 @@ public class DoneCommand implements Command {
     Task task;
     ArrayList<Task> tasks;
     
-    DoneCommand(Receiver receiver, Task task) {
+    public DoneCommand(Receiver receiver, Task task) {
         this.receiver = receiver;
         this.task = task;
     }
     
-    DoneCommand(Receiver receiver, ArrayList<Task> tasks) {
+    public DoneCommand(Receiver receiver, ArrayList<Task> tasks) {
         this.receiver = receiver;
         this.tasks = tasks;
     }

@@ -16,12 +16,12 @@ public class UndoneCommand implements Command {
     Task task;
     ArrayList<Task> tasks;
     
-    UndoneCommand(Receiver receiver, Task task) {
+    public UndoneCommand(Receiver receiver, Task task) {
         this.receiver = receiver;
         this.task = task;
     }
     
-    UndoneCommand(Receiver receiver, ArrayList<Task> tasks) {
+    public UndoneCommand(Receiver receiver, ArrayList<Task> tasks) {
         this.receiver = receiver;
         this.tasks = tasks;
     }
