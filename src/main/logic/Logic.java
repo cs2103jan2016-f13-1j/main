@@ -68,7 +68,10 @@ public class Logic {
         assert(storage != null);
         
         ArrayList<Task> tasksFromStorage = storage.readTasks();
+        assert(tasksFromStorage != null);
         categorizeTasks(tasksFromStorage);
+        assert(allTasks != null);
+        assert(completedTasks != null);
     }
     
     public static synchronized Logic getLogic() {
@@ -541,9 +544,6 @@ public class Logic {
 	}
 	
 	private void categorizeTasks(ArrayList<Task> tasks) {
-		assert(tasks != null);
-		assert(allTasks != null);
-        assert(completedTasks != null);
 	    for (Task task : tasks) {
 	        if (task.isDone()) {
                 completedTasks.add(task);
