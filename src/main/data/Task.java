@@ -26,13 +26,18 @@ public class Task {
     private int priority = 0;
     private Date createdDate = null;
     private Date completedDate = null;
+    
+    public Task(String title) {
+        this.title = title;
+        this.createdDate = new Date();
+    }
 
-    public Task(String title, Date startDate, Date endDate, String label, Date createdDate) {
+    public Task(String title, Date startDate, Date endDate, String label) {
     	this.title = title;
     	this.startDate = startDate;
     	this.endDate = endDate;
     	this.label = label;
-    	this.createdDate = createdDate;
+    	this.createdDate = new Date();
     }
     
     public String getTitle() {
