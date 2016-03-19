@@ -1,8 +1,32 @@
-/**
+/** 
+ * How to use the logic component:
+ * 1. get an instance of invoker and receiver
+ *      Invoker invoker = new Invoker();
+        Receiver receiver = Receiver.getReceiver();
+ * 2. create command objects with receiver and task as parameters
+ *      Command add = new AddCommand(receiver, task);
+ * 3. use the invoker to execute the command object
+ *      invoker.execute(add);
+ * 
+ * Available commands:
+ * AddCommand(Task task);
+ * DeleteCommand(Task task);
+ * DeleteCommand(ArrayList<Task> tasks);
+ * EditCommand(Task oldTask, Task newTask);
+ * DoneCommand(Task task);
+ * DoneCommand(ArrayList<Task> tasks);
+ * UndoneCommand(Task task);
+ * UndoneCommand(ArrayList<Task> tasks);
+ * SetFileLocationCommand(String newLocation);
+ * 
+ * To get the tasks before the observer pattern is up,
+ * getTodoTasks();
+ * getCompletedTasks();
  * 
  */
 package test;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -17,6 +41,7 @@ import main.logic.DoneCommand;
 import main.logic.EditCommand;
 import main.logic.Invoker;
 import main.logic.Receiver;
+import main.logic.SetFileLocationCommand;
 import main.logic.UndoneCommand;
 
 
@@ -37,13 +62,13 @@ public class TestLogic {
         Command add = new AddCommand(receiver, task);
         Command add1 = new AddCommand(receiver, task1);
         Command edit = new EditCommand(receiver, task, task1);
-        Command delete = new DeleteCommand(receiver, task);
+//        Command delete = new DeleteCommand(receiver, task);
         Command delete1 = new DeleteCommand(receiver, task1);
         Command deleteMultiple = new DeleteCommand(receiver, tasks);
-        Command done = new DoneCommand(receiver, task);
+//        Command done = new DoneCommand(receiver, task);
         Command done1 = new DoneCommand(receiver, task1);
         Command doneMultiple = new DoneCommand(receiver, tasks);
-        Command undone = new UndoneCommand(receiver, task);
+//        Command undone = new UndoneCommand(receiver, task);
         Command undone1 = new UndoneCommand(receiver, task1);
         Command undoneMultiple = new UndoneCommand(receiver, tasks);
 
@@ -75,9 +100,17 @@ public class TestLogic {
         invoker.redo();
 	}
 	
-	//@Test
+	@Test
 	public void setFilePathTest() {
-	    //logic.setFileLocation("invalid$path");
+	    Command setLocation = new SetFileLocationCommand(receiver, "test.txt");
+	    invoker.execute(setLocation);
+	    invoker.undo();
+	    try {
+	        File file = new File("test.txt");
+	        file.delete();
+	    } catch (Exception e) {
+	        System.out.println("Failed to delete test.txt file");
+	    }
 	}
 	
 	@Before

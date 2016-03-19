@@ -130,6 +130,24 @@ public class Receiver {
     }
     
     /**
+     * Use to retrieve todo tasks
+     * 
+     * @return  todo tasks
+     */
+    public ArrayList<Task> getTodoTasks() {
+        return todoTasks;
+    }
+    
+    /**
+     * Use to retrieve completed tasks
+     * 
+     * @return  completed tasks
+     */
+    public ArrayList<Task> getCompletedTasks() {
+        return completedTasks;
+    }
+    
+    /**
      * Replaces current task list with given task list
      * 
      * @param  new list of tasks
@@ -137,6 +155,15 @@ public class Receiver {
     public void setAllTasks(ArrayList<Task> tasks) {
         allTasks = tasks;
         initiateSave();
+    }
+    
+    public void setFileLocation(String fileLocation) {
+        storage.setFileLocation(fileLocation);
+        initiateSave();
+    }
+    
+    public String getFileLocation() {
+        return storage.getFileLocation();
     }
     
     public void save() {
@@ -215,7 +242,7 @@ public class Receiver {
     
     private void saveToStorage() {
         try {
-            logger.log(Level.INFO,"Saving tasks");
+            logger.log(Level.INFO,"Saving tasks: " + allTasks);
             storage.writeTasks(allTasks);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
