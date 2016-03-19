@@ -22,6 +22,7 @@ public class Receiver {
     
     private static Receiver receiver;
     
+    private ArrayList<Observer> observers = new ArrayList<Observer>();
     private Storage storage;
     private ArrayList<Task> allTasks;
     private ArrayList<Task> todoTasks;
@@ -117,6 +118,16 @@ public class Receiver {
             }
         }
         initiateSave();
+    }
+    
+    public void attatch(Observer observer) {
+        observers.add(observer);
+    }
+    
+    public void notifyAllObservers() {
+        for (Observer observer : observers) {
+            observer.update();
+        }
     }
 
     /**
