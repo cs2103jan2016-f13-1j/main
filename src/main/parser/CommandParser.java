@@ -36,15 +36,10 @@ public class CommandParser {
     private final String STRING_NOW = "NOW";
     private final int ONE_HOUR = 1;
     private final int DOUBLE_DIGIT = 10;
-    private final int LENGTH_DEL = 3;
-    private final int LENGTH_DELETE = 6;
-    private final int LENGTH_DONE = 4;
-    private final int LENGTH_UNDONE = 6;
     private final int LENGTH_OFFSET = 1;
     private final int INDEX_OFFSET = 1;
 
-    private static final Logger logger = Logger.getLogger(CommandParser.class.getName());
-    
+    private static final Logger logger = Logger.getLogger(CommandParser.class.getName());  
     
     /**
      * Find out what kind of task is to be added.
@@ -153,7 +148,7 @@ public class CommandParser {
     }
     
     /**
-     * Corrects user input of dd/mm into mm/dd for parser
+     * Corrects user input of dd/mm into mm/dd for date parsing
      * 
      * @param commandString
      * 			user input string
@@ -425,7 +420,7 @@ public class CommandParser {
      * 
      * @param commandString
      * 			user input string
-     * @return Command with the type of command and index(es)
+     * @return ArrayList<Integer> of index(es)
      */
     public ArrayList<Integer> parseIndexes(String commandString) {
         logger.log(Level.INFO, "Parsing indexes.");
@@ -441,16 +436,7 @@ public class CommandParser {
         int index = 0;
         String command = getFirstWord(commandString);
         
-        if (command.matches("delete")) {
-            index = LENGTH_DELETE;
-        } else if (command.matches("del")) {
-            index = LENGTH_DEL;
-        } else if (command.matches("done")) {
-        	index = LENGTH_DONE;
-        } else if (command.matches("undone")) {
-            index = LENGTH_UNDONE;
-        }
-        index = index + LENGTH_OFFSET;
+        index = command.length() + LENGTH_OFFSET;
         
         String indexString = commandString.substring(index, commandString.length());
         indexString = removeWhiteSpace(indexString);
@@ -469,7 +455,7 @@ public class CommandParser {
      * 
      * @param index
      * 			index string
-     * @return ArrayList<Integer> of index(es) but decremented by 1
+     * @return ArrayList<Integer> of index(es) 
      */
     private ArrayList<Integer> extractIndex(String index) {
         ArrayList<String> indexes = new ArrayList<String>();
