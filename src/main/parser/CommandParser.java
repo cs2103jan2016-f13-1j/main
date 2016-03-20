@@ -447,6 +447,8 @@ public class CommandParser {
 	        logger.log(Level.INFO, "Indexes retrieved.");
 	        return indexes;
     	} catch (NumberFormatException e) {
+        	logger.log(Level.WARNING, "NumberFormatException: Indexes cannot be parsed by parser.");
+        	logger.log(Level.WARNING, "InvalidTaskINdexFormat exception thrown.");
     		throw new InvalidTaskIndexFormat("Invalid indexes input detected.");
     	}
     }
@@ -476,39 +478,35 @@ public class CommandParser {
      * 			{@code String} of index
      * @return {@code ArrayList<Integer>} of index(es) 
      */
-    private ArrayList<Integer> extractIndex(String index) {
+    private ArrayList<Integer> extractIndex(String index) throws NumberFormatException{
         ArrayList<String> indexes = new ArrayList<String>();
         ArrayList<String> tempRangedIndexes = new ArrayList<String>();
         ArrayList<Integer> multipleIndexes = new ArrayList<Integer>();
         ArrayList<Integer> rangedIndexes = new ArrayList<Integer>();
         
         Collections.addAll(indexes, index.split(","));
-        try {
-	        for (int i = 0; i < indexes.size(); i++) {
-	            if (indexes.get(i).contains("-")) {
-	                Collections.addAll(tempRangedIndexes, indexes.get(i).split("-"));
-	                
-	                for (int j = 0; j < tempRangedIndexes.size(); j++) {
-	                    rangedIndexes.add(Integer.parseInt(tempRangedIndexes.get(j)));
-	                }
-	                
-	                for (int k = rangedIndexes.get(0); k <= rangedIndexes.get(1); k++) {
-	                    multipleIndexes.add(k);
-	                }
-	                
-	                tempRangedIndexes.clear();
-	                rangedIndexes.clear();
-	            } else {
-	            	int indexToAdd;
-	            	indexToAdd = Integer.parseInt(indexes.get(i));
-	                multipleIndexes.add(indexToAdd);
-	            }
-	        }
-        } catch (NumberFormatException e) {
-        	logger.log(Level.WARNING, "Error: Indexes cannot be parsed by parser.");
-        	throw new NumberFormatException();
-        }
         
+        for (int i = 0; i < indexes.size(); i++) {
+        	if (indexes.get(i).contains("-")) {
+        		Collections.addAll(tempRangedIndexes, indexes.get(i).split("-"));
+
+        		for (int j = 0; j < tempRangedIndexes.size(); j++) {
+        			rangedIndexes.add(Integer.parseInt(tempRangedIndexes.get(j)));
+        		}
+
+        		for (int k = rangedIndexes.get(0); k <= rangedIndexes.get(1); k++) {
+        			multipleIndexes.add(k);
+        		}
+
+        		tempRangedIndexes.clear();
+        		rangedIndexes.clear();
+        	} else {
+        		int indexToAdd;
+        		indexToAdd = Integer.parseInt(indexes.get(i));
+        		multipleIndexes.add(indexToAdd);
+        	}
+        }
+
         return multipleIndexes;
     }
     
