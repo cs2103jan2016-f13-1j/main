@@ -435,15 +435,20 @@ public class CommandParser {
      * @param commandString
      * 			{@code String} user input
      * @return {@code ArrayList<Integer>} of index(es)
+     * @throws InvalidIndexInput 
      */
-    public ArrayList<Integer> parseIndexes(String commandString) {
-        logger.log(Level.INFO, "Parsing indexes.");
-        String indexString = getIndexString(commandString);
-        
-        ArrayList<Integer> indexes = new ArrayList<Integer>();
-        indexes = extractIndex(indexString);
-        logger.log(Level.INFO, "Indexes retrieved.");
-        return indexes;
+    public ArrayList<Integer> parseIndexes(String commandString) throws InvalidTaskIndexFormat {
+    	try {
+	        logger.log(Level.INFO, "Parsing indexes.");
+	        String indexString = getIndexString(commandString);
+	        
+	        ArrayList<Integer> indexes = new ArrayList<Integer>();
+	        indexes = extractIndex(indexString);
+	        logger.log(Level.INFO, "Indexes retrieved.");
+	        return indexes;
+    	} catch (NumberFormatException e) {
+    		throw new InvalidTaskIndexFormat("Invalid indexes input detected.");
+    	}
     }
     
     private String getIndexString(String commandString) {
@@ -505,5 +510,14 @@ public class CommandParser {
         }
         
         return multipleIndexes;
+    }
+    
+    public class InvalidTaskIndexFormat extends Exception {
+    	public InvalidTaskIndexFormat() {
+    	}
+    	
+    	public InvalidTaskIndexFormat(String message) {
+    		 super (message);
+    	}
     }
 }
