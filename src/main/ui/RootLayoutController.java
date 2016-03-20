@@ -348,9 +348,12 @@ public class RootLayoutController {
     }
 
     private void updateTabAndLabelWithTotalTasks() {
+        if(!isEditMode){
+            labelCurrentMode.setText(getSelectedTabName());
+        }
         tabTodo.setText("To-do" + WHITESPACE + String.format(STRING_TAB_TASK_SIZE, todoTasks.size()));
         tabCompleted.setText("Completed" + WHITESPACE + String.format(STRING_TAB_TASK_SIZE, completedTasks.size()));
-        labelCurrentMode.setText(getSelectedTabName());
+        
     }
 
     /**
@@ -447,14 +450,14 @@ public class RootLayoutController {
 
             @Override
             public void run() {
-                if (isEditMode) {
+                if (isEditMode) { //edit mode is true. exit edit mode
                     isEditMode = false;
                     labelCurrentMode.setText(getSelectedTabName());
                     restoreCommandBarText();
                     restoreCaretPosition();
                     logger.log(Level.INFO, "Pressed F1 key: Exit EDIT MODE");
 
-                } else {
+                } else { //edit mode is false. enter edit mode
                     isEditMode = true;
                     saveCommandBarText();
                     saveCaretPosition();
