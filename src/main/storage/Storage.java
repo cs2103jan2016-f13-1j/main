@@ -1,4 +1,6 @@
 /**
+ * This is a single ton class
+ * 
  * Summary of public methods that can be called:
  * 
  * getStorage();
@@ -19,7 +21,6 @@ package main.storage;
  */
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.OutputStreamWriter;
@@ -61,18 +62,31 @@ public class Storage {
 	private Storage() {
 	    readUserSettings();
 	}
-
+	
+	/**
+	 * A static method to initialize an instance of the {@code Storage} class
+	 * 
+	 * @return   An instance of the {@code Storage} class
+	 */
 	public static synchronized Storage getStorage() {
 		if (storage == null) {
 			storage = new Storage();
 		}
 		return storage;
 	}
-
+	
+	/**
+	 * Prevents attempts to clone this singleton class
+	 */
 	public Object clone() throws CloneNotSupportedException {
 		throw new CloneNotSupportedException();
 	}
 	
+	/**
+	 * Accesses the output file, read and build the data into {@code Task} objects.
+	 * 
+	 * @return   A {@code ArrayList} of {@code Tasks}
+	 */
 	public ArrayList<Task> readTasks() {
         ArrayList<Task> tasks = null;
         BufferedReader reader = null;
@@ -96,7 +110,14 @@ public class Storage {
         assert(tasks != null);
         return tasks;
     }
-
+	
+	/**
+	 * This method takes in an {@code ArrayList} of {@code Tasks} and writes
+	 * them into the output file
+	 * 
+	 * @param  tasks
+	 *         The {@code ArrayList} of {@code Tasks} to write
+	 */
     public void writeTasks(ArrayList<Task> tasks) {
         try (Writer writer = new OutputStreamWriter(new FileOutputStream(
                 filePath), "UTF-8")) {
@@ -129,6 +150,13 @@ public class Storage {
 		return path;
 	}
 	
+	/**
+	 * This methods updates file path and stores it in the settings file
+	 * The settings file can be found in the application folder, settings.txt
+	 * 
+	 * @param  path
+	 *         The path to save the output file
+	 */
 	public void setFileLocation(String path) {
 	    filePath = path;
 	    updateFileName(path);
@@ -157,6 +185,11 @@ public class Storage {
 	    assert(fileName != null);
 	}
 	
+	/**
+	 * This method returns the current path of the output file
+	 * 
+	 * @return   A {@code String} indicating the file path
+	 */
 	public String getFileLocation() {
 	    return filePath;
 	}

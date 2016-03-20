@@ -62,15 +62,8 @@ class lastAddedFirst implements Comparator<Task> {
 
 /**
  * This comparator sorts tasks by a few rules:
- * 1. If both are floating tasks,
- *       - if same title, return latest created first
- * 2. If only one has a date,
- *       - return the other that does not have a date
- * 3. If both have dates,
- *       - if both already started,
- *          - if same end date, return latest created first
- *          - if different end date, return earlier deadline first
- *       - if only one started, return the task that started
+ * 1. If both tasks are completed at the same time, return the task that was created later
+ * 2. If not completed at the same time, return the last completed task
  */
 class LastCompletedFirst implements Comparator<Task> {
     public int compare(Task t1, Task t2) {
