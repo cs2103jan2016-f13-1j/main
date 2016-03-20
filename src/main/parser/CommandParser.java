@@ -320,14 +320,14 @@ public class CommandParser {
      * @return String with targeted words removed
      */
     private String checkAndRemove(String title, ArrayList<String> toBeRemoved) {
-    	String toBeReplaced = "";
     	int index;
     	boolean isPreposition;
-    	
-    	List<String> words = new ArrayList<String>(Arrays.asList(title.toLowerCase().split(" ")));
     
     	for (int i = 0; i < toBeRemoved.size(); i++) {
-    		if (words.contains(toBeRemoved.get(i))) {
+    		String toBeReplaced = "";
+        	List<String> words = new ArrayList<String>(Arrays.asList(title.toLowerCase().split(" ")));
+    		
+        	if (words.contains(toBeRemoved.get(i))) {
     			toBeReplaced = toBeReplaced.concat(" ");
     			toBeReplaced = toBeReplaced.concat(toBeRemoved.get(i));
 
