@@ -207,7 +207,7 @@ public class TestLogic implements Observer {
 	public void initialize() {
 	    parser = new CommandParser();
 	    invoker = new Invoker();
-        receiver = Receiver.getReceiver();
+        receiver = Receiver.getInstance();
         receiver.addObserver(this);
 	}
 

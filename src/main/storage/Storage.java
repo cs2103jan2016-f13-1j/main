@@ -62,7 +62,7 @@ public class Storage {
 	 * 
 	 * @return   An instance of the {@code Storage} class
 	 */
-	public static synchronized Storage getStorage() {
+	public static synchronized Storage getInstance() {
 		if (storage == null) {
 			storage = new Storage();
 		}

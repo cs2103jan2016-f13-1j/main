@@ -28,7 +28,7 @@ public class Receiver extends Observable {
     private ArrayList<Task> completedTasks;
     
     private Receiver() {
-        storage = Storage.getStorage();
+        storage = Storage.getInstance();
         assert(storage != null);
         
         allTasks = storage.readTasks();
@@ -41,7 +41,7 @@ public class Receiver extends Observable {
      * 
      * @return   An instance of the {@code Receiver} class
      */
-    public static synchronized Receiver getReceiver() {
+    public static synchronized Receiver getInstance() {
         if (receiver == null) {
             receiver = new Receiver();
         }
