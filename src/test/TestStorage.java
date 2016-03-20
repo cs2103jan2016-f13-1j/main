@@ -10,7 +10,6 @@ import static org.junit.Assert.*;
 import java.io.File;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.logging.Level;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -24,13 +23,13 @@ public class TestStorage {
     
     @Test
     public void readUserSettingsTest() {
-        storage.setFileLocation("?");
+        storage.setFileLocation("?", new ArrayList<Task>());
         storage = null;
         storage = Storage.getStorage();
-        storage.setFileLocation("storage.txt");
+        storage.setFileLocation("storage.txt", new ArrayList<Task>());
         storage = null;
         storage = Storage.getStorage();
-        storage.setFileLocation("<><>///\\:?||");
+        storage.setFileLocation("<><>///\\:?||", new ArrayList<Task>());
         storage = null;
         storage = Storage.getStorage();
     }
@@ -48,7 +47,7 @@ public class TestStorage {
         assertNotNull(storage.readTasks());
         storage.writeTasks(null);
         assertNotNull(storage.readTasks());
-        storage.setFileLocation("storage.txt");
+        storage.setFileLocation("storage.txt", new ArrayList<Task>());
         ArrayList<Task> tasks = new ArrayList<Task>();
         storage.writeTasks(tasks);
         assertNotNull(storage.readTasks());
@@ -62,7 +61,7 @@ public class TestStorage {
         } catch (Exception e) {
         }
         assertNotNull(storage.readTasks());
-        storage.setFileLocation("<><>///\\:?||");
+        storage.setFileLocation("<><>///\\:?||", new ArrayList<Task>());
         storage = null;
         storage = Storage.getStorage();
         
@@ -74,7 +73,7 @@ public class TestStorage {
     
     @Test
     public void writeTest() {
-        assertNotNull(storage.getFileLocation());
+        assertNotNull(storage.getFilePath());
     }
     
     @Before

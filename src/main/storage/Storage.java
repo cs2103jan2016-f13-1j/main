@@ -1,19 +1,13 @@
-/**
- * This is a single ton class
- * 
- * Summary of public methods that can be called:
- * 
- * getStorage();
- * readTasks();
- * writeTasks(ArrayList<ArrayList<Task>> tasks);
- * 
- * getFileDirectory();
- * getFileName();
- * 
- * setFileDirectory(String fileDirectory);
- * setFileName(String fileName);
- */
 package main.storage;
+
+/**
+ * This is a singleton class. This class is used to read/write to
+ * an output file. 
+ * 
+ * You can expect to see two files upon initializing this class:
+ * 1. settings.txt (Stores the path of the output file - Default: storage.txt)
+ * 2. storage.txt (Default file name)
+ */
 
 /**
  * @author Bevin Seetoh Jia Jin
@@ -64,7 +58,7 @@ public class Storage {
 	}
 	
 	/**
-	 * A static method to initialize an instance of the {@code Storage} class
+	 * A static method to initialize an instance of the {@code Storage} class.
 	 * 
 	 * @return   An instance of the {@code Storage} class
 	 */
@@ -76,7 +70,7 @@ public class Storage {
 	}
 	
 	/**
-	 * Prevents attempts to clone this singleton class
+	 * Prevents attempts to clone this singleton class.
 	 */
 	public Object clone() throws CloneNotSupportedException {
 		throw new CloneNotSupportedException();
@@ -113,7 +107,7 @@ public class Storage {
 	
 	/**
 	 * This method takes in an {@code ArrayList} of {@code Tasks} and writes
-	 * them into the output file
+	 * them into the output file.
 	 * 
 	 * @param  tasks
 	 *         The {@code ArrayList} of {@code Tasks} to write
@@ -126,8 +120,7 @@ public class Storage {
             logger.log(Level.INFO,"Saved tasks to: " + fileName);
         } catch (Exception e) {
             logger.log(Level.INFO,"Corrupted file location: " + filePath);
-            setFileLocation(DEFAULT_FILE_NAME);
-            writeTasks(tasks);
+            setFileLocation(DEFAULT_FILE_NAME, tasks);
         }
         assert((new File(filePath)).exists());
     }
@@ -151,13 +144,15 @@ public class Storage {
 	}
 	
 	/**
-	 * This methods updates file path and stores it in the settings file
-	 * The settings file can be found in the application folder, settings.txt
+	 * This methods updates file path and stores it in the settings file.
+	 * The settings file can be found in the application folder, settings.txt.
 	 * 
 	 * @param  path
 	 *         The path to save the output file
+	 * @param  tasks
+	 *         The {@code ArrayList} of {@code Task} to write to the new path
 	 */
-	public void setFileLocation(String path) {
+	public void setFileLocation(String path, ArrayList<Task> tasks) {
 	    filePath = path;
 	    updateFileName(path);
 	    try(PrintWriter out = new PrintWriter(USER_SETTINGS)){
@@ -168,6 +163,7 @@ public class Storage {
         	logger.log(Level.WARNING,"Failed to write to: " + path);
         }
 	    assert((new File(USER_SETTINGS)).exists());
+	    writeTasks(tasks);
 	}
 	
 	private void updateFileName(String path) {
@@ -186,11 +182,11 @@ public class Storage {
 	}
 	
 	/**
-	 * This method returns the current path of the output file
+	 * This method returns the current path of the output file.
 	 * 
 	 * @return   A {@code String} indicating the file path
 	 */
-	public String getFileLocation() {
+	public String getFilePath() {
 	    return filePath;
 	}
 	
@@ -210,7 +206,7 @@ public class Storage {
             }
         } catch (Exception e) {
             fileName = DEFAULT_FILE_NAME;
-            setFileLocation(getDefaultFilePath());
+            setFileLocation(getDefaultFilePath(), new ArrayList<Task>());
             logger.log(Level.INFO,"Corrupted file location from settings.txt. Set as default location.");
         }
 	    assert(fileName != null);

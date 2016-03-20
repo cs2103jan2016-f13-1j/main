@@ -15,7 +15,7 @@ public class SetFileLocationCommand implements Command {
     
     public SetFileLocationCommand(Receiver receiver, String newLocation) {
         this.receiver = receiver;
-        this.oldLocation = receiver.getFileLocation();
+        this.oldLocation = receiver.getFilePath();
         this.newLocation = newLocation;
     }
     
