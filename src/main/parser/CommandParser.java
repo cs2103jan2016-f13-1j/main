@@ -52,7 +52,7 @@ public class CommandParser {
      * If only end date is specified, task will have the current date as the start date.
      * 
      * @param commandString
-     * 			user input {code String}
+     * 			user input {@code String}
      * @return {@code Task} built
      */
     public Task parseAdd(String commandString) {
