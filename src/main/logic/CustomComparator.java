@@ -1,8 +1,30 @@
+/** 
+ * This class acts as a container to store custom comparators
+ * used to sort tasks by different conditions
+ */
+
+/**
+ * @author Bevin Seetoh Jia Jin
+ *
+ */
+
 package main.logic;
 import java.util.Comparator;
 
 import main.data.Task;
 
+/**
+ * This comparator sorts tasks by a few rules:
+ * 1. If both are floating tasks,
+ *       - if same title, return latest created first
+ * 2. If only one has a date,
+ *       - return the other that does not have a date
+ * 3. If both have dates,
+ *       - if both already started,
+ *          - if same end date, return latest created first
+ *          - if different end date, return earlier deadline first
+ *       - if only one started, return the task that started
+ */
 class lastAddedFirst implements Comparator<Task> {
     public int compare(Task t1, Task t2) {
         if (!t1.hasDate() && !t2.hasDate()) {
@@ -12,13 +34,14 @@ class lastAddedFirst implements Comparator<Task> {
             //If one is floating and the other is dated, return the floating task
             return -1;
         } else if (t1.hasDate() && !t2.hasDate()) {
-            //If one is floating and the other is dated, return the floating task
+            //If one is dated and the other is floating, return the floating task
             return 1;
         } else {
             //Both tasks has date
             if (t1.hasStarted() && t2.hasStarted()) {
                 if (t1.getEndDate().compareTo(t2.getEndDate()) == 0) {
-                    return t1.getTitle().compareTo(t2.getTitle());
+                    //If both tasks already started and has same end date, compare the created date
+                    return t2.getCreatedDate().compareTo(t1.getCreatedDate());
                 } else {
                     //If both tasks already started, return earlier deadline first
                     return t1.getEndDate().compareTo(t2.getEndDate());
@@ -37,11 +60,23 @@ class lastAddedFirst implements Comparator<Task> {
     }
 }
 
+/**
+ * This comparator sorts tasks by a few rules:
+ * 1. If both are floating tasks,
+ *       - if same title, return latest created first
+ * 2. If only one has a date,
+ *       - return the other that does not have a date
+ * 3. If both have dates,
+ *       - if both already started,
+ *          - if same end date, return latest created first
+ *          - if different end date, return earlier deadline first
+ *       - if only one started, return the task that started
+ */
 class LastCompletedFirst implements Comparator<Task> {
     public int compare(Task t1, Task t2) {
         if (t2.getCompletedDate().compareTo(t1.getCompletedDate()) == 0) {
-            //If both tasks are set completed at the same time, compare the titles
-            return t1.getTitle().compareTo(t2.getTitle());
+            //If both tasks are set completed at the same time, compare the created date, later first
+            return t2.getCreatedDate().compareTo(t1.getCreatedDate());
         } else {
             //Return the tasks that was completed later first
             return t2.getCompletedDate().compareTo(t1.getCompletedDate());

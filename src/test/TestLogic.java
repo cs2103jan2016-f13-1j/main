@@ -7,6 +7,10 @@
  *      Command add = new AddCommand(receiver, task);
  * 3. use the invoker to execute the command object
  *      invoker.execute(add);
+ *      
+ * Short form: invoker.execute(new AddCommand(receiver, task));
+ * 
+ * Observer pattern: example of update() can be found at the last method
  * 
  * Available commands:
  * AddCommand(Task task);
@@ -37,6 +41,8 @@ import static org.junit.Assert.*;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.EmptyStackException;
+import java.util.Observable;
+import java.util.Observer;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -55,10 +61,13 @@ import main.parser.CommandParser;
 
 
 
-public class TestLogic {
+public class TestLogic implements Observer {
 	CommandParser parser;
 	Receiver receiver;
 	Invoker invoker;
+	Observer observer;
+	ArrayList<Task> todo = new ArrayList<Task>();
+	ArrayList<Task> completed = new ArrayList<Task>();
 	
 	@Test
 	public void getMethodsTest() {
@@ -146,19 +155,29 @@ public class TestLogic {
 	@Test
 	public void comparatorTest() {
 	    invoker.execute(new AddCommand(receiver, parser.parseAdd("a")));
-	    invoker.execute(new DoneCommand(receiver, receiver.getAllTasks().get(0)));
+	    invoker.execute(new DoneCommand(receiver, todo));
 	    invoker.execute(new AddCommand(receiver, parser.parseAdd("b")));
 	    invoker.execute(new AddCommand(receiver, parser.parseAdd("c by 1")));
-	    invoker.execute(new AddCommand(receiver, parser.parseAdd("a by 1")));
-	    invoker.execute(new AddCommand(receiver, parser.parseAdd("d by 5")));
-	    invoker.execute(new AddCommand(receiver, parser.parseAdd("e from 2-3")));
-	    invoker.execute(new AddCommand(receiver, parser.parseAdd("a from 2-3")));
-	    invoker.execute(new AddCommand(receiver, parser.parseAdd("b from 1-3")));
-	    invoker.execute(new AddCommand(receiver, parser.parseAdd("q at 4")));
-	    invoker.execute(new AddCommand(receiver, parser.parseAdd("g at 4")));
-	    invoker.execute(new AddCommand(receiver, parser.parseAdd("a at 3")));
-	    invoker.execute(new DoneCommand(receiver, receiver.getAllTasks().get(0)));
-	    receiver.getAllTasks().clear();
+	    invoker.execute(new AddCommand(receiver, parser.parseAdd("d")));
+	    invoker.execute(new AddCommand(receiver, parser.parseAdd("e by 1")));
+	    invoker.execute(new AddCommand(receiver, parser.parseAdd("f by 5")));
+	    invoker.execute(new AddCommand(receiver, parser.parseAdd("g from 2-3")));
+	    invoker.execute(new AddCommand(receiver, parser.parseAdd("h from 2-3")));
+	    invoker.execute(new AddCommand(receiver, parser.parseAdd("i from 9pm-10pm")));
+        invoker.execute(new AddCommand(receiver, parser.parseAdd("j from 9pm-11pm")));
+	    invoker.execute(new AddCommand(receiver, parser.parseAdd("k from 1-3")));
+	    //invoker.execute(new AddCommand(receiver, parser.parseAdd("a from 1-12")));
+        invoker.execute(new AddCommand(receiver, parser.parseAdd("l from 7pm-12am")));
+	    invoker.execute(new AddCommand(receiver, parser.parseAdd("m at 4")));
+	    invoker.execute(new AddCommand(receiver, parser.parseAdd("n at 4")));
+	    invoker.execute(new AddCommand(receiver, parser.parseAdd("o at 3")));
+	    invoker.execute(new DoneCommand(receiver, todo));
+	    while (!todo.isEmpty()) {
+	        invoker.execute(new DeleteCommand(receiver, todo.get(0)));
+	    }
+	    while (!completed.isEmpty()) {
+            invoker.execute(new DeleteCommand(receiver, completed.get(0)));
+        }
 	}
 	
 	@Test
@@ -186,8 +205,17 @@ public class TestLogic {
 	
 	@Before
 	public void initialize() {
+	    parser = new CommandParser();
 	    invoker = new Invoker();
         receiver = Receiver.getReceiver();
-        parser = new CommandParser();
+        receiver.addObserver(this);
 	}
+
+    @Override
+    public void update(Observable o, Object arg) {
+        if (o == receiver) {
+            todo = receiver.getTodoTasks();
+            completed = receiver.getCompletedTasks();
+        }
+    }
 }

@@ -1,6 +1,7 @@
 package main.logic;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Observable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -15,13 +16,12 @@ import main.data.Task;
  * @author Bevin Seetoh Jia Jin
  *
  */
-public class Receiver {
+public class Receiver extends Observable {
     
     private static final Logger logger = Logger.getLogger(Receiver.class.getName());
     
     private static Receiver receiver;
     
-    private ArrayList<Observer> observers = new ArrayList<Observer>();
     private Storage storage;
     private ArrayList<Task> allTasks;
     private ArrayList<Task> todoTasks;
@@ -119,16 +119,6 @@ public class Receiver {
         }
         initiateSave();
     }
-    
-    public void attach(Observer observer) {
-        observers.add(observer);
-    }
-    
-    public void notifyAllObservers() {
-        for (Observer observer : observers) {
-            observer.update();
-        }
-    }
 
     /**
      * Use to retrieve all tasks
@@ -170,7 +160,8 @@ public class Receiver {
         categorizeTasks();
         sortTasks();
         saveToStorage();
-        notifyAllObservers();
+        setChanged();
+        notifyObservers();
     }
     
     private void categorizeTasks() {
