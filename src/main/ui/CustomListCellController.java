@@ -101,16 +101,27 @@ public class CustomListCellController extends ListCell<Task> {
             return;
         }
         
-        String hours = task.getEndDate().getHours() + "";
-        String minutes = task.getEndDate().getMinutes() + "";
-        if (hours.length() == 1) {
-            hours = "0" + hours;
+        String startHours = task.getStartDate().getHours() + "";
+        String startMinutes = task.getStartDate().getMinutes() + "";
+        
+        String endHours = task.getEndDate().getHours() + "";
+        String endMinutes = task.getEndDate().getMinutes() + "";
+       
+        if (startHours.length() == 1) {
+            startHours = "0" + startHours;
         }
-        if (minutes.length() == 1) {
-            minutes = "0" + minutes;
+        if (startMinutes.length() == 1) {
+            startMinutes = "0" + startMinutes;
+        }
+        
+        if (endHours.length() == 1) {
+            endHours = "0" + endHours;
+        }
+        if (endMinutes.length() == 1) {
+            endMinutes = "0" + endMinutes;
         }
 
-        this.labelTaskTime.setText(hours + ":" + minutes);
+        this.labelTaskTime.setText(startHours + ":" + startMinutes +" - "+endHours + ":" + endMinutes);
         // this.labelTaskTime.setText(task.getStartDate().getHours()+":"+task.getStartDate().getMinutes()
         // + " - " +
         // task.getEndDate().getHours()+":"+task.getEndDate().getMinutes());

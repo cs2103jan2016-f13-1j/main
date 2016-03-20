@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import com.jfoenix.controls.JFXListView?>
+<?import java.lang.String?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.Group?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
@@ -10,54 +12,51 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane fx:id="rootLayout" minHeight="-Infinity" minWidth="-Infinity" prefHeight="550.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.ui.RootLayoutController">
+<AnchorPane fx:id="rootLayout" minHeight="100.0" minWidth="-Infinity" prefHeight="900.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.ui.RootLayoutController">
    <children>
-      <TabPane fx:id="tabPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="481.0" prefWidth="600.0" tabClosingPolicy="UNAVAILABLE" tabMinWidth="180.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+      <TabPane fx:id="tabPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" tabClosingPolicy="UNAVAILABLE" tabMinHeight="30.0" tabMinWidth="270.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <tabs>
-            <Tab fx:id="tabTodo" text="To-do">
+            <Tab fx:id="tabTodo" closable="false" text="To-do">
                <content>
-                  <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="412.0" prefWidth="591.0">
+                  <AnchorPane>
                      <children>
-                        <JFXListView fx:id="listViewTodo" layoutY="89.0" prefHeight="333.0" prefWidth="520.0" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="40.0" AnchorPane.topAnchor="80.0" />
+                        <JFXListView fx:id="listViewTodo" layoutY="89.0" stylesheets="@../styles/RootLayout.css" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                           <styleClass>
+                              <String fx:value="decrement-arrow" />
+                              <String fx:value="increment-arrow" />
+                              <String fx:value="decrement-button" />
+                              <String fx:value="increment-button" />
+                              <String fx:value="jfx-list-view" />
+                              <String fx:value="scroll-bar" />
+                              <String fx:value="thumb" />
+                              <String fx:value="track" />
+                           </styleClass></JFXListView>
                      </children>
+                     <padding>
+                        <Insets bottom="100.0" left="40.0" right="40.0" top="80.0" />
+                     </padding>
                   </AnchorPane>
                </content>
             </Tab>
-            <Tab fx:id="tabCompleted" text="Completed">
+            <Tab fx:id="tabCompleted" closable="false" text="Completed">
                <content>
-                  <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="412.0" prefWidth="591.0">
+                  <AnchorPane>
                      <children>
-                        <JFXListView fx:id="listViewCompleted" layoutY="89.0" prefHeight="333.0" prefWidth="520.0" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="40.0" AnchorPane.topAnchor="80.0" />
+                        <JFXListView fx:id="listViewCompleted" layoutY="89.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                      </children>
+                     <padding>
+                        <Insets bottom="100.0" left="40.0" right="40.0" top="80.0" />
+                     </padding>
                   </AnchorPane>
                </content>
             </Tab>
          </tabs>
       </TabPane>
-      <TextField fx:id="commandBar" layoutX="40.0" layoutY="497.0" prefHeight="25.0" prefWidth="500.0" promptText="Type something to add a task" styleClass="text-input" AnchorPane.bottomAnchor="25.0" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="40.0">
+      <TextField fx:id="commandBar" layoutX="40.0" layoutY="497.0" prefHeight="25.0" prefWidth="500.0" promptText="Type something to add a task" styleClass="text-input" AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="40.0">
          <font>
             <Font name="Noto Sans" size="13.0" />
          </font></TextField>
-      <Label fx:id="labelCurrentMode" alignment="BASELINE_LEFT" layoutX="40.0" layoutY="48.0" prefHeight="52.0" text="To-do">
-         <font>
-            <Font name="Noto Sans" size="36.0" />
-         </font>
-      </Label>
-      <Label fx:id="labelUserAction" prefWidth="85.0" text="Adding task:" textFill="#039be5" visible="false" AnchorPane.leftAnchor="40.0" AnchorPane.topAnchor="452.0">
-         <font>
-            <Font name="Noto Sans Bold" size="13.0" />
-         </font></Label>
-      <Label fx:id="labelUserFeedback" layoutX="136.0" layoutY="450.0" prefWidth="421.0" text="task" textFill="#00121b" visible="false" AnchorPane.topAnchor="452.0">
-         <font>
-            <Font name="Noto Sans Bold" size="13.0" />
-         </font>
-      </Label>
-      <Label fx:id="labelResult" contentDisplay="CENTER" layoutX="146.0" layoutY="460.0" prefWidth="421.0" text="result" textAlignment="CENTER" textFill="#00121b" visible="false" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="40.0" AnchorPane.topAnchor="452.0">
-         <font>
-            <Font name="Noto Sans Bold" size="13.0" />
-         </font>
-      </Label>
-      <Group layoutX="530.0" layoutY="88.0">
+      <Group layoutX="530.0" layoutY="100.0">
          <children>
             <Label alignment="CENTER" layoutY="-12.0" prefHeight="15.0" prefWidth="30.0" text="delete">
                <font>
@@ -71,7 +70,7 @@
             </Button>
          </children>
       </Group>
-      <Group layoutX="498.0" layoutY="88.0">
+      <Group layoutX="500.0" layoutY="100.0">
          <children>
             <Label alignment="CENTER" layoutY="-12.0" prefHeight="15.0" prefWidth="21.0" text="edit">
                <font>
@@ -85,7 +84,7 @@
             </Button>
          </children>
       </Group>
-      <Group fx:id="groupUndo" layoutX="506.0" layoutY="487.0" visible="false">
+      <Group fx:id="groupUndo" layoutX="500.0" layoutY="1000.0" AnchorPane.bottomAnchor="50.0">
          <children>
             <Label fx:id="labelUndo" alignment="CENTER" layoutY="-12.0" prefHeight="15.0" prefWidth="25.0" text="undo">
                <font>
@@ -99,7 +98,7 @@
             </Button>
          </children>
       </Group>
-      <Group fx:id="groupRedo" layoutX="537.0" layoutY="487.0" visible="false">
+      <Group fx:id="groupRedo" layoutX="535.0" layoutY="1000.0" AnchorPane.bottomAnchor="50.0">
          <children>
             <Label fx:id="labelRedo" alignment="CENTER" layoutY="-12.0" prefHeight="15.0" prefWidth="25.0" text="redo">
                <font>
@@ -113,10 +112,34 @@
             </Button>
          </children>
       </Group>
-      <Label fx:id="labelDateToday" layoutX="153.0" layoutY="52.0" prefHeight="52.0" text="Sat 30 Jan" textFill="#8a8a8a" visible="false">
+      <Label fx:id="labelDateToday" layoutX="153.0" layoutY="75.0" text="Sat 30 Jan" textFill="#8a8a8a" visible="false">
          <font>
             <Font name="Noto Sans" size="18.0" />
          </font>
       </Label>
+      <Label fx:id="labelCurrentMode" alignment="BASELINE_LEFT" layoutX="40.0" layoutY="60.0" text="To-do">
+         <font>
+            <Font name="Noto Sans" size="36.0" />
+         </font>
+      </Label>
+      <Group layoutX="40.0" layoutY="1000.0" AnchorPane.bottomAnchor="60.0" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="40.0">
+         <children>
+            <Label fx:id="labelUserAction" alignment="CENTER" prefWidth="85.0" text="Adding task:" textFill="#039be5">
+               <font>
+                  <Font name="Noto Sans Bold" size="13.0" />
+               </font>
+            </Label>
+            <Label fx:id="labelUserFeedback" alignment="CENTER" layoutX="90.0" text="task" textFill="#00121b">
+               <font>
+                  <Font name="Noto Sans Bold" size="13.0" />
+               </font>
+            </Label>
+            <Label fx:id="labelResult" alignment="CENTER" contentDisplay="CENTER" prefHeight="18.0" prefWidth="520.0" text="result" textAlignment="CENTER" textFill="#00121b">
+               <font>
+                  <Font name="Noto Sans Bold" size="13.0" />
+               </font>
+            </Label>
+         </children>
+      </Group>
    </children>
 </AnchorPane>
