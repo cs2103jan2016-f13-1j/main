@@ -29,7 +29,7 @@ class lastAddedFirst implements Comparator<Task> {
     public int compare(Task t1, Task t2) {
         if (!t1.hasDate() && !t2.hasDate()) {
             //If both are floating tasks, compare the created date
-            return t2.getCreatedDate().compareTo(t1.getCreatedDate());
+            return t1.getCreatedDate().compareTo(t2.getCreatedDate());
         } else if (!t1.hasDate() && t2.hasDate()) {
             //If one is floating and the other is dated, return the floating task
             return -1;
