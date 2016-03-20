@@ -26,7 +26,8 @@ import javafx.scene.input.KeyCombination;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
-import main.logic.Logic;
+import main.logic.Invoker;
+import main.logic.Receiver;
 import main.ui.MainApp;
 import main.ui.RootLayoutController;
 
@@ -34,7 +35,8 @@ public class TestGUI extends ApplicationTest {
     private Stage primaryStage;
     private AnchorPane rootLayout;
     private RootLayoutController rootLayoutController;
-    private Logic logic;
+    private Receiver receiver;
+    private Invoker invoker;
 
     // Ctrl+Tab hotkey
     private static final KeyCodeCombination HOTKEY_CTRL_TAB = new KeyCodeCombination(KeyCode.TAB,
@@ -132,7 +134,7 @@ public class TestGUI extends ApplicationTest {
         write("Test task 6").push(KeyCode.ENTER);
         write("Test task 7").push(KeyCode.ENTER);
 
-        assertEquals(7, logic.getAllTasks().size());
+        assertEquals(7, receiver.getAllTasks().size());
     }
 
     @Test
@@ -145,7 +147,7 @@ public class TestGUI extends ApplicationTest {
         write("del 5").push(KeyCode.ENTER);
         write("del 5").push(KeyCode.ENTER);
 
-        assertEquals(7, logic.getAllTasks().size());
+        assertEquals(7, receiver.getAllTasks().size());
     }
 
     @Test
@@ -201,7 +203,7 @@ public class TestGUI extends ApplicationTest {
             rootLayoutController = (RootLayoutController) loader.getController();
             rootLayoutController.requestFocusForCommandBar();
             rootLayoutController.selectFirstItemFromListView();
-            logic = Logic.getLogic();
+            invoker = new Invoker();
 
         } catch (IOException e) {
             e.printStackTrace();

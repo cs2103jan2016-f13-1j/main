@@ -51,7 +51,7 @@ public class CustomListCellController extends ListCell<Task> {
         if (empty) {
             setGraphic(null);
         } else {
-            setLabelTaskIndex(getIndex()+1);
+            setLabelTaskIndex(getIndex() + 1);
             setLabelTaskTitle(item);
             setLabelTaskTime(item);
             setLabelTaskTag(item);
@@ -64,11 +64,56 @@ public class CustomListCellController extends ListCell<Task> {
     }
 
     public void setLabelTaskIndex(int index) {
-        this.labelTaskIndex.setText(index+"");
+        this.labelTaskIndex.setText(index + "");
     }
 
     public void setLabelTaskTime(Task task) {
-        this.labelTaskTime.setText(task.getStartDate() + " - " + task.getEndDate());
+        if (task.getStartDate() == null && task.getStartDate() == null) {
+            this.labelTaskTime.setText("");
+            return;
+        }
+        
+        if (task.getStartDate() == null) {
+            String hours = task.getEndDate().getHours() + "";
+            String minutes = task.getEndDate().getMinutes() + "";
+            if (hours.length() == 1) {
+                hours = "0" + hours;
+            }
+            if (minutes.length() == 1) {
+                minutes = "0" + minutes;
+            }
+
+            this.labelTaskTime.setText(hours + ":" + minutes);
+            return;
+        }
+        if (task.getEndDate() == null) {
+            String hours = task.getStartDate().getHours() + "";
+            String minutes = task.getStartDate().getMinutes() + "";
+            if (hours.length() == 1) {
+                hours = "0" + hours;
+            }
+            if (minutes.length() == 1) {
+                minutes = "0" + minutes;
+            }
+
+            this.labelTaskTime.setText(hours + ":" + minutes);
+            
+            return;
+        }
+        
+        String hours = task.getEndDate().getHours() + "";
+        String minutes = task.getEndDate().getMinutes() + "";
+        if (hours.length() == 1) {
+            hours = "0" + hours;
+        }
+        if (minutes.length() == 1) {
+            minutes = "0" + minutes;
+        }
+
+        this.labelTaskTime.setText(hours + ":" + minutes);
+        // this.labelTaskTime.setText(task.getStartDate().getHours()+":"+task.getStartDate().getMinutes()
+        // + " - " +
+        // task.getEndDate().getHours()+":"+task.getEndDate().getMinutes());
     }
 
     public void setLabelTaskTitle(Task task) {
@@ -76,15 +121,12 @@ public class CustomListCellController extends ListCell<Task> {
     }
 
     public void setLabelTaskTag(Task task) {
-        if(task.hasLabel()){
-            this.labelTaskTag.setText(task.getLabel());   
+        if (task.hasLabel()) {
+            this.labelTaskTag.setText(task.getLabel());
             this.labelTaskTag.setVisible(true);
-        }
-        else{
+        } else {
             this.labelTaskTag.setVisible(false);
         }
-
-        
 
     }
 

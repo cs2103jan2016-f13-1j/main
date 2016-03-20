@@ -85,14 +85,28 @@
             </Button>
          </children>
       </Group>
-      <Group fx:id="groupUndoRedo" layoutX="525.0" layoutY="487.0" visible="false">
+      <Group fx:id="groupUndo" layoutX="506.0" layoutY="487.0" visible="false">
          <children>
-            <Label fx:id="labelUndoRedo" alignment="CENTER" layoutY="-12.0" prefHeight="15.0" prefWidth="25.0" text="undo">
+            <Label fx:id="labelUndo" alignment="CENTER" layoutY="-12.0" prefHeight="15.0" prefWidth="25.0" text="undo">
                <font>
                   <Font name="Noto Sans" size="10.0" />
                </font>
             </Label>
-            <Button fx:id="btnUndoRedo" layoutX="2.0" layoutY="-30.0" mnemonicParsing="false" text="F2" textAlignment="CENTER">
+            <Button fx:id="btnUndo" layoutX="2.0" layoutY="-30.0" mnemonicParsing="false" text="F2" textAlignment="CENTER">
+               <font>
+                  <Font name="Noto Sans Bold" size="8.0" />
+               </font>
+            </Button>
+         </children>
+      </Group>
+      <Group fx:id="groupRedo" layoutX="537.0" layoutY="487.0" visible="false">
+         <children>
+            <Label fx:id="labelRedo" alignment="CENTER" layoutY="-12.0" prefHeight="15.0" prefWidth="25.0" text="redo">
+               <font>
+                  <Font name="Noto Sans" size="10.0" />
+               </font>
+            </Label>
+            <Button fx:id="btnRedo" layoutX="2.0" layoutY="-30.0" mnemonicParsing="false" text="F3" textAlignment="CENTER">
                <font>
                   <Font name="Noto Sans Bold" size="8.0" />
                </font>
