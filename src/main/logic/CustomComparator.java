@@ -16,7 +16,7 @@ import main.data.Task;
 /**
  * This comparator sorts tasks by a few rules:
  * 1. If both are floating tasks,
- *       - if same title, return latest created first
+ *       - if same title, return earlier created first
  * 2. If only one has a date,
  *       - return the other that does not have a date
  * 3. If both have dates,
