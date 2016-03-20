@@ -439,16 +439,14 @@ public class CommandParser {
      */
     public ArrayList<Integer> parseIndexes(String commandString) throws InvalidTaskIndexFormat {
     	try {
-	        logger.log(Level.INFO, "Parsing indexes.");
-	        String indexString = getIndexString(commandString);
-	        
-	        ArrayList<Integer> indexes = new ArrayList<Integer>();
-	        indexes = extractIndex(indexString);
-	        logger.log(Level.INFO, "Indexes retrieved.");
-	        return indexes;
-    	} catch (NumberFormatException e) {
-        	logger.log(Level.WARNING, "NumberFormatException: Indexes cannot be parsed by parser.");
-        	logger.log(Level.WARNING, "InvalidTaskINdexFormat exception thrown.");
+	    	logger.log(Level.INFO, "Parsing indexes.");
+	    	String indexString = getIndexString(commandString);
+	
+	    	ArrayList<Integer> indexes = new ArrayList<Integer>();
+	    	indexes = extractIndex(indexString);
+	    	logger.log(Level.INFO, "Indexes retrieved.");
+	    	return indexes;
+    	} catch (Exception e) {
     		throw new InvalidTaskIndexFormat("Invalid indexes input detected.");
     	}
     }
@@ -478,7 +476,7 @@ public class CommandParser {
      * 			{@code String} of index
      * @return {@code ArrayList<Integer>} of index(es) 
      */
-    private ArrayList<Integer> extractIndex(String index) throws NumberFormatException{
+    private ArrayList<Integer> extractIndex(String index) {
         ArrayList<String> indexes = new ArrayList<String>();
         ArrayList<String> tempRangedIndexes = new ArrayList<String>();
         ArrayList<Integer> multipleIndexes = new ArrayList<Integer>();
@@ -510,12 +508,18 @@ public class CommandParser {
         return multipleIndexes;
     }
     
-    public class InvalidTaskIndexFormat extends Exception {
+    
+    @SuppressWarnings("serial")
+	public class InvalidTaskIndexFormat extends Exception {
     	public InvalidTaskIndexFormat() {
+    		logger.log(Level.WARNING, "NumberFormatException: Indexes cannot be parsed by parser.");
+    		logger.log(Level.WARNING, "InvalidTaskINdexFormat exception thrown.");
     	}
-    	
+
     	public InvalidTaskIndexFormat(String message) {
-    		 super (message);
+    		super (message);
+    		logger.log(Level.WARNING, "NumberFormatException: Indexes cannot be parsed by parser.");
+    		logger.log(Level.WARNING, "InvalidTaskINdexFormat exception thrown.");    		
     	}
     }
 }
