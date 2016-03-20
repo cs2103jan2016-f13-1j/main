@@ -42,8 +42,9 @@ public class CommandParser {
     private static final Logger logger = Logger.getLogger(CommandParser.class.getName());  
     
     /**
-     * Find out what kind of task is to be added.
-     * Words without prepositions are considered floating tasks.
+     * This method builds a {@code Task} object.
+     * 
+     * Words without prepositions are considered tasks without dates.
      * Words with prepositions might not be dated.
      * Dated task will always contain prepositions.
      * 
@@ -51,8 +52,8 @@ public class CommandParser {
      * If only end date is specified, task will have the current date as the start date.
      * 
      * @param commandString
-     * 			command string from user input
-     * @return task built
+     * 			user input {code String}
+     * @return {@code Task} built
      */
     public Task parseAdd(String commandString) {
     	logger.setLevel(Level.OFF);
@@ -106,6 +107,16 @@ public class CommandParser {
         return task;
     }
     
+    /**
+     * This method checks the {@code String} taken in with a list of prepositions.
+     * 
+     * @param commandString
+     * 			{@code String} user input
+     * @param type
+     * 			{@code Boolean} flag for type of list checked against.
+     * 			It should be comprehensive and the {@code Boolean} should be true.
+     * @return {@code Boolean} indicating if prepositions are detected in {@code String}
+     */
     private boolean checkForPrepositions(String commandString, boolean type) {
     	ArrayList<String> prepositions = new ArrayList<String>();
 	    prepositions = populatePrepositions(type);
@@ -121,9 +132,12 @@ public class CommandParser {
     }
     
     /**
-     * Generate a list of pre-defined prepositions to be used.
+     * This method generate a list of pre-defined prepositions to be used.
      * 
-     * @return ArrayList<String> containing prepositions
+     * @param prepositionType
+     * 			{@code Boolean} flag indicating the list type.
+     * 			True for the whole list while false for a partial list.
+     * @return {@code ArrayList<String>} containing prepositions
      */
     private ArrayList<String> populatePrepositions(boolean prepositionType) {
     	ArrayList<String> prepositions = new ArrayList<String>();
@@ -148,11 +162,11 @@ public class CommandParser {
     }
     
     /**
-     * Corrects user input of dd/mm into mm/dd for date parsing
+     * This method corrects user input of dd/mm into mm/dd for date parsing.
      * 
      * @param commandString
-     * 			user input string
-     * @return String with the date fields swapped
+     * 			{@code String} user input
+     * @return {@code String} with the date fields swapped
      */
     private String detectAndCorrectDateInput(String commandString) {
 		boolean match = false;
@@ -202,16 +216,15 @@ public class CommandParser {
     }
     
     /**
-     * From the date(s) obtained from title, different formats are generated.
-     * Date information is removed from the title.
+     * This method removes date information from the {@code String} taken in.
      * 
      * @param title
-     * 			task's title
+     * 			{code Task} title
      * @param startDate
-     * 			task's start date
+     * 			{code Task} start date
      * @param endDate
-     * 			task's end date
-     * @return String title without date information
+     * 			{@code Task} end date
+     * @return {@code String} without date information
      */
     private String removeDateFromTitle(String title, Date startDate, Date endDate) {
         LocalDateTime dateTime;
@@ -308,16 +321,17 @@ public class CommandParser {
 	}
 	
     /**
-     * Checks for and removes targeted word from title.
+     * This method checks for and removes {@code ArrayList<String>} of targeted word from {@code String} title.
+     * 
      * If word to be removed is found, it checks if the word before it is a preposition.
      * If preposition found, both are removed.
      * Else, only the matching word is removed.
      * 
      * @param title
-     * 			title string to be checked
+     * 			{@code String} to be checked
      * @param toBeRemoved
-     * 			words to be removed
-     * @return String with targeted words removed
+     * 			{@code ArrayList<String>} of words to be removed
+     * @return {@code String} with targeted words removed
      */
     private String checkAndRemove(String title, ArrayList<String> toBeRemoved) {
     	int index;
@@ -350,13 +364,13 @@ public class CommandParser {
     }
     
     /**
-     * Check if a word is a preposition
+     * This method checks if a word is a preposition.
      * 
      * @param title
-     * 			title string
+     * 			{@code String} title
      * @param index
-     * 			index of the word to be checked
-     * @return Boolean true if preposition found
+     * 			{@code int} index of the word from its title
+     * @return {@code Boolean} true if preposition is found
      */
     private boolean checkIsPreposition(String title, int index, boolean type) {
     	ArrayList<String> prepositions = new ArrayList<String>();
@@ -416,20 +430,25 @@ public class CommandParser {
     }
     
     /**
-     * Detects the types of indexes and processes them.
+     * This method detects the types of indexes and processes them.
      * 
      * @param commandString
-     * 			user input string
-     * @return ArrayList<Integer> of index(es)
+     * 			{@code String} user input
+     * @return {@code ArrayList<Integer>} of index(es)
+     * @throws InvalidIndexInput 
      */
-    public ArrayList<Integer> parseIndexes(String commandString) {
-        logger.log(Level.INFO, "Parsing indexes.");
-        String indexString = getIndexString(commandString);
-        
-        ArrayList<Integer> indexes = new ArrayList<Integer>();
-        indexes = extractIndex(indexString);
-        logger.log(Level.INFO, "Indexes retrieved.");
-        return indexes;
+    public ArrayList<Integer> parseIndexes(String commandString) throws InvalidTaskIndexFormat {
+    	try {
+	        logger.log(Level.INFO, "Parsing indexes.");
+	        String indexString = getIndexString(commandString);
+	        
+	        ArrayList<Integer> indexes = new ArrayList<Integer>();
+	        indexes = extractIndex(indexString);
+	        logger.log(Level.INFO, "Indexes retrieved.");
+	        return indexes;
+    	} catch (NumberFormatException e) {
+    		throw new InvalidTaskIndexFormat("Invalid indexes input detected.");
+    	}
     }
     
     private String getIndexString(String commandString) {
@@ -451,11 +470,11 @@ public class CommandParser {
     }
     
     /**
-     * Obtain all numbers based on index string given.
+     * This method obtains all numbers based on {@code String} taken in.
      * 
      * @param index
-     * 			index string
-     * @return ArrayList<Integer> of index(es) 
+     * 			{@code String} of index
+     * @return {@code ArrayList<Integer>} of index(es) 
      */
     private ArrayList<Integer> extractIndex(String index) {
         ArrayList<String> indexes = new ArrayList<String>();
@@ -491,5 +510,14 @@ public class CommandParser {
         }
         
         return multipleIndexes;
+    }
+    
+    public class InvalidTaskIndexFormat extends Exception {
+    	public InvalidTaskIndexFormat() {
+    	}
+    	
+    	public InvalidTaskIndexFormat(String message) {
+    		 super (message);
+    	}
     }
 }
