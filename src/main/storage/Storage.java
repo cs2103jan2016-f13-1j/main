@@ -1,17 +1,13 @@
-/**
- * Summary of public methods that can be called:
- * 
- * getStorage();
- * readTasks();
- * writeTasks(ArrayList<ArrayList<Task>> tasks);
- * 
- * getFileDirectory();
- * getFileName();
- * 
- * setFileDirectory(String fileDirectory);
- * setFileName(String fileName);
- */
 package main.storage;
+
+/**
+ * This is a singleton class. This class is used to read/write to
+ * an output file. 
+ * 
+ * You can expect to see two files upon initializing this class:
+ * 1. settings.txt (Stores the path of the output file - Default: storage.txt)
+ * 2. storage.txt (Default file name)
+ */
 
 /**
  * @author Bevin Seetoh Jia Jin
@@ -19,12 +15,12 @@ package main.storage;
  */
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Writer;
+import java.nio.file.InvalidPathException;
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.logging.Level;
@@ -60,58 +56,74 @@ public class Storage {
 	private Storage() {
 	    readUserSettings();
 	}
-
+	
+	/**
+	 * A static method to initialize an instance of the {@code Storage} class.
+	 * 
+	 * @return   An instance of the {@code Storage} class
+	 */
 	public static synchronized Storage getStorage() {
 		if (storage == null) {
 			storage = new Storage();
 		}
 		return storage;
 	}
-
+	
+	/**
+	 * Prevents attempts to clone this singleton class.
+	 */
 	public Object clone() throws CloneNotSupportedException {
 		throw new CloneNotSupportedException();
 	}
 	
-	public ArrayList<ArrayList<Task>> readTasks() {
-	    ArrayList<ArrayList<Task>> tasks = null;
-		BufferedReader reader = null;
-		try {
-			reader = new BufferedReader(new FileReader(filePath));
-			Gson gson = new GsonBuilder().create();
-	        tasks = gson.fromJson(reader,
-	                new TypeToken<ArrayList<ArrayList<Task>>>() {
-	                }.getType());
-	        reader.close();
-	        
-	        if (tasks.size() < 2) {
-	            logger.log(Level.WARNING,"ERROR READING FILE: " + fileName);
+	/**
+	 * Accesses the output file, read and build the data into {@code Task} objects.
+	 * 
+	 * @return   A {@code ArrayList} of {@code Tasks}
+	 */
+	public ArrayList<Task> readTasks() {
+        ArrayList<Task> tasks = null;
+        BufferedReader reader = null;
+        try {
+            reader = new BufferedReader(new FileReader(filePath));
+            Gson gson = new GsonBuilder().create();
+            tasks = gson.fromJson(reader,
+                    new TypeToken<ArrayList<Task>>() {
+                    }.getType());
+            reader.close();
+            
+            if (tasks.isEmpty()) {
+                logger.log(Level.WARNING,"ERROR READING FILE: " + fileName);
                 throw new Exception("ERROR READING FILE");
-	        }
-	        logger.log(Level.INFO,"Successfully read tasks from: " + fileName);
-		} catch (Exception e) {
-		    ArrayList<ArrayList<Task>> allTasks = new ArrayList<ArrayList<Task>>();
-            allTasks.add(new ArrayList<Task>());
-            allTasks.add(new ArrayList<Task>());
-			tasks = allTasks;
-			logger.log(Level.INFO,"Application clean start. Tasks will be saved in: " + DEFAULT_FILE_NAME);
-		}
-		assert(tasks != null);
-		return tasks;
-	}
-
-	public void writeTasks(ArrayList<ArrayList<Task>> tasks) throws FileNotFoundException {
-		try (Writer writer = new OutputStreamWriter(new FileOutputStream(
-				filePath), "UTF-8")) {
-			Gson gson = new GsonBuilder().setPrettyPrinting().create();
-			gson.toJson(tasks, writer);
-			logger.log(Level.INFO,"Saved tasks to: " + fileName);
-		} catch (Exception e) {
-			logger.log(Level.INFO,"Corrupted file location: " + filePath);
-			setFileLocation(DEFAULT_FILE_NAME);
-			writeTasks(tasks);
-		}
-		assert((new File(filePath)).exists());
-	}
+            }
+            logger.log(Level.INFO,"Successfully read tasks from: " + fileName);
+        } catch (Exception e) {
+            tasks = new ArrayList<Task>();
+            logger.log(Level.INFO,"Application clean start.");
+        }
+        assert(tasks != null);
+        return tasks;
+    }
+	
+	/**
+	 * This method takes in an {@code ArrayList} of {@code Tasks} and writes
+	 * them into the output file.
+	 * 
+	 * @param  tasks
+	 *         The {@code ArrayList} of {@code Tasks} to write
+	 */
+    public void writeTasks(ArrayList<Task> tasks) {
+        try (Writer writer = new OutputStreamWriter(new FileOutputStream(
+                filePath), "UTF-8")) {
+            Gson gson = new GsonBuilder().setPrettyPrinting().create();
+            gson.toJson(tasks, writer);
+            logger.log(Level.INFO,"Saved tasks to: " + fileName);
+        } catch (Exception e) {
+            logger.log(Level.INFO,"Corrupted file location: " + filePath);
+            setFileLocation(DEFAULT_FILE_NAME, tasks);
+        }
+        assert((new File(filePath)).exists());
+    }
 	
 	private String getDefaultFilePath() {
 	    String path = null;
@@ -131,17 +143,27 @@ public class Storage {
 		return path;
 	}
 	
-	public void setFileLocation(String path) {
+	/**
+	 * This methods updates file path and stores it in the settings file.
+	 * The settings file can be found in the application folder, settings.txt.
+	 * 
+	 * @param  path
+	 *         The path to save the output file
+	 * @param  tasks
+	 *         The {@code ArrayList} of {@code Task} to write to the new path
+	 */
+	public void setFileLocation(String path, ArrayList<Task> tasks) {
 	    filePath = path;
 	    updateFileName(path);
 	    try(PrintWriter out = new PrintWriter(USER_SETTINGS)){
             out.print(path);
             out.close();
             logger.log(Level.INFO,"Updated user settings with: " + path);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+        	logger.log(Level.WARNING,"Failed to write to: " + path);
         }
 	    assert((new File(USER_SETTINGS)).exists());
+	    writeTasks(tasks);
 	}
 	
 	private void updateFileName(String path) {
@@ -159,11 +181,16 @@ public class Storage {
 	    assert(fileName != null);
 	}
 	
-	public String getFileLocation() {
+	/**
+	 * This method returns the current path of the output file.
+	 * 
+	 * @return   A {@code String} indicating the file path
+	 */
+	public String getFilePath() {
 	    return filePath;
 	}
 	
-	public void readUserSettings() {
+	private void readUserSettings() {
 	    try {
             Scanner sc = new Scanner(new File(USER_SETTINGS));
             String path = sc.nextLine().trim();
@@ -174,13 +201,12 @@ public class Storage {
                 updateFileName(path);
                 logger.log(Level.INFO,"Valid file location: " + path);
             } else {
-                fileName = DEFAULT_FILE_NAME;
-                setFileLocation(getDefaultFilePath());
-                logger.log(Level.INFO,"Corrupted file location from settings.txt. Set as default location.");
+                logger.log(Level.INFO,"Invalid file location: " + path);
+                throw new InvalidPathException(path, "Invalid file location");
             }
         } catch (Exception e) {
             fileName = DEFAULT_FILE_NAME;
-            setFileLocation(getDefaultFilePath());
+            setFileLocation(getDefaultFilePath(), new ArrayList<Task>());
             logger.log(Level.INFO,"Corrupted file location from settings.txt. Set as default location.");
         }
 	    assert(fileName != null);
@@ -188,11 +214,7 @@ public class Storage {
 	
 	private boolean validFilePath(String path) {
         File file = new File(path);
-        if (file.exists()) {
-            return true;
-        } else {
-            return false;
-        }
+        return file.exists();
 	}
 	
 	private boolean isWindows() {

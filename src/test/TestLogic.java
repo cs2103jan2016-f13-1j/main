@@ -1,158 +1,221 @@
-/**
+/** 
+ * How to use the logic component:
+ * 1. get an instance of invoker and receiver
+ *      Invoker invoker = new Invoker();
+        Receiver receiver = Receiver.getReceiver();
+ * 2. create command objects with receiver and task as parameters
+ *      Command add = new AddCommand(receiver, task);
+ * 3. use the invoker to execute the command object
+ *      invoker.execute(add);
+ *      
+ * Short form: invoker.execute(new AddCommand(receiver, task));
+ * 
+ * Observer pattern: example of update() can be found at the last method
+ * 
+ * Available commands:
+ * AddCommand(Task task);
+ * DeleteCommand(Task task);
+ * DeleteCommand(ArrayList<Task> tasks);
+ * EditCommand(Task oldTask, Task newTask);
+ * DoneCommand(Task task);
+ * DoneCommand(ArrayList<Task> tasks);
+ * UndoneCommand(Task task);
+ * UndoneCommand(ArrayList<Task> tasks);
+ * SetFileLocationCommand(String newLocation);
+ * 
+ * To get the tasks before the observer pattern is up,
+ * getTodoTasks();
+ * getCompletedTasks();
  * 
  */
-package test;
 
 /**
- * @author Bevin
+ * @author Bevin Seetoh Jia Jin
  *
  */
-import static org.junit.Assert.assertEquals;
 
+package test;
+
+import static org.junit.Assert.*;
+
+import java.io.File;
 import java.util.ArrayList;
+import java.util.EmptyStackException;
+import java.util.Observable;
+import java.util.Observer;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import main.data.Task;
-import main.logic.Logic;
+import main.logic.AddCommand;
+import main.logic.Command;
+import main.logic.DeleteCommand;
+import main.logic.DoneCommand;
+import main.logic.EditCommand;
+import main.logic.Invoker;
+import main.logic.Receiver;
+import main.logic.SetFileLocationCommand;
+import main.logic.UndoneCommand;
+import main.parser.CommandParser;
 
 
 
-public class TestLogic {
+public class TestLogic implements Observer {
+	CommandParser parser;
+	Receiver receiver;
+	Invoker invoker;
+	Observer observer;
+	ArrayList<Task> todo = new ArrayList<Task>();
+	ArrayList<Task> completed = new ArrayList<Task>();
 	
-	Logic logic = null;
+	@Test
+	public void getMethodsTest() {
+	    assertNotNull(receiver.getAllTasks());
+	    assertNotNull(receiver.getTodoTasks());
+	    assertNotNull(receiver.getCompletedTasks());
+	}
 	
-	/*
-	 * Tests add a task, undo, then redo
-	 * Tests edit a task, undo, then redo
-	 * Tests delete a task, undo, then redo
-	 * Tests delete multiple tasks, undo, then redo
-	 */
+	@Test
+    public void receiverCloneTest() {
+        try {
+            receiver.clone();
+        } catch (CloneNotSupportedException e) {
+        }
+    }
+	
+	@Test
+	public void emptyUndoStackTest() {
+	    try {
+	        while (invoker.isUndoAvailable()) {
+    	        invoker.undo();
+	        }
+	        invoker.undo();
+	    } catch (EmptyStackException e) {
+        }
+	}
+	
+	@Test
+    public void emptyRedoStackTest() {
+	    try {
+            while (invoker.isRedoAvailable()) {
+                invoker.redo();
+            }
+            invoker.redo();
+        } catch (EmptyStackException e) {
+        }
+    }
+	
 	@Test
 	public void allFunctionsTest() {
-	    String feedback = null;
-	    
-	    //Add task
-	    feedback = logic.parseCommand("a", Logic.ListType.ALL);
-	    assertEquals(feedback, "a");
-	    logic.executeCommand();
-	    logic.undo();
-	    logic.redo();
-	    
-	    //Edit task
-	    feedback = logic.parseCommand("b", Logic.ListType.ALL);
-        assertEquals(feedback, "b");
-        logic.editTask(logic.getAllTasks().get(0)); //edit to b
-        logic.undo();  //edit to a
-        logic.redo();  //edit to b
+	    Task task = new Task("example");
+        Task task1 = new Task("new task");
+        ArrayList<Task> tasks = new ArrayList<Task>();
+        tasks.add(task);
+        tasks.add(task1);
         
-        //Delete a task
-        feedback = logic.parseCommand("del 1", Logic.ListType.ALL);
-        assertEquals(feedback, "1");
-        logic.executeCommand(logic.getAllTasks().get(0)); //delete b
-        logic.undo();
-        logic.redo();
-        
-        ArrayList<Task> tasks = null;
-        ArrayList<Task> list = null;
-        
-        //Delete multiple task
-        logic.parseCommand("c multiple task", Logic.ListType.ALL);
-        logic.executeCommand();
-        logic.parseCommand("b multiple task", Logic.ListType.ALL);
-        logic.executeCommand();
-        logic.parseCommand("a multiple task", Logic.ListType.ALL);
-        logic.executeCommand();
-        feedback = logic.parseCommand("del 1-2,3", Logic.ListType.ALL);
-        assertEquals(feedback, "1 2 3");
-        tasks = new ArrayList<Task>();
-        list = logic.getAllTasks();
-        for (String s : feedback.split(" ")) {
-            int i = Integer.parseInt(s);
-            tasks.add(list.get(i - 1));
-        }
-        logic.executeCommand(tasks);
-        logic.undo();
-        logic.redo();
-        
-        //Sorting test
-        feedback = logic.parseCommand("c multiple task by 8", Logic.ListType.ALL);
-        logic.executeCommand();
-        feedback = logic.parseCommand("a multiple task by 10", Logic.ListType.ALL);
-        logic.executeCommand();
-        feedback = logic.parseCommand("b multiple task by 8", Logic.ListType.ALL);
-        logic.executeCommand();
-        feedback = logic.parseCommand("del 1-2,3", Logic.ListType.ALL);
-        assertEquals(feedback, "1 2 3");
-        tasks = new ArrayList<Task>();
-        list = logic.getAllTasks();
-        for (String s : feedback.split(" ")) {
-            int i = Integer.parseInt(s);
-            tasks.add(list.get(i - 1));       
-        }
-        logic.executeCommand(tasks);
+        Command add = new AddCommand(receiver, task);
+        Command add1 = new AddCommand(receiver, task1);
+        Command edit = new EditCommand(receiver, task, task1);
+        Command delete = new DeleteCommand(receiver, task1);
+        Command deleteMultiple = new DeleteCommand(receiver, tasks);
+        Command done = new DoneCommand(receiver, task1);
+        Command doneMultiple = new DoneCommand(receiver, tasks);
+        Command undone = new UndoneCommand(receiver, task1);
+        Command undoneMultiple = new UndoneCommand(receiver, tasks);
+
+        invoker.execute(add);
+        invoker.undo();
+        invoker.redo();
+        invoker.execute(edit);
+        invoker.undo();
+        invoker.redo();
+        invoker.execute(done);
+        invoker.undo();
+        invoker.redo();
+        invoker.execute(undone);
+        invoker.undo();
+        invoker.redo();
+        invoker.execute(delete);
+        invoker.undo();
+        invoker.redo();
+        invoker.execute(add);
+        invoker.execute(add1);
+        invoker.execute(doneMultiple);
+        invoker.undo();
+        invoker.redo();
+        invoker.execute(undoneMultiple);
+        invoker.undo();
+        invoker.redo();
+        invoker.execute(deleteMultiple);
+        invoker.undo();
+        invoker.redo();
 	}
 	
-	/*
-     * Tests mark a task, undo, then redo
-     * Tests mark multiple tasks, undo, then redo
-     */
 	@Test
-	public void markTaskTest() {
-	    String feedback = null;
-	    
-	    //Mark a task
-	    logic.parseCommand("mark task", Logic.ListType.ALL);
-        logic.executeCommand();
-        feedback = logic.parseCommand("done 1", Logic.ListType.ALL);
-        assertEquals(feedback, "1");
-        logic.executeCommand(logic.getAllTasks().get(0));
-        logic.undo();
-        logic.redo();
-        feedback = logic.parseCommand("del 1", Logic.ListType.COMPLETED);
-        assertEquals(feedback, "1");
-        logic.executeCommand(logic.getCompletedTasks().get(0));
-        
-        ArrayList<Task> tasks = null;
-        ArrayList<Task> list = null;
-        
-        //Mark multiple tasks
-        logic.parseCommand("mark task 1", Logic.ListType.ALL);
-        logic.executeCommand();
-        logic.parseCommand("mark task 2", Logic.ListType.ALL);
-        logic.executeCommand();
-        logic.parseCommand("mark task 3", Logic.ListType.ALL);
-        logic.executeCommand();
-        feedback = logic.parseCommand("done 1-2,3", Logic.ListType.ALL);
-        assertEquals(feedback, "1 2 3");
-        tasks = new ArrayList<Task>();
-        list = logic.getAllTasks();
-        for (String s : feedback.split(" ")) {
-            int i = Integer.parseInt(s);
-            tasks.add(list.get(i - 1));       
+	public void comparatorTest() {
+	    invoker.execute(new AddCommand(receiver, parser.parseAdd("a")));
+	    invoker.execute(new DoneCommand(receiver, todo));
+	    invoker.execute(new AddCommand(receiver, parser.parseAdd("b")));
+	    invoker.execute(new AddCommand(receiver, parser.parseAdd("c by 1")));
+	    invoker.execute(new AddCommand(receiver, parser.parseAdd("d")));
+	    invoker.execute(new AddCommand(receiver, parser.parseAdd("e by 1")));
+	    invoker.execute(new AddCommand(receiver, parser.parseAdd("f by 5")));
+	    invoker.execute(new AddCommand(receiver, parser.parseAdd("g from 2-3")));
+	    invoker.execute(new AddCommand(receiver, parser.parseAdd("h from 2-3")));
+	    invoker.execute(new AddCommand(receiver, parser.parseAdd("i from 9pm-10pm")));
+        invoker.execute(new AddCommand(receiver, parser.parseAdd("j from 9pm-11pm")));
+	    invoker.execute(new AddCommand(receiver, parser.parseAdd("k from 1-3")));
+	    //invoker.execute(new AddCommand(receiver, parser.parseAdd("a from 1-12")));
+        invoker.execute(new AddCommand(receiver, parser.parseAdd("l from 7pm-12am")));
+	    invoker.execute(new AddCommand(receiver, parser.parseAdd("m at 4")));
+	    invoker.execute(new AddCommand(receiver, parser.parseAdd("n at 4")));
+	    invoker.execute(new AddCommand(receiver, parser.parseAdd("o at 3")));
+	    invoker.execute(new DoneCommand(receiver, todo));
+	    while (!todo.isEmpty()) {
+	        invoker.execute(new DeleteCommand(receiver, todo.get(0)));
+	    }
+	    while (!completed.isEmpty()) {
+            invoker.execute(new DeleteCommand(receiver, completed.get(0)));
         }
-        logic.executeCommand(tasks);
-        logic.undo();
-        logic.redo();
-        feedback = logic.parseCommand("delete 1-2,3", Logic.ListType.COMPLETED);
-        assertEquals(feedback, "1 2 3");
-        tasks = new ArrayList<Task>();
-        list = logic.getCompletedTasks();
-        for (String s : feedback.split(" ")) {
-            int i = Integer.parseInt(s);
-            tasks.add(list.get(i - 1));       
-        }
-        logic.executeCommand(tasks);
 	}
 	
-	//@Test
+	@Test
 	public void setFilePathTest() {
-	    logic.setFileLocation("invalid$path");
+	    Command setLocation = new SetFileLocationCommand(receiver, "test.txt");
+	    invoker.execute(setLocation);
+	    invoker.undo();
+	    invoker.redo();
+	    invoker.undo();
+	    try {
+	        File file = new File("test.txt");
+	        file.delete();
+	    } catch (Exception e) {
+	        System.out.println("Failed to delete test.txt file");
+	    }
+	    try {
+            File file = new File("storage.txt");
+            file.delete();
+        } catch (Exception e) {
+            System.out.println("Failed to delete storage.txt file");
+        }
+	    Command setCorrupted = new SetFileLocationCommand(receiver, "?");
+        invoker.execute(setCorrupted);
 	}
 	
 	@Before
 	public void initialize() {
-		logic = Logic.getLogic();
+	    parser = new CommandParser();
+	    invoker = new Invoker();
+        receiver = Receiver.getReceiver();
+        receiver.addObserver(this);
 	}
+
+    @Override
+    public void update(Observable o, Object arg) {
+        if (o == receiver) {
+            todo = receiver.getTodoTasks();
+            completed = receiver.getCompletedTasks();
+        }
+    }
 }

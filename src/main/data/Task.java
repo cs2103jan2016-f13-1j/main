@@ -26,13 +26,18 @@ public class Task {
     private int priority = 0;
     private Date createdDate = null;
     private Date completedDate = null;
+    
+    public Task(String title) {
+        this.title = title;
+        this.createdDate = new Date();
+    }
 
-    public Task(String title, Date startDate, Date endDate, String label, Date createdDate) {
+    public Task(String title, Date startDate, Date endDate, String label) {
     	this.title = title;
     	this.startDate = startDate;
     	this.endDate = endDate;
     	this.label = label;
-    	this.createdDate = createdDate;
+    	this.createdDate = new Date();
     }
     
     public String getTitle() {
@@ -128,7 +133,6 @@ public class Task {
         if (!createdDate.equals(task.getCreatedDate())) {
             return -1;
         }
-        
     	return 0;
     }
 
@@ -310,43 +314,5 @@ public class Task {
             }
         }
         return false;
-    }
-    
-    public boolean isThisWeek() {
-        Date tomorrow = getTomorrow();
-        Date eighthDay = getEigthDay();
-        
-        if (hasEndDate()) {
-            if (endDate.compareTo(tomorrow) >= 0 && endDate.compareTo(eighthDay) < 0) {
-                return true;
-            }
-        } else if (hasStartDate()) {
-            if (startDate.compareTo(tomorrow) >= 0 && startDate.compareTo(eighthDay) < 0) {
-                return true;
-            }
-        }
-        return false;
-    }    
-    
-    private Date getTomorrow() {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(new Date());
-        calendar.add(Calendar.DATE,1);
-        calendar.set(Calendar.HOUR_OF_DAY,0);
-        calendar.set(Calendar.MINUTE,0);
-        calendar.set(Calendar.SECOND,0);
-        calendar.set(Calendar.MILLISECOND,0);
-        return calendar.getTime();
-    }
-    
-    private Date getEigthDay() {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(new Date());
-        calendar.add(Calendar.DATE,8);
-        calendar.set(Calendar.HOUR_OF_DAY,0);
-        calendar.set(Calendar.MINUTE,0);
-        calendar.set(Calendar.SECOND,0);
-        calendar.set(Calendar.MILLISECOND,0);
-        return calendar.getTime();
     }
 }

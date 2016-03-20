@@ -15,8 +15,7 @@ import java.time.format.TextStyle;
 
 import org.ocpsoft.prettytime.nlp.PrettyTimeParser;
 
-import main.data.Command;
-import main.data.Command.Type;
+import main.data.Task;
 
 /**
  * @author Joleen
@@ -37,72 +36,10 @@ public class CommandParser {
     private final String STRING_NOW = "NOW";
     private final int ONE_HOUR = 1;
     private final int DOUBLE_DIGIT = 10;
-    private final int LENGTH_DEL = 3;
-    private final int LENGTH_DELETE = 6;
-    private final int LENGTH_DONE = 4;
-    private final int LENGTH_UNDONE = 6;
     private final int LENGTH_OFFSET = 1;
     private final int INDEX_OFFSET = 1;
 
-    private static final Logger logger = Logger.getLogger(CommandParser.class.getName());
-    
-    public Command parse(String commandString) {
-    	logger.setLevel(Level.OFF);
-    	
-        String command = getFirstWord(commandString);
-        Type commandType = getCommandType(command);
-        logger.log(Level.INFO, "Starting " + commandType + " command preparations.");
-        return commandPreparations(commandType, commandString);
-    }
-    
-    private String getFirstWord(String commandString) {
-    	String word = "";
-    	try {
-    		word = commandString.split(" ")[0];
-    	} catch (IndexOutOfBoundsException e ) {
-    		e.printStackTrace();
-    	}
-    	return word;
-    }
-    
-    private Type getCommandType(String command) {
-    	String type = command.toLowerCase();
-    	
-    	switch (type) {
-    		case "del" :
-    			return Command.Type.DELETE;
-    		case "delete" :
-    			return Command.Type.DELETE;
-    		case "done" :
-    			return Command.Type.DONE;
-    		case "undone" :
-    			return Command.Type.UNDONE;
-    		default :
-    			return Command.Type.ADD;	
-    	}
-    }
-    
-    private Command commandPreparations(Type type, String commandString) {
-    	assert(type.equals(Command.Type.ADD) || type.equals(Command.Type.DELETE) || type.equals(Command.Type.DONE) || type.equals(Command.Type.UNDONE));
-        switch (type) {
-            case ADD :
-                return prepareForAdd(type, commandString);
-                
-            case DELETE :
-                return prepareIndexes(type, commandString);
-                
-            case DONE :
-            	return prepareIndexes(type, commandString);
-            	
-            case UNDONE :
-                return prepareIndexes(type, commandString);
-            	
-            default :
-            	logger.log(Level.WARNING, "Command type not detected. Null returned.");
-            	assert(false);
-                return null;
-        }
-    }
+    private static final Logger logger = Logger.getLogger(CommandParser.class.getName());  
     
     /**
      * Find out what kind of task is to be added.
@@ -113,13 +50,17 @@ public class CommandParser {
      * If only start date is specified, task will only last for an hour.
      * If only end date is specified, task will have the current date as the start date.
      * 
-     * @param type
-     * 			command type that is determined
      * @param commandString
      * 			command string from user input
-     * @return Command with the type of command and task
+     * @return task built
      */
-    private Command prepareForAdd(Type type, String commandString) {
+    public Task parseAdd(String commandString) {
+    	logger.setLevel(Level.OFF);
+    	
+    	assert(commandString != null);
+    	assert(!commandString.isEmpty());
+        logger.log(Level.INFO, "Parsing for ADD command.");
+        
         String title = null;
         String label = null;
         int numberOfDate = 0;
@@ -160,8 +101,9 @@ public class CommandParser {
             title = removeLabelFromTitle(title, label);
         }
 
-        Command command = new Command(type, title, startDate, endDate, label);
-        return command;
+        Task task = new Task (title, startDate, endDate, label);
+        logger.log(Level.INFO, "Task object built.");
+        return task;
     }
     
     private boolean checkForPrepositions(String commandString, boolean type) {
@@ -206,7 +148,7 @@ public class CommandParser {
     }
     
     /**
-     * Corrects user input of dd/mm into mm/dd for parser
+     * Corrects user input of dd/mm into mm/dd for date parsing
      * 
      * @param commandString
      * 			user input string
@@ -327,6 +269,7 @@ public class CommandParser {
 		ArrayList<String> timings = new ArrayList<String>();
 		int hour = dateTime.getHour();
 		int min = dateTime.getMinute();
+		
 		assert(hour >= 0);
 		assert(min >= 0);
 		
@@ -377,14 +320,14 @@ public class CommandParser {
      * @return String with targeted words removed
      */
     private String checkAndRemove(String title, ArrayList<String> toBeRemoved) {
-    	String toBeReplaced = "";
     	int index;
     	boolean isPreposition;
-    	
-    	List<String> words = new ArrayList<String>(Arrays.asList(title.toLowerCase().split(" ")));
     
     	for (int i = 0; i < toBeRemoved.size(); i++) {
-    		if (words.contains(toBeRemoved.get(i))) {
+    		String toBeReplaced = "";
+        	List<String> words = new ArrayList<String>(Arrays.asList(title.toLowerCase().split(" ")));
+    		
+        	if (words.contains(toBeRemoved.get(i))) {
     			toBeReplaced = toBeReplaced.concat(" ");
     			toBeReplaced = toBeReplaced.concat(toBeRemoved.get(i));
 
@@ -444,7 +387,18 @@ public class CommandParser {
         label = getFirstWord(label);
         return label;
     }
-   
+    
+    private String getFirstWord(String commandString) {
+    	String word = "";
+    	try {
+    		word = commandString.split(" ")[0];
+    	} catch (IndexOutOfBoundsException e ) {
+    		logger.log(Level.WARNING, "Error: First word not found by parser.");
+    		throw new IndexOutOfBoundsException();
+    	}
+    	return word;
+    }
+    
     private String removeLabelFromTitle(String title, String label) {
         String tag = "#".concat(label);
         
@@ -464,36 +418,25 @@ public class CommandParser {
     /**
      * Detects the types of indexes and processes them.
      * 
-     * @param type
-     * 			command type
      * @param commandString
      * 			user input string
-     * @return Command with the type of command and index(es)
+     * @return ArrayList<Integer> of index(es)
      */
-    private Command prepareIndexes(Type type, String commandString) {
+    public ArrayList<Integer> parseIndexes(String commandString) {
+        logger.log(Level.INFO, "Parsing indexes.");
         String indexString = getIndexString(commandString);
         
         ArrayList<Integer> indexes = new ArrayList<Integer>();
         indexes = extractIndex(indexString);
-        
-        Command command = new Command(type, indexes);
-        return command;
+        logger.log(Level.INFO, "Indexes retrieved.");
+        return indexes;
     }
     
     private String getIndexString(String commandString) {
         int index = 0;
         String command = getFirstWord(commandString);
         
-        if (command.matches("delete")) {
-            index = LENGTH_DELETE;
-        } else if (command.matches("del")) {
-            index = LENGTH_DEL;
-        } else if (command.matches("done")) {
-        	index = LENGTH_DONE;
-        } else if (command.matches("undone")) {
-            index = LENGTH_UNDONE;
-        }
-        index = index + LENGTH_OFFSET;
+        index = command.length() + LENGTH_OFFSET;
         
         String indexString = commandString.substring(index, commandString.length());
         indexString = removeWhiteSpace(indexString);
@@ -503,6 +446,7 @@ public class CommandParser {
     
     private String removeWhiteSpace(String string) {
         string = string.replaceAll("\\s","");
+        assert(!string.isEmpty());
         return string;
     }
     
@@ -511,7 +455,7 @@ public class CommandParser {
      * 
      * @param index
      * 			index string
-     * @return ArrayList<Integer> of index(es) but decremented by 1
+     * @return ArrayList<Integer> of index(es) 
      */
     private ArrayList<Integer> extractIndex(String index) {
         ArrayList<String> indexes = new ArrayList<String>();
@@ -542,7 +486,8 @@ public class CommandParser {
 	            }
 	        }
         } catch (NumberFormatException e) {
-        	e.printStackTrace();
+        	logger.log(Level.WARNING, "Error: Indexes cannot be parsed by parser.");
+        	throw new NumberFormatException();
         }
         
         return multipleIndexes;
