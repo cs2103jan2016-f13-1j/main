@@ -25,13 +25,13 @@ public class TestStorage {
     public void readUserSettingsTest() {
         storage.setFileLocation("?", new ArrayList<Task>());
         storage = null;
-        storage = Storage.getStorage();
+        storage = Storage.getInstance();
         storage.setFileLocation("storage.txt", new ArrayList<Task>());
         storage = null;
-        storage = Storage.getStorage();
+        storage = Storage.getInstance();
         storage.setFileLocation("<><>///\\:?||", new ArrayList<Task>());
         storage = null;
-        storage = Storage.getStorage();
+        storage = Storage.getInstance();
     }
     
     @Test
@@ -63,12 +63,12 @@ public class TestStorage {
         assertNotNull(storage.readTasks());
         storage.setFileLocation("<><>///\\:?||", new ArrayList<Task>());
         storage = null;
-        storage = Storage.getStorage();
+        storage = Storage.getInstance();
         
         File file = new File("settings.txt");
         file.delete();
         storage = null;
-        storage = Storage.getStorage();
+        storage = Storage.getInstance();
     }
     
     @Test
@@ -78,7 +78,7 @@ public class TestStorage {
     
     @Before
     public void initialize() {
-        storage = Storage.getStorage();
+        storage = Storage.getInstance();
     }
 
 }
