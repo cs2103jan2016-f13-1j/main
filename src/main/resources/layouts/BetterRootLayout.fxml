@@ -57,7 +57,7 @@
             <Font name="Noto Sans" size="18.0" />
          </font>
       </JFXTextField>
-      <JFXButton alignment="CENTER" buttonType="RAISED" maxHeight="-Infinity" minHeight="68.0" style="-fx-background-color: white;" AnchorPane.bottomAnchor="70.0" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="40.0" AnchorPane.topAnchor="750.0">
+      <JFXButton fx:id="btnFeedback" alignment="CENTER" buttonType="RAISED" maxHeight="-Infinity" minHeight="68.0" style="-fx-background-color: white;" visible="false" AnchorPane.bottomAnchor="70.0" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="40.0" AnchorPane.topAnchor="750.0">
          <font>
             <Font name="Noto Sans" size="13.0" />
          </font>
@@ -69,7 +69,12 @@
                         <Font name="Noto Sans" size="20.0" />
                      </font>
                   </Label>
-                  <Label fx:id="labelUserFeedback" alignment="CENTER" layoutX="122.0" text="user feedback" textFill="#00111ab2">
+                  <Label fx:id="labelUserParsedInput" alignment="CENTER" layoutX="122.0" text="user feedback" textFill="#00111ab2">
+                     <font>
+                        <Font name="Noto Sans" size="20.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="labelUserResult" alignment="CENTER" layoutX="53.0" text="action result" textFill="#ff5252b2">
                      <font>
                         <Font name="Noto Sans" size="20.0" />
                      </font>

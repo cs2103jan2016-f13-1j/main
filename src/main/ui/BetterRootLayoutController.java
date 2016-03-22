@@ -5,6 +5,7 @@ import java.util.EmptyStackException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXListCell;
 import com.jfoenix.controls.JFXListView;
 import com.jfoenix.controls.JFXTextField;
@@ -86,6 +87,9 @@ public class BetterRootLayoutController {
 
     @FXML // fx:id="commandBar"
     private JFXTextField commandBar; // Value injected by FXMLLoader
+    
+    @FXML // fx:id="btnFeedback"
+    private JFXButton btnFeedback; // Value injected by FXMLLoader
 
     @FXML // fx:id="groupFeedback"
     private Group groupFeedback; // Value injected by FXMLLoader
@@ -93,8 +97,11 @@ public class BetterRootLayoutController {
     @FXML // fx:id="labelUserAction"
     private Label labelUserAction; // Value injected by FXMLLoader
 
-    @FXML // fx:id="labelUserFeedback"
-    private Label labelUserFeedback; // Value injected by FXMLLoader
+    @FXML // fx:id="labelUserParsedInput"
+    private Label labelUserParsedInput; // Value injected by FXMLLoader
+    
+    @FXML // fx:id="labelUserParsedInput"
+    private Label labelUserResult; // Value injected by FXMLLoader
 
     @FXML // fx:id="groupUndo"
     private Group groupUndo; // Value injected by FXMLLoader
@@ -352,7 +359,7 @@ public class BetterRootLayoutController {
     private void refreshListView() {
         observableTodoTasks.clear();
         populateListView();
-        toggleUndoRedo();
+//        toggleUndoRedo();
     }
 
     /**
@@ -537,13 +544,15 @@ public class BetterRootLayoutController {
                     logger.log(Level.INFO, "User is typing: " + userInput);
 
                     if (userInput.length() <= 0) {
-                        // showFeedback(false);
+                        btnFeedback.setVisible(false);
+//                        showFeedback(false);
                         // showResult(false, EMPTY_STRING);
                         // clearFeedback();
                         // clearStoredUserInput();
                         return;
                     }
-
+                    
+                    btnFeedback.setVisible(true);
                     extractUserInput();
                     parseUserInput();
                 } else if (isEditMode) {
@@ -583,7 +592,7 @@ public class BetterRootLayoutController {
                             updateTabAndLabelWithTotalTasks();
                             listViewTodo.getSelectionModel().selectLast();
                             listViewTodo.scrollTo(todoTasks.size() - 1);
-                            showResult(true, "Task added!");
+//                            showResult(true, "Task added!");
 
                         } else if (commandToBeExecuted instanceof DeleteCommand) {
                             logger.log(Level.INFO, "(DELETE TASK) Pressed ENTER key: " + commandBar.getText());
@@ -592,12 +601,13 @@ public class BetterRootLayoutController {
                             updateTabAndLabelWithTotalTasks();
                             refreshListView();
                             restoreListViewPreviousSelection();
-                            showResult(true, "Task deleted!");
+//                            showResult(true, "Task deleted!");
                         }
 
                     }
 
-                    // clearFeedback();
+                    clearFeedback();
+                    btnFeedback.setVisible(false);
                     clearStoredUserInput();
                     commandBar.clear();
                     showUndo();
@@ -812,7 +822,7 @@ public class BetterRootLayoutController {
      */
     private void clearFeedback() {
         labelUserAction.setText(EMPTY_STRING);
-        labelUserFeedback.setText(EMPTY_STRING);
+        labelUserParsedInput.setText(EMPTY_STRING);
     }
 
     /**
@@ -823,9 +833,9 @@ public class BetterRootLayoutController {
             logger.log(Level.INFO, "Showing user feedback");
             showResult(false, EMPTY_STRING);
         }
-
+        
         labelUserAction.setVisible(isVisible);
-        labelUserFeedback.setVisible(isVisible);
+        labelUserParsedInput.setVisible(isVisible);
     }
 
     /**
@@ -834,13 +844,13 @@ public class BetterRootLayoutController {
     private void showFeedback(boolean isVisible, String userAction, String userFeedback) {
         if (isVisible) {
             logger.log(Level.INFO, "Showing user feedback: " + userFeedback);
-            showResult(false, EMPTY_STRING);
+            showResult(!isVisible, EMPTY_STRING);
         }
-
+        
         labelUserAction.setVisible(isVisible);
-        labelUserFeedback.setVisible(isVisible);
+        labelUserParsedInput.setVisible(isVisible);
         labelUserAction.setText(userAction);
-        labelUserFeedback.setText(userFeedback);
+        labelUserParsedInput.setText(userFeedback);
     }
 
     /**
@@ -849,11 +859,11 @@ public class BetterRootLayoutController {
     private void showResult(boolean isVisible, String resultString) {
         if (isVisible) {
             logger.log(Level.INFO, "Showing result: " + resultString);
-            showFeedback(false);
+            showFeedback(!isVisible);
         }
 
-//        labelResult.setText(resultString);
-//        labelResult.setVisible(isVisible);
+        labelUserResult.setText(resultString);
+        labelUserResult.setVisible(isVisible);
     }
 
     /**
