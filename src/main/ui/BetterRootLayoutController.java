@@ -560,7 +560,7 @@ public class BetterRootLayoutController {
                         btnFeedback.setVisible(false);
                         // showFeedback(false);
                         // showResult(false, EMPTY_STRING);
-//                        clearFeedback();
+                        // clearFeedback();
                         clearStoredUserInput();
                         return;
                     }
@@ -628,14 +628,11 @@ public class BetterRootLayoutController {
 
                         }
                     });
-
-                } else {
-
                 }
 
             }
 
-            clearFeedback();
+//            clearFeedback();
             btnFeedback.setVisible(false);
             clearStoredUserInput();
             commandBar.clear();
@@ -780,7 +777,8 @@ public class BetterRootLayoutController {
             taskIndexesToBeDeleted = commandParser.parseIndexes(userInput);
         } catch (InvalidTaskIndexFormat invalidTaskIndexFormat) {
             logger.log(Level.INFO, "DELETE command index(es) invalid: " + userArguments);
-            showFeedback(true, MESSAGE_FEEDBACK_ACTION_DELETE, String.format(MESSAGE_ERROR_RESULT_DELETE, userArguments));
+            showFeedback(true, MESSAGE_FEEDBACK_ACTION_DELETE,
+                    String.format(MESSAGE_ERROR_RESULT_DELETE, userArguments));
             return;
         }
 
@@ -795,7 +793,8 @@ public class BetterRootLayoutController {
 
             // if selected index is out of bound
             if (taskIndex <= 0 || taskIndex > todoTasks.size()) {
-                showFeedback(true, MESSAGE_FEEDBACK_ACTION_DELETE, String.format(MESSAGE_ERROR_RESULT_DELETE, taskIndex));
+                showFeedback(true, MESSAGE_FEEDBACK_ACTION_DELETE,
+                        String.format(MESSAGE_ERROR_RESULT_DELETE, taskIndex));
             } else {
                 inputFeedback = todoTasks.get(taskIndex - 1).toString();
                 showFeedback(true, MESSAGE_FEEDBACK_ACTION_DELETE, inputFeedback);
@@ -876,7 +875,7 @@ public class BetterRootLayoutController {
     private void showFeedback(boolean isVisible, String userAction, String userFeedback) {
         if (isVisible) {
             logger.log(Level.INFO, "Showing user feedback: " + userFeedback);
-//            showResult(!isVisible, EMPTY_STRING);
+            // showResult(!isVisible, EMPTY_STRING);
         }
 
         textUserAction.setText(userAction);
