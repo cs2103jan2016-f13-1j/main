@@ -1,42 +1,42 @@
 package main.ui;
 
 import java.io.IOException;
-import java.net.URL;
-import java.util.ResourceBundle;
 
+import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXListCell;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
+import javafx.scene.shape.Circle;
 import main.data.Task;
 
-public class CustomListCellController extends JFXListCell<Task> {
-
-    @FXML // ResourceBundle that was given to the FXMLLoader
-    private ResourceBundle resources;
-
-    @FXML // URL location of the FXML file that was given to the FXMLLoader
-    private URL location;
+public class BetterCustomListCellController extends JFXListCell<Task> {
 
     @FXML // fx:id="horizontalBox"
     private HBox horizontalBox; // Value injected by FXMLLoader
 
+    @FXML // fx:id="labelTaskTime"
+    private JFXButton labelTaskTime; // Value injected by FXMLLoader
+
+    @FXML // fx:id="circleIndex"
+    private Circle circleIndex; // Value injected by FXMLLoader
+
     @FXML // fx:id="labelTaskIndex"
     private Label labelTaskIndex; // Value injected by FXMLLoader
-
-    @FXML // fx:id="labelTaskTime"
-    private Label labelTaskTime; // Value injected by FXMLLoader
 
     @FXML // fx:id="labelTaskTitle"
     private Label labelTaskTitle; // Value injected by FXMLLoader
 
+    @FXML // fx:id="labelTaskDate"
+    private Label labelTaskDate; // Value injected by FXMLLoader
+
     @FXML // fx:id="labelTaskTag"
     private Label labelTaskTag; // Value injected by FXMLLoader
-
-    public CustomListCellController() {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/main/resources/layouts/CustomListCellLayout.fxml"));
+    
+    public BetterCustomListCellController() {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/main/resources/layouts/BetterCustomListCellLayout.fxml"));
         loader.setController(this);
         try {
             loader.load();
@@ -46,16 +46,17 @@ public class CustomListCellController extends JFXListCell<Task> {
     }
 
     @Override
-    public void updateItem(Task item, boolean empty) {
-        super.updateItem(item, empty);
+    public void updateItem(Task task, boolean empty) {
+        super.updateItem(task, empty);
 
         if (empty) {
             setGraphic(null);
         } else {
             setLabelTaskIndex(getIndex() + 1);
-            setLabelTaskTitle(item);
-            setLabelTaskTime(item);
-            setLabelTaskTag(item);
+            setLabelTaskTitle(task);
+            setLabelTaskTime(task);
+            setLabelTaskDate(task);
+            setLabelTaskTag(task);
             setGraphic(getHorizontalBox()); // HBox is the parent layout of all
                                             // the other UI components here.
                                             // Returning an instance of this
@@ -74,7 +75,7 @@ public class CustomListCellController extends JFXListCell<Task> {
 
     public void setLabelTaskTime(Task task) {
         if (task.getStartDate() == null && task.getStartDate() == null) {
-            this.labelTaskTime.setText("");
+            this.labelTaskTime.setText("-");
             return;
         }
 
@@ -134,6 +135,10 @@ public class CustomListCellController extends JFXListCell<Task> {
 
     public void setLabelTaskTitle(Task task) {
         this.labelTaskTitle.setText(task.getTitle());
+    }
+    
+    public void setLabelTaskDate(Task task){
+//        this.labelTaskDate.setText(task.getStartDate().toString());
     }
 
     public void setLabelTaskTag(Task task) {

@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.jfoenix.controls.JFXButton?>
+<?import com.jfoenix.controls.JFXListView?>
+<?import com.jfoenix.controls.JFXTabPane?>
+<?import com.jfoenix.controls.JFXTextField?>
+<?import java.lang.String?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.Group?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane fx:id="rootLayout" minHeight="100.0" minWidth="-Infinity" prefHeight="900.0" prefWidth="860.0" stylesheets="@../styles/stylesheet.css" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.ui.BetterRootLayoutController">
+   <children>
+      <JFXTabPane fx:id="tabPane" tabMinHeight="48.0" tabMinWidth="420.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <tabs>
+            <Tab fx:id="tabTodo" closable="false" text="To-do">
+               <content>
+                  <AnchorPane>
+                     <children>
+                        <JFXListView fx:id="listViewTodo" layoutY="89.0" stylesheets="@../styles/RootLayout.css" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                           <styleClass>
+                              <String fx:value="decrement-arrow" />
+                              <String fx:value="increment-arrow" />
+                              <String fx:value="decrement-button" />
+                              <String fx:value="increment-button" />
+                              <String fx:value="jfx-list-view" />
+                              <String fx:value="scroll-bar" />
+                              <String fx:value="thumb" />
+                              <String fx:value="track" />
+                           </styleClass></JFXListView>
+                     </children>
+                     <padding>
+                        <Insets bottom="100.0" left="40.0" right="40.0" top="40.0" />
+                     </padding>
+                  </AnchorPane>
+               </content>
+            </Tab>
+            <Tab fx:id="tabCompleted" closable="false" text="Completed">
+               <content>
+                  <AnchorPane>
+                     <children>
+                        <JFXListView fx:id="listViewCompleted" layoutY="89.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                     </children>
+                     <padding>
+                        <Insets bottom="100.0" left="40.0" right="40.0" top="80.0" />
+                     </padding>
+                  </AnchorPane>
+               </content>
+            </Tab>
+         </tabs>
+      </JFXTabPane>
+      <JFXTextField fx:id="commandBar" labelFloat="true" prefHeight="48.0" promptText="Enter something..." AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="40.0">
+         <font>
+            <Font name="Noto Sans" size="18.0" />
+         </font>
+      </JFXTextField>
+      <JFXButton alignment="CENTER" buttonType="RAISED" maxHeight="-Infinity" minHeight="68.0" style="-fx-background-color: white;" AnchorPane.bottomAnchor="70.0" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="40.0" AnchorPane.topAnchor="750.0">
+         <font>
+            <Font name="Noto Sans" size="13.0" />
+         </font>
+         <graphic>
+            <Group fx:id="groupFeedback">
+               <children>
+                  <Label fx:id="labelUserAction" alignment="CENTER" text="user actions:" textFill="#31419eb2">
+                     <font>
+                        <Font name="Noto Sans" size="20.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="labelUserFeedback" alignment="CENTER" layoutX="122.0" text="user feedback" textFill="#00111ab2">
+                     <font>
+                        <Font name="Noto Sans" size="20.0" />
+                     </font>
+                  </Label>
+               </children>
+            </Group>
+         </graphic>
+      </JFXButton>
+   </children>
+</AnchorPane>

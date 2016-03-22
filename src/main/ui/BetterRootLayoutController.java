@@ -7,6 +7,7 @@ import java.util.logging.Logger;
 
 import com.jfoenix.controls.JFXListCell;
 import com.jfoenix.controls.JFXListView;
+import com.jfoenix.controls.JFXTextField;
 import com.sun.javafx.scene.control.skin.VirtualFlow;
 
 import javafx.application.Platform;
@@ -26,7 +27,6 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.SingleSelectionModel;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
-import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
@@ -45,7 +45,7 @@ import main.parser.CommandParser;
 import main.parser.CommandParser.InvalidTaskIndexFormat;
 
 @SuppressWarnings("restriction")
-public class RootLayoutController {
+public class BetterRootLayoutController {
     private static final String STRING_TODAY = "Today";
     private static final String COMMAND_DELETE = "delete";
     private static final String COMMAND_DELETE_SHORTHAND = "del";
@@ -75,38 +75,26 @@ public class RootLayoutController {
     @FXML // fx:id="tabTodo"
     private Tab tabTodo; // Value injected by FXMLLoader
 
-    @FXML // fx:id="tabCompleted"
-    private Tab tabCompleted; // Value injected by FXMLLoader
-
     @FXML // fx:id="listViewTodo"
     private JFXListView<Task> listViewTodo; // Value injected by FXMLLoader
+
+    @FXML // fx:id="tabCompleted"
+    private Tab tabCompleted; // Value injected by FXMLLoader
 
     @FXML // fx:id="listViewCompleted"
     private JFXListView<Task> listViewCompleted; // Value injected by FXMLLoader
 
     @FXML // fx:id="commandBar"
-    private TextField commandBar; // Value injected by FXMLLoader
+    private JFXTextField commandBar; // Value injected by FXMLLoader
 
-    @FXML // fx:id="labelCurrentMode"
-    private Label labelCurrentMode; // Value injected by FXMLLoader
-
-    @FXML // fx:id="labelDateToday"
-    private Label labelDateToday; // Value injected by FXMLLoader
+    @FXML // fx:id="groupFeedback"
+    private Group groupFeedback; // Value injected by FXMLLoader
 
     @FXML // fx:id="labelUserAction"
     private Label labelUserAction; // Value injected by FXMLLoader
 
     @FXML // fx:id="labelUserFeedback"
     private Label labelUserFeedback; // Value injected by FXMLLoader
-
-    @FXML // fx:id="labelResult"
-    private Label labelResult; // Value injected by FXMLLoader
-
-    @FXML // fx:id="btnDel"
-    private Button btnDel; // Value injected by FXMLLoader
-
-    @FXML // fx:id="btnEdit"
-    private Button btnEdit; // Value injected by FXMLLoader
 
     @FXML // fx:id="groupUndo"
     private Group groupUndo; // Value injected by FXMLLoader
@@ -154,7 +142,7 @@ public class RootLayoutController {
     private boolean isUndo;
     private boolean isRedo;
 
-    private static final Logger logger = Logger.getLogger(RootLayoutController.class.getName());
+    private static final Logger logger = Logger.getLogger(BetterRootLayoutController.class.getName());
 
     public void requestFocusForCommandBar() {
         logger.log(Level.INFO, "Set focus to command bar");
@@ -177,31 +165,31 @@ public class RootLayoutController {
         initMouseListener();
         initKeyboardListener();
         initCommandBarListener();
-        initTabSelectionListener();
+//        initTabSelectionListener();
         logger.log(Level.INFO, "UI initialization complete");
     }
 
-    /**
-     * 
-     */
-    private void initTabSelectionListener() {
-        ObservableList<Tab> tabList = tabPane.getTabs();
-        for (int i = 0; i < tabList.size(); i++) {
-            tabList.get(i).setOnSelectionChanged(new EventHandler<Event>() {
-
-                @Override
-                public void handle(Event event) {
-                    if (getSelectedTabName().equals(STRING_TODAY)) {
-                        labelDateToday.setVisible(true);
-                    } else {
-                        labelDateToday.setVisible(false);
-                    }
-
-                    labelCurrentMode.setText(getSelectedTabName());
-                }
-            });
-        }
-    }
+//    /**
+//     * 
+//     */
+//    private void initTabSelectionListener() {
+//        ObservableList<Tab> tabList = tabPane.getTabs();
+//        for (int i = 0; i < tabList.size(); i++) {
+//            tabList.get(i).setOnSelectionChanged(new EventHandler<Event>() {
+//
+//                @Override
+//                public void handle(Event event) {
+//                    if (getSelectedTabName().equals(STRING_TODAY)) {
+//                        labelDateToday.setVisible(true);
+//                    } else {
+//                        labelDateToday.setVisible(false);
+//                    }
+//
+//                    labelCurrentMode.setText(getSelectedTabName());
+//                }
+//            });
+//        }
+//    }
 
     /**
      * 
@@ -311,12 +299,13 @@ public class RootLayoutController {
         assert todoTasks != null;
 
         observableTodoTasks.setAll(todoTasks);
+//        listViewTodo.setDepthProperty(1);
         listViewTodo.setItems(observableTodoTasks);
         listViewTodo.setCellFactory(new Callback<ListView<Task>, ListCell<Task>>() {
 
             @Override
             public JFXListCell<Task> call(ListView<Task> param) {
-                return new CustomListCellController();
+                return new BetterCustomListCellController();
             }
         });
 
@@ -349,9 +338,9 @@ public class RootLayoutController {
     }
 
     private void updateTabAndLabelWithTotalTasks() {
-        if(!isEditMode){
-            labelCurrentMode.setText(getSelectedTabName());
-        }
+//        if(!isEditMode){
+//            labelCurrentMode.setText(getSelectedTabName());
+//        }
         tabTodo.setText("To-do" + WHITESPACE + String.format(STRING_TAB_TASK_SIZE, todoTasks.size()));
         tabCompleted.setText("Completed" + WHITESPACE + String.format(STRING_TAB_TASK_SIZE, completedTasks.size()));
         
@@ -447,30 +436,30 @@ public class RootLayoutController {
      * 
      */
     private void handleFOneKey() {
-        Platform.runLater(new Runnable() {
-
-            @Override
-            public void run() {
-                if (isEditMode) { //edit mode is true. exit edit mode
-                    isEditMode = false;
-                    labelCurrentMode.setText(getSelectedTabName());
-                    restoreCommandBarText();
-                    restoreCaretPosition();
-                    logger.log(Level.INFO, "Pressed F1 key: Exit EDIT MODE");
-
-                } else { //edit mode is false. enter edit mode
-                    isEditMode = true;
-                    saveCommandBarText();
-                    saveCaretPosition();
-                    showFeedback(false);
-                    labelCurrentMode.setText(MESSAGE_LABEL_MODE_EDIT);
-                    commandBar.setText(todoTasks.get(getSelectedTaskIndex()).toString());
-                    moveCaretPositionToLast();
-                    logger.log(Level.INFO, "Pressed F1 key: Enter EDIT MODE");
-                }
-
-            }
-        });
+//        Platform.runLater(new Runnable() {
+//
+//            @Override
+//            public void run() {
+//                if (isEditMode) { //edit mode is true. exit edit mode
+//                    isEditMode = false;
+//                    labelCurrentMode.setText(getSelectedTabName());
+//                    restoreCommandBarText();
+//                    restoreCaretPosition();
+//                    logger.log(Level.INFO, "Pressed F1 key: Exit EDIT MODE");
+//
+//                } else { //edit mode is false. enter edit mode
+//                    isEditMode = true;
+//                    saveCommandBarText();
+//                    saveCaretPosition();
+//                    showFeedback(false);
+//                    labelCurrentMode.setText(MESSAGE_LABEL_MODE_EDIT);
+//                    commandBar.setText(todoTasks.get(getSelectedTaskIndex()).toString());
+//                    moveCaretPositionToLast();
+//                    logger.log(Level.INFO, "Pressed F1 key: Enter EDIT MODE");
+//                }
+//
+//            }
+//        });
 
     }
 
@@ -863,8 +852,8 @@ public class RootLayoutController {
             showFeedback(false);
         }
 
-        labelResult.setText(resultString);
-        labelResult.setVisible(isVisible);
+//        labelResult.setText(resultString);
+//        labelResult.setVisible(isVisible);
     }
 
     /**
