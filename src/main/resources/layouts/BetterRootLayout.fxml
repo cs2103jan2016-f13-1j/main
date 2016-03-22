@@ -7,10 +7,11 @@
 <?import java.lang.String?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.Group?>
-<?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.text.TextFlow?>
 
 <AnchorPane fx:id="rootLayout" minHeight="100.0" minWidth="-Infinity" prefHeight="900.0" prefWidth="860.0" stylesheets="@../styles/stylesheet.css" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.ui.BetterRootLayoutController">
    <children>
@@ -64,21 +65,11 @@
          <graphic>
             <Group fx:id="groupFeedback">
                <children>
-                  <Label fx:id="labelUserAction" alignment="CENTER" text="user actions:" textFill="#31419eb2">
-                     <font>
-                        <Font name="Noto Sans" size="20.0" />
-                     </font>
-                  </Label>
-                  <Label fx:id="labelUserParsedInput" alignment="CENTER" layoutX="122.0" text="user feedback" textFill="#00111ab2">
-                     <font>
-                        <Font name="Noto Sans" size="20.0" />
-                     </font>
-                  </Label>
-                  <Label fx:id="labelUserResult" alignment="CENTER" layoutX="53.0" text="action result" textFill="#ff5252b2">
-                     <font>
-                        <Font name="Noto Sans" size="20.0" />
-                     </font>
-                  </Label>
+                  <TextFlow fx:id="textFlowFeedback">
+                     <children>
+                        <Text fx:id="textUserAction" strokeType="OUTSIDE" strokeWidth="0.0" text="User action:" />
+                        <Text fx:id="textUserParsedResult" strokeType="OUTSIDE" strokeWidth="0.0" text="Parsed feedback" />
+                     </children></TextFlow>
                </children>
             </Group>
          </graphic>
