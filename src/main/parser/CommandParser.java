@@ -54,8 +54,9 @@ public class CommandParser {
      * @param commandString
      * 			user input {@code String}
      * @return {@code Task} built
+     * @throws InvalidLabelFormat 
      */
-    public Task parseAdd(String commandString) {
+    public Task parseAdd(String commandString) throws InvalidLabelFormat {
     	logger.setLevel(Level.OFF);
     	
     	assert(commandString != null);
@@ -98,7 +99,11 @@ public class CommandParser {
         
         isLabelPresent = checkForLabel(commandString);
         if (isLabelPresent) {
+        	try {
             label = extractLabel(commandString);
+        	} catch (Exception e) {
+        		throw new InvalidLabelFormat("Invalid label input detected.");
+        	}
             title = removeLabelFromTitle(title, label);
         }
 
@@ -393,7 +398,7 @@ public class CommandParser {
         }
     }
     
-    private String extractLabel(String commandString) {
+    private String extractLabel(String commandString) throws InvalidLabelFormat{
         int index = commandString.indexOf("#");
         index = index + LENGTH_OFFSET;
         String substring = commandString.substring(index);
@@ -402,14 +407,18 @@ public class CommandParser {
         return label;
     }
     
-    private String getFirstWord(String commandString) {
+    private String getFirstWord(String commandString) throws InvalidLabelFormat {
     	String word = "";
     	try {
     		word = commandString.split(" ")[0];
-    	} catch (IndexOutOfBoundsException e ) {
-    		logger.log(Level.WARNING, "Error: First word not found by parser.");
-    		throw new IndexOutOfBoundsException();
+    	} catch (Exception e ) {
+    		throw new InvalidLabelFormat();
     	}
+    	
+    	if (word.length() == 0) {
+    		throw new InvalidLabelFormat();
+    	}
+    	
     	return word;
     }
     
@@ -451,9 +460,9 @@ public class CommandParser {
     	}
     }
     
-    private String getIndexString(String commandString) {
+    private String getIndexString(String commandString) throws InvalidLabelFormat{
         int index = 0;
-        String command = getFirstWord(commandString);
+        String command = getFirstWord(commandString); //will not fail because without command UI won't call
         
         index = command.length() + LENGTH_OFFSET;
         
@@ -557,13 +566,27 @@ public class CommandParser {
 	public class InvalidTaskIndexFormat extends Exception {
     	public InvalidTaskIndexFormat() {
     		logger.log(Level.WARNING, "NumberFormatException: Indexes cannot be parsed by parser.");
-    		logger.log(Level.WARNING, "InvalidTaskINdexFormat exception thrown.");
+    		logger.log(Level.WARNING, "InvalidTaskIndexFormat exception thrown.");
     	}
 
     	public InvalidTaskIndexFormat(String message) {
     		super (message);
     		logger.log(Level.WARNING, "NumberFormatException: Indexes cannot be parsed by parser.");
-    		logger.log(Level.WARNING, "InvalidTaskINdexFormat exception thrown.");    		
+    		logger.log(Level.WARNING, "InvalidTaskIndexFormat exception thrown.");    		
+    	}
+    }
+    
+    @SuppressWarnings("serial")
+    public class InvalidLabelFormat extends Exception {
+    	public InvalidLabelFormat() {
+    		logger.log(Level.WARNING, "Label cannot be parsed by parser.");
+    		logger.log(Level.WARNING, "InvalidLabelFormat exception thrown.");
+    	}
+
+    	public InvalidLabelFormat(String message) {
+    		super (message);
+    		logger.log(Level.WARNING, "Label cannot be parsed by parser.");
+    		logger.log(Level.WARNING, "InvalidLabelFormat exception thrown.");    		
     	}
     }
 }
