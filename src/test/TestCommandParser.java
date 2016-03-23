@@ -12,6 +12,7 @@ import java.util.Date;
 
 import main.data.Task;
 import main.parser.CommandParser;
+import main.parser.CommandParser.InvalidLabelFormat;
 import main.parser.CommandParser.InvalidTaskIndexFormat;
 
 /**
@@ -23,9 +24,10 @@ public class TestCommandParser {
     /**
      * Test for the detection of floating task.
      * Even with prepositions, it should not be dated.
+     * @throws InvalidLabelFormat 
      */
     @Test    
-    public void testDetectFloating() {
+    public void testDetectFloating() throws InvalidLabelFormat {
         CommandParser parser = new CommandParser();
         
         Task task = parser.parseAdd("Do assignment 1");
@@ -57,9 +59,10 @@ public class TestCommandParser {
      * Test to ensure floating task are added correctly.
      * It should not be dated.
      * The title should be the whole user input.
+     * @throws InvalidLabelFormat 
      */
     @Test
-    public void testAddFloating() {
+    public void testAddFloating() throws InvalidLabelFormat {
         CommandParser parser = new CommandParser();
         
         Task task = parser.parseAdd("Cook dinner");
@@ -76,9 +79,10 @@ public class TestCommandParser {
      * Asserts title and time has been parsed correctly.
      * 
      * @throws ParseException for dateFormat.parse()
+     * @throws InvalidLabelFormat 
      */
     @Test
-    public void testAdd() throws ParseException {
+    public void testAdd() throws ParseException, InvalidLabelFormat {
         CommandParser parser = new CommandParser();
         Task task = parser.parseAdd("Cook dinner on 4 Mar 7pm #home");
         
@@ -96,9 +100,10 @@ public class TestCommandParser {
     
     /**
      * Test for label extraction.
+     * @throws InvalidLabelFormat 
      */
     @Test
-    public void testLabel() {
+    public void testLabel() throws IndexOutOfBoundsException, InvalidLabelFormat{
         CommandParser parser = new CommandParser();
         
         Task task = parser.parseAdd("Cook dinner #home");
@@ -108,13 +113,31 @@ public class TestCommandParser {
         task = parser.parseAdd("#home Cook dinner");
         assertEquals("Cook dinner", task.getTitle());
         assertEquals("home", task.getLabel());
+        
+        boolean thrown = false;
+        try {
+        	task = parser.parseAdd("Cook dinner #");
+        } catch (InvalidLabelFormat e) {
+        	thrown = true;
+        	System.out.println(task.getTitle());
+        }
+        assertEquals(true, thrown);
+        
+        thrown = false;
+        try {
+        	task = parser.parseAdd("  #  ");
+        } catch (InvalidLabelFormat e) {
+        	thrown = true;
+        }
+        assertEquals(true, thrown);
     }
     
     /**
      * Test for extraction of date information in title.
+     * @throws InvalidLabelFormat 
      */
     @Test
-    public void testDatedTaskTitle(){
+    public void testDatedTaskTitle() throws InvalidLabelFormat{
     	CommandParser parser = new CommandParser();
     	Task task = parser.parseAdd("Attend meeting from Monday to Wednesday");
     	assertEquals("Attend meeting", task.getTitle());
@@ -165,9 +188,10 @@ public class TestCommandParser {
      * 
      * Test failing because of feedback.
      * It works relative to the current period.
+     * @throws InvalidLabelFormat 
      */
     @Ignore @Test
-    public void testDetectStartTime() {
+    public void testDetectStartTime() throws InvalidLabelFormat {
     	CommandParser parser = new CommandParser();
     	Task task = parser.parseAdd("Attempt quiz from 5pm 14 MARCH");
     	assertEquals("Attempt quiz", task.getTitle());  	
@@ -191,9 +215,10 @@ public class TestCommandParser {
      * 
      * Test failing because of feedback.
      * It works relative to the current period.
+     * @throws InvalidLabelFormat 
      */
     @Ignore @Test
-    public void testTaskToString() {
+    public void testTaskToString() throws InvalidLabelFormat {
     	CommandParser parser = new CommandParser();
 
     	Task task = parser.parseAdd("Cook dinner");
@@ -234,9 +259,10 @@ public class TestCommandParser {
      * 
      * @throws InterruptedException for Thread.sleep().
      * Ensures that there are differences in time when creating task.
+     * @throws InvalidLabelFormat 
      */
     @Ignore @Test
-    public void testCompareTo() throws InterruptedException {
+    public void testCompareTo() throws InterruptedException, InvalidLabelFormat {
     	CommandParser parser = new CommandParser();
     	Task task1, task2;
     	
@@ -261,9 +287,10 @@ public class TestCommandParser {
      * Test priority toggling.
      * There are only four levels of priority.
      * It cycles between the four.
+     * @throws InvalidLabelFormat 
      */
     @Test
-    public void testTogglePriority() {
+    public void testTogglePriority() throws InvalidLabelFormat {
     	CommandParser parser = new CommandParser();
         Task task = parser.parseAdd("Cook dinner #home");
         assertEquals(0, task.getPriority());
@@ -387,7 +414,7 @@ public class TestCommandParser {
     }
     
     @Test
-    public void testToggleDone() {
+    public void testToggleDone() throws InvalidLabelFormat {
     	 CommandParser parser = new CommandParser();
          Task task = parser.parseAdd("Do assignment");
          assertEquals(false, task.isDone());
@@ -406,7 +433,7 @@ public class TestCommandParser {
     }
     
     @Ignore @Test
-    public void testCasesToNote() {
+    public void testCasesToNote() throws InvalidLabelFormat {
     	CommandParser parser = new CommandParser();
     	Task task;
     	
