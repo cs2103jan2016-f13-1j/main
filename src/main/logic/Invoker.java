@@ -15,31 +15,27 @@ public class Invoker {
 	private Stack<Command> undoHistory = new Stack<Command>();
 	private Stack<Command> redoHistory = new Stack<Command>();
 	
-	/** Executes a Command instance and adds it to the
-	 *  undo history
+	/** Executes a Command and adds it to the undo history
 	 * 
-	 * @param c An instance of the Command interface
+	 * @param command An instance of the Command interface
 	 */
-	public void execute(Command c) {
-		c.execute();
-		undoHistory.push(c);
+	public void execute(Command command) {
+		command.execute();
+		undoHistory.push(command);
 		redoHistory.clear();
 	}
 
 	/** Returns true if there is at least one undoable Command
 	 * available on the undo history.
 	 * 
-	 * @return
+	 * @return   true if undo stack is not empty
 	 */
 	public boolean isUndoAvailable() {
 		return !undoHistory.empty();
 	}
 
-	/** Undo the next available command.
-	 * 
-	 * Preconditions:
-	 * -> Undo stack must not be empty
-	 * 
+	/** 
+	 * Undo the next available command.
 	 */
 	public void undo() throws EmptyStackException {
 	    try {
@@ -52,20 +48,18 @@ public class Invoker {
 	    }
 	}
 
-	/** Returns true if there is at least one redoable Command
+	/** 
+	 * Returns true if there is at least one redoable Command
 	 * available on the redo history.
 	 * 
-	 * @return
+	 * @return   true if redo stack is not empty
 	 */
 	public boolean isRedoAvailable() {
 		return !redoHistory.empty();
 	}
 
-	/** Redo the next available command.
-	 * 
-	 * Preconditions:
-	 * -> Redo stack must not be empty
-	 * 
+	/** 
+	 * Redo the next available command.
 	 */
 	public void redo() throws EmptyStackException {
 	    try {

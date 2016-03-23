@@ -435,7 +435,7 @@ public class CommandParser {
      * @param commandString
      * 			{@code String} user input
      * @return {@code ArrayList<Integer>} of index(es)
-     * @throws InvalidIndexInput 
+     * @throws InvalidTaskIndexFormat if format is invalid
      */
     public ArrayList<Integer> parseIndexes(String commandString) throws InvalidTaskIndexFormat {
     	try {
