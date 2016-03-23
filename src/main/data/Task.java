@@ -253,14 +253,14 @@ public class Task {
         SimpleDateFormat dateFormat = new SimpleDateFormat("ddMMyyyy");
         String today = dateFormat.format(new Date());
         
-        if (hasEndDate()) {
-            String end = dateFormat.format(endDate);
-            if (today.equals(end)) {
-                return true;
-            }
-        } else if (hasStartDate()) {
+       if (hasStartDate()) {
             String start = dateFormat.format(startDate);
             if (today.equals(start)) {
+                return true;
+            }
+        } else if (hasEndDate()) {
+            String end = dateFormat.format(endDate);
+            if (today.equals(end)) {
                 return true;
             }
         }
@@ -388,49 +388,69 @@ public class Task {
     		return dateIsToday();
     	}
     }
-    
+    /*
     public boolean isTomorrow() {	
-    	Calendar cal = Calendar.getInstance(); 
-    	cal.setTime(new Date()); 
-    	cal.add(Calendar.DATE, 1);
-    	Date calDate = cal.getTime();
+    	LocalDateTime starting, ending;
+    	SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+    	LocalDateTime tomorrow = new Date().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+    	tomorrow = tomorrow.plusDays(1);
     	
-        SimpleDateFormat dateFormat = new SimpleDateFormat("ddMMyyyy");
-        String tomorrow = dateFormat.format(calDate);
-        
-    	if (hasEndDate()) {
-    		String end = dateFormat.format(endDate);
-    		if (tomorrow.equals(end)) {
-    			return true;
+    	Calendar c = Calendar.getInstance();
+    	c.setTime(new Date());
+    	c.add(Calendar.DATE, 1);
+    	String tmr = dateFormat.format(c.getTime());
+    	
+    	if (hasDateRange()) {
+    		if (hasStarted()) {
+    			ending = endDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+    			if (tomorrow.isBefore(ending)) {
+    				return true;
+    			} else {
+    				return false;
+    			}
+    		} else {
+    			starting = startDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+    			if (tomorrow.isEqual(starting)) {
+    				return true;
+    			} else {
+    				return false;
+    			}
     		}
-    	} else if (hasStartDate()) {
-    		String start = dateFormat.format(startDate);
-    		if (tomorrow.equals(start)) {
-    			return true;
-    		}
+    	} else {
+	    	if (hasStartDate()) {
+	    		String start = dateFormat.format(startDate);
+	    		if (tmr.equals(start)) {
+	    			return true;
+	    		}
+	    	} else if (hasEndDate()) { 
+	    		String end = dateFormat.format(endDate);
+	    		if (tmr.equals(end)) {
+	    			return true;
+	    		}
+	    	} 		
     	}
-    	return false;
+    	return false;	
     }
-    
+
     public boolean isUpcoming() {
     	if (hasDate()) {
     		if (!dateIsToday() && !isTomorrow()) {
     			 Date today = new Date();
     			 
-    		     if (hasEndDate()) { 
-    		    	 if (today.before(endDate)) {
-    		    		 return true;
-    		    	 }
-    		     } else if (hasStartDate()) {
+    		    if (hasStartDate()) {
     		    	 if (today.before(startDate)) {
     		    		 return true;
     		    	 }
-    		     }    			
+    		     } else if (hasEndDate()) { 
+    		    	 if (today.before(endDate)) {
+    		    		 return true;
+    		    	 }
+    		     } 			
     		}
     	}
     	return false;
     }
-    
+    */
     public boolean isSomeday() {
     	if (hasDate()) {
     		return false;
