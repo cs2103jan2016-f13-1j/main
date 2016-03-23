@@ -255,8 +255,6 @@ public class CommandParser {
              title = checkAndRemove(title, dates);
              title = checkAndRemove(title, months);
              title = checkAndRemove(title, days);
-
-             System.out.println("1");
              title = checkAndRemove(title, timings);
              
              if (numberOfDate == DATE_MAX_SIZE) {
@@ -373,28 +371,27 @@ public class CommandParser {
     	for (int i = 0; i < toBeRemoved.size(); i++) {
     		String toBeReplaced = "";
         	List<String> words = new ArrayList<String>(Arrays.asList(title.toLowerCase().split(" ")));
-
+        
         	if (words.contains(toBeRemoved.get(i))) {
-    			toBeReplaced = toBeReplaced.concat(" ");
     			toBeReplaced = toBeReplaced.concat(toBeRemoved.get(i));
 
     			index = words.indexOf(toBeRemoved.get(i));
-    			index = index - INDEX_OFFSET;
-    			isPreposition = checkIsPreposition(title, index, PREPOSITION_ALL);
-
-    			if (isPreposition) {
-    				toBeReplaced = words.get(index).concat(toBeReplaced);
-    				toBeReplaced = " ".concat(toBeReplaced);
+    			if (index != 0) {
+	    			index = index - INDEX_OFFSET;
+	    			isPreposition = checkIsPreposition(title, index, PREPOSITION_ALL);
+	
+	    			if (isPreposition) {
+	    				toBeReplaced = words.get(index).concat(" ").concat(toBeReplaced);
+	    			}
     			}
     		}
-
-            System.out.println(toBeReplaced);
+        	
     		//remove regardless of case
         	toBeReplaced = "(?i)".concat(toBeReplaced); 
         	title = title.replaceAll(toBeReplaced, "");
     	}
     	
-    	return title;
+    	return title.replaceAll("\\s+", " ").trim();
     }
     
     /**
