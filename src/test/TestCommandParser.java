@@ -74,6 +74,21 @@ public class TestCommandParser {
         assertEquals("Attack enemy base on signal", task.getTitle());
     }
 
+    @Test
+    public void testHasTime() throws InvalidLabelFormat {
+    	CommandParser parser = new CommandParser();
+    	Task task;
+    	
+    	task = parser.parseAdd("Dinner 7pm");
+    	assertEquals("Dinner from today 7pm", task.toString());
+    	
+    	task = parser.parseAdd("Dinner 7pm today");
+    	assertEquals("Dinner from today 7pm", task.toString());
+    	
+    	task = parser.parseAdd("Homework 5pm");
+    	assertEquals("Homework from today 5pm", task.toString());
+    }
+    
     /**
      * Test adding of dated task.
      * Asserts title and time has been parsed correctly.
@@ -277,7 +292,6 @@ public class TestCommandParser {
     	assertEquals(-1, task1.compareTo(task2));
     }
     
-    
     /**
      * Test priority toggling.
      * There are only four levels of priority.
@@ -293,6 +307,25 @@ public class TestCommandParser {
         assertEquals(2, task.togglePriority());
         assertEquals(3, task.togglePriority());
         assertEquals(0, task.togglePriority());
+    }
+    
+    @Ignore
+    public void testToggleDone() throws InvalidLabelFormat {
+    	 CommandParser parser = new CommandParser();
+         Task task = parser.parseAdd("Do assignment");
+         assertEquals(false, task.isDone());
+         
+         task.setIsCompleted();
+         assertEquals(true, task.isDone());
+         
+         task.setNotCompleted();
+         assertEquals(false, task.isDone());
+         
+         task.toggleDone();
+         assertEquals(true, task.isDone());
+         
+         task.toggleDone();
+         assertEquals(false, task.isDone());
     }
     
     /**
@@ -406,49 +439,5 @@ public class TestCommandParser {
         	thrown = true;
         }
         assertEquals(true, thrown);        
-    }
-    
-    @Ignore
-    public void testToggleDone() throws InvalidLabelFormat {
-    	 CommandParser parser = new CommandParser();
-         Task task = parser.parseAdd("Do assignment");
-         assertEquals(false, task.isDone());
-         
-         task.setIsCompleted();
-         assertEquals(true, task.isDone());
-         
-         task.setNotCompleted();
-         assertEquals(false, task.isDone());
-         
-         task.toggleDone();
-         assertEquals(true, task.isDone());
-         
-         task.toggleDone();
-         assertEquals(false, task.isDone());
-    }
-    
-    @Ignore
-    public void testHasTime() throws InvalidLabelFormat {
-    	CommandParser parser = new CommandParser();
-    	Task task;
-    	
-    	task = parser.parseAdd("Dinner 7pm");
-    	System.out.println(task.toString());
-    	
-    	task = parser.parseAdd("Dinner 7pm today");
-    	System.out.println(task.toString());
-    	
-    	task = parser.parseAdd("Dinner 7pm");
-    	System.out.println(task.toString());
-    	
-    	task = parser.parseAdd("Dinner 7pm tomorrow");
-    	System.out.println(task.toString());
-    	
-    	task = parser.parseAdd("homework by 5pm");
-    	System.out.println(task.toString());
-    	
-    	//pending
-    	task = parser.parseAdd("Meet boss tomorrow");
-    	System.out.println(task.toString());
     }
 }
