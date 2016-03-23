@@ -454,25 +454,24 @@ public class CommandParser {
         int index = title.indexOf(tag);
         index = index + label.length() + LENGTH_OFFSET;
         
+        /*
         if (title.length() != index) {
             tag = tag.concat(" ");
         } else if (title.length() == index) {
             tag = " ".concat(tag);
         }
-        
+        */
         title = title.replace(tag, "");
-        return title;
+        return title.replaceAll("\\s+", " ").trim();
     }
     
     
     public Task parseEdit(Task oldTask, String commandString) throws InvalidLabelFormat {
-    	String title = null;
         String label = null;
         int numberOfDate = 0;
         Date startDate = null;
         Date endDate = null;
         boolean hasStartDate = false;
-        title = commandString;
     
     	//remove edit command
     	commandString = removeFirst(commandString);
