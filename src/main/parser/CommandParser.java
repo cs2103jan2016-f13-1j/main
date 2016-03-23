@@ -30,11 +30,10 @@ public class CommandParser {
     private final int DATE_END_RANGED = 1;
     private final int DATE_MAX_SIZE = 2;
     private final String DATE_STRING_PATTERN = "(0?[1-9]|[12][0-9]|3[01])(/|-)(0?[1-9]|1[012])";
+    private final String TIME_STRING_PATTERN = "(0?[1-9]|[1][0-2])(am|pm)";
     private final String STRING_AM = "am";
     private final String STRING_PM = "pm";
     private final String STRING_TWELVE = "12";
-    private final String STRING_NOW = "NOW";
-    private final int ONE_HOUR = 1;
     private final int DOUBLE_DIGIT = 10;
     private final int LENGTH_OFFSET = 1;
     private final int INDEX_OFFSET = 1;
@@ -71,10 +70,13 @@ public class CommandParser {
         boolean hasStartDate = false;
         boolean isLabelPresent;
         boolean hasPreposition;
+        boolean hasTime;
         title = commandString;
 
         hasPreposition = checkForPrepositions(commandString, PREPOSITION_ALL);
-        if (hasPreposition) {
+        hasTime = checkForTime(commandString);
+        
+        if (hasPreposition || hasTime) {
         	commandString = detectAndCorrectDateInput(commandString);
         	List<Date> dates = parseDate(commandString);
             numberOfDate = dates.size();
@@ -87,12 +89,16 @@ public class CommandParser {
                 	hasStartDate = checkForPrepositions(commandString, PREPOSITION_SELECTIVE);
                 	if (hasStartDate) {
                 		startDate = getDate(dates, DATE_INDEX);
-                		//endDate = addOneHour(startDate);
                 	} else {
-                		//startDate = getCurrentDate();
                 		endDate = getDate(dates, DATE_INDEX);
                 	}
                 }
+            	
+            	if (hasTime && hasPreposition == false) {
+            		startDate = getDate(dates, DATE_INDEX);
+            		endDate = null;
+        		}
+            	
                 title = removeDateFromTitle(title, startDate, endDate);
             }
         }
@@ -164,6 +170,19 @@ public class CommandParser {
     	}
     	
     	return prepositions;
+    }
+    
+    private boolean checkForTime(String commandString) {
+    	boolean match = false;
+    	List<String> words = new ArrayList<String>(Arrays.asList(commandString.toLowerCase().split(" ")));
+    	
+    	for (int i = 0; i< words.size(); i++) {
+			match = Pattern.matches(TIME_STRING_PATTERN, words.get(i));
+			if (match) {
+				return true;
+			}
+    	}
+    	return false;		
     }
     
     /**
