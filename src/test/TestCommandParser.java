@@ -26,7 +26,7 @@ public class TestCommandParser {
      * Even with prepositions, it should not be dated.
      * @throws InvalidLabelFormat 
      */
-    @Test    
+    @Test 
     public void testDetectFloating() throws InvalidLabelFormat {
         CommandParser parser = new CommandParser();
         
@@ -85,16 +85,12 @@ public class TestCommandParser {
     public void testAdd() throws ParseException, InvalidLabelFormat {
         CommandParser parser = new CommandParser();
         Task task = parser.parseAdd("Cook dinner on 4 Mar 7pm #home");
-        
         SimpleDateFormat dateFormat = new SimpleDateFormat("EEE MMM d HH:mm:ss Z yyyy");
         String startDate = "Thu Mar 4 19:00:00 SGT 2016";
-        Date expectedStart = dateFormat.parse(startDate); 
-        String endDate = "Thu Mar 4 20:00:00 SGT 2016";
-        Date expectedEnd = dateFormat.parse(endDate);
+        Date expectedStart = dateFormat.parse(startDate);
         
         assertEquals(true, task.hasDate());
         assertEquals(expectedStart, task.getStartDate());
-        assertEquals(expectedEnd, task.getEndDate());
         assertEquals("Cook dinner", task.getTitle());
     }
     
@@ -189,34 +185,24 @@ public class TestCommandParser {
      * It works relative to the current period.
      * @throws InvalidLabelFormat 
      */
-    @Ignore @Test
+    @Test
     public void testDetectStartTime() throws InvalidLabelFormat {
     	CommandParser parser = new CommandParser();
     	Task task = parser.parseAdd("Attempt quiz from 5pm 14 MARCH");
-    	assertEquals("Attempt quiz", task.getTitle());  	
-    	assertEquals("Attempt quiz from this Mon 5pm to 6pm", task.toString());
+    	assertEquals("Attempt quiz", task.getTitle());
+    	assertEquals("Attempt quiz from 14 Mar 5pm", task.toString());
     	
     	task = parser.parseAdd("Watch webcast after 3am on 15 MAR");
     	assertEquals("Watch webcast", task.getTitle());  	
-    	assertEquals("Watch webcast from this Tue 3am to 4am", task.toString());
+    	assertEquals("Watch webcast from 15 Mar 3am", task.toString());
     	
     	task = parser.parseAdd("Watch movie at 7pm");
     	assertEquals("Watch movie", task.getTitle());
-    	assertEquals("Watch movie from today 7pm to 8pm", task.toString());
+    	assertEquals("Watch movie from today 7pm", task.toString());
     	
-    	task = parser.parseAdd("Watch movie at 7:15pm");
+    	task = parser.parseAdd("Watch movie after 7:15pm");
     	assertEquals("Watch movie", task.getTitle());
-    	assertEquals("Watch movie from today 7:15pm to 8:15pm", task.toString());
-    }
-    
-    @Test
-    public void testDetectEndTime() throws InvalidLabelFormat {
-    	CommandParser parser = new CommandParser();
-    	Task task = parser.parseAdd("Do homework by 7pm");
-    	assertEquals("Do homework from now to 7pm", task.toString());
-    	
-    	task = parser.parseAdd("Hand in report before 8pm");
-    	assertEquals("Hand in report from now to 8pm", task.toString());
+    	assertEquals("Watch movie from today 7:15pm", task.toString());
     }
     
     /**
@@ -226,7 +212,7 @@ public class TestCommandParser {
      * It works relative to the current period.
      * @throws InvalidLabelFormat 
      */
-    @Ignore @Test
+    @Test
     public void testTaskToString() throws InvalidLabelFormat {
     	CommandParser parser = new CommandParser();
 
@@ -237,25 +223,25 @@ public class TestCommandParser {
     	assertEquals("Cook dinner #home", task.toString());
 
     	task = parser.parseAdd("Cook dinner 14/3 at 7pm #home");
-    	assertEquals("Cook dinner from this Mon 7pm to 8pm #home", task.toString());
+    	assertEquals("Cook dinner from 14 Mar 7pm #home",task.toString());
 
     	task = parser.parseAdd("Cook dinner on 15/3 7pm");
-    	assertEquals("Cook dinner from this Tue 7pm to 8pm", task.toString());
+    	assertEquals("Cook dinner from 15 Mar 7pm",task.toString());
     	
     	task = parser.parseAdd("Cook dinner on 24/3 7:15pm");
-    	assertEquals("Cook dinner from next Thu 7:15pm to 8:15pm", task.toString());
+    	assertEquals("Cook dinner from this Thu 7:15pm", task.toString());
     	
     	task = parser.parseAdd("Attend meeting on 26-3 7pm");
-    	assertEquals("Attend meeting from next Sat 7pm to 8pm", task.toString());
+    	assertEquals("Attend meeting from this Sat 7pm", task.toString());
 
     	task = parser.parseAdd("Attend meeting from 4 to 6pm on 25 Mar");
-    	assertEquals("Attend meeting from next Fri 4pm to 6pm",task.toString());
+    	assertEquals("Attend meeting from this Fri 4pm to 6pm", task.toString());
     	
     	task = parser.parseAdd("Attend meeting 4 to 6pm on 25 Mar");
-    	assertEquals("Attend meeting from next Fri 4pm to 6pm",task.toString()); 
+    	assertEquals("Attend meeting from this Fri 4pm to 6pm", task.toString());
     	
-    	task = parser.parseAdd("Attend meeting on 1 April 9am");
-    	assertEquals("Attend meeting from 1 Apr 9am to 10am", task.toString());
+    	task = parser.parseAdd("Attend meeting on 1 Mar 9am");
+    	assertEquals("Attend meeting from 1 Mar 9am", task.toString());
     	
     	task = parser.parseAdd("Go camp from 1-3 8am to 3-3 9pm");
     	assertEquals("Go camp from 1 Mar 8am to 3 Mar 9pm", task.toString());
@@ -270,7 +256,7 @@ public class TestCommandParser {
      * Ensures that there are differences in time when creating task.
      * @throws InvalidLabelFormat 
      */
-    @Ignore @Test
+    @Ignore
     public void testCompareTo() throws InterruptedException, InvalidLabelFormat {
     	CommandParser parser = new CommandParser();
     	Task task1, task2;
@@ -422,7 +408,7 @@ public class TestCommandParser {
         assertEquals(true, thrown);        
     }
     
-    @Test
+    @Ignore
     public void testToggleDone() throws InvalidLabelFormat {
     	 CommandParser parser = new CommandParser();
          Task task = parser.parseAdd("Do assignment");
@@ -441,10 +427,16 @@ public class TestCommandParser {
          assertEquals(false, task.isDone());
     }
     
-    @Ignore @Test
-    public void testCasesToNote() throws InvalidLabelFormat {
+    @Ignore
+    public void testHasTime() throws InvalidLabelFormat {
     	CommandParser parser = new CommandParser();
     	Task task;
+    	
+    	task = parser.parseAdd("Dinner 7pm");
+    	System.out.println(task.toString());
+    	
+    	task = parser.parseAdd("Dinner 7pm today");
+    	System.out.println(task.toString());
     	
     	task = parser.parseAdd("Dinner 7pm");
     	System.out.println(task.toString());
@@ -452,7 +444,7 @@ public class TestCommandParser {
     	task = parser.parseAdd("Dinner 7pm tomorrow");
     	System.out.println(task.toString());
     	
-    	task = parser.parseAdd("Dinner 7pm today");
+    	task = parser.parseAdd("homework by 5pm");
     	System.out.println(task.toString());
     	
     	//pending
