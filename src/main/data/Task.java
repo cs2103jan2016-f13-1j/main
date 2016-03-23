@@ -335,7 +335,25 @@ public class Task {
 	    return timeFormat.format(date);
     }
     
-    public String getTimeToDisplay() {
+    public String getSimpleDate() {
+    	StringBuilder stringBuilder = new StringBuilder("");    	
+    	String start, end;
+    	if (hasDateRange()) {
+    		start = getDate(startDate).concat(" ").concat(getMonth(startDate));
+        	end = getDate(endDate).concat(" ").concat(getMonth(endDate));
+    		stringBuilder.append(start + " - " + end);
+    	} else if (hasStartDate()) {
+    		start = getDate(startDate).concat(" ").concat(getMonth(startDate));
+    		stringBuilder.append(start);
+    	} else if (hasEndDate()) {
+    		end = getDate(endDate).concat(" ").concat(getMonth(endDate));
+    		stringBuilder.append(end);
+    	}
+    	
+    	return stringBuilder.toString();
+    }
+    
+    public String getSimpleTime() {
     	StringBuilder stringBuilder = new StringBuilder("");
     	int indexStartTime = 2;
     	int indexEndTime = 4;
