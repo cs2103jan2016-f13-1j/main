@@ -30,7 +30,7 @@ public class CommandParser {
     private final int DATE_END_RANGED = 1;
     private final int DATE_MAX_SIZE = 2;
     private final String DATE_STRING_PATTERN = "(0?[1-9]|[12][0-9]|3[01])(/|-)(0?[1-9]|1[012])";
-    private final String TIME_STRING_PATTERN = "(0?[1-9]|[1][0-2])(am|pm)";
+    private final String TIME_STRING_PATTERN = "(0?[1-9]|[1][0-2])(:[0-5][0-9])?(am|pm)";
     private final String STRING_AM = "am";
     private final String STRING_PM = "pm";
     private final String STRING_TWELVE = "12";
