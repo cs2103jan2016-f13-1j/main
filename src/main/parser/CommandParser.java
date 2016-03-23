@@ -475,8 +475,9 @@ public class CommandParser {
      * @param index
      * 			{@code String} of index
      * @return {@code ArrayList<Integer>} of index(es) 
+     * @throws InvalidTaskIndexFormat 
      */
-    private ArrayList<Integer> extractIndex(String index) {
+    private ArrayList<Integer> extractIndex(String index) throws InvalidTaskIndexFormat {
         ArrayList<String> indexes = new ArrayList<String>();
         ArrayList<String> tempRangedIndexes = new ArrayList<String>();
         ArrayList<Integer> multipleIndexes = new ArrayList<Integer>();
@@ -484,18 +485,22 @@ public class CommandParser {
         
         Collections.addAll(indexes, index.split(","));
         
+      
         for (int i = 0; i < indexes.size(); i++) {
         	if (indexes.get(i).contains("-")) {
         		Collections.addAll(tempRangedIndexes, indexes.get(i).split("-"));
-
-        		for (int j = 0; j < tempRangedIndexes.size(); j++) {
-        			rangedIndexes.add(Integer.parseInt(tempRangedIndexes.get(j)));
+        		
+        		//remove all empty after splitting
+        		//else will cause parseInt to fail
+        		tempRangedIndexes = removeEmpty(tempRangedIndexes);
+        		rangedIndexes = getRangedIndexes(tempRangedIndexes);
+        		
+        		if (rangedIndexes.size() == 1) {
+        			throw new InvalidTaskIndexFormat();
         		}
 
-        		for (int k = rangedIndexes.get(0); k <= rangedIndexes.get(1); k++) {
-        			multipleIndexes.add(k);
-        		}
-
+        		multipleIndexes.addAll(getMultipleIndexes(rangedIndexes));
+        		
         		tempRangedIndexes.clear();
         		rangedIndexes.clear();
         	} else {
@@ -504,10 +509,39 @@ public class CommandParser {
         		multipleIndexes.add(indexToAdd);
         	}
         }
-
         return multipleIndexes;
     }
     
+    private ArrayList<String> removeEmpty(ArrayList<String> arrayStrings) {
+    	ArrayList<String> empty = new ArrayList<String>();
+		empty.add("");
+		arrayStrings.removeAll(empty);
+		return arrayStrings;
+    }
+    
+    private ArrayList<Integer> getRangedIndexes(ArrayList<String> arrayStrings) {
+    	ArrayList<Integer> ranged = new ArrayList<Integer>();
+    	
+    	for (int i = 0; i < arrayStrings.size(); i++) {
+			ranged.add(Integer.parseInt(arrayStrings.get(i)));
+		}
+    	
+    	return ranged;    	
+    }
+    
+    private ArrayList<Integer> getMultipleIndexes(ArrayList<Integer> arrayIntegers) {
+    	ArrayList<Integer> multiple = new ArrayList<Integer>();
+    	
+    	for (int i=0; i<arrayIntegers.size() - 1; i++) {
+    		for (int j = arrayIntegers.get(i); j <= arrayIntegers.get(i+1); j++) {
+    			if (!multiple.contains(j)) {
+    				multiple.add(j);
+    			}
+    		}
+		}
+    	
+    	return multiple;
+    }
     
     @SuppressWarnings("serial")
 	public class InvalidTaskIndexFormat extends Exception {
