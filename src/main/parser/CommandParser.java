@@ -280,6 +280,17 @@ public class CommandParser {
 		ArrayList<String> days = new ArrayList<String>();
 		days.add(day.toString().toLowerCase());
 		days.add(day.getDisplayName(TextStyle.SHORT, locale).toLowerCase());
+		
+		int date = dateTime.getDayOfMonth();
+		int month = dateTime.getMonthValue();
+		LocalDateTime today = LocalDateTime.now();
+		if (month == today.getMonthValue()) {
+			if (date == today.getDayOfMonth()) {
+				days.add("today");
+			} else if (date == (today.getDayOfMonth()+1)) {
+				days.add("tomorrow");
+			}
+		}
 		return days;
 	}
     
