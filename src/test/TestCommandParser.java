@@ -119,7 +119,6 @@ public class TestCommandParser {
         	task = parser.parseAdd("Cook dinner #");
         } catch (InvalidLabelFormat e) {
         	thrown = true;
-        	System.out.println(task.getTitle());
         }
         assertEquals(true, thrown);
         
@@ -208,6 +207,16 @@ public class TestCommandParser {
     	task = parser.parseAdd("Watch movie at 7:15pm");
     	assertEquals("Watch movie", task.getTitle());
     	assertEquals("Watch movie from today 7:15pm to 8:15pm", task.toString());
+    }
+    
+    @Test
+    public void testDetectEndTime() throws InvalidLabelFormat {
+    	CommandParser parser = new CommandParser();
+    	Task task = parser.parseAdd("Do homework by 7pm");
+    	assertEquals("Do homework from now to 7pm", task.toString());
+    	
+    	task = parser.parseAdd("Hand in report before 8pm");
+    	assertEquals("Hand in report from now to 8pm", task.toString());
     }
     
     /**
