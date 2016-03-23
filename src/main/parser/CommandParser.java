@@ -2,6 +2,7 @@ package main.parser;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -217,6 +218,27 @@ public class CommandParser {
     private List<Date> parseDate(String commandString) {
         PrettyTimeParser parser = new PrettyTimeParser();
         List<Date> dates = parser.parse(commandString);
+        
+        Date now = new Date();
+        Date update;
+        
+        for (int i = 0; i < dates.size(); i++) {
+        	if (dates.get(i).before(now)) {
+        		if (checkForTime(commandString)) {
+        			Calendar cal = Calendar.getInstance();
+			    	cal.setTime(dates.get(i));
+			    	cal.add(Calendar.DATE, 1);
+			    	update = cal.getTime();
+			    	dates.set(i,update);
+        		} else {
+        			Calendar cal = Calendar.getInstance();
+			    	cal.setTime(dates.get(i));
+			    	cal.add(Calendar.HOUR_OF_DAY, 12);
+					update = cal.getTime();
+					dates.set(i,update);
+				}
+        	}
+        }
         return dates;
     }
     
