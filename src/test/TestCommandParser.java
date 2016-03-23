@@ -314,6 +314,38 @@ public class TestCommandParser {
         assertEquals(expectedIndexes, indexes);
     }
     
+    @Test
+    public void testUnconventionalIndexes() throws InvalidTaskIndexFormat {
+    	CommandParser parser = new CommandParser();
+    	ArrayList<Integer> indexes = new ArrayList<Integer>();
+    	
+    	ArrayList<Integer> expectedIndexes = new ArrayList<Integer>();
+    	expectedIndexes.add(1);
+    	expectedIndexes.add(2);
+    	expectedIndexes.add(3);
+    	expectedIndexes.add(4);
+    	expectedIndexes.add(5);
+    	expectedIndexes.add(6);
+    	expectedIndexes.add(7);
+    	expectedIndexes.add(8);
+    	expectedIndexes.add(9);
+    	expectedIndexes.add(10);
+    	
+    	indexes = parser.parseIndexes("del 1--10");
+    	assertEquals(expectedIndexes, indexes);
+    
+    	indexes = parser.parseIndexes("del 1-----10");
+    	assertEquals(expectedIndexes, indexes);
+    
+        indexes = parser.parseIndexes("del 1-3-5-7-9-10");
+        assertEquals(expectedIndexes, indexes);    	
+        
+        //cater for this
+        //compare input to see which bigger instead of assuming
+        indexes = parser.parseIndexes("del 4-5-3");
+        System.out.println("koko " + indexes);
+    }
+    
     /**
      * Test for invalid input for parsing indexes.
      * Exceptions should be thrown.
@@ -329,14 +361,7 @@ public class TestCommandParser {
         thrown = false;
         try {
         	indexes = parser.parseIndexes("del -1,-2");
-        } catch (InvalidTaskIndexFormat e) {
-        	thrown = true;
-        }
-        assertEquals(true, thrown);
-        
-        thrown = false;
-        try {
-        	indexes = parser.parseIndexes("del 1--10");
+        	System.out.println(indexes);
         } catch (InvalidTaskIndexFormat e) {
         	thrown = true;
         }
@@ -348,15 +373,16 @@ public class TestCommandParser {
         } catch (InvalidTaskIndexFormat e) {
         	thrown = true;
         }
-        assertEquals(true, thrown);
+        assertEquals(true, thrown);        
         
         thrown = false;
         try {
         	indexes = parser.parseIndexes("del abc,def");
+        	System.out.println("abc" + indexes);
         } catch (InvalidTaskIndexFormat e) {
         	thrown = true;
         }
-        assertEquals(true, thrown);
+        assertEquals(true, thrown);        
     }
     
     @Test
@@ -378,7 +404,7 @@ public class TestCommandParser {
          assertEquals(false, task.isDone());
     }
     
-    @Test
+    @Ignore @Test
     public void testCasesToNote() {
     	CommandParser parser = new CommandParser();
     	Task task;
