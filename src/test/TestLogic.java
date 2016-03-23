@@ -55,6 +55,7 @@ import main.logic.DoneCommand;
 import main.logic.EditCommand;
 import main.logic.Invoker;
 import main.logic.Receiver;
+import main.logic.SearchCommand;
 import main.logic.SetFileLocationCommand;
 import main.logic.UndoneCommand;
 import main.parser.CommandParser;
@@ -171,6 +172,20 @@ public class TestLogic implements Observer {
         invoker.execute(new DeleteCommand(receiver, tasks));
         invoker.undo();
         invoker.redo();
+	}
+	
+	/*
+	 * Tests the search method.
+	 * Search with one term.
+	 * Search with multiple term.
+	 */
+	@Test
+	public void searchTest() {
+	    invoker.execute(new AddCommand(receiver, new Task("task with long title, this title so long")));
+        invoker.execute(new AddCommand(receiver, new Task("task with short title")));
+        invoker.execute(new SearchCommand(receiver, "title"));
+        invoker.execute(new SearchCommand(receiver, "title long"));
+        invoker.undo();
 	}
 	
 	/*
