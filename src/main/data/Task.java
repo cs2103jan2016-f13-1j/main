@@ -155,9 +155,13 @@ public class Task {
     	StringBuilder stringBuilder = new StringBuilder(title);
 
     	if (startDate != null) {
-    		stringBuilder.append(" from " + startDate);
-    		stringBuilder.append(" " + startTime);
-
+    		if (isNow(startDate)) {
+    			stringBuilder.append(" from now");
+    		} else {
+    			stringBuilder.append(" from " + startDate);
+    			stringBuilder.append(" " + startTime);
+    		}
+    		
     		if (!startDate.equals(endDate)) {
     			stringBuilder.append(" to " + endDate);
     			stringBuilder.append(" " + endTime);
@@ -292,6 +296,16 @@ public class Task {
         symbols.setAmPmStrings(new String[] {"am", "pm"});
         timeFormat.setDateFormatSymbols(symbols);
 	    return timeFormat.format(date);
+    }
+    
+    private boolean isNow(String startDate) {
+    	if (startDate.equals("today")) {
+    		Date start = getStartDate();
+    		Date now = new Date();
+    		return start.before(now);
+    	} else {
+    		return false;
+    	}
     }
     
     public boolean hasStarted() {
