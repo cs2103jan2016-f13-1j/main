@@ -30,11 +30,10 @@ public class CommandParser {
     private final int DATE_END_RANGED = 1;
     private final int DATE_MAX_SIZE = 2;
     private final String DATE_STRING_PATTERN = "(0?[1-9]|[12][0-9]|3[01])(/|-)(0?[1-9]|1[012])";
+    private final String TIME_STRING_PATTERN = "(0?[1-9]|[1][0-2])(am|pm)";
     private final String STRING_AM = "am";
     private final String STRING_PM = "pm";
     private final String STRING_TWELVE = "12";
-    private final String STRING_NOW = "NOW";
-    private final int ONE_HOUR = 1;
     private final int DOUBLE_DIGIT = 10;
     private final int LENGTH_OFFSET = 1;
     private final int INDEX_OFFSET = 1;
@@ -44,18 +43,16 @@ public class CommandParser {
     /**
      * This method builds a {@code Task} object.
      * 
-     * Words without prepositions are considered tasks without dates.
+     * Tasks without date do not have any time specified.
      * Words with prepositions might not be dated.
-     * Dated task will always contain prepositions.
-     * 
-     * If only start date is specified, task will only last for an hour.
-     * If only end date is specified, task will have the current date as the start date.
+     * Words without prepositions is dated if time is explicitly specified.
      * 
      * @param commandString
      * 			user input {@code String}
      * @return {@code Task} built
+     * @throws InvalidLabelFormat 
      */
-    public Task parseAdd(String commandString) {
+    public Task parseAdd(String commandString) throws InvalidLabelFormat {
     	logger.setLevel(Level.OFF);
     	
     	assert(commandString != null);
@@ -70,10 +67,13 @@ public class CommandParser {
         boolean hasStartDate = false;
         boolean isLabelPresent;
         boolean hasPreposition;
+        boolean hasTime;
         title = commandString;
 
         hasPreposition = checkForPrepositions(commandString, PREPOSITION_ALL);
-        if (hasPreposition) {
+        hasTime = checkForTime(commandString);
+        
+        if (hasPreposition || hasTime) {
         	commandString = detectAndCorrectDateInput(commandString);
         	List<Date> dates = parseDate(commandString);
             numberOfDate = dates.size();
@@ -86,19 +86,27 @@ public class CommandParser {
                 	hasStartDate = checkForPrepositions(commandString, PREPOSITION_SELECTIVE);
                 	if (hasStartDate) {
                 		startDate = getDate(dates, DATE_INDEX);
-                		endDate = addOneHour(startDate);
                 	} else {
-                		startDate = getCurrentDate();
                 		endDate = getDate(dates, DATE_INDEX);
                 	}
                 }
+            	
+            	if (hasTime && hasPreposition == false) {
+            		startDate = getDate(dates, DATE_INDEX);
+            		endDate = null;
+        		}
+            	
                 title = removeDateFromTitle(title, startDate, endDate);
             }
         }
         
         isLabelPresent = checkForLabel(commandString);
         if (isLabelPresent) {
-            label = extractLabel(commandString);
+        	try {
+        		label = extractLabel(commandString);
+        	} catch (Exception e) {
+        		throw new InvalidLabelFormat("Invalid label input detected.");
+        	}
             title = removeLabelFromTitle(title, label);
         }
 
@@ -161,6 +169,19 @@ public class CommandParser {
     	return prepositions;
     }
     
+    private boolean checkForTime(String commandString) {
+    	boolean match = false;
+    	List<String> words = new ArrayList<String>(Arrays.asList(commandString.toLowerCase().split(" ")));
+    	
+    	for (int i = 0; i< words.size(); i++) {
+			match = Pattern.matches(TIME_STRING_PATTERN, words.get(i));
+			if (match) {
+				return true;
+			}
+    	}
+    	return false;		
+    }
+    
     /**
      * This method corrects user input of dd/mm into mm/dd for date parsing.
      * 
@@ -187,7 +208,6 @@ public class CommandParser {
 				}
 				
 				words.set(i, swapped);
-				break;
 			}
 		}
 
@@ -204,17 +224,6 @@ public class CommandParser {
         return dates.get(index);
     }
     
-    private Date addOneHour(Date date) {
-    	 LocalDateTime dateTime = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-    	 dateTime = dateTime.plusHours(ONE_HOUR);
-    	 Date convertToDate = Date.from(dateTime.atZone(ZoneId.systemDefault()).toInstant());
-    	 return convertToDate;
-    }
-    
-    private Date getCurrentDate() {
-    	return parseDate(STRING_NOW).get(DATE_INDEX);
-    }
-    
     /**
      * This method removes date information from the {@code String} taken in.
      * 
@@ -226,22 +235,33 @@ public class CommandParser {
      * 			{@code Task} end date
      * @return {@code String} without date information
      */
-    private String removeDateFromTitle(String title, Date startDate, Date endDate) {
+    private String removeDateFromTitle(String title, Date startDate, Date endDate) {       
+    	List<Date> datesList = parseDate(detectAndCorrectDateInput(title));
+    	int numberOfDate = datesList.size();
         LocalDateTime dateTime;
-    	dateTime = startDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-       
+        
+        if (startDate != null) {
+        	dateTime = startDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+        } else {
+        	dateTime = endDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+        }
+        
         for (int i = 0; i < DATE_MAX_SIZE; i++) {
         	 ArrayList<String> dates = getPossibleDates(dateTime);
              ArrayList<String> months = getPossibleMonths(dateTime);
              ArrayList<String> days = getPossibleDays(dateTime);
              ArrayList<String> timings = getPossibleTimes(dateTime);
-
+             
              title = checkAndRemove(title, dates);
              title = checkAndRemove(title, months);
              title = checkAndRemove(title, days);
              title = checkAndRemove(title, timings);
              
-             dateTime = endDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+             if (numberOfDate == DATE_MAX_SIZE) {
+            	 dateTime = endDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+             } else {
+            	 break;
+             }
         }
     	return title;
     }
@@ -275,6 +295,17 @@ public class CommandParser {
 		ArrayList<String> days = new ArrayList<String>();
 		days.add(day.toString().toLowerCase());
 		days.add(day.getDisplayName(TextStyle.SHORT, locale).toLowerCase());
+		
+		int date = dateTime.getDayOfMonth();
+		int month = dateTime.getMonthValue();
+		LocalDateTime today = LocalDateTime.now();
+		if (month == today.getMonthValue()) {
+			if (date == today.getDayOfMonth()) {
+				days.add("today");
+			} else if (date == (today.getDayOfMonth()+1)) {
+				days.add("tomorrow");
+			}
+		}
 		return days;
 	}
     
@@ -340,27 +371,27 @@ public class CommandParser {
     	for (int i = 0; i < toBeRemoved.size(); i++) {
     		String toBeReplaced = "";
         	List<String> words = new ArrayList<String>(Arrays.asList(title.toLowerCase().split(" ")));
-    		
+        
         	if (words.contains(toBeRemoved.get(i))) {
-    			toBeReplaced = toBeReplaced.concat(" ");
     			toBeReplaced = toBeReplaced.concat(toBeRemoved.get(i));
 
     			index = words.indexOf(toBeRemoved.get(i));
-    			index = index - INDEX_OFFSET;
-    			isPreposition = checkIsPreposition(title, index, PREPOSITION_ALL);
-
-    			if (isPreposition) {
-    				toBeReplaced = words.get(index).concat(toBeReplaced);
-    				toBeReplaced = " ".concat(toBeReplaced);
+    			if (index != 0) {
+	    			index = index - INDEX_OFFSET;
+	    			isPreposition = checkIsPreposition(title, index, PREPOSITION_ALL);
+	
+	    			if (isPreposition) {
+	    				toBeReplaced = words.get(index).concat(" ").concat(toBeReplaced);
+	    			}
     			}
     		}
-    		
+        	
     		//remove regardless of case
         	toBeReplaced = "(?i)".concat(toBeReplaced); 
         	title = title.replaceAll(toBeReplaced, "");
     	}
     	
-    	return title;
+    	return title.replaceAll("\\s+", " ").trim();
     }
     
     /**
@@ -393,7 +424,7 @@ public class CommandParser {
         }
     }
     
-    private String extractLabel(String commandString) {
+    private String extractLabel(String commandString) throws InvalidLabelFormat{
         int index = commandString.indexOf("#");
         index = index + LENGTH_OFFSET;
         String substring = commandString.substring(index);
@@ -402,14 +433,18 @@ public class CommandParser {
         return label;
     }
     
-    private String getFirstWord(String commandString) {
+    private String getFirstWord(String commandString) throws InvalidLabelFormat {
     	String word = "";
     	try {
     		word = commandString.split(" ")[0];
-    	} catch (IndexOutOfBoundsException e ) {
-    		logger.log(Level.WARNING, "Error: First word not found by parser.");
-    		throw new IndexOutOfBoundsException();
+    	} catch (Exception e ) {
+    		throw new InvalidLabelFormat();
     	}
+    	
+    	if (word.length() == 0) {
+    		throw new InvalidLabelFormat();
+    	}
+    	
     	return word;
     }
     
@@ -419,15 +454,107 @@ public class CommandParser {
         int index = title.indexOf(tag);
         index = index + label.length() + LENGTH_OFFSET;
         
+        /*
         if (title.length() != index) {
             tag = tag.concat(" ");
         } else if (title.length() == index) {
             tag = " ".concat(tag);
         }
-        
+        */
         title = title.replace(tag, "");
-        return title;
+        return title.replaceAll("\\s+", " ").trim();
     }
+    
+    
+    public Task parseEdit(Task oldTask, String commandString) throws InvalidLabelFormat {
+        String label = null;
+        int numberOfDate = 0;
+        Date startDate = null;
+        Date endDate = null;
+        boolean hasStartDate = false;
+    
+    	//remove edit command
+    	commandString = removeFirst(commandString);
+    	
+    	String word = getFirstWord(commandString);
+    	boolean isIndex = isIndex(word);
+    	if (isIndex) {
+    		commandString = removeFirst(commandString);
+    	}
+    	
+    	boolean isLabelPresent = false;
+    	isLabelPresent = checkForLabel(commandString);
+        if (isLabelPresent) {
+        	try {
+        		label = extractLabel(commandString);
+        		oldTask.setLabel(label);
+        		commandString = removeLabelFromTitle(commandString, label);
+        	} catch (Exception e) {
+        		throw new InvalidLabelFormat("Invalid label input detected.");
+        	}
+        }
+
+        boolean hasPreposition = checkForPrepositions(commandString, PREPOSITION_ALL);
+        boolean hasTime = checkForTime(commandString);
+        
+        if (hasPreposition || hasTime) {
+        	commandString = detectAndCorrectDateInput(commandString);
+        	List<Date> dates = parseDate(commandString);
+            numberOfDate = dates.size();
+            
+            if (numberOfDate > 0) {
+            	if (numberOfDate == DATE_MAX_SIZE) {
+                    startDate = getDate(dates, DATE_START_RANGED);
+                    endDate = getDate(dates, DATE_END_RANGED);
+                } else {
+                	hasStartDate = checkForPrepositions(commandString, PREPOSITION_SELECTIVE);
+                	if (hasStartDate) {
+                		startDate = getDate(dates, DATE_INDEX);
+                	} else {
+                		endDate = getDate(dates, DATE_INDEX);
+                	}
+                }
+            	
+            	if (hasTime && hasPreposition == false) {
+            		startDate = getDate(dates, DATE_INDEX);
+            		endDate = null;
+        		}
+            	
+                commandString = removeDateFromTitle(commandString, startDate, endDate);
+            }
+        }
+        
+        if (startDate != null) {
+        	oldTask.setStartDate(startDate);
+        }
+        
+        if (endDate != null) {
+        	oldTask.setEndDate(endDate);
+        }
+        
+        if (commandString.length() > 0) {
+        	oldTask.setTitle(commandString);
+        }       
+    	
+    	return oldTask;
+    }
+    
+    private boolean isIndex(String word) {
+    	try {
+    		Integer.parseInt(word);
+    	} catch(NumberFormatException e) {
+    		return false;
+    	}
+    	return true;
+    }
+    
+    private String removeFirst(String string) throws InvalidLabelFormat {
+    	String first = getFirstWord(string);
+    	int index = first.length() + LENGTH_OFFSET;
+    	return string.substring(index, string.length());
+    }
+    
+
     
     /**
      * This method detects the types of indexes and processes them.
@@ -451,9 +578,9 @@ public class CommandParser {
     	}
     }
     
-    private String getIndexString(String commandString) {
+    private String getIndexString(String commandString) throws InvalidLabelFormat{
         int index = 0;
-        String command = getFirstWord(commandString);
+        String command = getFirstWord(commandString); //will not fail because without command UI won't call
         
         index = command.length() + LENGTH_OFFSET;
         
@@ -475,8 +602,9 @@ public class CommandParser {
      * @param index
      * 			{@code String} of index
      * @return {@code ArrayList<Integer>} of index(es) 
+     * @throws InvalidTaskIndexFormat 
      */
-    private ArrayList<Integer> extractIndex(String index) {
+    private ArrayList<Integer> extractIndex(String index) throws InvalidTaskIndexFormat {
         ArrayList<String> indexes = new ArrayList<String>();
         ArrayList<String> tempRangedIndexes = new ArrayList<String>();
         ArrayList<Integer> multipleIndexes = new ArrayList<Integer>();
@@ -487,15 +615,18 @@ public class CommandParser {
         for (int i = 0; i < indexes.size(); i++) {
         	if (indexes.get(i).contains("-")) {
         		Collections.addAll(tempRangedIndexes, indexes.get(i).split("-"));
-
-        		for (int j = 0; j < tempRangedIndexes.size(); j++) {
-        			rangedIndexes.add(Integer.parseInt(tempRangedIndexes.get(j)));
+        		
+        		//remove all empty after splitting
+        		//else will cause parseInt to fail
+        		tempRangedIndexes = removeEmpty(tempRangedIndexes);
+        		rangedIndexes = getRangedIndexes(tempRangedIndexes);
+        		
+        		if (rangedIndexes.size() == 1) {
+        			throw new InvalidTaskIndexFormat();
         		}
 
-        		for (int k = rangedIndexes.get(0); k <= rangedIndexes.get(1); k++) {
-        			multipleIndexes.add(k);
-        		}
-
+        		multipleIndexes.addAll(getMultipleIndexes(rangedIndexes));
+        		
         		tempRangedIndexes.clear();
         		rangedIndexes.clear();
         	} else {
@@ -504,22 +635,75 @@ public class CommandParser {
         		multipleIndexes.add(indexToAdd);
         	}
         }
-
+        Collections.sort(multipleIndexes);
         return multipleIndexes;
     }
     
+    private ArrayList<String> removeEmpty(ArrayList<String> arrayStrings) {
+    	ArrayList<String> empty = new ArrayList<String>();
+		empty.add("");
+		arrayStrings.removeAll(empty);
+		return arrayStrings;
+    }
+    
+    private ArrayList<Integer> getRangedIndexes(ArrayList<String> arrayStrings) {
+    	ArrayList<Integer> ranged = new ArrayList<Integer>();
+    	
+    	for (int i = 0; i < arrayStrings.size(); i++) {
+			ranged.add(Integer.parseInt(arrayStrings.get(i)));
+		}
+    	
+    	return ranged;    	
+    }
+    
+    private ArrayList<Integer> getMultipleIndexes(ArrayList<Integer> arrayIntegers) {
+    	ArrayList<Integer> multiple = new ArrayList<Integer>();
+    	int start, end;
+    	
+    	for (int i = 0; i < arrayIntegers.size() - 1; i++) {
+    		if (arrayIntegers.get(i) < arrayIntegers.get(i+1)) {
+    			start = arrayIntegers.get(i);
+    			end = arrayIntegers.get(i+1);
+    		} else {
+    			start = arrayIntegers.get(i+1);
+    			end = arrayIntegers.get(i);
+    		}
+    		
+    		for (int j = start; j <= end; j++) {
+    			if (!multiple.contains(j)) {
+    				multiple.add(j);
+    			}
+    		}
+		}
+    	
+    	return multiple;
+    }
     
     @SuppressWarnings("serial")
 	public class InvalidTaskIndexFormat extends Exception {
     	public InvalidTaskIndexFormat() {
     		logger.log(Level.WARNING, "NumberFormatException: Indexes cannot be parsed by parser.");
-    		logger.log(Level.WARNING, "InvalidTaskINdexFormat exception thrown.");
+    		logger.log(Level.WARNING, "InvalidTaskIndexFormat exception thrown.");
     	}
 
     	public InvalidTaskIndexFormat(String message) {
     		super (message);
     		logger.log(Level.WARNING, "NumberFormatException: Indexes cannot be parsed by parser.");
-    		logger.log(Level.WARNING, "InvalidTaskINdexFormat exception thrown.");    		
+    		logger.log(Level.WARNING, "InvalidTaskIndexFormat exception thrown.");    		
+    	}
+    }
+    
+    @SuppressWarnings("serial")
+    public class InvalidLabelFormat extends Exception {
+    	public InvalidLabelFormat() {
+    		logger.log(Level.WARNING, "Label cannot be parsed by parser.");
+    		logger.log(Level.WARNING, "InvalidLabelFormat exception thrown.");
+    	}
+
+    	public InvalidLabelFormat(String message) {
+    		super (message);
+    		logger.log(Level.WARNING, "Label cannot be parsed by parser.");
+    		logger.log(Level.WARNING, "InvalidLabelFormat exception thrown.");    		
     	}
     }
 }
