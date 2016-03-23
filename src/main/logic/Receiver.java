@@ -214,11 +214,11 @@ public class Receiver extends Observable {
     }
     
     /**
-     * This methods sends an instructotion to the {@code Storage} class
+     * This methods sends an instruction to the {@code Storage} class
      * to update its settings.txt file
      * 
-     * @param  path
-     *         The path to save the output file
+     * @param  fileLocation
+     *         The location to save the output file
      */
     public void setFileLocation(String fileLocation) {
         storage.setFileLocation(fileLocation, allTasks);
