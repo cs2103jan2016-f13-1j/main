@@ -208,7 +208,6 @@ public class CommandParser {
 				}
 				
 				words.set(i, swapped);
-				break;
 			}
 		}
 
@@ -236,8 +235,8 @@ public class CommandParser {
      * 			{@code Task} end date
      * @return {@code String} without date information
      */
-    private String removeDateFromTitle(String title, Date startDate, Date endDate) {
-    	List<Date> datesList = parseDate(title);
+    private String removeDateFromTitle(String title, Date startDate, Date endDate) {       
+    	List<Date> datesList = parseDate(detectAndCorrectDateInput(title));
     	int numberOfDate = datesList.size();
         LocalDateTime dateTime;
         
@@ -252,7 +251,7 @@ public class CommandParser {
              ArrayList<String> months = getPossibleMonths(dateTime);
              ArrayList<String> days = getPossibleDays(dateTime);
              ArrayList<String> timings = getPossibleTimes(dateTime);
-
+     		
              title = checkAndRemove(title, dates);
              title = checkAndRemove(title, months);
              title = checkAndRemove(title, days);
@@ -260,7 +259,9 @@ public class CommandParser {
              
              if (numberOfDate == DATE_MAX_SIZE) {
             	 dateTime = endDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-            }
+             } else {
+            	 break;
+             }
         }
     	return title;
     }
