@@ -509,6 +509,7 @@ public class CommandParser {
         		multipleIndexes.add(indexToAdd);
         	}
         }
+        Collections.sort(multipleIndexes);
         return multipleIndexes;
     }
     
@@ -531,9 +532,18 @@ public class CommandParser {
     
     private ArrayList<Integer> getMultipleIndexes(ArrayList<Integer> arrayIntegers) {
     	ArrayList<Integer> multiple = new ArrayList<Integer>();
+    	int start, end;
     	
-    	for (int i=0; i<arrayIntegers.size() - 1; i++) {
-    		for (int j = arrayIntegers.get(i); j <= arrayIntegers.get(i+1); j++) {
+    	for (int i = 0; i < arrayIntegers.size() - 1; i++) {
+    		if (arrayIntegers.get(i) < arrayIntegers.get(i+1)) {
+    			start = arrayIntegers.get(i);
+    			end = arrayIntegers.get(i+1);
+    		} else {
+    			start = arrayIntegers.get(i+1);
+    			end = arrayIntegers.get(i);
+    		}
+    		
+    		for (int j = start; j <= end; j++) {
     			if (!multiple.contains(j)) {
     				multiple.add(j);
     			}
