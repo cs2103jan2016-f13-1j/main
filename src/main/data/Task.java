@@ -317,6 +317,28 @@ public class Task {
 	    return timeFormat.format(date);
     }
     
+    public String getTimeToDisplay() {
+    	StringBuilder stringBuilder = new StringBuilder("");
+    	int indexStartTime = 2;
+    	int indexEndTime = 4;
+    	
+    	ArrayList<String> fields = getTaskFields();
+    	String startTime = fields.get(indexStartTime);
+    	String endTime = fields.get(indexEndTime);
+    	
+    	if (hasDateRange()) {
+    		stringBuilder.append(startTime + " - " + endTime);
+    	} else if (hasStartDate()) {
+    		stringBuilder.append(startTime);
+    	} else if (hasEndDate()) {
+    		stringBuilder.append("by " + endTime);
+    	}
+    	
+    	return stringBuilder.toString();
+    }
+    
+    
+    
     public boolean hasStarted() {
         return (startDate.compareTo(new Date()) < 0);
     }
