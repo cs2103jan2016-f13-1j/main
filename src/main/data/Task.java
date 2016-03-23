@@ -154,22 +154,30 @@ public class Task {
     	
     	StringBuilder stringBuilder = new StringBuilder(title);
 
-    	if (startDate != null) {
-    		if (isNow(startDate)) {
-    			stringBuilder.append(" from now");
-    		} else {
+    	if (hasDate()) {
+    		if (hasDateRange()) {
     			stringBuilder.append(" from " + startDate);
     			stringBuilder.append(" " + startTime);
-    		}
-    		
-    		if (!startDate.equals(endDate)) {
-    			stringBuilder.append(" to " + endDate);
-    			stringBuilder.append(" " + endTime);
+    			
+    			if (!startDate.equals(endDate)) {
+        			stringBuilder.append(" to " + endDate);
+        			stringBuilder.append(" " + endTime);
+        		} else {
+        			stringBuilder.append(" to " + endTime);
+        		}   	  
     		} else {
-    			stringBuilder.append(" to " + endTime);
-    		}   	  
+    			if (startDate != null) {
+    				stringBuilder.append(" from " + startDate);
+    				stringBuilder.append(" " + startTime);
+    			}
+    			
+    			if (endDate != null) {
+    				stringBuilder.append(" by " + endDate);
+    				stringBuilder.append(" " + endTime);
+    			}
+    		}
     	}
-
+    
     	if (label != null) {
     		stringBuilder.append(" #" + label);
     	}
@@ -196,10 +204,21 @@ public class Task {
         fields.add(title);
         
         if (hasDate()) {
-        	fields.add(convertDate(startDate));
-        	fields.add(convertTime(startDate));
-        	fields.add(convertDate(endDate));
-        	fields.add(convertTime(endDate));
+        	if (hasStartDate()){
+        		fields.add(convertDate(startDate));
+            	fields.add(convertTime(startDate));
+        	} else {
+        		fields.add(null);
+            	fields.add(null);
+        	}
+        	
+        	if (hasEndDate()) {
+	        	fields.add(convertDate(endDate));
+	        	fields.add(convertTime(endDate));
+        	} else {
+        		fields.add(null);
+            	fields.add(null);
+        	}
         } else {
         	fields.add(null);
         	fields.add(null);
@@ -296,16 +315,6 @@ public class Task {
         symbols.setAmPmStrings(new String[] {"am", "pm"});
         timeFormat.setDateFormatSymbols(symbols);
 	    return timeFormat.format(date);
-    }
-    
-    private boolean isNow(String date) {
-    	if (date.equals("today")) {
-    		Date start = startDate;
-    		Date now = new Date();
-    		return start.before(now);
-    	} else {
-    		return false;
-    	}
     }
     
     public boolean hasStarted() {
