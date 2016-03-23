@@ -87,9 +87,9 @@ public class CommandParser {
                 	hasStartDate = checkForPrepositions(commandString, PREPOSITION_SELECTIVE);
                 	if (hasStartDate) {
                 		startDate = getDate(dates, DATE_INDEX);
-                		endDate = addOneHour(startDate);
+                		//endDate = addOneHour(startDate);
                 	} else {
-                		startDate = getCurrentDate();
+                		//startDate = getCurrentDate();
                 		endDate = getDate(dates, DATE_INDEX);
                 	}
                 }
@@ -100,7 +100,7 @@ public class CommandParser {
         isLabelPresent = checkForLabel(commandString);
         if (isLabelPresent) {
         	try {
-            label = extractLabel(commandString);
+        		label = extractLabel(commandString);
         	} catch (Exception e) {
         		throw new InvalidLabelFormat("Invalid label input detected.");
         	}
@@ -209,17 +209,6 @@ public class CommandParser {
         return dates.get(index);
     }
     
-    private Date addOneHour(Date date) {
-    	 LocalDateTime dateTime = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-    	 dateTime = dateTime.plusHours(ONE_HOUR);
-    	 Date convertToDate = Date.from(dateTime.atZone(ZoneId.systemDefault()).toInstant());
-    	 return convertToDate;
-    }
-    
-    private Date getCurrentDate() {
-    	return parseDate(STRING_NOW).get(DATE_INDEX);
-    }
-    
     /**
      * This method removes date information from the {@code String} taken in.
      * 
@@ -232,9 +221,16 @@ public class CommandParser {
      * @return {@code String} without date information
      */
     private String removeDateFromTitle(String title, Date startDate, Date endDate) {
+    	List<Date> datesList = parseDate(title);
+    	int numberOfDate = datesList.size();
         LocalDateTime dateTime;
-    	dateTime = startDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-       
+        
+        if (startDate != null) {
+        	dateTime = startDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+        } else {
+        	dateTime = endDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+        }
+        
         for (int i = 0; i < DATE_MAX_SIZE; i++) {
         	 ArrayList<String> dates = getPossibleDates(dateTime);
              ArrayList<String> months = getPossibleMonths(dateTime);
@@ -246,7 +242,9 @@ public class CommandParser {
              title = checkAndRemove(title, days);
              title = checkAndRemove(title, timings);
              
-             dateTime = endDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+             if (numberOfDate == DATE_MAX_SIZE) {
+            	 dateTime = endDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+            }
         }
     	return title;
     }
