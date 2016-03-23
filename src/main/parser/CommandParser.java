@@ -463,6 +463,24 @@ public class CommandParser {
         return title;
     }
     
+    /*
+    public Task parseEdit(Task oldTask, String commandString) throws InvalidLabelFormat {
+    	//remove edit
+    	String command = getFirstWord(commandString);
+    	int index = command.length() + LENGTH_OFFSET;
+    	commandString = commandString.substring(index, commandString.length());
+    	
+    	//check for index if have
+    	String indexString = getFirstWord(commandString);
+    	
+    	
+    	//parse 
+    	Task newTask = parseAdd(commandString);
+    	
+    	return null;
+    }
+    */
+    
     /**
      * This method detects the types of indexes and processes them.
      * 
