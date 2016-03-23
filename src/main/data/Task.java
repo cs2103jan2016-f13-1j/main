@@ -298,9 +298,9 @@ public class Task {
 	    return timeFormat.format(date);
     }
     
-    private boolean isNow(String startDate) {
-    	if (startDate.equals("today")) {
-    		Date start = getStartDate();
+    private boolean isNow(String date) {
+    	if (date.equals("today")) {
+    		Date start = startDate;
     		Date now = new Date();
     		return start.before(now);
     	} else {
@@ -328,5 +328,55 @@ public class Task {
             }
         }
         return false;
+    }
+    
+    public boolean isTomorrow() {   	
+    	Calendar cal = Calendar.getInstance(); 
+    	cal.setTime(new Date()); 
+    	cal.add(Calendar.DATE, 1);
+    	Date calDate = cal.getTime();
+    	
+        SimpleDateFormat dateFormat = new SimpleDateFormat("ddMMyyyy");
+        String tomorrow = dateFormat.format(calDate);
+        
+    	if (hasEndDate()) {
+    		String end = dateFormat.format(endDate);
+    		if (tomorrow.equals(end)) {
+    			return true;
+    		}
+    	} else if (hasStartDate()) {
+    		String start = dateFormat.format(startDate);
+    		if (tomorrow.equals(start)) {
+    			return true;
+    		}
+    	}
+    	return false;
+    }
+    
+    public boolean isUpcoming() {
+    	if (hasDate()) {
+    		if (!isToday() && !isTomorrow()) {
+    			 Date today = new Date();
+    			 
+    		     if (hasEndDate()) { 
+    		    	 if (today.before(endDate)) {
+    		    		 return true;
+    		    	 }
+    		     } else if (hasStartDate()) {
+    		    	 if (today.before(startDate)) {
+    		    		 return true;
+    		    	 }
+    		     }    			
+    		}
+    	}
+    	return false;
+    }
+    
+    public boolean isSomeday() {
+    	if (!hasDate()) {
+    		return true;
+    	} else {
+    		return false;
+    	}
     }
 }
