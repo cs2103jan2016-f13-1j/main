@@ -493,8 +493,7 @@ public class CommandParser {
         		throw new InvalidLabelFormat("Invalid label input detected.");
         	}
         }
-        
-        //check time
+
         boolean hasPreposition = checkForPrepositions(commandString, PREPOSITION_ALL);
         boolean hasTime = checkForTime(commandString);
         
@@ -532,11 +531,6 @@ public class CommandParser {
         if (endDate != null) {
         	oldTask.setEndDate(endDate);
         }
-        
-        
-        
-        
-        
         
         if (commandString.length() > 0) {
         	oldTask.setTitle(commandString);
