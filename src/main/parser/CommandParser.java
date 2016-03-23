@@ -43,12 +43,9 @@ public class CommandParser {
     /**
      * This method builds a {@code Task} object.
      * 
-     * Words without prepositions are considered tasks without dates.
+     * Tasks without date do not have any time specified.
      * Words with prepositions might not be dated.
-     * Dated task will always contain prepositions.
-     * 
-     * If only start date is specified, task will only last for an hour.
-     * If only end date is specified, task will have the current date as the start date.
+     * Words without prepositions is dated if time is explicitly specified.
      * 
      * @param commandString
      * 			user input {@code String}
@@ -522,7 +519,6 @@ public class CommandParser {
         
         Collections.addAll(indexes, index.split(","));
         
-      
         for (int i = 0; i < indexes.size(); i++) {
         	if (indexes.get(i).contains("-")) {
         		Collections.addAll(tempRangedIndexes, indexes.get(i).split("-"));

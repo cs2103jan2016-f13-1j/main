@@ -24,6 +24,7 @@ public class TestCommandParser {
     /**
      * Test for the detection of floating task.
      * Even with prepositions, it should not be dated.
+     * 
      * @throws InvalidLabelFormat 
      */
     @Test 
@@ -59,6 +60,7 @@ public class TestCommandParser {
      * Test to ensure floating task are added correctly.
      * It should not be dated.
      * The title should be the whole user input.
+     * 
      * @throws InvalidLabelFormat 
      */
     @Test
@@ -74,6 +76,11 @@ public class TestCommandParser {
         assertEquals("Attack enemy base on signal", task.getTitle());
     }
 
+    /**
+     * Test for time detection without preposition if time is explicitly specified.
+     * 
+     * @throws InvalidLabelFormat
+     */
     @Test
     public void testHasTime() throws InvalidLabelFormat {
     	CommandParser parser = new CommandParser();
@@ -111,6 +118,7 @@ public class TestCommandParser {
     
     /**
      * Test for label extraction.
+     * 
      * @throws InvalidLabelFormat 
      */
     @Test
@@ -144,6 +152,7 @@ public class TestCommandParser {
     
     /**
      * Test for extraction of date information in title.
+     * 
      * @throws InvalidLabelFormat 
      */
     @Test
@@ -194,10 +203,8 @@ public class TestCommandParser {
     
     /**
      * Test for start time detection when parsing.
-     * If only start time specified, auto assigned one hour task.
+     * Feedback shown is relative to the current period.
      * 
-     * Test failing because of feedback.
-     * It works relative to the current period.
      * @throws InvalidLabelFormat 
      */
     @Test
@@ -215,16 +222,15 @@ public class TestCommandParser {
     	assertEquals("Watch movie", task.getTitle());
     	assertEquals("Watch movie from today 7pm", task.toString());
     	
-    	task = parser.parseAdd("Watch movie after 7:15pm");
+    	task = parser.parseAdd("Watch movie on 1 Mar 7pm");
     	assertEquals("Watch movie", task.getTitle());
-    	assertEquals("Watch movie from today 7:15pm", task.toString());
+    	assertEquals("Watch movie from 1 Mar 7pm", task.toString());
     }
     
     /**
-     * Test feedback shown when parsing tasks.
+     * Test feedback shown when parsing tasks 
+     * Feedback shown is relative to the current period.
      * 
-     * Test failing because of feedback.
-     * It works relative to the current period.
      * @throws InvalidLabelFormat 
      */
     @Test
@@ -309,7 +315,7 @@ public class TestCommandParser {
         assertEquals(0, task.togglePriority());
     }
     
-    @Ignore
+    @Test
     public void testToggleDone() throws InvalidLabelFormat {
     	 CommandParser parser = new CommandParser();
          Task task = parser.parseAdd("Do assignment");
@@ -369,6 +375,11 @@ public class TestCommandParser {
         assertEquals(expectedIndexes, indexes);
     }
     
+    /**
+     * Test parsing of indexes when user input does not follow the "usual" way.
+     * 
+     * @throws InvalidTaskIndexFormat
+     */
     @Test
     public void testUnconventionalIndexes() throws InvalidTaskIndexFormat {
     	CommandParser parser = new CommandParser();
