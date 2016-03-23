@@ -251,10 +251,12 @@ public class CommandParser {
              ArrayList<String> months = getPossibleMonths(dateTime);
              ArrayList<String> days = getPossibleDays(dateTime);
              ArrayList<String> timings = getPossibleTimes(dateTime);
-     		
+             
              title = checkAndRemove(title, dates);
              title = checkAndRemove(title, months);
              title = checkAndRemove(title, days);
+
+             System.out.println("1");
              title = checkAndRemove(title, timings);
              
              if (numberOfDate == DATE_MAX_SIZE) {
@@ -371,7 +373,7 @@ public class CommandParser {
     	for (int i = 0; i < toBeRemoved.size(); i++) {
     		String toBeReplaced = "";
         	List<String> words = new ArrayList<String>(Arrays.asList(title.toLowerCase().split(" ")));
-    		
+
         	if (words.contains(toBeRemoved.get(i))) {
     			toBeReplaced = toBeReplaced.concat(" ");
     			toBeReplaced = toBeReplaced.concat(toBeRemoved.get(i));
@@ -385,7 +387,8 @@ public class CommandParser {
     				toBeReplaced = " ".concat(toBeReplaced);
     			}
     		}
-    		
+
+            System.out.println(toBeReplaced);
     		//remove regardless of case
         	toBeReplaced = "(?i)".concat(toBeReplaced); 
         	title = title.replaceAll(toBeReplaced, "");
@@ -464,23 +467,104 @@ public class CommandParser {
         return title;
     }
     
-    /*
+    
     public Task parseEdit(Task oldTask, String commandString) throws InvalidLabelFormat {
-    	//remove edit
-    	String command = getFirstWord(commandString);
-    	int index = command.length() + LENGTH_OFFSET;
-    	commandString = commandString.substring(index, commandString.length());
+    	String title = null;
+        String label = null;
+        int numberOfDate = 0;
+        Date startDate = null;
+        Date endDate = null;
+        boolean hasStartDate = false;
+        title = commandString;
+    
+    	//remove edit command
+    	commandString = removeFirst(commandString);
     	
-    	//check for index if have
-    	String indexString = getFirstWord(commandString);
+    	String word = getFirstWord(commandString);
+    	boolean isIndex = isIndex(word);
+    	if (isIndex) {
+    		commandString = removeFirst(commandString);
+    	}
     	
+    	boolean isLabelPresent = false;
+    	isLabelPresent = checkForLabel(commandString);
+        if (isLabelPresent) {
+        	try {
+        		label = extractLabel(commandString);
+        		oldTask.setLabel(label);
+        		commandString = removeLabelFromTitle(commandString, label);
+        	} catch (Exception e) {
+        		throw new InvalidLabelFormat("Invalid label input detected.");
+        	}
+        }
+        
+        //check time
+        boolean hasPreposition = checkForPrepositions(commandString, PREPOSITION_ALL);
+        boolean hasTime = checkForTime(commandString);
+        
+        if (hasPreposition || hasTime) {
+        	commandString = detectAndCorrectDateInput(commandString);
+        	List<Date> dates = parseDate(commandString);
+            numberOfDate = dates.size();
+            
+            if (numberOfDate > 0) {
+            	if (numberOfDate == DATE_MAX_SIZE) {
+                    startDate = getDate(dates, DATE_START_RANGED);
+                    endDate = getDate(dates, DATE_END_RANGED);
+                } else {
+                	hasStartDate = checkForPrepositions(commandString, PREPOSITION_SELECTIVE);
+                	if (hasStartDate) {
+                		startDate = getDate(dates, DATE_INDEX);
+                	} else {
+                		endDate = getDate(dates, DATE_INDEX);
+                	}
+                }
+            	
+            	if (hasTime && hasPreposition == false) {
+            		startDate = getDate(dates, DATE_INDEX);
+            		endDate = null;
+        		}
+            	
+                commandString = removeDateFromTitle(commandString, startDate, endDate);
+            }
+        }
+        
+        if (startDate != null) {
+        	oldTask.setStartDate(startDate);
+        }
+        
+        if (endDate != null) {
+        	oldTask.setEndDate(endDate);
+        }
+        
+        
+        
+        
+        
+        
+        if (commandString.length() > 0) {
+        	oldTask.setTitle(commandString);
+        }       
     	
-    	//parse 
-    	Task newTask = parseAdd(commandString);
-    	
-    	return null;
+    	return oldTask;
     }
-    */
+    
+    private boolean isIndex(String word) {
+    	try {
+    		Integer.parseInt(word);
+    	} catch(NumberFormatException e) {
+    		return false;
+    	}
+    	return true;
+    }
+    
+    private String removeFirst(String string) throws InvalidLabelFormat {
+    	String first = getFirstWord(string);
+    	int index = first.length() + LENGTH_OFFSET;
+    	return string.substring(index, string.length());
+    }
+    
+
     
     /**
      * This method detects the types of indexes and processes them.
