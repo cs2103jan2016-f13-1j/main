@@ -180,8 +180,7 @@ public class BetterRootLayoutController {
     private void initialize() {
         logger.log(Level.INFO, "Initializing the UI...");
         initLogicAndParser();
-        populateListView();
-        updateTabAndLabelWithTotalTasks();
+        initListView();
         initMouseListener();
         initKeyboardListener();
         initCommandBarListener();
@@ -307,20 +306,12 @@ public class BetterRootLayoutController {
     /**
      * 
      */
-    private void populateListView() {
+    private void initListView() {
         if (receiver == null) {
             receiver = Receiver.getInstance();
         }
 
         listViewTodo.setPlaceholder(new Label(MESSAGE_LISTVIEW_TODO_EMPTY));
-
-        // retrieve all task and add into an ObservableList
-        todoTasks = receiver.getTodoTasks();
-        assert todoTasks != null;
-
-        observableTodoTasks.setAll(todoTasks);
-        // listViewTodo.setDepthProperty(1);
-        listViewTodo.setItems(observableTodoTasks);
         listViewTodo.setCellFactory(new Callback<ListView<Task>, ListCell<Task>>() {
 
             @Override
@@ -330,13 +321,6 @@ public class BetterRootLayoutController {
         });
 
         listViewCompleted.setPlaceholder(new Label(MESSAGE_LISTVIEW_COMPLETED_EMPTY));
-
-        // retrieve all task and add into an ObservableList
-        completedTasks = receiver.getCompletedTasks();
-        assert completedTasks != null;
-
-        observableCompletedTasks.setAll(completedTasks);
-        listViewCompleted.setItems(observableCompletedTasks);
         listViewCompleted.setCellFactory(new Callback<ListView<Task>, ListCell<Task>>() {
 
             @Override
@@ -345,10 +329,34 @@ public class BetterRootLayoutController {
             }
         });
 
-        updateTabAndLabelWithTotalTasks();
+        
+        populateListView();
 
         logger.log(Level.INFO, "Populated Todo List: " + todoTasks.size() + " task");
         logger.log(Level.INFO, "Populated Completed List: " + completedTasks.size() + " task");
+    }
+
+    /**
+     * 
+     */
+    private void populateListView() {
+        // retrieve all task and add into an ObservableList
+        todoTasks = receiver.getTodoTasks();
+        assert todoTasks != null;
+
+        observableTodoTasks.setAll(todoTasks);
+        // listViewTodo.setDepthProperty(1);
+        listViewTodo.setItems(observableTodoTasks);
+       
+
+        // retrieve all task and add into an ObservableList
+        completedTasks = receiver.getCompletedTasks();
+        assert completedTasks != null;
+
+        observableCompletedTasks.setAll(completedTasks);
+        listViewCompleted.setItems(observableCompletedTasks);
+        
+        updateTabAndLabelWithTotalTasks();
     }
 
     private void toggleUndoRedo() {
@@ -606,7 +614,6 @@ public class BetterRootLayoutController {
                         @Override
                         public void run() {
                             refreshListView();
-                            updateTabAndLabelWithTotalTasks();
                             listViewTodo.getSelectionModel().selectLast();
                             listViewTodo.scrollTo(todoTasks.size() - 1);
                             // showResult(true, "Task added!");
