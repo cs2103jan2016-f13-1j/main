@@ -340,10 +340,11 @@ public class TestCommandParser {
         indexes = parser.parseIndexes("del 1-3-5-7-9-10");
         assertEquals(expectedIndexes, indexes);    	
         
-        //cater for this
-        //compare input to see which bigger instead of assuming
-        indexes = parser.parseIndexes("del 4-5-3");
-        System.out.println("koko " + indexes);
+        indexes = parser.parseIndexes("del 10-1");
+        assertEquals(expectedIndexes, indexes);
+        
+        indexes = parser.parseIndexes("del 10-9-7-5-3-1");
+        assertEquals(expectedIndexes, indexes);
     }
     
     /**
