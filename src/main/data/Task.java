@@ -1,6 +1,7 @@
 package main.data;
 
 import java.text.DateFormatSymbols;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
@@ -404,51 +405,55 @@ public class Task {
     		return dateIsToday();
     	}
     }
-    /*
-    public boolean isTomorrow() {	
-    	LocalDateTime starting, ending;
-    	SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
-    	LocalDateTime tomorrow = new Date().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-    	tomorrow = tomorrow.plusDays(1);
+    
+    public boolean isTomorrow() throws ParseException {   	
+    	Calendar cal = Calendar.getInstance();
+    	cal.setTime(new Date());
+    	cal.add(Calendar.DATE, 1);
     	
-    	Calendar c = Calendar.getInstance();
-    	c.setTime(new Date());
-    	c.add(Calendar.DATE, 1);
-    	String tmr = dateFormat.format(c.getTime());
+    	SimpleDateFormat dateFormat = new SimpleDateFormat("ddMMyyyy");
+    	String tomorrow = dateFormat.format(cal.getTime());
+    	String starting = "";
+    	String ending = "";
+    	Date tml, start = null, end = null;
+    	
+    	tml = dateFormat.parse(tomorrow);
     	
     	if (hasDateRange()) {
     		if (hasStarted()) {
-    			ending = endDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-    			if (tomorrow.isBefore(ending)) {
+    			ending = dateFormat.format(endDate);  			
+    			end = dateFormat.parse(ending);
+    			if (end.after(tml)) {
     				return true;
-    			} else {
-    				return false;
     			}
     		} else {
-    			starting = startDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-    			if (tomorrow.isEqual(starting)) {
+    			starting = dateFormat.format(startDate);
+    			start = dateFormat.parse(starting);
+    			if (start.equals(tml)) {
     				return true;
-    			} else {
-    				return false;
     			}
     		}
     	} else {
-	    	if (hasStartDate()) {
-	    		String start = dateFormat.format(startDate);
-	    		if (tmr.equals(start)) {
-	    			return true;
-	    		}
-	    	} else if (hasEndDate()) { 
-	    		String end = dateFormat.format(endDate);
-	    		if (tmr.equals(end)) {
-	    			return true;
-	    		}
-	    	} 		
+    		if (hasStartDate()) {
+    			starting = dateFormat.format(startDate);
+    			start = dateFormat.parse(starting);
+    			
+    			if (start.equals(tml)) {
+    				return true;
+    			}
+    		} else if (hasEndDate()) {
+    			ending = dateFormat.format(endDate);
+    			end = dateFormat.parse(ending);
+    			if (end.equals(tml)) {
+    				return true;
+    			}
+    		}
     	}
+ 
     	return false;	
     }
 
-    public boolean isUpcoming() {
+    public boolean isUpcoming() throws ParseException {
     	if (hasDate()) {
     		if (!dateIsToday() && !isTomorrow()) {
     			 Date today = new Date();
@@ -466,7 +471,7 @@ public class Task {
     	}
     	return false;
     }
-    */
+    
     public boolean isSomeday() {
     	if (hasDate()) {
     		return false;

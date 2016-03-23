@@ -277,7 +277,7 @@ public class TestCommandParser {
      * Ensures that there are differences in time when creating task.
      * @throws InvalidLabelFormat 
      */
-    @Test
+    @Ignore @Test
     public void testCompareTo() throws InterruptedException, InvalidLabelFormat {
     	CommandParser parser = new CommandParser();
     	Task task1, task2;
@@ -492,17 +492,5 @@ public class TestCommandParser {
         	thrown = true;
         }
         assertEquals(true, thrown);        
-    }
-    
-    @Test
-    public void testtest() throws InvalidLabelFormat {
-    	CommandParser parser = new CommandParser();
-    	Task task = parser.parseAdd("Go camp from 25-3 6am to 30-3 9pm");
-    	System.out.println(task.getTitle());
-    	System.out.println(task.toString());
-    	System.out.println(task.isToday());
-    	//System.out.println(task.isTomorrow());
-    	//System.out.println(task.isUpcoming());
-    	System.out.println(task.isSomeday());
     }
 }
