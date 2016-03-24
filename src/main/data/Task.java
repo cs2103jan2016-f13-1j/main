@@ -409,7 +409,11 @@ public class Task {
     }
     
     public boolean hasStarted() {
-        return (startDate.compareTo(new Date()) < 0);
+    	if (startDate == null) {
+    		return false;
+    	} else {
+    		return (startDate.compareTo(new Date()) < 0);
+    	}
     }
     
     public boolean isToday() {
