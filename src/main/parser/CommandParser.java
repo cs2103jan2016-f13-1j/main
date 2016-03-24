@@ -228,7 +228,7 @@ public class CommandParser {
         List<Date> dates = parser.parse(commandString);
         
         Date now = new Date();
-        Date update;
+        Date update = null;
         
         Calendar today = Calendar.getInstance();
         today.setTime(now);
@@ -249,6 +249,10 @@ public class CommandParser {
     					dates.set(i,update);
     				}
 		    	}
+        	}
+        	
+        	if (dates.size() == 2 && update != null) {
+        		now = update;
         	}
         }
         return dates;
@@ -572,8 +576,9 @@ public class CommandParser {
 
         boolean hasPreposition = checkForPrepositions(commandString, PREPOSITION_ALL);
         boolean hasTime = checkForTime(commandString);
-        
+        System.out.println("here");
         if (hasPreposition || hasTime) {
+        	System.out.println("before date parsing");
         	commandString = detectAndCorrectDateInput(commandString);
         	List<Date> dates = parseDate(commandString);
             numberOfDate = dates.size();
