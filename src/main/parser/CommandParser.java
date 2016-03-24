@@ -595,14 +595,22 @@ public class CommandParser {
             }
         }
         
-        if (startDate != null) {
-        	oldTask.setStartDate(startDate);
-        }
-        
-        if (endDate != null) {
-        	oldTask.setEndDate(endDate);
-        }
-        
+     
+        	if (startDate != null && endDate != null) {
+        		oldTask.setStartDate(startDate);
+        		oldTask.setEndDate(endDate);
+        	} else {
+        		if (startDate != null) {
+                	oldTask.setStartDate(startDate);
+                	oldTask.setEndDate(null);
+                }
+                
+                if (endDate != null) {
+                	oldTask.setStartDate(null);
+                	oldTask.setEndDate(endDate);
+                }
+        	}
+
         if (commandString.length() > 0) {
         	oldTask.setTitle(commandString);
         }       
