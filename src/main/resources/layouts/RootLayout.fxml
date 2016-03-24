@@ -1,20 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import com.jfoenix.controls.JFXButton?>
 <?import com.jfoenix.controls.JFXListView?>
+<?import com.jfoenix.controls.JFXTabPane?>
+<?import com.jfoenix.controls.JFXTextField?>
 <?import java.lang.String?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.Group?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Tab?>
-<?import javafx.scene.control.TabPane?>
-<?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.text.TextFlow?>
 
-<AnchorPane fx:id="rootLayout" minHeight="100.0" minWidth="-Infinity" prefHeight="900.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.ui.RootLayoutController">
+<AnchorPane fx:id="rootLayout" minHeight="100.0" minWidth="-Infinity" prefHeight="900.0" prefWidth="860.0" stylesheets="@../styles/RootLayout.css" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.ui.RootLayoutController">
    <children>
-      <TabPane fx:id="tabPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" tabClosingPolicy="UNAVAILABLE" tabMinHeight="30.0" tabMinWidth="270.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+      <JFXTabPane fx:id="tabPane" tabMinHeight="48.0" tabMinWidth="420.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <tabs>
             <Tab fx:id="tabTodo" closable="false" text="To-do">
                <content>
@@ -33,7 +34,7 @@
                            </styleClass></JFXListView>
                      </children>
                      <padding>
-                        <Insets bottom="100.0" left="40.0" right="40.0" top="80.0" />
+                        <Insets bottom="100.0" left="40.0" right="40.0" top="40.0" />
                      </padding>
                   </AnchorPane>
                </content>
@@ -51,95 +52,27 @@
                </content>
             </Tab>
          </tabs>
-      </TabPane>
-      <TextField fx:id="commandBar" layoutX="40.0" layoutY="497.0" prefHeight="25.0" prefWidth="500.0" promptText="Type something to add a task" styleClass="text-input" AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="40.0">
-         <font>
-            <Font name="Noto Sans" size="13.0" />
-         </font></TextField>
-      <Group layoutX="530.0" layoutY="100.0">
-         <children>
-            <Label alignment="CENTER" layoutY="-12.0" prefHeight="15.0" prefWidth="30.0" text="delete">
-               <font>
-                  <Font name="Noto Sans" size="10.0" />
-               </font>
-            </Label>
-            <Button fx:id="btnDel" layoutY="-30.0" mnemonicParsing="false" prefHeight="18.0" prefWidth="30.0" text="del" textAlignment="CENTER">
-               <font>
-                  <Font name="Noto Sans Bold" size="8.0" />
-               </font>
-            </Button>
-         </children>
-      </Group>
-      <Group layoutX="500.0" layoutY="100.0">
-         <children>
-            <Label alignment="CENTER" layoutY="-12.0" prefHeight="15.0" prefWidth="21.0" text="edit">
-               <font>
-                  <Font name="Noto Sans" size="10.0" />
-               </font>
-            </Label>
-            <Button fx:id="btnEdit" layoutY="-30.0" mnemonicParsing="false" text="F1" textAlignment="CENTER">
-               <font>
-                  <Font name="Noto Sans Bold" size="8.0" />
-               </font>
-            </Button>
-         </children>
-      </Group>
-      <Group fx:id="groupUndo" layoutX="500.0" layoutY="1000.0" AnchorPane.bottomAnchor="50.0">
-         <children>
-            <Label fx:id="labelUndo" alignment="CENTER" layoutY="-12.0" prefHeight="15.0" prefWidth="25.0" text="undo">
-               <font>
-                  <Font name="Noto Sans" size="10.0" />
-               </font>
-            </Label>
-            <Button fx:id="btnUndo" layoutX="2.0" layoutY="-30.0" mnemonicParsing="false" text="F2" textAlignment="CENTER">
-               <font>
-                  <Font name="Noto Sans Bold" size="8.0" />
-               </font>
-            </Button>
-         </children>
-      </Group>
-      <Group fx:id="groupRedo" layoutX="535.0" layoutY="1000.0" AnchorPane.bottomAnchor="50.0">
-         <children>
-            <Label fx:id="labelRedo" alignment="CENTER" layoutY="-12.0" prefHeight="15.0" prefWidth="25.0" text="redo">
-               <font>
-                  <Font name="Noto Sans" size="10.0" />
-               </font>
-            </Label>
-            <Button fx:id="btnRedo" layoutX="2.0" layoutY="-30.0" mnemonicParsing="false" text="F3" textAlignment="CENTER">
-               <font>
-                  <Font name="Noto Sans Bold" size="8.0" />
-               </font>
-            </Button>
-         </children>
-      </Group>
-      <Label fx:id="labelDateToday" layoutX="153.0" layoutY="75.0" text="Sat 30 Jan" textFill="#8a8a8a" visible="false">
+      </JFXTabPane>
+      <JFXTextField fx:id="commandBar" labelFloat="true" prefHeight="48.0" promptText="Enter something..." AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="40.0">
          <font>
             <Font name="Noto Sans" size="18.0" />
          </font>
-      </Label>
-      <Label fx:id="labelCurrentMode" alignment="BASELINE_LEFT" layoutX="40.0" layoutY="60.0" text="To-do">
+      </JFXTextField>
+      <JFXButton fx:id="btnFeedback" alignment="CENTER" buttonType="RAISED" maxHeight="-Infinity" minHeight="68.0" style="-fx-background-color: white;" visible="false" AnchorPane.bottomAnchor="70.0" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="40.0" AnchorPane.topAnchor="750.0">
          <font>
-            <Font name="Noto Sans" size="36.0" />
+            <Font name="Noto Sans" size="13.0" />
          </font>
-      </Label>
-      <Group layoutX="40.0" layoutY="1000.0" AnchorPane.bottomAnchor="60.0" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="40.0">
-         <children>
-            <Label fx:id="labelUserAction" alignment="CENTER" prefWidth="85.0" text="Adding task:" textFill="#039be5">
-               <font>
-                  <Font name="Noto Sans Bold" size="13.0" />
-               </font>
-            </Label>
-            <Label fx:id="labelUserFeedback" alignment="CENTER" layoutX="90.0" text="task" textFill="#00121b">
-               <font>
-                  <Font name="Noto Sans Bold" size="13.0" />
-               </font>
-            </Label>
-            <Label fx:id="labelResult" alignment="CENTER" contentDisplay="CENTER" prefHeight="18.0" prefWidth="520.0" text="result" textAlignment="CENTER" textFill="#00121b">
-               <font>
-                  <Font name="Noto Sans Bold" size="13.0" />
-               </font>
-            </Label>
-         </children>
-      </Group>
+         <graphic>
+            <Group fx:id="groupFeedback">
+               <children>
+                  <TextFlow fx:id="textFlowFeedback">
+                     <children>
+                        <Text fx:id="textUserAction" strokeType="OUTSIDE" strokeWidth="0.0" text="User action:" />
+                        <Text fx:id="textUserParsedResult" strokeType="OUTSIDE" strokeWidth="0.0" text="Parsed feedback" />
+                     </children></TextFlow>
+               </children>
+            </Group>
+         </graphic>
+      </JFXButton>
    </children>
 </AnchorPane>

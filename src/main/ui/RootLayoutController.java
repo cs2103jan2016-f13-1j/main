@@ -5,8 +5,10 @@ import java.util.EmptyStackException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXListCell;
 import com.jfoenix.controls.JFXListView;
+import com.jfoenix.controls.JFXTextField;
 import com.sun.javafx.scene.control.skin.VirtualFlow;
 
 import javafx.application.Platform;
@@ -26,13 +28,16 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.SingleSelectionModel;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
-import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 import javafx.util.Callback;
 import main.data.Task;
 import main.logic.AddCommand;
@@ -42,11 +47,14 @@ import main.logic.EditCommand;
 import main.logic.Invoker;
 import main.logic.Receiver;
 import main.parser.CommandParser;
+import main.parser.CommandParser.InvalidLabelFormat;
 import main.parser.CommandParser.InvalidTaskIndexFormat;
+import main.ui.CustomListCellController;
 
 @SuppressWarnings("restriction")
 public class RootLayoutController {
     private static final String STRING_TODAY = "Today";
+    private static final String COMMAND_EDIT = "edit";
     private static final String COMMAND_DELETE = "delete";
     private static final String COMMAND_DELETE_SHORTHAND = "del";
     private static final String COMMAND_SEARCH = "search";
@@ -56,11 +64,12 @@ public class RootLayoutController {
     private static final String MESSAGE_LABEL_MODE_EDIT = "Edit mode";
     private static final String MESSAGE_LISTVIEW_TODO_EMPTY = "You have no task!";
     private static final String MESSAGE_LISTVIEW_COMPLETED_EMPTY = "You have no completed task!";
-    private static final String MESSAGE_FEEDBACK_ACTION_ADD = "Adding:";
-    private static final String MESSAGE_FEEDBACK_ACTION_DELETE = "Deleting:";
+    private static final String MESSAGE_FEEDBACK_ACTION_ADD = "Adding: ";
+    private static final String MESSAGE_FEEDBACK_ACTION_EDIT = "Editing: ";
+    private static final String MESSAGE_FEEDBACK_ACTION_DELETE = "Deleting: ";
     private static final String MESSAGE_FEEDBACK_TOTAL_TASK = "(%1$s tasks)";
     private static final String MESSAGE_FEEDBACK_ACTION_SEARCH = "Searching:";
-    private static final String MESSAGE_ERROR_RESULT_DELETE = "Task -%1$s- not found.";
+    private static final String MESSAGE_ERROR_NOT_FOUND = "Task -%1$s- not found.";
 
     // Ctrl+Tab hotkey
     private static final KeyCombination HOTKEY_CTRL_TAB = new KeyCodeCombination(KeyCode.TAB,
@@ -75,38 +84,41 @@ public class RootLayoutController {
     @FXML // fx:id="tabTodo"
     private Tab tabTodo; // Value injected by FXMLLoader
 
-    @FXML // fx:id="tabCompleted"
-    private Tab tabCompleted; // Value injected by FXMLLoader
-
     @FXML // fx:id="listViewTodo"
     private JFXListView<Task> listViewTodo; // Value injected by FXMLLoader
+
+    @FXML // fx:id="tabCompleted"
+    private Tab tabCompleted; // Value injected by FXMLLoader
 
     @FXML // fx:id="listViewCompleted"
     private JFXListView<Task> listViewCompleted; // Value injected by FXMLLoader
 
     @FXML // fx:id="commandBar"
-    private TextField commandBar; // Value injected by FXMLLoader
+    private JFXTextField commandBar; // Value injected by FXMLLoader
 
-    @FXML // fx:id="labelCurrentMode"
-    private Label labelCurrentMode; // Value injected by FXMLLoader
+    @FXML // fx:id="btnFeedback"
+    private JFXButton btnFeedback; // Value injected by FXMLLoader
 
-    @FXML // fx:id="labelDateToday"
-    private Label labelDateToday; // Value injected by FXMLLoader
+    @FXML // fx:id="groupFeedback"
+    private Group groupFeedback; // Value injected by FXMLLoader
+
+    @FXML // fx:id="textFlowFeedback"
+    private TextFlow textFlowFeedback; // Value injected by FXMLLoader
+
+    @FXML // fx:id="textUserAction"
+    private Text textUserAction; // Value injected by FXMLLoader
+
+    @FXML // fx:id="textUserParsedResult"
+    private Text textUserParsedResult; // Value injected by FXMLLoader
 
     @FXML // fx:id="labelUserAction"
     private Label labelUserAction; // Value injected by FXMLLoader
 
-    @FXML // fx:id="labelUserFeedback"
-    private Label labelUserFeedback; // Value injected by FXMLLoader
+    @FXML // fx:id="labelUserParsedInput"
+    private Label labelUserParsedInput; // Value injected by FXMLLoader
 
-    @FXML // fx:id="labelResult"
-    private Label labelResult; // Value injected by FXMLLoader
-
-    @FXML // fx:id="btnDel"
-    private Button btnDel; // Value injected by FXMLLoader
-
-    @FXML // fx:id="btnEdit"
-    private Button btnEdit; // Value injected by FXMLLoader
+    @FXML // fx:id="labelUserParsedInput"
+    private Label labelUserResult; // Value injected by FXMLLoader
 
     @FXML // fx:id="groupUndo"
     private Group groupUndo; // Value injected by FXMLLoader
@@ -134,7 +146,7 @@ public class RootLayoutController {
     private Receiver receiver;
     private CommandParser commandParser;
     private Command commandToBeExecuted;
-    private Task currentTask;
+    private Task taskToBeExecuted;
     private ArrayList<Integer> taskIndexesToBeDeleted;
 
     // private ArrayList<Task> allTasks;
@@ -172,36 +184,35 @@ public class RootLayoutController {
     private void initialize() {
         logger.log(Level.INFO, "Initializing the UI...");
         initLogicAndParser();
-        populateListView();
-        updateTabAndLabelWithTotalTasks();
+        initListView();
         initMouseListener();
         initKeyboardListener();
         initCommandBarListener();
-        initTabSelectionListener();
+        // initTabSelectionListener();
         logger.log(Level.INFO, "UI initialization complete");
     }
 
-    /**
-     * 
-     */
-    private void initTabSelectionListener() {
-        ObservableList<Tab> tabList = tabPane.getTabs();
-        for (int i = 0; i < tabList.size(); i++) {
-            tabList.get(i).setOnSelectionChanged(new EventHandler<Event>() {
-
-                @Override
-                public void handle(Event event) {
-                    if (getSelectedTabName().equals(STRING_TODAY)) {
-                        labelDateToday.setVisible(true);
-                    } else {
-                        labelDateToday.setVisible(false);
-                    }
-
-                    labelCurrentMode.setText(getSelectedTabName());
-                }
-            });
-        }
-    }
+    // /**
+    // *
+    // */
+    // private void initTabSelectionListener() {
+    // ObservableList<Tab> tabList = tabPane.getTabs();
+    // for (int i = 0; i < tabList.size(); i++) {
+    // tabList.get(i).setOnSelectionChanged(new EventHandler<Event>() {
+    //
+    // @Override
+    // public void handle(Event event) {
+    // if (getSelectedTabName().equals(STRING_TODAY)) {
+    // labelDateToday.setVisible(true);
+    // } else {
+    // labelDateToday.setVisible(false);
+    // }
+    //
+    // labelCurrentMode.setText(getSelectedTabName());
+    // }
+    // });
+    // }
+    // }
 
     /**
      * 
@@ -299,19 +310,12 @@ public class RootLayoutController {
     /**
      * 
      */
-    private void populateListView() {
+    private void initListView() {
         if (receiver == null) {
             receiver = Receiver.getInstance();
         }
 
         listViewTodo.setPlaceholder(new Label(MESSAGE_LISTVIEW_TODO_EMPTY));
-
-        // retrieve all task and add into an ObservableList
-        todoTasks = receiver.getTodoTasks();
-        assert todoTasks != null;
-
-        observableTodoTasks.setAll(todoTasks);
-        listViewTodo.setItems(observableTodoTasks);
         listViewTodo.setCellFactory(new Callback<ListView<Task>, ListCell<Task>>() {
 
             @Override
@@ -321,13 +325,6 @@ public class RootLayoutController {
         });
 
         listViewCompleted.setPlaceholder(new Label(MESSAGE_LISTVIEW_COMPLETED_EMPTY));
-
-        // retrieve all task and add into an ObservableList
-        completedTasks = receiver.getCompletedTasks();
-        assert completedTasks != null;
-
-        observableCompletedTasks.setAll(completedTasks);
-        listViewCompleted.setItems(observableCompletedTasks);
         listViewCompleted.setCellFactory(new Callback<ListView<Task>, ListCell<Task>>() {
 
             @Override
@@ -336,10 +333,32 @@ public class RootLayoutController {
             }
         });
 
-        updateTabAndLabelWithTotalTasks();
+        populateListView();
 
         logger.log(Level.INFO, "Populated Todo List: " + todoTasks.size() + " task");
         logger.log(Level.INFO, "Populated Completed List: " + completedTasks.size() + " task");
+    }
+
+    /**
+     * 
+     */
+    private void populateListView() {
+        // retrieve all task and add into an ObservableList
+        todoTasks = receiver.getTodoTasks();
+        assert todoTasks != null;
+
+        observableTodoTasks.setAll(todoTasks);
+        // listViewTodo.setDepthProperty(1);
+        listViewTodo.setItems(observableTodoTasks);
+
+        // retrieve all task and add into an ObservableList
+        completedTasks = receiver.getCompletedTasks();
+        assert completedTasks != null;
+
+        observableCompletedTasks.setAll(completedTasks);
+        listViewCompleted.setItems(observableCompletedTasks);
+
+        updateTabAndLabelWithTotalTasks();
     }
 
     private void toggleUndoRedo() {
@@ -349,12 +368,12 @@ public class RootLayoutController {
     }
 
     private void updateTabAndLabelWithTotalTasks() {
-        if(!isEditMode){
-            labelCurrentMode.setText(getSelectedTabName());
-        }
+        // if(!isEditMode){
+        // labelCurrentMode.setText(getSelectedTabName());
+        // }
         tabTodo.setText("To-do" + WHITESPACE + String.format(STRING_TAB_TASK_SIZE, todoTasks.size()));
         tabCompleted.setText("Completed" + WHITESPACE + String.format(STRING_TAB_TASK_SIZE, completedTasks.size()));
-        
+
     }
 
     /**
@@ -363,7 +382,7 @@ public class RootLayoutController {
     private void refreshListView() {
         observableTodoTasks.clear();
         populateListView();
-        toggleUndoRedo();
+        // toggleUndoRedo();
     }
 
     /**
@@ -447,30 +466,30 @@ public class RootLayoutController {
      * 
      */
     private void handleFOneKey() {
-        Platform.runLater(new Runnable() {
-
-            @Override
-            public void run() {
-                if (isEditMode) { //edit mode is true. exit edit mode
-                    isEditMode = false;
-                    labelCurrentMode.setText(getSelectedTabName());
-                    restoreCommandBarText();
-                    restoreCaretPosition();
-                    logger.log(Level.INFO, "Pressed F1 key: Exit EDIT MODE");
-
-                } else { //edit mode is false. enter edit mode
-                    isEditMode = true;
-                    saveCommandBarText();
-                    saveCaretPosition();
-                    showFeedback(false);
-                    labelCurrentMode.setText(MESSAGE_LABEL_MODE_EDIT);
-                    commandBar.setText(todoTasks.get(getSelectedTaskIndex()).toString());
-                    moveCaretPositionToLast();
-                    logger.log(Level.INFO, "Pressed F1 key: Enter EDIT MODE");
-                }
-
-            }
-        });
+        // Platform.runLater(new Runnable() {
+        //
+        // @Override
+        // public void run() {
+        // if (isEditMode) { //edit mode is true. exit edit mode
+        // isEditMode = false;
+        // labelCurrentMode.setText(getSelectedTabName());
+        // restoreCommandBarText();
+        // restoreCaretPosition();
+        // logger.log(Level.INFO, "Pressed F1 key: Exit EDIT MODE");
+        //
+        // } else { //edit mode is false. enter edit mode
+        // isEditMode = true;
+        // saveCommandBarText();
+        // saveCaretPosition();
+        // showFeedback(false);
+        // labelCurrentMode.setText(MESSAGE_LABEL_MODE_EDIT);
+        // commandBar.setText(todoTasks.get(getSelectedTaskIndex()).toString());
+        // moveCaretPositionToLast();
+        // logger.log(Level.INFO, "Pressed F1 key: Enter EDIT MODE");
+        // }
+        //
+        // }
+        // });
 
     }
 
@@ -487,15 +506,14 @@ public class RootLayoutController {
                     saveSelectedTaskIndex();
                     try {
                         invoker.undo();
+                        logger.log(Level.INFO, "Pressed F2 key: UNDO operation");
+                        refreshListView();
+                        restoreListViewPreviousSelection();
                     } catch (EmptyStackException emptyStackException) {
                         logger.log(Level.WARNING, emptyStackException.getMessage());
                     }
 
-                    logger.log(Level.INFO, "Pressed F2 key: UNDO operation");
-                    refreshListView();
-                    restoreListViewPreviousSelection();
-                    showResult(true, "Undo!");
-                    return;
+                    // showResult(true, "Undo!");
                 }
             }
         });
@@ -515,14 +533,14 @@ public class RootLayoutController {
                     saveSelectedTaskIndex();
                     try {
                         invoker.redo();
+                        logger.log(Level.INFO, "Pressed F3 key: REDO operation");
+                        refreshListView();
+                        restoreListViewPreviousSelection();
                     } catch (EmptyStackException emptyStackException) {
                         logger.log(Level.WARNING, emptyStackException.getMessage());
                     }
-                    logger.log(Level.INFO, "Pressed F3 key: REDO operation");
-                    refreshListView();
-                    restoreListViewPreviousSelection();
-                    showResult(true, "Redo!");
-                    return;
+
+                    // showResult(true, "Redo!");
                 }
             }
         });
@@ -544,26 +562,21 @@ public class RootLayoutController {
                 userInput = commandBar.getText();
                 assert userInput != null;
 
-                if (!isEditMode) {
-                    logger.log(Level.INFO, "User is typing: " + userInput);
+                logger.log(Level.INFO, "User is typing: " + userInput);
 
-                    if (userInput.length() <= 0) {
-                        // showFeedback(false);
-                        // showResult(false, EMPTY_STRING);
-                        // clearFeedback();
-                        // clearStoredUserInput();
-                        return;
-                    }
-
-                    extractUserInput();
-                    parseUserInput();
-                } else if (isEditMode) {
-                    logger.log(Level.INFO, "(EDIT MODE) User is typing: " + userInput);
-                    // invoker.parseCommand(userInput, Logic.ListType.ALL);
-                    // invoker.execute(new EditCommand(receiver, oldTask,
-                    // newTask));
-
+                if (userInput.length() <= 0) {
+                    btnFeedback.setVisible(false);
+                    // showFeedback(false);
+                    // showResult(false, EMPTY_STRING);
+                    // clearFeedback();
+                    clearStoredUserInput();
+                    return;
                 }
+
+                btnFeedback.setVisible(true);
+                extractUserInput();
+                parseUserInput();
+
             }
         });
 
@@ -577,58 +590,69 @@ public class RootLayoutController {
             invoker = new Invoker();
         }
 
-        Platform.runLater(new Runnable() {
+        if (commandBar.getText().trim().length() > 0) {
 
-            @Override
-            public void run() {
-                if (!isEditMode) {
-                    if (commandBar.getText().trim().length() > 0) {
+            // add operation
+            if (commandToBeExecuted == null) {
+                return;
+            }
 
-                        // add operation
-                        if (commandToBeExecuted instanceof AddCommand) {
-                            logger.log(Level.INFO, "(ADD TASK) Pressed ENTER key: " + commandBar.getText());
+            if (commandToBeExecuted instanceof AddCommand) {
+                logger.log(Level.INFO, "(ADD TASK) Pressed ENTER key: " + commandBar.getText());
 
-                            invoker.execute(commandToBeExecuted);
+                invoker.execute(commandToBeExecuted);
 
-                            refreshListView();
-                            updateTabAndLabelWithTotalTasks();
-                            listViewTodo.getSelectionModel().selectLast();
-                            listViewTodo.scrollTo(todoTasks.size() - 1);
-                            showResult(true, "Task added!");
+                Platform.runLater(new Runnable() {
 
-                        } else if (commandToBeExecuted instanceof DeleteCommand) {
-                            logger.log(Level.INFO, "(DELETE TASK) Pressed ENTER key: " + commandBar.getText());
-                            saveSelectedTaskIndex();
-                            invoker.execute(commandToBeExecuted);
-                            updateTabAndLabelWithTotalTasks();
-                            refreshListView();
-                            restoreListViewPreviousSelection();
-                            showResult(true, "Task deleted!");
-                        }
+                    @Override
+                    public void run() {
+                        refreshListView();
+                        listViewTodo.getSelectionModel().selectLast();
+                        listViewTodo.scrollTo(todoTasks.size() - 1);
+                        // showResult(true, "Task added!");
+                    }
+                });
+
+            } else if (commandToBeExecuted instanceof DeleteCommand) {
+                logger.log(Level.INFO, "(DELETE TASK) Pressed ENTER key: " + commandBar.getText());
+                saveSelectedTaskIndex();
+                invoker.execute(commandToBeExecuted);
+                Platform.runLater(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        updateTabAndLabelWithTotalTasks();
+                        refreshListView();
+                        restoreListViewPreviousSelection();
+                        // showResult(true, "Task deleted!");
 
                     }
+                });
+            } else if (commandToBeExecuted instanceof EditCommand) {
+                logger.log(Level.INFO, "(EDIT TASK) Pressed ENTER key: " + commandBar.getText());
+                saveSelectedTaskIndex();
+                invoker.execute(commandToBeExecuted);
+                Platform.runLater(new Runnable() {
 
-                    // clearFeedback();
-                    clearStoredUserInput();
-                    commandBar.clear();
-                    showUndo();
+                    @Override
+                    public void run() {
+                        updateTabAndLabelWithTotalTasks();
+                        refreshListView();
+                        restoreListViewPreviousSelection();
+                        // showResult(true, "Task deleted!");
 
-                } else if (isEditMode) {
-                    logger.log(Level.INFO, "(EDIT MODE) Pressed ENTER key: " + commandBar.getText());
-                    saveSelectedTaskIndex();
-
-                    currentTask = listViewTodo.getSelectionModel().getSelectedItem();
-                    Task editedTask = commandParser.parseAdd(userInput);
-                    commandToBeExecuted = new EditCommand(receiver, currentTask, editedTask);
-                    invoker.execute(commandToBeExecuted);
-                    refreshListView();
-                    restoreListViewPreviousSelection();
-                    commandBar.clear();
-                    showResult(true, "Task edited!");
-
-                }
+                    }
+                });
             }
-        });
+
+        }
+
+        // clearFeedback();
+        btnFeedback.setVisible(false);
+        clearStoredUserInput();
+        commandBar.clear();
+        // showUndo();
+
     }
 
     /**
@@ -663,8 +687,8 @@ public class RootLayoutController {
                 invoker.execute(commandToBeExecuted);
                 refreshListView();
                 restoreListViewPreviousSelection();
-                showUndo();
-                showResult(true, "Task deleted!");
+                // showUndo();
+                // showResult(true, "Task deleted!");
             }
         });
     }
@@ -699,7 +723,7 @@ public class RootLayoutController {
      */
     private void extractUserInput() {
         userInputArray = userInput.split(" ");
-        userCommand = userInputArray[0];
+        userCommand = userInputArray[0].toLowerCase();
         if (userInputArray.length > 1) {
             System.out.println(
                     userCommand + " " + userInput.indexOf(userCommand) + " " + userInput.lastIndexOf(userCommand));
@@ -711,14 +735,17 @@ public class RootLayoutController {
      * 
      */
     private void parseUserInput() {
+        commandToBeExecuted = null;
         switch (userCommand) {
-            case COMMAND_SEARCH :
-                parseSearch();
+            case COMMAND_EDIT :
+                parseEdit();
                 break;
-
             case COMMAND_DELETE :
             case COMMAND_DELETE_SHORTHAND :
                 parseDelete();
+                break;
+            case COMMAND_SEARCH :
+                parseSearch();
                 break;
 
             default :
@@ -731,16 +758,23 @@ public class RootLayoutController {
      */
     private void parseAdd() {
         logger.log(Level.INFO, "Sending user input to commandParser: " + userInput);
-        // inputFeedback = invoker.parseCommand(userInput, Logic.ListType.ALL);
-        currentTask = commandParser.parseAdd(userInput);
-        commandToBeExecuted = new AddCommand(receiver, currentTask);
-        inputFeedback = currentTask.toString();
+
+        try {
+            taskToBeExecuted = commandParser.parseAdd(userInput);
+        } catch (InvalidLabelFormat e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        commandToBeExecuted = new AddCommand(receiver, taskToBeExecuted);
+        inputFeedback = taskToBeExecuted.toString();
         showFeedback(true, MESSAGE_FEEDBACK_ACTION_ADD, inputFeedback);
     }
 
     private void parseDelete() {
         if (userInputArray.length <= 1) {
-            inputFeedback = EMPTY_STRING;
+            logger.log(Level.INFO, "DELETE command has no index. Interpreting as ADD command instead");
+            parseAdd(); // no index found. parse the input as an Add operation
+                        // instead
             return;
         }
 
@@ -749,7 +783,9 @@ public class RootLayoutController {
         try {
             taskIndexesToBeDeleted = commandParser.parseIndexes(userInput);
         } catch (InvalidTaskIndexFormat invalidTaskIndexFormat) {
-            showResult(true, String.format(MESSAGE_ERROR_RESULT_DELETE, userArguments));
+            logger.log(Level.INFO, "DELETE command index(es) invalid: " + userArguments);
+            showFeedback(true, MESSAGE_FEEDBACK_ACTION_DELETE, String.format(MESSAGE_ERROR_NOT_FOUND, userArguments));
+            clearStoredUserInput();
             return;
         }
 
@@ -764,7 +800,8 @@ public class RootLayoutController {
 
             // if selected index is out of bound
             if (taskIndex <= 0 || taskIndex > todoTasks.size()) {
-                showResult(true, String.format(MESSAGE_ERROR_RESULT_DELETE, taskIndex));
+                showFeedback(true, MESSAGE_FEEDBACK_ACTION_DELETE, String.format(MESSAGE_ERROR_NOT_FOUND, taskIndex));
+                clearStoredUserInput();
             } else {
                 inputFeedback = todoTasks.get(taskIndex - 1).toString();
                 showFeedback(true, MESSAGE_FEEDBACK_ACTION_DELETE, inputFeedback);
@@ -778,6 +815,56 @@ public class RootLayoutController {
 
         commandToBeExecuted = new DeleteCommand(receiver, getTasksToBeDeleted(taskIndexesToBeDeleted));
 
+    }
+
+    private void parseEdit() {
+        if (userInputArray.length <= 1) {
+            logger.log(Level.INFO, "EDIT command has no arguments. Interpreting as ADD command instead");
+            // no arguments found. parse the input as an Add operation instead
+            parseAdd();
+            return;
+        }
+
+        // parsing edit command with index
+        try {
+            int taskIndex = Integer.parseInt(userInputArray[1]) - 1;
+            logger.log(Level.INFO, "EDIT command index is " + taskIndex);
+            Task taskToBeEdited = todoTasks.get(taskIndex);
+            showFeedback(true, MESSAGE_FEEDBACK_ACTION_EDIT, taskToBeEdited.toString());
+            taskToBeExecuted = commandParser.parseEdit(taskToBeEdited, userInput);
+            commandToBeExecuted = new EditCommand(receiver, taskToBeEdited, taskToBeExecuted);
+            return;
+        } catch (NumberFormatException nfe) {
+            // parse the edit command based on the currently selected item
+            logger.log(Level.INFO, "EDIT command has no index. Editing current selected task");
+            parseEditForSelectedTask();
+        } catch (IndexOutOfBoundsException ioobe) {
+            logger.log(Level.INFO, "EDIT command index is out of range. index = " + userInputArray[1]
+                    + " ArrayList size = " + todoTasks.size());
+            showFeedback(true, MESSAGE_FEEDBACK_ACTION_EDIT, String.format(MESSAGE_ERROR_NOT_FOUND, userInputArray[1]));
+            clearStoredUserInput();
+            return;
+        } catch (InvalidLabelFormat e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    /**
+     * @param taskToBeEdited
+     * @throws InvalidLabelFormat
+     */
+    private void parseEditForSelectedTask() {
+        Task taskToBeEdited = todoTasks.get(getSelectedTaskIndex());
+        showFeedback(true, MESSAGE_FEEDBACK_ACTION_EDIT, taskToBeEdited.toString());
+        try {
+            taskToBeExecuted = commandParser.parseEdit(taskToBeEdited, userInput);
+            commandToBeExecuted = new EditCommand(receiver, taskToBeEdited, taskToBeExecuted);
+            return;
+        } catch (InvalidLabelFormat e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
     private ArrayList<Task> getTasksToBeDeleted(int taskIndex) {
@@ -823,20 +910,20 @@ public class RootLayoutController {
      */
     private void clearFeedback() {
         labelUserAction.setText(EMPTY_STRING);
-        labelUserFeedback.setText(EMPTY_STRING);
+        labelUserParsedInput.setText(EMPTY_STRING);
     }
 
     /**
      * 
      */
     private void showFeedback(boolean isVisible) {
-        if (isVisible) {
-            logger.log(Level.INFO, "Showing user feedback");
-            showResult(false, EMPTY_STRING);
-        }
-
-        labelUserAction.setVisible(isVisible);
-        labelUserFeedback.setVisible(isVisible);
+        // if (isVisible) {
+        // logger.log(Level.INFO, "Showing user feedback");
+        // showResult(false, EMPTY_STRING);
+        // }
+        //
+        // labelUserAction.setVisible(isVisible);
+        // labelUserParsedInput.setVisible(isVisible);
     }
 
     /**
@@ -845,13 +932,24 @@ public class RootLayoutController {
     private void showFeedback(boolean isVisible, String userAction, String userFeedback) {
         if (isVisible) {
             logger.log(Level.INFO, "Showing user feedback: " + userFeedback);
-            showResult(false, EMPTY_STRING);
+            // showResult(!isVisible, EMPTY_STRING);
         }
 
-        labelUserAction.setVisible(isVisible);
-        labelUserFeedback.setVisible(isVisible);
-        labelUserAction.setText(userAction);
-        labelUserFeedback.setText(userFeedback);
+        textUserAction.setText(userAction);
+        textUserAction.setFont(new Font(20));
+        textUserAction.setFill(Color.web("303F9F", 0.7));
+        textUserParsedResult.setText(userFeedback);
+        textUserParsedResult.setFont(new Font(20));
+        textUserParsedResult.setFill(Color.web("#00111a", 0.7));
+
+        // textFlowFeedback.getChildren().clear();
+        // textFlowFeedback.getChildren().addAll(textUserAction,
+        // textUserParsedResult);
+
+        // labelUserAction.setVisible(isVisible);
+        // labelUserParsedInput.setVisible(isVisible);
+        // labelUserAction.setText(userAction);
+        // labelUserParsedInput.setText(userFeedback);
     }
 
     /**
@@ -860,11 +958,11 @@ public class RootLayoutController {
     private void showResult(boolean isVisible, String resultString) {
         if (isVisible) {
             logger.log(Level.INFO, "Showing result: " + resultString);
-            showFeedback(false);
+            showFeedback(!isVisible);
         }
 
-        labelResult.setText(resultString);
-        labelResult.setVisible(isVisible);
+        labelUserResult.setText(resultString);
+        labelUserResult.setVisible(isVisible);
     }
 
     /**
