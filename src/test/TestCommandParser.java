@@ -167,7 +167,10 @@ public class TestCommandParser {
     	assertEquals("Do homework by this Fri 2am", task.toString());
     	
     	task = parser.parseAdd("Do homework by 2pm");
-    	assertEquals("Do homework by today 2pm", task.toString());    	
+    	assertEquals("Do homework by today 2pm", task.toString());  
+    	
+    	task = parser.parseAdd("Do homework by 10 mar 2pm");
+    	assertEquals("Do homework by 10 Mar 2pm", task.toString());
     }
     
     /**
@@ -518,12 +521,5 @@ public class TestCommandParser {
         	thrown = true;
         }
         assertEquals(true, thrown);        
-    }
-    
-    @Test
-    public void testrubbish() throws InvalidLabelFormat {
-    	 CommandParser parser = new CommandParser();
-    	 Task task = parser.parseAdd("do homework by 13am");
-    	 System.out.println(task.toString());
     }
 }
