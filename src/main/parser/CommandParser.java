@@ -538,12 +538,18 @@ public class CommandParser {
     
     
     public Task parseEdit(Task oldTask, String commandString) throws InvalidLabelFormat {
-        String label = null;
         int numberOfDate = 0;
-        Date startDate = null;
-        Date endDate = null;
         boolean hasStartDate = false;
     
+        String title = oldTask.getTitle();
+        String label = oldTask.getLabel();
+        Date newStart = oldTask.getStartDate();
+        Date newEnd = oldTask.getEndDate();
+        Date createdDate = oldTask.getCreatedDate();
+        
+        Date startDate = null;
+        Date endDate = null;
+        
     	//remove edit command
     	commandString = removeFirst(commandString);
     	
@@ -558,7 +564,6 @@ public class CommandParser {
         if (isLabelPresent) {
         	try {
         		label = extractLabel(commandString);
-        		oldTask.setLabel(label);
         		commandString = removeLabelFromTitle(commandString, label);
         	} catch (Exception e) {
         		throw new InvalidLabelFormat("Invalid label input detected.");
@@ -595,28 +600,28 @@ public class CommandParser {
             }
         }
         
-     
+        
         	if (startDate != null && endDate != null) {
-        		oldTask.setStartDate(startDate);
-        		oldTask.setEndDate(endDate);
+        		newStart = startDate;
+        		newEnd = endDate;
         	} else {
         		if (startDate != null) {
-                	oldTask.setStartDate(startDate);
-                	oldTask.setEndDate(null);
+        			newStart = startDate;
+        			newEnd = null;
                 }
                 
                 if (endDate != null) {
-                	oldTask.setStartDate(null);
-                	oldTask.setEndDate(endDate);
+                	newStart = null;
+                	newEnd = endDate;
                 }
         	}
-
+		
+        
         if (commandString.length() > 0) {
-        	oldTask.setTitle(commandString);
+        	title = commandString;
         }       
     	
-        Task newTask = new Task(oldTask.getTitle(), oldTask.getStartDate(), oldTask.getEndDate(), 
-        		oldTask.getLabel(), oldTask.getCreatedDate());
+        Task newTask = new Task(title, newStart, newEnd, label, createdDate);
     	return newTask;
     }
     
