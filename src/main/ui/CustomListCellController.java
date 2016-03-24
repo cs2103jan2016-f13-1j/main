@@ -99,7 +99,6 @@ public class CustomListCellController extends JFXListCell<Task> {
         System.out.println(task.getSimpleDate());
         if (task.getSimpleDate().isEmpty()) {
             verticalBox.getChildren().remove(this.labelTaskDate);
-            this.labelTaskDate.setVisible(false);
             return;
         }
         if(!verticalBox.getChildren().contains(this.labelTaskDate)){
