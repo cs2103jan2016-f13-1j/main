@@ -2,6 +2,8 @@ package main.ui;
 
 import java.util.ArrayList;
 import java.util.EmptyStackException;
+import java.util.Observable;
+import java.util.Observer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -49,10 +51,9 @@ import main.logic.Receiver;
 import main.parser.CommandParser;
 import main.parser.CommandParser.InvalidLabelFormat;
 import main.parser.CommandParser.InvalidTaskIndexFormat;
-import main.ui.CustomListCellController;
 
 @SuppressWarnings("restriction")
-public class RootLayoutController {
+public class RootLayoutController implements Observer {
     private static final String STRING_TODAY = "Today";
     private static final String COMMAND_EDIT = "edit";
     private static final String COMMAND_DELETE = "delete";
@@ -168,6 +169,54 @@ public class RootLayoutController {
 
     private static final Logger logger = Logger.getLogger(RootLayoutController.class.getName());
 
+    @Override
+    public void update(Observable o, Object arg) {
+        if (o instanceof Receiver) {
+            if (commandToBeExecuted instanceof AddCommand) {
+                logger.log(Level.INFO, "(ADD TASK) update() is called");
+                Platform.runLater(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        refreshListView();
+                        listViewTodo.getSelectionModel().selectLast();
+                        listViewTodo.scrollTo(todoTasks.size() - 1);
+                        // showResult(true, "Task added!");
+                    }
+                });
+
+            } else if (commandToBeExecuted instanceof DeleteCommand) {
+                logger.log(Level.INFO, "(DELETE TASK) update() is called");
+                saveSelectedTaskIndex();
+                Platform.runLater(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        refreshListView();
+                        restoreListViewPreviousSelection();
+                        // showResult(true, "Task deleted!");
+
+                    }
+                });
+            } else if (commandToBeExecuted instanceof EditCommand) {
+                logger.log(Level.INFO, "(EDIT TASK) update() is called");
+                saveSelectedTaskIndex();
+                Platform.runLater(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        updateTabAndLabelWithTotalTasks();
+                        refreshListView();
+                        restoreListViewPreviousSelection();
+                        // showResult(true, "Task deleted!");
+
+                    }
+                });
+            }
+        }
+
+    }
+
     public void requestFocusForCommandBar() {
         logger.log(Level.INFO, "Set focus to command bar");
         commandBar.requestFocus();
@@ -246,7 +295,7 @@ public class RootLayoutController {
             @Override
             public void handle(ActionEvent event) {
                 // do nothing when there is no user input
-                if (commandBar.getLength() == 0) {
+                if (commandBar.getText().isEmpty()) {
                     event.consume();
                     return;
                 }
@@ -300,11 +349,13 @@ public class RootLayoutController {
 
         if (receiver == null) {
             receiver = Receiver.getInstance();
+            receiver.addObserver(this);
         }
 
         if (commandParser == null) {
             commandParser = new CommandParser();
         }
+
     }
 
     /**
@@ -382,39 +433,8 @@ public class RootLayoutController {
     private void refreshListView() {
         observableTodoTasks.clear();
         populateListView();
+        updateTabAndLabelWithTotalTasks();
         // toggleUndoRedo();
-    }
-
-    /**
-     * 
-     */
-    private void handleArrowKeys(KeyEvent keyEvent) {
-        Platform.runLater(new Runnable() {
-
-            @Override
-            public void run() {
-                if (keyEvent.getCode() == KeyCode.UP) {
-                    listViewTodo.getSelectionModel().selectPrevious();
-                    adjustViewportForListView();
-                } else if (keyEvent.getCode() == KeyCode.DOWN) {
-                    listViewTodo.getSelectionModel().selectNext();
-                    adjustViewportForListView();
-                }
-
-                // Set current task title to command bar when in Edit mode
-                if (isEditMode) {
-                    commandBar.setText(todoTasks.get(getSelectedTaskIndex()).toString());
-                    moveCaretPositionToLast();
-                    logger.log(Level.INFO, "(EDIT MODE) Pressed " + keyEvent.getCode()
-                            + " arrow key: currently selected index is " + getSelectedTaskIndex());
-                    return;
-                }
-
-                logger.log(Level.INFO, "Pressed " + keyEvent.getCode() + " arrow key: currently selected index is "
-                        + getSelectedTaskIndex());
-            }
-        });
-
     }
 
     /**
@@ -507,8 +527,6 @@ public class RootLayoutController {
                     try {
                         invoker.undo();
                         logger.log(Level.INFO, "Pressed F2 key: UNDO operation");
-                        refreshListView();
-                        restoreListViewPreviousSelection();
                     } catch (EmptyStackException emptyStackException) {
                         logger.log(Level.WARNING, emptyStackException.getMessage());
                     }
@@ -534,8 +552,6 @@ public class RootLayoutController {
                     try {
                         invoker.redo();
                         logger.log(Level.INFO, "Pressed F3 key: REDO operation");
-                        refreshListView();
-                        restoreListViewPreviousSelection();
                     } catch (EmptyStackException emptyStackException) {
                         logger.log(Level.WARNING, emptyStackException.getMessage());
                     }
@@ -566,9 +582,6 @@ public class RootLayoutController {
 
                 if (userInput.length() <= 0) {
                     btnFeedback.setVisible(false);
-                    // showFeedback(false);
-                    // showResult(false, EMPTY_STRING);
-                    // clearFeedback();
                     clearStoredUserInput();
                     return;
                 }
@@ -577,6 +590,38 @@ public class RootLayoutController {
                 extractUserInput();
                 parseUserInput();
 
+            }
+        });
+
+    }
+
+    /**
+     * 
+     */
+    private void handleArrowKeys(KeyEvent keyEvent) {
+        Platform.runLater(new Runnable() {
+
+            @Override
+            public void run() {
+                if (keyEvent.getCode() == KeyCode.UP) {
+                    listViewTodo.getSelectionModel().selectPrevious();
+                    adjustViewportForListView();
+                } else if (keyEvent.getCode() == KeyCode.DOWN) {
+                    listViewTodo.getSelectionModel().selectNext();
+                    adjustViewportForListView();
+                }
+
+                // Set current task title to command bar when in Edit mode
+                if (isEditMode) {
+                    commandBar.setText(todoTasks.get(getSelectedTaskIndex()).toString());
+                    moveCaretPositionToLast();
+                    logger.log(Level.INFO, "(EDIT MODE) Pressed " + keyEvent.getCode()
+                            + " arrow key: currently selected index is " + getSelectedTaskIndex());
+                    return;
+                }
+
+                logger.log(Level.INFO, "Pressed " + keyEvent.getCode() + " arrow key: currently selected index is "
+                        + getSelectedTaskIndex());
             }
         });
 
@@ -599,74 +644,25 @@ public class RootLayoutController {
 
             if (commandToBeExecuted instanceof AddCommand) {
                 logger.log(Level.INFO, "(ADD TASK) Pressed ENTER key: " + commandBar.getText());
-
                 invoker.execute(commandToBeExecuted);
-
-                Platform.runLater(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        refreshListView();
-                        listViewTodo.getSelectionModel().selectLast();
-                        listViewTodo.scrollTo(todoTasks.size() - 1);
-                        // showResult(true, "Task added!");
-                    }
-                });
 
             } else if (commandToBeExecuted instanceof DeleteCommand) {
                 logger.log(Level.INFO, "(DELETE TASK) Pressed ENTER key: " + commandBar.getText());
                 saveSelectedTaskIndex();
                 invoker.execute(commandToBeExecuted);
-                Platform.runLater(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        updateTabAndLabelWithTotalTasks();
-                        refreshListView();
-                        restoreListViewPreviousSelection();
-                        // showResult(true, "Task deleted!");
-
-                    }
-                });
             } else if (commandToBeExecuted instanceof EditCommand) {
                 logger.log(Level.INFO, "(EDIT TASK) Pressed ENTER key: " + commandBar.getText());
                 saveSelectedTaskIndex();
                 invoker.execute(commandToBeExecuted);
-                Platform.runLater(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        updateTabAndLabelWithTotalTasks();
-                        refreshListView();
-                        restoreListViewPreviousSelection();
-                        // showResult(true, "Task deleted!");
-
-                    }
-                });
             }
 
         }
 
-        // clearFeedback();
         btnFeedback.setVisible(false);
         clearStoredUserInput();
         commandBar.clear();
         // showUndo();
 
-    }
-
-    /**
-     * 
-     */
-    private void showUndo() {
-        groupUndo.setVisible(true);
-    }
-
-    /**
-     * 
-     */
-    private void showRedo() {
-        groupRedo.setVisible(true);
     }
 
     /**
@@ -685,8 +681,8 @@ public class RootLayoutController {
                 saveSelectedTaskIndex();
                 commandToBeExecuted = new DeleteCommand(receiver, getTasksToBeDeleted(getSelectedTaskIndex()));
                 invoker.execute(commandToBeExecuted);
-                refreshListView();
-                restoreListViewPreviousSelection();
+                // refreshListView();
+                // restoreListViewPreviousSelection();
                 // showUndo();
                 // showResult(true, "Task deleted!");
             }
@@ -908,14 +904,6 @@ public class RootLayoutController {
     /**
      * 
      */
-    private void clearFeedback() {
-        labelUserAction.setText(EMPTY_STRING);
-        labelUserParsedInput.setText(EMPTY_STRING);
-    }
-
-    /**
-     * 
-     */
     private void showFeedback(boolean isVisible) {
         // if (isVisible) {
         // logger.log(Level.INFO, "Showing user feedback");
@@ -952,18 +940,31 @@ public class RootLayoutController {
         // labelUserParsedInput.setText(userFeedback);
     }
 
-    /**
-     * @param resultString
-     */
-    private void showResult(boolean isVisible, String resultString) {
-        if (isVisible) {
-            logger.log(Level.INFO, "Showing result: " + resultString);
-            showFeedback(!isVisible);
-        }
-
-        labelUserResult.setText(resultString);
-        labelUserResult.setVisible(isVisible);
-    }
+    // /**
+    // * @param resultString
+    // */
+    // private void showResult(boolean isVisible, String resultString) {
+    // if (isVisible) {
+    // logger.log(Level.INFO, "Showing result: " + resultString);
+    // showFeedback(!isVisible);
+    // }
+    //
+    // labelUserResult.setText(resultString);
+    // labelUserResult.setVisible(isVisible);
+    // }
+    // /**
+    // *
+    // */
+    // private void showUndo() {
+    // groupUndo.setVisible(true);
+    // }
+    //
+    // /**
+    // *
+    // */
+    // private void showRedo() {
+    // groupRedo.setVisible(true);
+    // }
 
     /**
      * 
