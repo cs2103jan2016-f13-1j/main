@@ -8,7 +8,6 @@ package test;
 import static org.junit.Assert.*;
 
 import java.io.File;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 
 import org.junit.Before;
@@ -21,19 +20,19 @@ public class TestStorage {
     
     Storage storage;
     
+    /*
+     * Tests settings.txt exists but saved path is corrupted
+     */
     @Test
     public void readUserSettingsTest() {
-        storage.setFileLocation("?", new ArrayList<Task>());
-        storage = null;
-        storage = Storage.getInstance();
-        storage.setFileLocation("storage.txt", new ArrayList<Task>());
-        storage = null;
-        storage = Storage.getInstance();
         storage.setFileLocation("<><>///\\:?||", new ArrayList<Task>());
-        storage = null;
-        storage = Storage.getInstance();
+        assertNotNull(storage.readTasks());
     }
     
+    /*
+     * Test if cloning is prevented.
+     * Singleton classes do not support cloning.
+     */
     @Test
     public void storageCloneTest() {
         try {
@@ -42,42 +41,41 @@ public class TestStorage {
         }
     }
     
+    /*
+     * This is a boundary case for writing task.
+     * Add zero task.
+     * Add one task.
+     */
     @Test
-    public void readTest() {
-        assertNotNull(storage.readTasks());
-        storage.writeTasks(null);
-        assertNotNull(storage.readTasks());
-        storage.setFileLocation("storage.txt", new ArrayList<Task>());
+    public void readWriteTest() {
         ArrayList<Task> tasks = new ArrayList<Task>();
         storage.writeTasks(tasks);
         assertNotNull(storage.readTasks());
+        
         tasks.add(new Task("test"));
         storage.writeTasks(tasks);
         assertNotNull(storage.readTasks());
-        
-        try(PrintWriter out = new PrintWriter("storage.txt")){
-            out.print("!");
-            out.close();
-        } catch (Exception e) {
-        }
-        assertNotNull(storage.readTasks());
-        storage.setFileLocation("<><>///\\:?||", new ArrayList<Task>());
-        storage = null;
-        storage = Storage.getInstance();
-        
-        File file = new File("settings.txt");
-        file.delete();
-        storage = null;
-        storage = Storage.getInstance();
+        storage.writeTasks(new ArrayList<Task>());
     }
     
+    /*
+     * Tests if there is a file path even if settings.txt 
+     * is deleted in @Before.
+     */
     @Test
-    public void writeTest() {
+    public void readFilePath() {
         assertNotNull(storage.getFilePath());
     }
     
+    /*
+     * Tests if settings.txt does not exist
+     */
     @Before
     public void initialize() {
+        File file = new File("settings.txt");
+        if (file.exists()) {
+            file.delete();
+        }
         storage = Storage.getInstance();
     }
 

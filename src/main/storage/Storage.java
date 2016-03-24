@@ -15,6 +15,7 @@ package main.storage;
  */
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.OutputStreamWriter;
@@ -93,13 +94,13 @@ public class Storage {
             reader.close();
             
             if (tasks.isEmpty()) {
-                logger.log(Level.WARNING,"ERROR READING FILE: " + fileName);
-                throw new Exception("ERROR READING FILE");
+                logger.log(Level.INFO, fileName + " is empty.");
+                throw new Exception("Empty file");
             }
             logger.log(Level.INFO,"Successfully read tasks from: " + fileName);
         } catch (Exception e) {
             tasks = new ArrayList<Task>();
-            logger.log(Level.INFO,"Application clean start.");
+            logger.log(Level.INFO,"Return empty list.");
         }
         assert(tasks != null);
         return tasks;
@@ -160,7 +161,7 @@ public class Storage {
             out.close();
             logger.log(Level.INFO,"Updated user settings with: " + path);
         } catch (Exception e) {
-        	logger.log(Level.WARNING,"Failed to write to: " + path);
+        	logger.log(Level.WARNING,"Failed to write " + path + " to settings.txt.");
         }
 	    assert((new File(USER_SETTINGS)).exists());
 	    writeTasks(tasks);
@@ -204,10 +205,11 @@ public class Storage {
                 logger.log(Level.INFO,"Invalid file location: " + path);
                 throw new InvalidPathException(path, "Invalid file location");
             }
-        } catch (Exception e) {
+        } catch (FileNotFoundException e) {
             fileName = DEFAULT_FILE_NAME;
+            logger.log(Level.INFO,USER_SETTINGS + " not found.");
             setFileLocation(getDefaultFilePath(), new ArrayList<Task>());
-            logger.log(Level.INFO,"Corrupted file location from settings.txt. Set as default location.");
+            readUserSettings();
         }
 	    assert(fileName != null);
 	}

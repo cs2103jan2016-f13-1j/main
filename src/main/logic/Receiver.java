@@ -33,7 +33,7 @@ public class Receiver extends Observable {
         
         allTasks = storage.readTasks();
         assert(allTasks != null);
-        categorizeTasks();
+        categorizeTasks(allTasks);
     }
     
     /**
@@ -185,7 +185,35 @@ public class Receiver extends Observable {
         }
         initiateSave();
     }
-
+    
+    public void search(String searchTerm) {
+        logger.log(Level.INFO, "search command for " + searchTerm);
+        String[] searchList = searchTerm.split(" ");
+        ArrayList<Task> searchResults = new ArrayList<Task>();
+        boolean found = true;
+        for (Task task : allTasks) {
+            for (String term : searchList) {
+                if (!task.getTitle().contains(term)) {
+                    found = false;
+                }
+            }
+            if (found) {
+                searchResults.add(task);
+            }
+        }
+        categorizeTasks(searchResults);
+        sortTasks();
+        setChanged();
+        notifyObservers();
+    }
+    
+    public void clearSearch() {
+        categorizeTasks(allTasks);
+        sortTasks();
+        setChanged();
+        notifyObservers();
+    }
+    
     /**
      * Use to retrieve all tasks
      * 
@@ -235,18 +263,18 @@ public class Receiver extends Observable {
     }
     
     private void initiateSave() {
-        categorizeTasks();
+        categorizeTasks(allTasks);
         sortTasks();
         saveToStorage();
         setChanged();
         notifyObservers();
     }
     
-    private void categorizeTasks() {
+    private void categorizeTasks(ArrayList<Task> tasks) {
         todoTasks = new ArrayList<Task>();
         completedTasks = new ArrayList<Task>();
         
-        for (Task task : allTasks) {
+        for (Task task : tasks) {
             if (task.isDone()) {
                 completedTasks.add(task);
             } else {
@@ -256,8 +284,8 @@ public class Receiver extends Observable {
     }
     
     private void sortTasks() {
-        Collections.sort(todoTasks, new lastAddedFirst());
-        Collections.sort(completedTasks, new LastCompletedFirst());
+        Collections.sort(todoTasks, new TodoTaskComparator());
+        Collections.sort(completedTasks, new CompletedTaskComparator());
         logger.log(Level.INFO,"Tasks sorted");
     }
     

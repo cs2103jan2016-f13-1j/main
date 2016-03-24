@@ -55,6 +55,7 @@ import main.logic.DoneCommand;
 import main.logic.EditCommand;
 import main.logic.Invoker;
 import main.logic.Receiver;
+import main.logic.SearchCommand;
 import main.logic.SetFileLocationCommand;
 import main.logic.UndoneCommand;
 import main.parser.CommandParser;
@@ -69,6 +70,10 @@ public class TestLogic implements Observer {
 	ArrayList<Task> todo = new ArrayList<Task>();
 	ArrayList<Task> completed = new ArrayList<Task>();
 	
+	/*
+     * Tests if getter methods are assigned 
+     * when constructor is called.
+     */
 	@Test
 	public void getMethodsTest() {
 	    assertNotNull(receiver.getAllTasks());
@@ -76,6 +81,10 @@ public class TestLogic implements Observer {
 	    assertNotNull(receiver.getCompletedTasks());
 	}
 	
+	/*
+     * Test if cloning is prevented.
+     * Singleton classes do not support cloning.
+     */
 	@Test
     public void receiverCloneTest() {
         try {
@@ -84,6 +93,11 @@ public class TestLogic implements Observer {
         }
     }
 	
+	/*
+	 * This is a boundary case for the undo stack
+	 * Undo until stack is empty.
+	 * Undo when stack is empty.
+	 */
 	@Test
 	public void emptyUndoStackTest() {
 	    try {
@@ -95,6 +109,11 @@ public class TestLogic implements Observer {
         }
 	}
 	
+	/*
+     * This is a boundary case for the redo stack
+     * Redo until stack is empty.
+     * Redo when stack is empty.
+     */
 	@Test
     public void emptyRedoStackTest() {
 	    try {
@@ -106,80 +125,96 @@ public class TestLogic implements Observer {
         }
     }
 	
+	/*
+	 * Tests the basic commands with one task
+	 */
 	@Test
-	public void allFunctionsTest() {
-	    Task task = new Task("example");
-        Task task1 = new Task("new task");
-        ArrayList<Task> tasks = new ArrayList<Task>();
-        tasks.add(task);
-        tasks.add(task1);
+	public void singleTaskTest() {
+	    Task exampleTask = new Task("example");
+        Task editedTask = new Task("edited task");
         
-        Command add = new AddCommand(receiver, task);
-        Command add1 = new AddCommand(receiver, task1);
-        Command edit = new EditCommand(receiver, task, task1);
-        Command delete = new DeleteCommand(receiver, task1);
-        Command deleteMultiple = new DeleteCommand(receiver, tasks);
-        Command done = new DoneCommand(receiver, task1);
-        Command doneMultiple = new DoneCommand(receiver, tasks);
-        Command undone = new UndoneCommand(receiver, task1);
-        Command undoneMultiple = new UndoneCommand(receiver, tasks);
-
-        invoker.execute(add);
+        invoker.execute(new AddCommand(receiver, exampleTask));
         invoker.undo();
         invoker.redo();
-        invoker.execute(edit);
+        invoker.execute(new EditCommand(receiver, exampleTask, editedTask));
         invoker.undo();
         invoker.redo();
-        invoker.execute(done);
+        invoker.execute(new DoneCommand(receiver, editedTask));
         invoker.undo();
         invoker.redo();
-        invoker.execute(undone);
+        invoker.execute(new UndoneCommand(receiver, editedTask));
         invoker.undo();
         invoker.redo();
-        invoker.execute(delete);
+        invoker.execute(new DeleteCommand(receiver, editedTask));
+        invoker.undo();
+        invoker.redo();    
+	}
+	
+	/*
+     * Tests the basic commands with multiple tasks
+     */
+	@Test
+	public void multipleTasksTest() {
+	    Task exampleTask = new Task("example");
+        Task editedTask = new Task("edited task");
+        ArrayList<Task> tasks = new ArrayList<Task>();
+        tasks.add(exampleTask);
+        tasks.add(editedTask);
+        
+        invoker.execute(new AddCommand(receiver, exampleTask));
+        invoker.execute(new AddCommand(receiver, editedTask));
+        invoker.execute(new DoneCommand(receiver, tasks));
         invoker.undo();
         invoker.redo();
-        invoker.execute(add);
-        invoker.execute(add1);
-        invoker.execute(doneMultiple);
+        invoker.execute(new UndoneCommand(receiver, tasks));
         invoker.undo();
         invoker.redo();
-        invoker.execute(undoneMultiple);
-        invoker.undo();
-        invoker.redo();
-        invoker.execute(deleteMultiple);
+        invoker.execute(new DeleteCommand(receiver, tasks));
         invoker.undo();
         invoker.redo();
 	}
 	
+	/*
+	 * Tests the search method.
+	 * Search with one term.
+	 * Search with multiple term.
+	 */
+	@Test
+	public void searchTest() {
+	    invoker.execute(new AddCommand(receiver, new Task("task with long title, this title so long")));
+        invoker.execute(new AddCommand(receiver, new Task("task with short title")));
+        invoker.execute(new SearchCommand(receiver, "title"));
+        invoker.execute(new SearchCommand(receiver, "title long"));
+        invoker.undo();
+	}
+	
+	/*
+	 * Adds a mixture of all possible cases to test comparator
+	 */
 	@Test
 	public void comparatorTest() {
-	    invoker.execute(new AddCommand(receiver, parser.parseAdd("a")));
-	    invoker.execute(new DoneCommand(receiver, todo));
-	    invoker.execute(new AddCommand(receiver, parser.parseAdd("b")));
-	    invoker.execute(new AddCommand(receiver, parser.parseAdd("c by 1")));
-	    invoker.execute(new AddCommand(receiver, parser.parseAdd("d")));
-	    invoker.execute(new AddCommand(receiver, parser.parseAdd("e by 1")));
-	    invoker.execute(new AddCommand(receiver, parser.parseAdd("f by 5")));
-	    invoker.execute(new AddCommand(receiver, parser.parseAdd("g from 2-3")));
-	    invoker.execute(new AddCommand(receiver, parser.parseAdd("h from 2-3")));
-	    invoker.execute(new AddCommand(receiver, parser.parseAdd("i from 9pm-10pm")));
-        invoker.execute(new AddCommand(receiver, parser.parseAdd("j from 9pm-11pm")));
-	    invoker.execute(new AddCommand(receiver, parser.parseAdd("k from 1-3")));
-	    //invoker.execute(new AddCommand(receiver, parser.parseAdd("a from 1-12")));
-        invoker.execute(new AddCommand(receiver, parser.parseAdd("l from 7pm-12am")));
-	    invoker.execute(new AddCommand(receiver, parser.parseAdd("m at 4")));
-	    invoker.execute(new AddCommand(receiver, parser.parseAdd("n at 4")));
-	    invoker.execute(new AddCommand(receiver, parser.parseAdd("o at 3")));
-	    invoker.execute(new DoneCommand(receiver, todo));
-	    while (!todo.isEmpty()) {
-	        invoker.execute(new DeleteCommand(receiver, todo.get(0)));
+	    try {
+	        invoker.execute(new AddCommand(receiver, parser.parseAdd("floating")));
+    	    invoker.execute(new DoneCommand(receiver, todo));
+    	    invoker.execute(new AddCommand(receiver, parser.parseAdd("start date at 4")));
+    	    invoker.execute(new AddCommand(receiver, parser.parseAdd("end date by 1")));
+    	    invoker.execute(new AddCommand(receiver, parser.parseAdd("floating")));
+    	    invoker.execute(new AddCommand(receiver, parser.parseAdd("range date from 8pm to 9pm")));
+    	    invoker.execute(new AddCommand(receiver, parser.parseAdd("range date from 11am to 10pm")));
+    	    invoker.execute(new DoneCommand(receiver, todo));
+    	    while (!todo.isEmpty()) {
+    	        invoker.execute(new DeleteCommand(receiver, todo.get(0)));
+    	    }
+    	    while (!completed.isEmpty()) {
+                invoker.execute(new DeleteCommand(receiver, completed.get(0)));
+            }
+	    } catch (Exception e) {
 	    }
-	    while (!completed.isEmpty()) {
-            invoker.execute(new DeleteCommand(receiver, completed.get(0)));
-        }
 	}
 	
+	/*
+	 * Tests set location method with undo and redo
+	 */
 	@Test
 	public void setFilePathTest() {
 	    Command setLocation = new SetFileLocationCommand(receiver, "test.txt");
@@ -193,14 +228,6 @@ public class TestLogic implements Observer {
 	    } catch (Exception e) {
 	        System.out.println("Failed to delete test.txt file");
 	    }
-	    try {
-            File file = new File("storage.txt");
-            file.delete();
-        } catch (Exception e) {
-            System.out.println("Failed to delete storage.txt file");
-        }
-	    Command setCorrupted = new SetFileLocationCommand(receiver, "?");
-        invoker.execute(setCorrupted);
 	}
 	
 	@Before
@@ -210,7 +237,10 @@ public class TestLogic implements Observer {
         receiver = Receiver.getInstance();
         receiver.addObserver(this);
 	}
-
+	
+	/*
+	 * Tests observer pattern update method
+	 */
     @Override
     public void update(Observable o, Object arg) {
         if (o == receiver) {
