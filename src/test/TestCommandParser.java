@@ -81,7 +81,7 @@ public class TestCommandParser {
      * 
      * @throws InvalidLabelFormat
      */
-    @Test
+    @Ignore @Test
     public void testHasTime() throws InvalidLabelFormat {
     	CommandParser parser = new CommandParser();
     	Task task;
@@ -256,7 +256,7 @@ public class TestCommandParser {
      * 
      * @throws InvalidLabelFormat 
      */
-    @Ignore
+    @Ignore @Test
     public void testTaskToString() throws InvalidLabelFormat {
     	CommandParser parser = new CommandParser();
 
@@ -267,6 +267,7 @@ public class TestCommandParser {
     	assertEquals("Cook dinner #home", task.toString());
 
     	task = parser.parseAdd("Cook dinner 14/3 at 7pm #home");
+    	System.out.println(task.toString());
     	assertEquals("Cook dinner from 14 Mar 7pm #home",task.toString());
 
     	task = parser.parseAdd("Cook dinner on 15/3 7pm");
@@ -367,7 +368,7 @@ public class TestCommandParser {
     public void testEdit() throws InvalidLabelFormat {
     	CommandParser parser = new CommandParser();
     	Task task, task2;
-    	
+    	/*
     	task = parser.parseAdd("Buy milk");
     	task2 = parser.parseEdit(task, "edit Buy chocolate");
     	assertEquals("Buy chocolate", task2.toString());
@@ -415,6 +416,23 @@ public class TestCommandParser {
     	task = parser.parseAdd("Buy milk from 6 - 7pm");
     	task2 = parser.parseEdit(task, "edit from 9 to 10pm");
     	assertEquals("Buy milk from today 9pm to 10pm", task2.toString());
+    	
+    	task = parser.parseAdd("Buy milk by 7pm");
+    	task2 = parser.parseEdit(task, "edit by 20 april 8pm");
+    	assertEquals("Buy milk by 20 Apr 7pm", task2.toString());
+    	*/
+    	
+    	task = parser.parseAdd("Buy milk by 7pm");
+    	task2 = parser.parseEdit(task, "edit 20 april");
+    	System.out.println(task.toString());
+    	System.out.println(task2.toString());
+    	System.out.println();
+    	
+    	task = parser.parseAdd("Buy milk by 10 april 7pm");
+    	task2 = parser.parseEdit(task, "edit from 4pm to 10pm");
+    	System.out.println(task.toString());
+    	System.out.println(task2.toString());
+    	System.out.println();
     }
     
     /**
