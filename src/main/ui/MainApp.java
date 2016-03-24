@@ -25,25 +25,9 @@ public class MainApp extends Application {
      */
     public void initRootLayout() {
         try {
-//            // Load root layout from fxml file.
-//            FXMLLoader loader = new FXMLLoader();
-//            loader.setLocation(MainApp.class.getResource("/main/resources/layouts/RootLayout.fxml"));
-//
-//            rootLayout = (AnchorPane) loader.load();
-//
-//            // Show the scene containing the root layout.
-//            Scene scene = new Scene(rootLayout);
-//            primaryStage.setScene(scene);
-//            primaryStage.show();
-//            
-//            //get a handle on the UI controller and set focus to the text field
-//            RootLayoutController rootLayoutController = (RootLayoutController) loader.getController();
-//            rootLayoutController.requestFocusForCommandBar();
-//            rootLayoutController.selectFirstItemFromListView();
-
             // Load root layout from fxml file.
             FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(MainApp.class.getResource("/main/resources/layouts/BetterRootLayout.fxml"));
+            loader.setLocation(MainApp.class.getResource("/main/resources/layouts/RootLayout.fxml"));
 
             rootLayout = (AnchorPane) loader.load();
 
@@ -53,7 +37,7 @@ public class MainApp extends Application {
             primaryStage.show();
             
             //get a handle on the UI controller and set focus to the text field
-            BetterRootLayoutController rootLayoutController = (BetterRootLayoutController) loader.getController();
+            RootLayoutController rootLayoutController = (RootLayoutController) loader.getController();
             rootLayoutController.requestFocusForCommandBar();
             rootLayoutController.selectFirstItemFromListView();
 
