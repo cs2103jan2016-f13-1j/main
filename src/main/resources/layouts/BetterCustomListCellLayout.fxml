@@ -28,7 +28,7 @@
             </Label>
          </children>
       </StackPane>
-      <VBox alignment="CENTER_LEFT">
+      <VBox fx:id="verticalBox">
          <children>
             <Label fx:id="labelTaskTitle" text="Appointment with boss tyson">
                <font>

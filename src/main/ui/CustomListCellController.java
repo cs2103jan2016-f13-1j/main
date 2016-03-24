@@ -31,6 +31,9 @@ public class CustomListCellController extends JFXListCell<Task> {
 
     @FXML // fx:id="labelTaskTitle"
     private Label labelTaskTitle; // Value injected by FXMLLoader
+    
+    @FXML // fx:id="labelTaskDate"
+    private Label labelTaskDate; // Value injected by FXMLLoader
 
     @FXML // fx:id="labelTaskTag"
     private Label labelTaskTag; // Value injected by FXMLLoader
@@ -73,67 +76,73 @@ public class CustomListCellController extends JFXListCell<Task> {
     }
 
     public void setLabelTaskTime(Task task) {
-        if (task.getStartDate() == null && task.getStartDate() == null) {
-            this.labelTaskTime.setText("");
-            return;
-        }
-
-        if (task.getStartDate() == null) {
-            String hours = task.getEndDate().getHours() + "";
-            String minutes = task.getEndDate().getMinutes() + "";
-            if (hours.length() == 1) {
-                hours = "0" + hours;
-            }
-            if (minutes.length() == 1) {
-                minutes = "0" + minutes;
-            }
-
-            this.labelTaskTime.setText(hours + ":" + minutes);
-            return;
-        }
-        if (task.getEndDate() == null) {
-            String hours = task.getStartDate().getHours() + "";
-            String minutes = task.getStartDate().getMinutes() + "";
-            if (hours.length() == 1) {
-                hours = "0" + hours;
-            }
-            if (minutes.length() == 1) {
-                minutes = "0" + minutes;
-            }
-
-            this.labelTaskTime.setText(hours + ":" + minutes);
-
-            return;
-        }
-
-        String startHours = task.getStartDate().getHours() + "";
-        String startMinutes = task.getStartDate().getMinutes() + "";
-
-        String endHours = task.getEndDate().getHours() + "";
-        String endMinutes = task.getEndDate().getMinutes() + "";
-
-        if (startHours.length() == 1) {
-            startHours = "0" + startHours;
-        }
-        if (startMinutes.length() == 1) {
-            startMinutes = "0" + startMinutes;
-        }
-
-        if (endHours.length() == 1) {
-            endHours = "0" + endHours;
-        }
-        if (endMinutes.length() == 1) {
-            endMinutes = "0" + endMinutes;
-        }
-
-        this.labelTaskTime.setText(startHours + ":" + startMinutes + " - " + endHours + ":" + endMinutes);
+//        if (task.getStartDate() == null && task.getStartDate() == null) {
+//            this.labelTaskTime.setText("");
+//            return;
+//        }
+//
+//        if (task.getStartDate() == null) {
+//            String hours = task.getEndDate().getHours() + "";
+//            String minutes = task.getEndDate().getMinutes() + "";
+//            if (hours.length() == 1) {
+//                hours = "0" + hours;
+//            }
+//            if (minutes.length() == 1) {
+//                minutes = "0" + minutes;
+//            }
+//
+//            this.labelTaskTime.setText(hours + ":" + minutes);
+//            return;
+//        }
+//        if (task.getEndDate() == null) {
+//            String hours = task.getStartDate().getHours() + "";
+//            String minutes = task.getStartDate().getMinutes() + "";
+//            if (hours.length() == 1) {
+//                hours = "0" + hours;
+//            }
+//            if (minutes.length() == 1) {
+//                minutes = "0" + minutes;
+//            }
+//
+//            this.labelTaskTime.setText(hours + ":" + minutes);
+//
+//            return;
+//        }
+//
+//        String startHours = task.getStartDate().getHours() + "";
+//        String startMinutes = task.getStartDate().getMinutes() + "";
+//
+//        String endHours = task.getEndDate().getHours() + "";
+//        String endMinutes = task.getEndDate().getMinutes() + "";
+//
+//        if (startHours.length() == 1) {
+//            startHours = "0" + startHours;
+//        }
+//        if (startMinutes.length() == 1) {
+//            startMinutes = "0" + startMinutes;
+//        }
+//
+//        if (endHours.length() == 1) {
+//            endHours = "0" + endHours;
+//        }
+//        if (endMinutes.length() == 1) {
+//            endMinutes = "0" + endMinutes;
+//        }
+//
+//        this.labelTaskTime.setText(startHours + ":" + startMinutes + " - " + endHours + ":" + endMinutes);
         // this.labelTaskTime.setText(task.getStartDate().getHours()+":"+task.getStartDate().getMinutes()
         // + " - " +
         // task.getEndDate().getHours()+":"+task.getEndDate().getMinutes());
+        this.labelTaskTime.setText(task.getSimpleTime());
     }
 
     public void setLabelTaskTitle(Task task) {
         this.labelTaskTitle.setText(task.getTitle());
+    }
+    
+    public void setLabelTaskDate(Task task){
+        System.out.println(task.getSimpleDate());
+        this.labelTaskDate.setText(task.getSimpleDate());
     }
 
     public void setLabelTaskTag(Task task) {

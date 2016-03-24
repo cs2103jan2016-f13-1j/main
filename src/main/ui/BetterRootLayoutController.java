@@ -47,11 +47,13 @@ import main.logic.EditCommand;
 import main.logic.Invoker;
 import main.logic.Receiver;
 import main.parser.CommandParser;
+import main.parser.CommandParser.InvalidLabelFormat;
 import main.parser.CommandParser.InvalidTaskIndexFormat;
 
 @SuppressWarnings("restriction")
 public class BetterRootLayoutController {
     private static final String STRING_TODAY = "Today";
+    private static final String COMMAND_EDIT = "edit";
     private static final String COMMAND_DELETE = "delete";
     private static final String COMMAND_DELETE_SHORTHAND = "del";
     private static final String COMMAND_SEARCH = "search";
@@ -62,10 +64,11 @@ public class BetterRootLayoutController {
     private static final String MESSAGE_LISTVIEW_TODO_EMPTY = "You have no task!";
     private static final String MESSAGE_LISTVIEW_COMPLETED_EMPTY = "You have no completed task!";
     private static final String MESSAGE_FEEDBACK_ACTION_ADD = "Adding: ";
+    private static final String MESSAGE_FEEDBACK_ACTION_EDIT = "Editing: ";
     private static final String MESSAGE_FEEDBACK_ACTION_DELETE = "Deleting: ";
     private static final String MESSAGE_FEEDBACK_TOTAL_TASK = "(%1$s tasks)";
     private static final String MESSAGE_FEEDBACK_ACTION_SEARCH = "Searching:";
-    private static final String MESSAGE_ERROR_RESULT_DELETE = "Task -%1$s- not found.";
+    private static final String MESSAGE_ERROR_NOT_FOUND = "Task -%1$s- not found.";
 
     // Ctrl+Tab hotkey
     private static final KeyCombination HOTKEY_CTRL_TAB = new KeyCodeCombination(KeyCode.TAB,
@@ -142,7 +145,7 @@ public class BetterRootLayoutController {
     private Receiver receiver;
     private CommandParser commandParser;
     private Command commandToBeExecuted;
-    private Task currentTask;
+    private Task taskToBeExecuted;
     private ArrayList<Integer> taskIndexesToBeDeleted;
 
     // private ArrayList<Task> allTasks;
@@ -329,7 +332,6 @@ public class BetterRootLayoutController {
             }
         });
 
-        
         populateListView();
 
         logger.log(Level.INFO, "Populated Todo List: " + todoTasks.size() + " task");
@@ -347,7 +349,6 @@ public class BetterRootLayoutController {
         observableTodoTasks.setAll(todoTasks);
         // listViewTodo.setDepthProperty(1);
         listViewTodo.setItems(observableTodoTasks);
-       
 
         // retrieve all task and add into an ObservableList
         completedTasks = receiver.getCompletedTasks();
@@ -355,7 +356,7 @@ public class BetterRootLayoutController {
 
         observableCompletedTasks.setAll(completedTasks);
         listViewCompleted.setItems(observableCompletedTasks);
-        
+
         updateTabAndLabelWithTotalTasks();
     }
 
@@ -504,15 +505,14 @@ public class BetterRootLayoutController {
                     saveSelectedTaskIndex();
                     try {
                         invoker.undo();
+                        logger.log(Level.INFO, "Pressed F2 key: UNDO operation");
+                        refreshListView();
+                        restoreListViewPreviousSelection();
                     } catch (EmptyStackException emptyStackException) {
                         logger.log(Level.WARNING, emptyStackException.getMessage());
                     }
 
-                    logger.log(Level.INFO, "Pressed F2 key: UNDO operation");
-                    refreshListView();
-                    restoreListViewPreviousSelection();
-                    showResult(true, "Undo!");
-                    return;
+                    // showResult(true, "Undo!");
                 }
             }
         });
@@ -532,14 +532,14 @@ public class BetterRootLayoutController {
                     saveSelectedTaskIndex();
                     try {
                         invoker.redo();
+                        logger.log(Level.INFO, "Pressed F3 key: REDO operation");
+                        refreshListView();
+                        restoreListViewPreviousSelection();
                     } catch (EmptyStackException emptyStackException) {
                         logger.log(Level.WARNING, emptyStackException.getMessage());
                     }
-                    logger.log(Level.INFO, "Pressed F3 key: REDO operation");
-                    refreshListView();
-                    restoreListViewPreviousSelection();
-                    showResult(true, "Redo!");
-                    return;
+
+                    // showResult(true, "Redo!");
                 }
             }
         });
@@ -561,28 +561,21 @@ public class BetterRootLayoutController {
                 userInput = commandBar.getText();
                 assert userInput != null;
 
-                if (!isEditMode) {
-                    logger.log(Level.INFO, "User is typing: " + userInput);
+                logger.log(Level.INFO, "User is typing: " + userInput);
 
-                    if (userInput.length() <= 0) {
-                        btnFeedback.setVisible(false);
-                        // showFeedback(false);
-                        // showResult(false, EMPTY_STRING);
-                        // clearFeedback();
-                        clearStoredUserInput();
-                        return;
-                    }
-
-                    btnFeedback.setVisible(true);
-                    extractUserInput();
-                    parseUserInput();
-                } else if (isEditMode) {
-                    logger.log(Level.INFO, "(EDIT MODE) User is typing: " + userInput);
-                    // invoker.parseCommand(userInput, Logic.ListType.ALL);
-                    // invoker.execute(new EditCommand(receiver, oldTask,
-                    // newTask));
-
+                if (userInput.length() <= 0) {
+                    btnFeedback.setVisible(false);
+                    // showFeedback(false);
+                    // showResult(false, EMPTY_STRING);
+                    // clearFeedback();
+                    clearStoredUserInput();
+                    return;
                 }
+
+                btnFeedback.setVisible(true);
+                extractUserInput();
+                parseUserInput();
+
             }
         });
 
@@ -596,69 +589,68 @@ public class BetterRootLayoutController {
             invoker = new Invoker();
         }
 
-        if (!isEditMode) {
-            if (commandBar.getText().trim().length() > 0) {
+        if (commandBar.getText().trim().length() > 0) {
 
-                // add operation
-                if (commandToBeExecuted == null) {
-                    return;
-                }
-
-                if (commandToBeExecuted instanceof AddCommand) {
-                    logger.log(Level.INFO, "(ADD TASK) Pressed ENTER key: " + commandBar.getText());
-
-                    invoker.execute(commandToBeExecuted);
-
-                    Platform.runLater(new Runnable() {
-
-                        @Override
-                        public void run() {
-                            refreshListView();
-                            listViewTodo.getSelectionModel().selectLast();
-                            listViewTodo.scrollTo(todoTasks.size() - 1);
-                            // showResult(true, "Task added!");
-                        }
-                    });
-
-                } else if (commandToBeExecuted instanceof DeleteCommand) {
-                    logger.log(Level.INFO, "(DELETE TASK) Pressed ENTER key: " + commandBar.getText());
-                    saveSelectedTaskIndex();
-                    invoker.execute(commandToBeExecuted);
-                    Platform.runLater(new Runnable() {
-
-                        @Override
-                        public void run() {
-                            updateTabAndLabelWithTotalTasks();
-                            refreshListView();
-                            restoreListViewPreviousSelection();
-                            // showResult(true, "Task deleted!");
-
-                        }
-                    });
-                }
-
+            // add operation
+            if (commandToBeExecuted == null) {
+                return;
             }
 
-//            clearFeedback();
-            btnFeedback.setVisible(false);
-            clearStoredUserInput();
-            commandBar.clear();
-            // showUndo();
+            if (commandToBeExecuted instanceof AddCommand) {
+                logger.log(Level.INFO, "(ADD TASK) Pressed ENTER key: " + commandBar.getText());
 
-        } else if (isEditMode) {
-            logger.log(Level.INFO, "(EDIT MODE) Pressed ENTER key: " + commandBar.getText());
-            saveSelectedTaskIndex();
+                invoker.execute(commandToBeExecuted);
 
-            currentTask = listViewTodo.getSelectionModel().getSelectedItem();
-            Task editedTask = commandParser.parseAdd(userInput);
-            commandToBeExecuted = new EditCommand(receiver, currentTask, editedTask);
-            invoker.execute(commandToBeExecuted);
-            refreshListView();
-            restoreListViewPreviousSelection();
-            commandBar.clear();
-            showResult(true, "Task edited!");
+                Platform.runLater(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        refreshListView();
+                        listViewTodo.getSelectionModel().selectLast();
+                        listViewTodo.scrollTo(todoTasks.size() - 1);
+                        // showResult(true, "Task added!");
+                    }
+                });
+
+            } else if (commandToBeExecuted instanceof DeleteCommand) {
+                logger.log(Level.INFO, "(DELETE TASK) Pressed ENTER key: " + commandBar.getText());
+                saveSelectedTaskIndex();
+                invoker.execute(commandToBeExecuted);
+                Platform.runLater(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        updateTabAndLabelWithTotalTasks();
+                        refreshListView();
+                        restoreListViewPreviousSelection();
+                        // showResult(true, "Task deleted!");
+
+                    }
+                });
+            } else if (commandToBeExecuted instanceof EditCommand) {
+                logger.log(Level.INFO, "(EDIT TASK) Pressed ENTER key: " + commandBar.getText());
+                saveSelectedTaskIndex();
+                invoker.execute(commandToBeExecuted);
+                Platform.runLater(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        updateTabAndLabelWithTotalTasks();
+                        refreshListView();
+                        restoreListViewPreviousSelection();
+                        // showResult(true, "Task deleted!");
+
+                    }
+                });
+            }
 
         }
+
+        // clearFeedback();
+        btnFeedback.setVisible(false);
+        clearStoredUserInput();
+        commandBar.clear();
+        // showUndo();
 
     }
 
@@ -694,8 +686,8 @@ public class BetterRootLayoutController {
                 invoker.execute(commandToBeExecuted);
                 refreshListView();
                 restoreListViewPreviousSelection();
-                showUndo();
-                showResult(true, "Task deleted!");
+                // showUndo();
+                // showResult(true, "Task deleted!");
             }
         });
     }
@@ -730,7 +722,7 @@ public class BetterRootLayoutController {
      */
     private void extractUserInput() {
         userInputArray = userInput.split(" ");
-        userCommand = userInputArray[0];
+        userCommand = userInputArray[0].toLowerCase();
         if (userInputArray.length > 1) {
             System.out.println(
                     userCommand + " " + userInput.indexOf(userCommand) + " " + userInput.lastIndexOf(userCommand));
@@ -744,13 +736,15 @@ public class BetterRootLayoutController {
     private void parseUserInput() {
         commandToBeExecuted = null;
         switch (userCommand) {
-            case COMMAND_SEARCH :
-                parseSearch();
+            case COMMAND_EDIT :
+                parseEdit();
                 break;
-
             case COMMAND_DELETE :
             case COMMAND_DELETE_SHORTHAND :
                 parseDelete();
+                break;
+            case COMMAND_SEARCH :
+                parseSearch();
                 break;
 
             default :
@@ -764,9 +758,14 @@ public class BetterRootLayoutController {
     private void parseAdd() {
         logger.log(Level.INFO, "Sending user input to commandParser: " + userInput);
 
-        currentTask = commandParser.parseAdd(userInput);
-        commandToBeExecuted = new AddCommand(receiver, currentTask);
-        inputFeedback = currentTask.toString();
+        try {
+            taskToBeExecuted = commandParser.parseAdd(userInput);
+        } catch (InvalidLabelFormat e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        commandToBeExecuted = new AddCommand(receiver, taskToBeExecuted);
+        inputFeedback = taskToBeExecuted.toString();
         showFeedback(true, MESSAGE_FEEDBACK_ACTION_ADD, inputFeedback);
     }
 
@@ -784,8 +783,8 @@ public class BetterRootLayoutController {
             taskIndexesToBeDeleted = commandParser.parseIndexes(userInput);
         } catch (InvalidTaskIndexFormat invalidTaskIndexFormat) {
             logger.log(Level.INFO, "DELETE command index(es) invalid: " + userArguments);
-            showFeedback(true, MESSAGE_FEEDBACK_ACTION_DELETE,
-                    String.format(MESSAGE_ERROR_RESULT_DELETE, userArguments));
+            showFeedback(true, MESSAGE_FEEDBACK_ACTION_DELETE, String.format(MESSAGE_ERROR_NOT_FOUND, userArguments));
+            clearStoredUserInput();
             return;
         }
 
@@ -800,8 +799,8 @@ public class BetterRootLayoutController {
 
             // if selected index is out of bound
             if (taskIndex <= 0 || taskIndex > todoTasks.size()) {
-                showFeedback(true, MESSAGE_FEEDBACK_ACTION_DELETE,
-                        String.format(MESSAGE_ERROR_RESULT_DELETE, taskIndex));
+                showFeedback(true, MESSAGE_FEEDBACK_ACTION_DELETE, String.format(MESSAGE_ERROR_NOT_FOUND, taskIndex));
+                clearStoredUserInput();
             } else {
                 inputFeedback = todoTasks.get(taskIndex - 1).toString();
                 showFeedback(true, MESSAGE_FEEDBACK_ACTION_DELETE, inputFeedback);
@@ -815,6 +814,56 @@ public class BetterRootLayoutController {
 
         commandToBeExecuted = new DeleteCommand(receiver, getTasksToBeDeleted(taskIndexesToBeDeleted));
 
+    }
+
+    private void parseEdit() {
+        if (userInputArray.length <= 1) {
+            logger.log(Level.INFO, "EDIT command has no arguments. Interpreting as ADD command instead");
+            // no arguments found. parse the input as an Add operation instead
+            parseAdd();
+            return;
+        }
+
+        // parsing edit command with index
+        try {
+            int taskIndex = Integer.parseInt(userInputArray[1]) - 1;
+            logger.log(Level.INFO, "EDIT command index is " + taskIndex);
+            Task taskToBeEdited = todoTasks.get(taskIndex);
+            showFeedback(true, MESSAGE_FEEDBACK_ACTION_EDIT, taskToBeEdited.toString());
+            taskToBeExecuted = commandParser.parseEdit(taskToBeEdited, userInput);
+            commandToBeExecuted = new EditCommand(receiver, taskToBeEdited, taskToBeExecuted);
+            return;
+        } catch (NumberFormatException nfe) {
+            // parse the edit command based on the currently selected item
+            logger.log(Level.INFO, "EDIT command has no index. Editing current selected task");
+            parseEditForSelectedTask();
+        } catch (IndexOutOfBoundsException ioobe) {
+            logger.log(Level.INFO, "EDIT command index is out of range. index = " + userInputArray[1]
+                    + " ArrayList size = " + todoTasks.size());
+            showFeedback(true, MESSAGE_FEEDBACK_ACTION_EDIT, String.format(MESSAGE_ERROR_NOT_FOUND, userInputArray[1]));
+            clearStoredUserInput();
+            return;
+        } catch (InvalidLabelFormat e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    /**
+     * @param taskToBeEdited
+     * @throws InvalidLabelFormat
+     */
+    private void parseEditForSelectedTask() {
+        Task taskToBeEdited = todoTasks.get(getSelectedTaskIndex());
+        showFeedback(true, MESSAGE_FEEDBACK_ACTION_EDIT, taskToBeEdited.toString());
+        try {
+            taskToBeExecuted = commandParser.parseEdit(taskToBeEdited, userInput);
+            commandToBeExecuted = new EditCommand(receiver, taskToBeEdited, taskToBeExecuted);
+            return;
+        } catch (InvalidLabelFormat e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
     private ArrayList<Task> getTasksToBeDeleted(int taskIndex) {
@@ -867,13 +916,13 @@ public class BetterRootLayoutController {
      * 
      */
     private void showFeedback(boolean isVisible) {
-        if (isVisible) {
-            logger.log(Level.INFO, "Showing user feedback");
-            showResult(false, EMPTY_STRING);
-        }
-
-        labelUserAction.setVisible(isVisible);
-        labelUserParsedInput.setVisible(isVisible);
+        // if (isVisible) {
+        // logger.log(Level.INFO, "Showing user feedback");
+        // showResult(false, EMPTY_STRING);
+        // }
+        //
+        // labelUserAction.setVisible(isVisible);
+        // labelUserParsedInput.setVisible(isVisible);
     }
 
     /**
