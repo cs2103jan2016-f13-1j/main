@@ -44,7 +44,7 @@ public class CommandParser {
     /**
      * This method builds a {@code Task} object.
      * 
-     * Tasks without date do not have any time specified.
+     * Tasks without date do not have any date/time specified.
      * Words with prepositions might not be dated.
      * Words without prepositions is dated if time is explicitly specified.
      * 
@@ -170,6 +170,14 @@ public class CommandParser {
     	return prepositions;
     }
     
+    /**
+     * Check if valid time is specified.
+     * 24format not supported because can be confused with normal numbers.
+     * 
+     * @param commandString
+     * 			{@code String user input}
+     * @return {@code Boolean} if time found
+     */
     private boolean checkForTime(String commandString) {
     	boolean match = false;
     	List<String> words = new ArrayList<String>(Arrays.asList(commandString.toLowerCase().split(" ")));

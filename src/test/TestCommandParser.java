@@ -150,6 +150,11 @@ public class TestCommandParser {
         assertEquals(true, thrown);
     }
     
+    /**
+     * Date should be relative to current time when being parsed.
+     * 
+     * @throws InvalidLabelFormat
+     */
     @Test
     public void testSmartDetectionOfTime() throws InvalidLabelFormat {
     	CommandParser parser = new CommandParser();
@@ -317,6 +322,7 @@ public class TestCommandParser {
      * Test priority toggling.
      * There are only four levels of priority.
      * It cycles between the four.
+     * 
      * @throws InvalidLabelFormat 
      */
     @Test
@@ -349,6 +355,11 @@ public class TestCommandParser {
          assertEquals(false, task.isDone());
     }
     
+    /**
+     * Test editing of an existing task.
+     *
+     * @throws InvalidLabelFormat
+     */
     @Test
     public void testEdit() throws InvalidLabelFormat {
     	CommandParser parser = new CommandParser();
@@ -392,7 +403,7 @@ public class TestCommandParser {
     }
     
     /**
-     * Test parsing of indexes
+     * Test parsing of indexes.
      * 
      * @throws InvalidTaskIndexFormat
      */
@@ -507,5 +518,12 @@ public class TestCommandParser {
         	thrown = true;
         }
         assertEquals(true, thrown);        
+    }
+    
+    @Test
+    public void testrubbish() throws InvalidLabelFormat {
+    	 CommandParser parser = new CommandParser();
+    	 Task task = parser.parseAdd("do homework by 13am");
+    	 System.out.println(task.toString());
     }
 }
