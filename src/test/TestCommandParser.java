@@ -403,6 +403,18 @@ public class TestCommandParser {
     	task = parser.parseAdd("Buy milk");
     	task2 = parser.parseEdit(task, "edit #party");
     	assertEquals("Buy milk #party", task2.toString());
+    	
+    	task = parser.parseAdd("Buy milk from 6 - 7pm");
+    	task2 = parser.parseEdit(task, "edit 7pm");
+    	assertEquals("Buy milk from today 7pm", task2.toString());
+    	
+    	task = parser.parseAdd("Buy milk from 6 - 7pm");
+    	task2 = parser.parseEdit(task, "edit by 7pm");
+    	assertEquals("Buy milk by today 7pm", task2.toString());
+    	
+    	task = parser.parseAdd("Buy milk from 6 - 7pm");
+    	task2 = parser.parseEdit(task, "edit from 9 to 10pm");
+    	assertEquals("Buy milk from today 9pm to 10pm", task2.toString());
     }
     
     /**
@@ -521,5 +533,12 @@ public class TestCommandParser {
         	thrown = true;
         }
         assertEquals(true, thrown);        
+    }
+    
+    @Test
+    public void testing() throws InvalidLabelFormat {
+        CommandParser parser = new CommandParser();
+        Task task = parser.parseAdd("at 6 - 7");
+       // System.out.println(task.toString());
     }
 }
