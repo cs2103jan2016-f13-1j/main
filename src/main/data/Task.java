@@ -1,6 +1,7 @@
 package main.data;
 
 import java.text.DateFormatSymbols;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
@@ -44,12 +45,24 @@ public class Task {
         return title;
     }
     
+    public void setTitle(String title) {
+    	this.title = title;
+    }
+    
     public Date getStartDate() {
         return startDate;
     }
     
+    public void setStartDate(Date startDate) {
+    	this.startDate = startDate;
+    }
+    
     public Date getEndDate() {
         return endDate;
+    }
+    
+    public void setEndDate(Date endDate) {
+    	this.endDate = endDate;
     }
     
     public boolean hasDate() {
@@ -88,6 +101,10 @@ public class Task {
         }
     }
     
+    public void setLabel(String label) {
+    	this.label = label;
+    }
+    
     public boolean isDone() {
         return done;
     }
@@ -116,13 +133,13 @@ public class Task {
     }
     
     public void setIsCompleted() {
-        this.done = true;
-        this.completedDate = new Date();
+        done = true;
+        completedDate = new Date();
     }
     
     public void setNotCompleted() {
-        this.done = false;
-        this.completedDate = null;
+        done = false;
+        completedDate = null;
     }
     
     public Date getCreatedDate() {
@@ -154,18 +171,30 @@ public class Task {
     	
     	StringBuilder stringBuilder = new StringBuilder(title);
 
-    	if (startDate != null) {
-    		stringBuilder.append(" from " + startDate);
-    		stringBuilder.append(" " + startTime);
-
-    		if (!startDate.equals(endDate)) {
-    			stringBuilder.append(" to " + endDate);
-    			stringBuilder.append(" " + endTime);
+    	if (hasDate()) {
+    		if (hasDateRange()) {
+    			stringBuilder.append(" from " + startDate);
+    			stringBuilder.append(" " + startTime);
+    			
+    			if (!startDate.equals(endDate)) {
+        			stringBuilder.append(" to " + endDate);
+        			stringBuilder.append(" " + endTime);
+        		} else {
+        			stringBuilder.append(" to " + endTime);
+        		}   	  
     		} else {
-    			stringBuilder.append(" to " + endTime);
-    		}   	  
+    			if (startDate != null) {
+    				stringBuilder.append(" from " + startDate);
+    				stringBuilder.append(" " + startTime);
+    			}
+    			
+    			if (endDate != null) {
+    				stringBuilder.append(" by " + endDate);
+    				stringBuilder.append(" " + endTime);
+    			}
+    		}
     	}
-
+    
     	if (label != null) {
     		stringBuilder.append(" #" + label);
     	}
@@ -192,10 +221,21 @@ public class Task {
         fields.add(title);
         
         if (hasDate()) {
-        	fields.add(convertDate(startDate));
-        	fields.add(convertTime(startDate));
-        	fields.add(convertDate(endDate));
-        	fields.add(convertTime(endDate));
+        	if (hasStartDate()){
+        		fields.add(convertDate(startDate));
+            	fields.add(convertTime(startDate));
+        	} else {
+        		fields.add(null);
+            	fields.add(null);
+        	}
+        	
+        	if (hasEndDate()) {
+	        	fields.add(convertDate(endDate));
+	        	fields.add(convertTime(endDate));
+        	} else {
+        		fields.add(null);
+            	fields.add(null);
+        	}
         } else {
         	fields.add(null);
         	fields.add(null);
@@ -213,7 +253,7 @@ public class Task {
     }
     
     private String convertDate(Date date) {
-    	if (isToday()) {
+    	if (dateIsToday()) {
     		return "today";
     	}
     	
@@ -224,6 +264,24 @@ public class Task {
     	} else {
     		return getDate(date).concat(" ").concat(getMonth(date));
     	}
+    }
+    
+    public boolean dateIsToday() {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("ddMMyyyy");
+        String today = dateFormat.format(new Date());
+        
+       if (hasStartDate()) {
+            String start = dateFormat.format(startDate);
+            if (today.equals(start)) {
+                return true;
+            }
+        } else if (hasEndDate()) {
+            String end = dateFormat.format(endDate);
+            if (today.equals(end)) {
+                return true;
+            }
+        }
+        return false;
     }
     
     private boolean dateIsThisWeek(Date date) {
@@ -294,25 +352,131 @@ public class Task {
 	    return timeFormat.format(date);
     }
     
+    public String getSimpleDate() {
+    	StringBuilder stringBuilder = new StringBuilder("");    	
+    	String start, end;
+    	if (hasDateRange()) {
+    		start = getDate(startDate).concat(" ").concat(getMonth(startDate));
+        	end = getDate(endDate).concat(" ").concat(getMonth(endDate));
+    		stringBuilder.append(start + " - " + end);
+    	} else if (hasStartDate()) {
+    		start = getDate(startDate).concat(" ").concat(getMonth(startDate));
+    		stringBuilder.append(start);
+    	} else if (hasEndDate()) {
+    		end = getDate(endDate).concat(" ").concat(getMonth(endDate));
+    		stringBuilder.append(end);
+    	}
+    	
+    	return stringBuilder.toString();
+    }
+    
+    public String getSimpleTime() {
+    	StringBuilder stringBuilder = new StringBuilder("");
+    	int indexStartTime = 2;
+    	int indexEndTime = 4;
+    	
+    	ArrayList<String> fields = getTaskFields();
+    	String startTime = fields.get(indexStartTime);
+    	String endTime = fields.get(indexEndTime);
+    	
+    	if (hasDateRange()) {
+    		stringBuilder.append(startTime + " - " + endTime);
+    	} else if (hasStartDate()) {
+    		stringBuilder.append(startTime);
+    	} else if (hasEndDate()) {
+    		stringBuilder.append("by " + endTime);
+    	}
+    	
+    	return stringBuilder.toString();
+    }
+    
     public boolean hasStarted() {
         return (startDate.compareTo(new Date()) < 0);
     }
     
     public boolean isToday() {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("ddMMyyyy");
-        String today = dateFormat.format(new Date());
-        
-        if (hasEndDate()) {
-            String end = dateFormat.format(endDate);
-            if (today.equals(end)) {
-                return true;
-            }
-        } else if (hasStartDate()) {
-            String start = dateFormat.format(startDate);
-            if (today.equals(start)) {
-                return true;
-            }
-        }
-        return false;
+    	if (hasDateRange()) {
+    		if (hasStarted()) {
+    			return true;
+    		} else {
+    			return false;
+    		}
+    	} else {
+    		return dateIsToday();
+    	}
+    }
+    
+    public boolean isTomorrow() throws ParseException {   	
+    	Calendar cal = Calendar.getInstance();
+    	cal.setTime(new Date());
+    	cal.add(Calendar.DATE, 1);
+    	
+    	SimpleDateFormat dateFormat = new SimpleDateFormat("ddMMyyyy");
+    	String tomorrow = dateFormat.format(cal.getTime());
+    	String starting = "";
+    	String ending = "";
+    	Date tml, start = null, end = null;
+    	
+    	tml = dateFormat.parse(tomorrow);
+    	
+    	if (hasDateRange()) {
+    		if (hasStarted()) {
+    			ending = dateFormat.format(endDate);  			
+    			end = dateFormat.parse(ending);
+    			if (end.after(tml)) {
+    				return true;
+    			}
+    		} else {
+    			starting = dateFormat.format(startDate);
+    			start = dateFormat.parse(starting);
+    			if (start.equals(tml)) {
+    				return true;
+    			}
+    		}
+    	} else {
+    		if (hasStartDate()) {
+    			starting = dateFormat.format(startDate);
+    			start = dateFormat.parse(starting);
+    			
+    			if (start.equals(tml)) {
+    				return true;
+    			}
+    		} else if (hasEndDate()) {
+    			ending = dateFormat.format(endDate);
+    			end = dateFormat.parse(ending);
+    			if (end.equals(tml)) {
+    				return true;
+    			}
+    		}
+    	}
+ 
+    	return false;	
+    }
+
+    public boolean isUpcoming() throws ParseException {
+    	if (hasDate()) {
+    		if (!dateIsToday() && !isTomorrow()) {
+    			 Date today = new Date();
+    			 
+    		    if (hasStartDate()) {
+    		    	 if (today.before(startDate)) {
+    		    		 return true;
+    		    	 }
+    		     } else if (hasEndDate()) { 
+    		    	 if (today.before(endDate)) {
+    		    		 return true;
+    		    	 }
+    		     } 			
+    		}
+    	}
+    	return false;
+    }
+    
+    public boolean isSomeday() {
+    	if (hasDate()) {
+    		return false;
+    	} else {
+    		return true;
+    	}
     }
 }
