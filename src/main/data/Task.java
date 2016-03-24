@@ -415,6 +415,8 @@ public class Task {
     		stringBuilder.append(startTime);
     	} else if (hasEndDate()) {
     		stringBuilder.append("by " + endTime);
+    	} else {
+    		stringBuilder.append("-");
     	}
     	
     	return stringBuilder.toString();
