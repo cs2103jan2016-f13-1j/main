@@ -166,8 +166,8 @@ public class TestCommandParser {
     	task = parser.parseAdd("Do homework by 2am");
     	assertEquals("Do homework by this Fri 2am", task.toString());
     	
-    	task = parser.parseAdd("Do homework by 2pm");
-    	assertEquals("Do homework by today 2pm", task.toString());  
+    	task = parser.parseAdd("Do homework by 10pm");
+    	assertEquals("Do homework by today 10pm", task.toString());  
     	
     	task = parser.parseAdd("Do homework by 10 mar 2pm");
     	assertEquals("Do homework by 10 Mar 2pm", task.toString());
@@ -535,7 +535,7 @@ public class TestCommandParser {
         assertEquals(true, thrown);        
     }
     
-    @Test
+    @Ignore @Test
     public void testsToNote() throws InvalidLabelFormat {
         CommandParser parser = new CommandParser();
         Task task, task2;
@@ -547,7 +547,7 @@ public class TestCommandParser {
     	task2 = parser.parseEdit(task, "edit 4-5pm");
     	System.out.println(task2.toString());
     	
-    	task2 = parser.parseAdd("do homework from 4-5pm");
+    	task2 = parser.parseAdd("do homework from 4pm-5pm");
     	System.out.println(task2.toString());
     	//assertEquals("Buy milk from today 9pm to 10pm", task2.toString());
     }
