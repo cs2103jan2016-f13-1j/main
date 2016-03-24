@@ -132,7 +132,7 @@ public class TestLogic implements Observer {
 	public void singleTaskTest() {
 	    Task exampleTask = new Task("example");
         Task editedTask = new Task("edited task");
-
+        
         invoker.execute(new AddCommand(receiver, exampleTask));
         invoker.undo();
         invoker.redo();
@@ -193,29 +193,23 @@ public class TestLogic implements Observer {
 	 */
 	@Test
 	public void comparatorTest() {
-	    invoker.execute(new AddCommand(receiver, parser.parseAdd("a")));
-	    invoker.execute(new DoneCommand(receiver, todo));
-	    invoker.execute(new AddCommand(receiver, parser.parseAdd("b")));
-	    invoker.execute(new AddCommand(receiver, parser.parseAdd("c by 1")));
-	    invoker.execute(new AddCommand(receiver, parser.parseAdd("d")));
-	    invoker.execute(new AddCommand(receiver, parser.parseAdd("e by 1")));
-	    invoker.execute(new AddCommand(receiver, parser.parseAdd("f by 5")));
-	    invoker.execute(new AddCommand(receiver, parser.parseAdd("g from 2-3")));
-	    invoker.execute(new AddCommand(receiver, parser.parseAdd("h from 2-3")));
-	    invoker.execute(new AddCommand(receiver, parser.parseAdd("i from 9pm-10pm")));
-        invoker.execute(new AddCommand(receiver, parser.parseAdd("j from 9pm-11pm")));
-	    invoker.execute(new AddCommand(receiver, parser.parseAdd("k from 1-3")));
-        invoker.execute(new AddCommand(receiver, parser.parseAdd("l from 7pm-12am")));
-	    invoker.execute(new AddCommand(receiver, parser.parseAdd("m at 4")));
-	    invoker.execute(new AddCommand(receiver, parser.parseAdd("n at 4")));
-	    invoker.execute(new AddCommand(receiver, parser.parseAdd("o at 3")));
-	    invoker.execute(new DoneCommand(receiver, todo));
-	    while (!todo.isEmpty()) {
-	        invoker.execute(new DeleteCommand(receiver, todo.get(0)));
+	    try {
+	        invoker.execute(new AddCommand(receiver, parser.parseAdd("floating")));
+    	    invoker.execute(new DoneCommand(receiver, todo));
+    	    invoker.execute(new AddCommand(receiver, parser.parseAdd("start date at 4")));
+    	    invoker.execute(new AddCommand(receiver, parser.parseAdd("end date by 1")));
+    	    invoker.execute(new AddCommand(receiver, parser.parseAdd("floating")));
+    	    invoker.execute(new AddCommand(receiver, parser.parseAdd("range date from 8pm to 9pm")));
+    	    invoker.execute(new AddCommand(receiver, parser.parseAdd("range date from 11am to 10pm")));
+    	    invoker.execute(new DoneCommand(receiver, todo));
+    	    while (!todo.isEmpty()) {
+    	        invoker.execute(new DeleteCommand(receiver, todo.get(0)));
+    	    }
+    	    while (!completed.isEmpty()) {
+                invoker.execute(new DeleteCommand(receiver, completed.get(0)));
+            }
+	    } catch (Exception e) {
 	    }
-	    while (!completed.isEmpty()) {
-            invoker.execute(new DeleteCommand(receiver, completed.get(0)));
-        }
 	}
 	
 	/*

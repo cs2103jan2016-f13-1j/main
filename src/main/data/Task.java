@@ -61,6 +61,24 @@ public class Task {
         return endDate;
     }
     
+    public boolean hasSingleDate() {
+        if (startDate == null && endDate != null) {
+            return true;
+        } else if (startDate != null & endDate == null) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
+    public Date getSingleDate() {
+        if (startDate == null && endDate != null) {
+            return endDate;
+        } else {
+            return startDate;
+        }
+    }
+    
     public void setEndDate(Date endDate) {
     	this.endDate = endDate;
     }

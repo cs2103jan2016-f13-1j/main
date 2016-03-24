@@ -284,8 +284,8 @@ public class Receiver extends Observable {
     }
     
     private void sortTasks() {
-        Collections.sort(todoTasks, new lastAddedFirst());
-        Collections.sort(completedTasks, new LastCompletedFirst());
+        Collections.sort(todoTasks, new TodoTaskComparator());
+        Collections.sort(completedTasks, new CompletedTaskComparator());
         logger.log(Level.INFO,"Tasks sorted");
     }
     
