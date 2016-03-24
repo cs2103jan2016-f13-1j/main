@@ -615,7 +615,9 @@ public class CommandParser {
         	oldTask.setTitle(commandString);
         }       
     	
-    	return oldTask;
+        Task newTask = new Task(oldTask.getTitle(), oldTask.getStartDate(), oldTask.getEndDate(), 
+        		oldTask.getLabel(), oldTask.getCreatedDate());
+    	return newTask;
     }
     
     private boolean isIndex(String word) {
