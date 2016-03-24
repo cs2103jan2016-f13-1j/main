@@ -150,6 +150,11 @@ public class TestCommandParser {
         assertEquals(true, thrown);
     }
     
+    /**
+     * Date should be relative to current time when being parsed.
+     * 
+     * @throws InvalidLabelFormat
+     */
     @Test
     public void testSmartDetectionOfTime() throws InvalidLabelFormat {
     	CommandParser parser = new CommandParser();
@@ -162,7 +167,10 @@ public class TestCommandParser {
     	assertEquals("Do homework by this Fri 2am", task.toString());
     	
     	task = parser.parseAdd("Do homework by 2pm");
-    	assertEquals("Do homework by today 2pm", task.toString());    	
+    	assertEquals("Do homework by today 2pm", task.toString());  
+    	
+    	task = parser.parseAdd("Do homework by 10 mar 2pm");
+    	assertEquals("Do homework by 10 Mar 2pm", task.toString());
     }
     
     /**
@@ -317,6 +325,7 @@ public class TestCommandParser {
      * Test priority toggling.
      * There are only four levels of priority.
      * It cycles between the four.
+     * 
      * @throws InvalidLabelFormat 
      */
     @Test
@@ -349,6 +358,11 @@ public class TestCommandParser {
          assertEquals(false, task.isDone());
     }
     
+    /**
+     * Test editing of an existing task.
+     *
+     * @throws InvalidLabelFormat
+     */
     @Test
     public void testEdit() throws InvalidLabelFormat {
     	CommandParser parser = new CommandParser();
@@ -389,10 +403,22 @@ public class TestCommandParser {
     	task = parser.parseAdd("Buy milk");
     	task2 = parser.parseEdit(task, "edit #party");
     	assertEquals("Buy milk #party", task2.toString());
+    	
+    	task = parser.parseAdd("Buy milk from 6 - 7pm");
+    	task2 = parser.parseEdit(task, "edit 7pm");
+    	assertEquals("Buy milk from today 7pm", task2.toString());
+    	
+    	task = parser.parseAdd("Buy milk from 6 - 7pm");
+    	task2 = parser.parseEdit(task, "edit by 7pm");
+    	assertEquals("Buy milk by today 7pm", task2.toString());
+    	
+    	task = parser.parseAdd("Buy milk from 6 - 7pm");
+    	task2 = parser.parseEdit(task, "edit from 9 to 10pm");
+    	assertEquals("Buy milk from today 9pm to 10pm", task2.toString());
     }
     
     /**
-     * Test parsing of indexes
+     * Test parsing of indexes.
      * 
      * @throws InvalidTaskIndexFormat
      */
@@ -507,5 +533,22 @@ public class TestCommandParser {
         	thrown = true;
         }
         assertEquals(true, thrown);        
+    }
+    
+    @Test
+    public void testsToNote() throws InvalidLabelFormat {
+        CommandParser parser = new CommandParser();
+        Task task, task2;
+        
+        task = parser.parseAdd("at 6 - 7");
+        // System.out.println(task.toString());
+        
+    	task = parser.parseAdd("Buy milk from 6 - 7pm");
+    	task2 = parser.parseEdit(task, "edit 4-5pm");
+    	System.out.println(task2.toString());
+    	
+    	task2 = parser.parseAdd("do homework from 4-5pm");
+    	System.out.println(task2.toString());
+    	//assertEquals("Buy milk from today 9pm to 10pm", task2.toString());
     }
 }

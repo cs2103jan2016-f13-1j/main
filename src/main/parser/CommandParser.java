@@ -44,7 +44,7 @@ public class CommandParser {
     /**
      * This method builds a {@code Task} object.
      * 
-     * Tasks without date do not have any time specified.
+     * Tasks without date do not have any date/time specified.
      * Words with prepositions might not be dated.
      * Words without prepositions is dated if time is explicitly specified.
      * 
@@ -170,6 +170,14 @@ public class CommandParser {
     	return prepositions;
     }
     
+    /**
+     * Check if valid time is specified.
+     * 24format not supported because can be confused with normal numbers.
+     * 
+     * @param commandString
+     * 			{@code String user input}
+     * @return {@code Boolean} if time found
+     */
     private boolean checkForTime(String commandString) {
     	boolean match = false;
     	List<String> words = new ArrayList<String>(Arrays.asList(commandString.toLowerCase().split(" ")));
@@ -222,21 +230,25 @@ public class CommandParser {
         Date now = new Date();
         Date update;
         
+        Calendar today = Calendar.getInstance();
+        today.setTime(now);
+        
         for (int i = 0; i < dates.size(); i++) {
         	if (dates.get(i).before(now)) {
-        		if (checkForTime(commandString)) {
-        			Calendar cal = Calendar.getInstance();
-			    	cal.setTime(dates.get(i));
-			    	cal.add(Calendar.DATE, 1);
-			    	update = cal.getTime();
-			    	dates.set(i,update);
-        		} else {
-        			Calendar cal = Calendar.getInstance();
-			    	cal.setTime(dates.get(i));
-			    	cal.add(Calendar.HOUR_OF_DAY, 12);
-					update = cal.getTime();
-					dates.set(i,update);
-				}
+        		Calendar cal = Calendar.getInstance();
+		    	cal.setTime(dates.get(i));
+        		
+		    	if (!checkIsInfoPresent(commandString, dates)) {
+		    		if (checkForTime(commandString)) {
+    			    	cal.add(Calendar.DATE, 1);
+    			    	update = cal.getTime();
+    			    	dates.set(i,update);
+            		} else {
+    			    	cal.add(Calendar.HOUR_OF_DAY, 12);
+    					update = cal.getTime();
+    					dates.set(i,update);
+    				}
+		    	}
         	}
         }
         return dates;
@@ -415,6 +427,43 @@ public class CommandParser {
     	
     	return title.replaceAll("\\s+", " ").trim();
     }
+
+    private boolean checkIsInfoPresent(String title, List<Date> dateParsed) {
+    	 LocalDateTime dateTime;
+         dateTime = dateParsed.get(0).toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+         
+         for (int i = 0; i < DATE_MAX_SIZE; i++) {
+        	 ArrayList<String> dates = getPossibleDates(dateTime);
+             ArrayList<String> months = getPossibleMonths(dateTime);
+             ArrayList<String> days = getPossibleDays(dateTime);
+             
+          	if (isInfoPresent(title, dates)) {
+          		return true;
+          	} else if (isInfoPresent(title, months)) {
+          		return true;
+          	} else if (isInfoPresent(title, days)) {
+          		return true;
+          	}
+
+             if (dateParsed.size() == DATE_MAX_SIZE) {
+            	 dateTime = dateParsed.get(1).toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+             } else {
+            	 return false;
+             }
+        }
+         return false;         
+    }
+    
+    private boolean isInfoPresent(String title, ArrayList<String> toBeRemoved) {
+    	for (int i = 0; i < toBeRemoved.size(); i++) {
+        	List<String> words = new ArrayList<String>(Arrays.asList(title.toLowerCase().split(" ")));
+        
+        	if (words.contains(toBeRemoved.get(i))) {
+    			return true;
+        	}
+    	}
+    	return false;
+    }
     
     /**
      * This method checks if a word is a preposition.
@@ -546,19 +595,29 @@ public class CommandParser {
             }
         }
         
-        if (startDate != null) {
-        	oldTask.setStartDate(startDate);
-        }
-        
-        if (endDate != null) {
-        	oldTask.setEndDate(endDate);
-        }
-        
+     
+        	if (startDate != null && endDate != null) {
+        		oldTask.setStartDate(startDate);
+        		oldTask.setEndDate(endDate);
+        	} else {
+        		if (startDate != null) {
+                	oldTask.setStartDate(startDate);
+                	oldTask.setEndDate(null);
+                }
+                
+                if (endDate != null) {
+                	oldTask.setStartDate(null);
+                	oldTask.setEndDate(endDate);
+                }
+        	}
+
         if (commandString.length() > 0) {
         	oldTask.setTitle(commandString);
         }       
     	
-    	return oldTask;
+        Task newTask = new Task(oldTask.getTitle(), oldTask.getStartDate(), oldTask.getEndDate(), 
+        		oldTask.getLabel(), oldTask.getCreatedDate());
+    	return newTask;
     }
     
     private boolean isIndex(String word) {
