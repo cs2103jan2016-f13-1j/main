@@ -536,9 +536,19 @@ public class TestCommandParser {
     }
     
     @Test
-    public void testing() throws InvalidLabelFormat {
+    public void testsToNote() throws InvalidLabelFormat {
         CommandParser parser = new CommandParser();
-        Task task = parser.parseAdd("at 6 - 7");
-       // System.out.println(task.toString());
+        Task task, task2;
+        
+        task = parser.parseAdd("at 6 - 7");
+        // System.out.println(task.toString());
+        
+    	task = parser.parseAdd("Buy milk from 6 - 7pm");
+    	task2 = parser.parseEdit(task, "edit 4-5pm");
+    	System.out.println(task2.toString());
+    	
+    	task2 = parser.parseAdd("do homework from 4-5pm");
+    	System.out.println(task2.toString());
+    	//assertEquals("Buy milk from today 9pm to 10pm", task2.toString());
     }
 }
