@@ -1,5 +1,6 @@
 package main.logic;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Observable;
@@ -223,18 +224,47 @@ public class Receiver extends Observable {
         notifyObservers();
     }
     
+    /**
+     * This method allows you to search for tasks by date which have the
+     * same date as the given {@code searchDate}. Not time specific.
+     * 
+     * @param   searchDate
+     *          The {@code Date} search.
+     */
     public void search(Date searchDate) {
         logger.log(Level.INFO, "search command for date " + searchDate);
         ArrayList<Task> searchResults = new ArrayList<Task>();
+        Calendar dateToSearch = convertDate(searchDate);
+        
         for (Task t : allTasks) {
             if (t.hasDateRange()) {
-                
+                Calendar startDate = convertDate(t.getStartDate());
+                Calendar endDate = convertDate(t.getEndDate());
+                if (startDate.equals(dateToSearch) || endDate.equals(dateToSearch)) {
+                    searchResults.add(t);
+                }
+            } else if (t.hasSingleDate()) {
+                Calendar singleDate = convertDate(t.getSingleDate());
+                if (singleDate.equals(dateToSearch)) {
+                    searchResults.add(t);
+                }
             }
         }
         categorizeTasks(searchResults);
         sortTasks();
         setChanged();
         notifyObservers();
+    }
+    
+    //Removes all time details from the given Date
+    private Calendar convertDate(Date date) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        return calendar;
     }
     
     /**
