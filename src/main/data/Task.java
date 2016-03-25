@@ -9,8 +9,10 @@ import java.time.Month;
 import java.time.ZoneId;
 import java.time.format.TextStyle;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -276,12 +278,16 @@ public class Task {
     		return "today";
     	}
     	
+    	DayOfWeek day = getDay(date);
+    	String dayShort = getShortDay(day);
     	if (dateIsThisWeek(date)) {
-    		return "this ".concat(getDay(date));
+    		return "this ".concat(dayShort);
     	} else if (dateIsNextWeek(date)){
-    		return "next ".concat(getDay(date));
+    		return "next ".concat(dayShort);
     	} else {
-    		return getDate(date).concat(" ").concat(getMonth(date));
+    		Month month = getMonth(date);
+    		String monthShort = getShortMonth(month);
+    		return getDate(date).concat(" ").concat(monthShort);
     	}
     }
     
@@ -336,25 +342,41 @@ public class Task {
 		}
     }
     
-    private String getDay(Date date) {
-    	Locale locale = Locale.getDefault();
+    private DayOfWeek getDay(Date date) {
     	LocalDateTime dateTime = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
     	DayOfWeek day = dateTime.getDayOfWeek();
-		return day.getDisplayName(TextStyle.SHORT, locale);
+	    return day;
     }
+    
+    private static String getShortDay(DayOfWeek day) {
+		 DateFormatSymbols symbols = new DateFormatSymbols();
+		 String[] days = symbols.getShortWeekdays();
+		 List<String> correctedDays = new ArrayList<String>(Arrays.asList(days)); 
+		 correctedDays.remove(0);
+		 correctedDays.remove(0);
+		 correctedDays.add("Sun");
+		 int value = day.getValue() - 1;
+		 return correctedDays.get(value);
+	}
     
     private String getDate(Date date) {
     	LocalDateTime dateTime = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
 		return Integer.toString(dateTime.getDayOfMonth());
     }
     
-    private String getMonth(Date date) {
-		Locale locale = Locale.getDefault();
+    private Month getMonth(Date date) {
     	LocalDateTime dateTime = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
     	Month month = dateTime.getMonth();
-		return month.getDisplayName(TextStyle.SHORT, locale);
+		return month;
     }
-    
+	
+	private static String getShortMonth(Month month) {
+		 DateFormatSymbols symbols = new DateFormatSymbols();
+		 String[] months = symbols.getShortMonths();
+		 int value = month.getValue() - 1;
+		 return months[value];
+	}
+	
     private String convertTime(Date date) {
     	SimpleDateFormat timeFormat = new SimpleDateFormat("mm");
     	String minute = timeFormat.format(date);
@@ -372,21 +394,31 @@ public class Task {
     }
     
     public String getSimpleDate() {
+    	Locale locale = Locale.getDefault();
     	StringBuilder stringBuilder = new StringBuilder("");    	
-    	String start, end;
+    	String start, end, startMonthString, endMonthString;
+    	start = end = startMonthString = endMonthString = "";
+    	
+    	if (startDate != null) {
+	    	Month startMonth = getMonth(startDate);
+			startMonthString = startMonth.getDisplayName(TextStyle.FULL, locale);
+			start = getDate(startDate).concat(" ").concat(startMonthString);
+    	}
+    	if (endDate != null) {
+			Month endMonth = getMonth(endDate);
+			endMonthString = endMonth.getDisplayName(TextStyle.FULL, locale);
+			end = getDate(endDate).concat(" ").concat(endMonthString);
+    	}
+    	
     	if (hasDateRange()) {
-    		start = getDate(startDate).concat(" ").concat(getMonth(startDate));
-        	end = getDate(endDate).concat(" ").concat(getMonth(endDate));
         	if (start.equals(end)) {
         		stringBuilder.append(start);
         	} else {
         		stringBuilder.append(start + " - " + end);
         	}
     	} else if (hasStartDate()) {
-    		start = getDate(startDate).concat(" ").concat(getMonth(startDate));
     		stringBuilder.append(start);
     	} else if (hasEndDate()) {
-    		end = getDate(endDate).concat(" ").concat(getMonth(endDate));
     		stringBuilder.append(end);
     	}
     	
