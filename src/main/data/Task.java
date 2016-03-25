@@ -53,42 +53,12 @@ public class Task {
         return title;
     }
     
-    public void setTitle(String title) {
-    	this.title = title;
-    }
-    
     public Date getStartDate() {
         return startDate;
     }
     
-    public void setStartDate(Date startDate) {
-    	this.startDate = startDate;
-    }
-    
     public Date getEndDate() {
         return endDate;
-    }
-    
-    public boolean hasSingleDate() {
-        if (startDate == null && endDate != null) {
-            return true;
-        } else if (startDate != null & endDate == null) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-    
-    public Date getSingleDate() {
-        if (startDate == null && endDate != null) {
-            return endDate;
-        } else {
-            return startDate;
-        }
-    }
-    
-    public void setEndDate(Date endDate) {
-    	this.endDate = endDate;
     }
     
     public boolean hasDate() {
@@ -115,6 +85,24 @@ public class Task {
         }
     }
     
+    public boolean hasSingleDate() {
+        if (startDate == null && endDate != null) {
+            return true;
+        } else if (startDate != null & endDate == null) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
+    public Date getSingleDate() {
+        if (startDate == null && endDate != null) {
+            return endDate;
+        } else {
+            return startDate;
+        }
+    }
+    
     public String getLabel() {
         return label;
     }
@@ -125,10 +113,6 @@ public class Task {
         } else {
             return true;
         }
-    }
-    
-    public void setLabel(String label) {
-    	this.label = label;
     }
     
     public boolean isDone() {
