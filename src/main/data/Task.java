@@ -147,10 +147,19 @@ public class Task {
         return priority;
     }
     
-    public int togglePriority() {
-    	int limit = 4;
-    	priority++;
-    	priority = priority % limit;
+    public int togglePriority(boolean increase) {
+    	int limit = 3;
+    	if (increase) {
+    	    priority++;
+            if (priority > limit) {
+                priority = 0;
+            }
+    	} else {
+    	    priority--;
+    	    if (priority < 0) {
+    	        priority = limit;
+    	    }
+    	}
     	return priority;
     }
     

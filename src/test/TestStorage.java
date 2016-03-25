@@ -30,7 +30,7 @@ public class TestStorage {
     }
     
     /*
-     * Test if cloning is prevented.
+     * Test if CloneNotSupportedException is thrown.
      * Singleton classes do not support cloning.
      */
     @Test

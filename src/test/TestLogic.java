@@ -54,6 +54,7 @@ import main.logic.DeleteCommand;
 import main.logic.DoneCommand;
 import main.logic.EditCommand;
 import main.logic.Invoker;
+import main.logic.PriorityCommand;
 import main.logic.Receiver;
 import main.logic.SearchCommand;
 import main.logic.SetFileLocationCommand;
@@ -82,7 +83,7 @@ public class TestLogic implements Observer {
 	}
 	
 	/*
-     * Test if cloning is prevented.
+     * Test if CloneNotSupportedException is thrown.
      * Singleton classes do not support cloning.
      */
 	@Test
@@ -90,43 +91,55 @@ public class TestLogic implements Observer {
         try {
             receiver.clone();
         } catch (CloneNotSupportedException e) {
+            assertNotNull(e);
         }
     }
 	
 	/*
 	 * This is a boundary case for the undo stack
-	 * Undo until stack is empty.
-	 * Undo when stack is empty.
+	 * Undo until stack is empty, then undo when stack is empty.
+	 * Tests if the EmptyStackException is thrown.
 	 */
 	@Test
 	public void emptyUndoStackTest() {
+	    invoker.execute(new AddCommand(receiver, new Task("test task")));
 	    try {
 	        while (invoker.isUndoAvailable()) {
     	        invoker.undo();
 	        }
+	        assertFalse(invoker.isUndoAvailable());
 	        invoker.undo();
 	    } catch (EmptyStackException e) {
+	        assertNotNull(e);
         }
 	}
 	
 	/*
      * This is a boundary case for the redo stack
-     * Redo until stack is empty.
-     * Redo when stack is empty.
+     * Redo until stack is empty, then redo when stack is empty.
+     * Tests if the EmptyStackException is thrown.
      */
 	@Test
     public void emptyRedoStackTest() {
+	    Task task = new Task("test task");
+	    invoker.execute(new AddCommand(receiver, task));
+	    invoker.undo();
 	    try {
             while (invoker.isRedoAvailable()) {
                 invoker.redo();
             }
+            assertFalse(invoker.isRedoAvailable());
             invoker.redo();
         } catch (EmptyStackException e) {
+            assertNotNull(e);
         }
+	    invoker.execute(new DeleteCommand(receiver, task));
     }
 	
 	/*
-	 * Tests the basic commands with one task
+	 * Tests the basic commands that handles single tasks
+	 * Initial state: empty storage file.
+	 * Post state: empty storage file.
 	 */
 	@Test
 	public void singleTaskTest() {
@@ -134,24 +147,41 @@ public class TestLogic implements Observer {
         Task editedTask = new Task("edited task");
         
         invoker.execute(new AddCommand(receiver, exampleTask));
+        assertEquals(exampleTask, todo.get(0));
         invoker.undo();
+        assertTrue(todo.isEmpty());
         invoker.redo();
+        assertEquals(exampleTask, todo.get(0));
         invoker.execute(new EditCommand(receiver, exampleTask, editedTask));
+        assertEquals(editedTask, todo.get(0));
         invoker.undo();
+        assertEquals(exampleTask, todo.get(0));
         invoker.redo();
+        assertEquals(editedTask, todo.get(0));
         invoker.execute(new DoneCommand(receiver, editedTask));
+        assertEquals(editedTask, completed.get(0));
         invoker.undo();
+        assertEquals(editedTask, todo.get(0));
         invoker.redo();
+        assertEquals(editedTask, completed.get(0));
         invoker.execute(new UndoneCommand(receiver, editedTask));
+        assertEquals(editedTask, todo.get(0));
         invoker.undo();
+        assertEquals(editedTask, completed.get(0));
         invoker.redo();
+        assertEquals(editedTask, todo.get(0));
         invoker.execute(new DeleteCommand(receiver, editedTask));
+        assertTrue(todo.isEmpty());
         invoker.undo();
-        invoker.redo();    
+        assertEquals(editedTask, todo.get(0));
+        invoker.redo();  
+        assertTrue(todo.isEmpty());
 	}
 	
 	/*
-     * Tests the basic commands with multiple tasks
+     * Tests the basic commands that handles multiple tasks
+     * Initial state: empty storage file.
+     * Post state: empty storage file.
      */
 	@Test
 	public void multipleTasksTest() {
@@ -163,29 +193,96 @@ public class TestLogic implements Observer {
         
         invoker.execute(new AddCommand(receiver, exampleTask));
         invoker.execute(new AddCommand(receiver, editedTask));
+        assertTrue(todo.size() == 2);
         invoker.execute(new DoneCommand(receiver, tasks));
+        assertTrue(completed.size() == 2);
         invoker.undo();
+        assertTrue(todo.size() == 2);
         invoker.redo();
+        assertTrue(completed.size() == 2);
         invoker.execute(new UndoneCommand(receiver, tasks));
+        assertTrue(todo.size() == 2);
         invoker.undo();
+        assertTrue(completed.size() == 2);
         invoker.redo();
+        assertTrue(todo.size() == 2);
         invoker.execute(new DeleteCommand(receiver, tasks));
+        assertTrue(todo.isEmpty());
         invoker.undo();
+        assertTrue(todo.size() == 2);
         invoker.redo();
+        assertTrue(todo.isEmpty());
 	}
 	
 	/*
-	 * Tests the search method.
+	 * Tests the search command.
 	 * Search with one term.
 	 * Search with multiple term.
+	 * Search with label.
 	 */
 	@Test
 	public void searchTest() {
-	    invoker.execute(new AddCommand(receiver, new Task("task with long title, this title so long")));
-        invoker.execute(new AddCommand(receiver, new Task("task with short title")));
-        invoker.execute(new SearchCommand(receiver, "title"));
-        invoker.execute(new SearchCommand(receiver, "title long"));
+	    try {
+    	    Task task1 = parser.parseAdd("a b c #f");
+    	    Task task2 = parser.parseAdd("a b c d");
+    	    Task task3 = parser.parseAdd("a b c d #e");
+    	    invoker.execute(new AddCommand(receiver, task1));
+            invoker.execute(new AddCommand(receiver, task2));
+            invoker.execute(new AddCommand(receiver, task3));
+            assertTrue(todo.size() == 3);
+            invoker.execute(new SearchCommand(receiver, "a b c"));
+            assertTrue(todo.size() == 3);
+            invoker.execute(new SearchCommand(receiver, "d"));
+            assertTrue(todo.size() == 2);
+            invoker.execute(new SearchCommand(receiver, "d #e"));
+            assertTrue(todo.size() == 1);
+            assertEquals(task3, todo.get(0));
+            invoker.undo();
+            assertTrue(todo.size() == 3);
+            invoker.redo();
+            assertTrue(todo.size() == 1);
+            assertEquals(task3, todo.get(0));
+            invoker.undo();
+            assertTrue(todo.size() == 3);
+	    } catch (Exception e) {
+	    }
+	}
+	
+	/*
+	 * Tests the priority command
+	 * Cycle through priority 0 to 3, then undo and redo
+	 * Ensures boundary 0 and 3 not exceeded
+	 */
+	@Test
+	public void priorityTest() {
+	    Task task = new Task("test");
+	    invoker.execute(new AddCommand(receiver, task));
+	    assertEquals(0, task.getPriority());
+	    invoker.execute(new PriorityCommand(receiver, task));
+	    assertEquals(1, task.getPriority());
+	    invoker.execute(new PriorityCommand(receiver, task));
+	    assertEquals(2, task.getPriority());
+        invoker.execute(new PriorityCommand(receiver, task));
+        assertEquals(3, task.getPriority());
+        invoker.execute(new PriorityCommand(receiver, task));
+        assertEquals(0, task.getPriority());
         invoker.undo();
+        assertEquals(3, task.getPriority());
+        invoker.undo();
+        assertEquals(2, task.getPriority());
+        invoker.undo();
+        assertEquals(1, task.getPriority());
+        invoker.undo();
+        assertEquals(0, task.getPriority());
+        invoker.redo();
+        assertEquals(1, task.getPriority());
+        invoker.redo();
+        assertEquals(2, task.getPriority());
+        invoker.redo();
+        assertEquals(3, task.getPriority());
+        invoker.redo();
+        assertEquals(0, task.getPriority());
+        invoker.execute(new DeleteCommand(receiver, task));
 	}
 	
 	/*
@@ -196,12 +293,12 @@ public class TestLogic implements Observer {
 	    try {
 	        invoker.execute(new AddCommand(receiver, parser.parseAdd("floating")));
     	    invoker.execute(new DoneCommand(receiver, todo));
-    	    invoker.execute(new AddCommand(receiver, parser.parseAdd("start date at 4")));
+    	    invoker.execute(new AddCommand(receiver, parser.parseAdd("start date at 11am")));
     	    invoker.execute(new AddCommand(receiver, parser.parseAdd("end date by 1")));
     	    invoker.execute(new AddCommand(receiver, parser.parseAdd("floating")));
-    	    invoker.execute(new AddCommand(receiver, parser.parseAdd("range date from 8pm to 9pm")));
+    	    invoker.execute(new AddCommand(receiver, parser.parseAdd("range date from 1am to 11pm today")));
     	    invoker.execute(new AddCommand(receiver, parser.parseAdd("range date from 11am to 10pm")));
-    	    invoker.execute(new DoneCommand(receiver, todo));
+    	    invoker.execute(new DoneCommand(receiver, todo.get(0)));
     	    while (!todo.isEmpty()) {
     	        invoker.execute(new DeleteCommand(receiver, todo.get(0)));
     	    }
@@ -213,17 +310,24 @@ public class TestLogic implements Observer {
 	}
 	
 	/*
-	 * Tests set location method with undo and redo
+	 * Tests set location command with undo and redo
 	 */
 	@Test
 	public void setFilePathTest() {
-	    Command setLocation = new SetFileLocationCommand(receiver, "test.txt");
+	    String originalPath = receiver.getFilePath();
+	    String test = "test.txt";
+	    File file = new File(test);
+	    
+	    Command setLocation = new SetFileLocationCommand(receiver, test);
 	    invoker.execute(setLocation);
+	    assertTrue(file.exists());
 	    invoker.undo();
+	    assertEquals(receiver.getFilePath(), originalPath);
 	    invoker.redo();
+	    assertEquals(receiver.getFilePath(), test);
 	    invoker.undo();
+	    assertEquals(receiver.getFilePath(), originalPath);
 	    try {
-	        File file = new File("test.txt");
 	        file.delete();
 	    } catch (Exception e) {
 	        System.out.println("Failed to delete test.txt file");
@@ -246,6 +350,8 @@ public class TestLogic implements Observer {
         if (o == receiver) {
             todo = receiver.getTodoTasks();
             completed = receiver.getCompletedTasks();
+            assertNotNull(todo);
+            assertNotNull(completed);
         }
     }
 }

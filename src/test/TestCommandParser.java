@@ -334,10 +334,10 @@ public class TestCommandParser {
     	CommandParser parser = new CommandParser();
         Task task = parser.parseAdd("Cook dinner #home");
         assertEquals(0, task.getPriority());
-        assertEquals(1, task.togglePriority());
-        assertEquals(2, task.togglePriority());
-        assertEquals(3, task.togglePriority());
-        assertEquals(0, task.togglePriority());
+        assertEquals(1, task.togglePriority(true));
+        assertEquals(2, task.togglePriority(true));
+        assertEquals(3, task.togglePriority(true));
+        assertEquals(0, task.togglePriority(true));
     }
     
     @Test
