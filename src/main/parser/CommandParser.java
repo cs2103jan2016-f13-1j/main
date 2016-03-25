@@ -32,8 +32,16 @@ public class CommandParser {
     //24 ([01]?[0-9]|2[0-3]):[0-5][0-9]
 	private final String REGEX_PREPOSITION_DEADLINE = "((?i)(from|after|at|on) )"; 
 	private final String REGEX_PREPOSITION_ALL = "((?i)(from|after|at|on|by|before|to|-) )";
-    private final String REGEX_TIME_TWELVE = "(?i)(0?[1-9]|[1][0-2])(([.|:][0-5][0-9])?)";
-    private final String REGEX_AM_PM = "(am|pm)";
+    private final String REGEX_TIME_TWELVE = "(0?[1-9]|[1][0-2])(([.|:][0-5][0-9])?)";
+    private final String REGEX_AM_PM = "(?i)(am|pm)";
+    private final String REGEX_TIME_RANGE =
+    		REGEX_TIME_TWELVE + REGEX_AM_PM
+    		+ "\\s?-\\s?" +
+    		REGEX_TIME_TWELVE + "(" + REGEX_AM_PM + "?)"
+    		+ "|" +
+    		REGEX_TIME_TWELVE + "(" + REGEX_AM_PM + "?)"
+    		+ "\\s?-\\s?" +
+    		REGEX_TIME_TWELVE + REGEX_AM_PM;
     private final String REGEX_DATE_NUM = "(0?[1-9]|[12][0-9]|3[01])(/|-)(0?[1-9]|1[012])";
     private final String REGEX_DATE_TEXT = "(?i)(0?[1-9]|[12][0-9]|3[01])((st|nd|rd|th)?)";
     private final String REGEX_MONTH_TEXT = "((?i)(jan)(uary)?|"
@@ -43,7 +51,7 @@ public class CommandParser {
     private final String REGEX_DAY = "((?i)(mon)(day)?|"
             + "(tue)(sday)?|" + "(wed)(nesday)?|" + "(thu)(rsday)?|"
             + "(fri)(day)?|" + "(sat)(urday)?|" + "(sun)(day)?|" + "(today)?|" + "(tomorrow)?)";
-            
+           
     private final String STRING_AM = "am";
     private final String STRING_PM = "pm";
     private final String STRING_TWELVE = "12";
@@ -159,6 +167,17 @@ public class CommandParser {
         return matcher.find();
     }
    
+    private boolean checkForRangeTime(String commandString) {
+    	String prepositions = REGEX_TIME_RANGE;
+    	Pattern pattern = Pattern.compile(prepositions);
+        Matcher matcher = pattern.matcher(commandString);
+        return matcher.find();
+    }
+    
+    private static String correctRangeTime(String input) {
+    	input = input.replaceAll("()-()","$1 - $2");
+            return input;
+    }
     /**
      * This method corrects user input of dd/mm into mm/dd for date parsing.
      * 
