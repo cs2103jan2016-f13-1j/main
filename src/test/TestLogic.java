@@ -40,6 +40,8 @@ import static org.junit.Assert.*;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.EmptyStackException;
 import java.util.Observable;
 import java.util.Observer;
@@ -215,17 +217,20 @@ public class TestLogic implements Observer {
 	}
 	
 	/*
-	 * Tests the search command.
-	 * Search with one term.
-	 * Search with multiple term.
-	 * Search with label.
+	 * Tests the search command with strings.
+	 * Search with one term, multiple terms, and with tag.
 	 */
 	@Test
-	public void searchTest() {
+	public void searchStringTest() {
 	    try {
     	    Task task1 = parser.parseAdd("a b c #f");
     	    Task task2 = parser.parseAdd("a b c d");
     	    Task task3 = parser.parseAdd("a b c d #e");
+    	    ArrayList<Task> tasks = new ArrayList<Task>();
+    	    tasks.add(task1);
+    	    tasks.add(task2);
+    	    tasks.add(task3);
+    	    
     	    invoker.execute(new AddCommand(receiver, task1));
             invoker.execute(new AddCommand(receiver, task2));
             invoker.execute(new AddCommand(receiver, task3));
@@ -244,9 +249,46 @@ public class TestLogic implements Observer {
             assertEquals(task3, todo.get(0));
             invoker.undo();
             assertTrue(todo.size() == 3);
+            invoker.execute(new DeleteCommand(receiver,tasks));
 	    } catch (Exception e) {
+	        e.printStackTrace();
 	    }
 	}
+	
+	/*
+     * Tests the search command with date.
+     */
+    @Test
+    public void searchDateTest() {
+        try {
+            Date today = new Date();
+            Calendar calendar = Calendar.getInstance(); 
+            calendar.setTime(today); 
+            calendar.add(Calendar.DATE, 1);
+            Date tomorrow = calendar.getTime();
+            
+            Task task1 = parser.parseAdd("task1 by today");
+            Task task2 = parser.parseAdd("task2 by 11.59pm");
+            Task task3 = parser.parseAdd("task3 by tomorrow");
+            ArrayList<Task> tasks = new ArrayList<Task>();
+            tasks.add(task1);
+            tasks.add(task2);
+            tasks.add(task3);
+            
+            invoker.execute(new AddCommand(receiver, task1));
+            invoker.execute(new AddCommand(receiver, task2));
+            invoker.execute(new AddCommand(receiver, task3));
+            assertTrue(todo.size() == 3);
+            invoker.execute(new SearchCommand(receiver, today));
+            assertTrue(todo.size() == 2);
+            invoker.execute(new SearchCommand(receiver, tomorrow));
+            assertTrue(todo.size() == 1);
+            assertEquals(task3, todo.get(0));
+            invoker.execute(new DeleteCommand(receiver,tasks));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 	
 	/*
 	 * Tests the priority command
@@ -306,6 +348,7 @@ public class TestLogic implements Observer {
                 invoker.execute(new DeleteCommand(receiver, completed.get(0)));
             }
 	    } catch (Exception e) {
+	        e.printStackTrace();
 	    }
 	}
 	
@@ -331,6 +374,7 @@ public class TestLogic implements Observer {
 	        file.delete();
 	    } catch (Exception e) {
 	        System.out.println("Failed to delete test.txt file");
+	        e.printStackTrace();
 	    }
 	}
 	
