@@ -48,6 +48,7 @@ import main.logic.DeleteCommand;
 import main.logic.EditCommand;
 import main.logic.Invoker;
 import main.logic.Receiver;
+import main.logic.SearchCommand;
 import main.parser.CommandParser;
 import main.parser.CommandParser.InvalidLabelFormat;
 import main.parser.CommandParser.InvalidTaskIndexFormat;
@@ -187,11 +188,11 @@ public class RootLayoutController implements Observer {
 
             } else if (commandToBeExecuted instanceof DeleteCommand) {
                 logger.log(Level.INFO, "(DELETE TASK) update() is called");
-                saveSelectedTaskIndex();
                 Platform.runLater(new Runnable() {
 
                     @Override
                     public void run() {
+                        saveSelectedTaskIndex();
                         refreshListView();
                         restoreListViewPreviousSelection();
                         // showResult(true, "Task deleted!");
@@ -200,18 +201,23 @@ public class RootLayoutController implements Observer {
                 });
             } else if (commandToBeExecuted instanceof EditCommand) {
                 logger.log(Level.INFO, "(EDIT TASK) update() is called");
-                saveSelectedTaskIndex();
                 Platform.runLater(new Runnable() {
 
                     @Override
                     public void run() {
-                        updateTabAndLabelWithTotalTasks();
+                        saveSelectedTaskIndex();
                         refreshListView();
                         restoreListViewPreviousSelection();
                         // showResult(true, "Task deleted!");
 
                     }
                 });
+            } else if (commandToBeExecuted instanceof SearchCommand) {
+                saveSelectedTaskIndex();
+                refreshListView();
+                restoreListViewPreviousSelection();
+                showFeedback(true, MESSAGE_FEEDBACK_ACTION_SEARCH,
+                        " Found " + todoTasks.size() + " tasks for -" + userArguments + "-");
             }
         }
 
@@ -571,27 +577,20 @@ public class RootLayoutController implements Observer {
             commandParser = new CommandParser();
         }
 
-        Platform.runLater(new Runnable() {
+        userInput = commandBar.getText();
+        assert userInput != null;
 
-            @Override
-            public void run() {
-                userInput = commandBar.getText();
-                assert userInput != null;
+        if (userInput.isEmpty()) {
+            logger.log(Level.INFO, "Command bar is empty");
+            clearStoredUserInput();
+            btnFeedback.setVisible(false);
+            return;
+        }
 
-                logger.log(Level.INFO, "User is typing: " + userInput);
-
-                if (userInput.length() <= 0) {
-                    btnFeedback.setVisible(false);
-                    clearStoredUserInput();
-                    return;
-                }
-
-                btnFeedback.setVisible(true);
-                extractUserInput();
-                parseUserInput();
-
-            }
-        });
+        logger.log(Level.INFO, "User is typing: " + userInput);
+        btnFeedback.setVisible(true);
+        extractUserInput();
+        parseUserInput();
 
     }
 
@@ -648,13 +647,17 @@ public class RootLayoutController implements Observer {
 
             } else if (commandToBeExecuted instanceof DeleteCommand) {
                 logger.log(Level.INFO, "(DELETE TASK) Pressed ENTER key: " + commandBar.getText());
-                saveSelectedTaskIndex();
                 invoker.execute(commandToBeExecuted);
             } else if (commandToBeExecuted instanceof EditCommand) {
                 logger.log(Level.INFO, "(EDIT TASK) Pressed ENTER key: " + commandBar.getText());
-                saveSelectedTaskIndex();
                 invoker.execute(commandToBeExecuted);
             }
+
+            // else if (commandToBeExecuted instanceof SearchCommand) {
+            // logger.log(Level.INFO, "(SEARCH TASK) Pressed ENTER key: " +
+            // commandBar.getText());
+            // invoker.execute(commandToBeExecuted);
+            // }
 
         }
 
@@ -721,9 +724,8 @@ public class RootLayoutController implements Observer {
         userInputArray = userInput.split(" ");
         userCommand = userInputArray[0].toLowerCase();
         if (userInputArray.length > 1) {
-            System.out.println(
-                    userCommand + " " + userInput.indexOf(userCommand) + " " + userInput.lastIndexOf(userCommand));
-            userArguments = userInput.substring(userInput.indexOf(userInputArray[1]));
+            userArguments = userInput.substring(userCommand.length() + 1);
+            logger.log(Level.INFO, "Extracted user arguments: " + userArguments);
         }
     }
 
@@ -863,6 +865,22 @@ public class RootLayoutController implements Observer {
         }
     }
 
+    /**
+     * 
+     */
+    private void parseSearch() {
+        if (userInputArray.length <= 1) {
+            logger.log(Level.INFO, "SEARCH command has no arguments. Interpreting as ADD command instead");
+            // no arguments found. parse the input as an Add operation instead
+            parseAdd();
+            return;
+        }
+
+        logger.log(Level.INFO, "Searching: " + userInput);
+        commandToBeExecuted = new SearchCommand(receiver, userArguments);
+        invoker.execute(commandToBeExecuted);
+    }
+
     private ArrayList<Task> getTasksToBeDeleted(int taskIndex) {
         ArrayList<Task> tasksToBeDeleted = new ArrayList<>(1);
         tasksToBeDeleted.add(todoTasks.get(taskIndex));
@@ -875,20 +893,6 @@ public class RootLayoutController implements Observer {
             tasksToBeDeleted.add(todoTasks.get(i - 1));
         }
         return tasksToBeDeleted;
-    }
-
-    /**
-     * 
-     */
-    private void parseSearch() {
-        logger.log(Level.INFO, "Searching: " + userInput);
-        if (userInputArray.length > 1) {
-            inputFeedback = userArguments;
-        } else {
-            inputFeedback = EMPTY_STRING;
-        }
-
-        showFeedback(true, MESSAGE_FEEDBACK_ACTION_SEARCH, inputFeedback);
     }
 
     /**
