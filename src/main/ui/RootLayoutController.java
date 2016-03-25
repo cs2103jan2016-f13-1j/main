@@ -172,6 +172,7 @@ public class RootLayoutController implements Observer {
 
     @Override
     public void update(Observable o, Object arg) {
+        
         if (o instanceof Receiver) {
             if (commandToBeExecuted instanceof AddCommand) {
                 logger.log(Level.INFO, "(ADD TASK) update() is called");
@@ -876,6 +877,7 @@ public class RootLayoutController implements Observer {
             return;
         }
 
+        //this allow a search without a search term
         if (userInput.equals(COMMAND_SEARCH + WHITESPACE)) {
             logger.log(Level.INFO, "Searching: " + userInput);
             commandToBeExecuted = new SearchCommand(receiver, WHITESPACE);
