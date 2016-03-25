@@ -230,7 +230,7 @@ public class TestCommandParser {
      * 
      * @throws InvalidLabelFormat 
      */
-    
+    @Test
     public void testDetectStartTime() throws InvalidLabelFormat {
     	CommandParser parser = new CommandParser();
     	Task task = parser.parseAdd("Attempt quiz from 5pm 10 apr");
@@ -243,7 +243,7 @@ public class TestCommandParser {
     	
     	task = parser.parseAdd("Watch movie at 7pm");
     	assertEquals("Watch movie", task.getTitle());
-    	assertEquals("Watch movie from today 7pm", task.toString());
+    	assertEquals("Watch movie from this Sat 7pm", task.toString());
     	
     	task = parser.parseAdd("Watch movie on 10 Apr 7pm");
     	assertEquals("Watch movie", task.getTitle());
@@ -256,7 +256,7 @@ public class TestCommandParser {
      * 
      * @throws InvalidLabelFormat 
      */
-    @Ignore @Test
+    
     public void testTaskToString() throws InvalidLabelFormat {
     	CommandParser parser = new CommandParser();
 
@@ -266,11 +266,15 @@ public class TestCommandParser {
     	task = parser.parseAdd("Cook dinner #home");
     	assertEquals("Cook dinner #home", task.toString());
 
-    	task = parser.parseAdd("Cook dinner 14/3 at 7pm #home");
+    	task = parser.parseAdd("Cook dinner 15/3 at 7pm #home");
+    	System.out.println("here");
     	System.out.println(task.toString());
+    	System.out.println(task.getStartDate());
+    	System.out.println(task.getEndDate());
     	assertEquals("Cook dinner from 14 Mar 7pm #home",task.toString());
 
     	task = parser.parseAdd("Cook dinner on 15/3 7pm");
+    	System.out.println("here");
     	assertEquals("Cook dinner from 15 Mar 7pm",task.toString());
     	
     	task = parser.parseAdd("Cook dinner on 24/3 7:15pm");
@@ -325,7 +329,6 @@ public class TestCommandParser {
     /**
      * Test priority toggling.
      * There are only four levels of priority.
-     * It cycles between the four.
      * 
      * @throws InvalidLabelFormat 
      */
@@ -338,6 +341,7 @@ public class TestCommandParser {
         assertEquals(2, task.togglePriority(true));
         assertEquals(3, task.togglePriority(true));
         assertEquals(0, task.togglePriority(true));
+        assertEquals(3, task.togglePriority(false));
     }
     
     @Test
@@ -364,7 +368,7 @@ public class TestCommandParser {
      *
      * @throws InvalidLabelFormat
      */
-    @Test
+    
     public void testEdit() throws InvalidLabelFormat {
     	CommandParser parser = new CommandParser();
     	Task task, task2;
@@ -432,8 +436,6 @@ public class TestCommandParser {
     	task2 = parser.parseEdit(task, "edit from 4pm to 10pm");
     	System.out.println(task.toString());
     	System.out.println(task2.toString());
-    	System.out.println(task.getSimpleDate());
-    	System.out.println(task.getSimpleTime());
     }
     
     // =============================
@@ -562,13 +564,13 @@ public class TestCommandParser {
     // Latest stuff
     // =============================
     
-    @Ignore @Test
+   
     public void testsToNote() throws InvalidLabelFormat {
         CommandParser parser = new CommandParser();
         Task task, task2;
         
-        task = parser.parseAdd("at 6 - 7");
-        // System.out.println(task.toString());
+        task = parser.parseAdd("do homework on next wednesday 6:59pm");
+         System.out.println(task.toString());
         
     	task = parser.parseAdd("Buy milk from 6 - 7pm");
     	task2 = parser.parseEdit(task, "edit 4-5pm");
@@ -578,4 +580,6 @@ public class TestCommandParser {
     	System.out.println(task2.toString());
     	//assertEquals("Buy milk from today 9pm to 10pm", task2.toString());
     }
+    
+    
 }
