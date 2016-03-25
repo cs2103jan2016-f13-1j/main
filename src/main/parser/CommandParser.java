@@ -66,9 +66,9 @@ public class CommandParser {
         Date startDate = null;
         Date endDate = null;
         boolean hasStartDate = false;
-        boolean isLabelPresent;
-        boolean hasPreposition;
-        boolean hasTime;
+        boolean isLabelPresent = false;
+        boolean hasPreposition = false;
+        boolean hasTime = false;
         title = commandString;
 
         hasPreposition = checkForPrepositions(commandString, PREPOSITION_ALL);
