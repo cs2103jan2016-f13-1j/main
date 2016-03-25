@@ -1,6 +1,7 @@
 package main.logic;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Observable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -59,11 +60,11 @@ public class Receiver extends Observable {
     }
     
     /**
-     * This method allows you to add a {@code task} to the 
+     * This method allows you to add a {@code Task} to the 
      * {@code ArrayList} of {@code Task} in memory.
      * 
      * @param   task
-     *          The {@code task} to add
+     *          The {@code Task} to add
      */
     public void add(Task task) {
         logger.log(Level.INFO, "add command");
@@ -72,7 +73,7 @@ public class Receiver extends Observable {
     }
     
     /**
-     * This method allows you to edit a {@code task} to a new {@code task} 
+     * This method allows you to edit a {@code Task} to a new {@code Task} 
      * in the {@code ArrayList} of {@code Task} in memory.
      * 
      * @param   oldTask
@@ -88,11 +89,11 @@ public class Receiver extends Observable {
     }
     
     /**
-     * This method allows you to delete a {@code task} from the 
+     * This method allows you to delete a {@code Task} from the 
      * {@code ArrayList} of {@code Task} in memory.
      * 
      * @param   task
-     *          The {@code task} to delete
+     *          The {@code Task} to delete
      */
     public void delete(Task task) {
         logger.log(Level.INFO, "delete command");
@@ -101,11 +102,11 @@ public class Receiver extends Observable {
     }
     
     /**
-     * This method allows you to delete multiple {@code task} from the 
+     * This method allows you to delete multiple {@code Task} from the 
      * {@code ArrayList} of {@code Task} in memory.
      * 
      * @param   tasks
-     *          The {@code ArrayList} of {@code task} to delete
+     *          The {@code ArrayList} of {@code Task} to delete
      */
     public void delete(ArrayList<Task> tasks) {
         logger.log(Level.INFO, "delete multiple command");
@@ -116,11 +117,11 @@ public class Receiver extends Observable {
     }
     
     /**
-     * This method allows you to mark a {@code task} from the 
+     * This method allows you to mark a {@code Task} from the 
      * {@code ArrayList} of {@code Task} in memory as completed.
      * 
      * @param   task
-     *          The {@code task} to mark as completed
+     *          The {@code Task} to mark as completed
      */
     public void done(Task task) {
         logger.log(Level.INFO, "done command");
@@ -133,11 +134,11 @@ public class Receiver extends Observable {
     }
     
     /**
-     * This method allows you to mark multiple {@code task} from the 
+     * This method allows you to mark multiple {@code Task} from the 
      * {@code ArrayList} of {@code Task} in memory as completed.
      * 
      * @param   tasks
-     *          The {@code ArrayList} of {@code task} to be marked as completed
+     *          The {@code ArrayList} of {@code Task} to be marked as completed
      */
     public void done(ArrayList<Task> tasks) {
         logger.log(Level.INFO, "done multiple command");
@@ -152,11 +153,11 @@ public class Receiver extends Observable {
     }
     
     /**
-     * This method allows you to mark a {@code task} from the 
+     * This method allows you to mark a {@code Task} from the 
      * {@code ArrayList} of {@code Task} in memory as incomplete.
      * 
      * @param   task
-     *          The {@code task} to mark as incomplete
+     *          The {@code Task} to mark as incomplete
      */
     public void undone(Task task) {
         logger.log(Level.INFO, "undone command");
@@ -169,11 +170,11 @@ public class Receiver extends Observable {
     }
     
     /**
-     * This method allows you to mark multiple {@code task} from the 
+     * This method allows you to mark multiple {@code Task} from the 
      * {@code ArrayList} of {@code Task} in memory as incomplete.
      * 
      * @param   tasks
-     *          The {@code ArrayList} of {@code task} to be marked as incomplete
+     *          The {@code ArrayList} of {@code Task} to be marked as incomplete
      */
     public void undone(ArrayList<Task> tasks) {
         logger.log(Level.INFO, "undone multiple command");
@@ -187,19 +188,33 @@ public class Receiver extends Observable {
         initiateSave();
     }
     
+    /**
+     * This method allows you to search for tasks that has description
+     * or label found in the given {@code searchTerm}.
+     * 
+     * @param   searchTerm
+     *          The {@code String} of terms to search which are separated by spaces.
+     */
     public void search(String searchTerm) {
-        logger.log(Level.INFO, "search command for " + searchTerm);
+        logger.log(Level.INFO, "search command for term " + searchTerm);
         String[] searchList = searchTerm.split(" ");
         ArrayList<Task> searchResults = new ArrayList<Task>();
-        boolean found = true;
-        for (Task task : allTasks) {
+        
+        for (Task t : allTasks) {
+            boolean found = true;
             for (String term : searchList) {
-                if (!task.getTitle().contains(term)) {
+                if (term.contains("#")) {
+                    if (t.getLabel() == null) {
+                        found = false;
+                    } else if (!("#" + t.getLabel()).contains(term)) {
+                        found = false;
+                    }
+                } else if (!t.getTitle().contains(term)) {
                     found = false;
                 }
             }
             if (found) {
-                searchResults.add(task);
+                searchResults.add(t);
             }
         }
         categorizeTasks(searchResults);
@@ -208,11 +223,46 @@ public class Receiver extends Observable {
         notifyObservers();
     }
     
+    public void search(Date searchDate) {
+        logger.log(Level.INFO, "search command for date " + searchDate);
+        ArrayList<Task> searchResults = new ArrayList<Task>();
+        for (Task t : allTasks) {
+            if (t.hasDateRange()) {
+                
+            }
+        }
+        categorizeTasks(searchResults);
+        sortTasks();
+        setChanged();
+        notifyObservers();
+    }
+    
+    /**
+     * This method allows you to clear any existing search filters.
+     * Can also be used just to refresh the observer's list.
+     */
     public void clearSearch() {
         categorizeTasks(allTasks);
         sortTasks();
         setChanged();
         notifyObservers();
+    }
+    
+    /**
+     * This method cycles the priority of the task. The priority increases/decreases
+     * respectively according to the true/false boolean {@code increase}.
+     * @param   task
+     *          The {@code Task} to have its priority modified.
+     * @param   increase
+     *          The {@code boolean} to indicate an increase or decrease in priority.
+     */
+    public void priority(Task task, boolean increase) {
+        for (Task t : allTasks) {
+            if (t.equals(task)) {
+                t.togglePriority(increase);
+            }
+        }
+        initiateSave();
     }
     
     /**
