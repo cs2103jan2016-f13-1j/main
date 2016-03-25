@@ -650,7 +650,9 @@ public class CommandParser {
     	return string.substring(index, string.length());
     }
     
-
+    // =============================
+    // Parsing Indexes
+    // =============================
     
     /**
      * This method detects the types of indexes and processes them.
@@ -663,8 +665,9 @@ public class CommandParser {
     public ArrayList<Integer> parseIndexes(String commandString) throws InvalidTaskIndexFormat {
     	try {
 	    	logger.log(Level.INFO, "Parsing indexes.");
-	    	String indexString = getIndexString(commandString);
-	
+	    	String indexString = getStringWithoutCommand(commandString);
+	        indexString = removeWhiteSpace(indexString);
+	        
 	    	ArrayList<Integer> indexes = new ArrayList<Integer>();
 	    	indexes = extractIndex(indexString);
 	    	logger.log(Level.INFO, "Indexes retrieved.");
@@ -674,14 +677,11 @@ public class CommandParser {
     	}
     }
     
-    private String getIndexString(String commandString) throws InvalidLabelFormat{
+    private String getStringWithoutCommand(String commandString) throws InvalidLabelFormat{
         int index = 0;
         String command = getFirstWord(commandString); //will not fail because without command UI won't call
-        
         index = command.length() + LENGTH_OFFSET;
-        
         String indexString = commandString.substring(index, commandString.length());
-        indexString = removeWhiteSpace(indexString);
         assert(!indexString.isEmpty());
         return indexString;
     }
@@ -731,6 +731,7 @@ public class CommandParser {
         		multipleIndexes.add(indexToAdd);
         	}
         }
+        
         Collections.sort(multipleIndexes);
         return multipleIndexes;
     }
@@ -755,8 +756,9 @@ public class CommandParser {
     private ArrayList<Integer> getMultipleIndexes(ArrayList<Integer> arrayIntegers) {
     	ArrayList<Integer> multiple = new ArrayList<Integer>();
     	int start, end;
+    	int possibleRange = arrayIntegers.size() - 1;
     	
-    	for (int i = 0; i < arrayIntegers.size() - 1; i++) {
+    	for (int i = 0; i < possibleRange; i++) {
     		if (arrayIntegers.get(i) < arrayIntegers.get(i+1)) {
     			start = arrayIntegers.get(i);
     			end = arrayIntegers.get(i+1);
@@ -775,6 +777,10 @@ public class CommandParser {
     	return multiple;
     }
     
+    // =============================
+    // Exceptions
+    // =============================
+        
     @SuppressWarnings("serial")
 	public class InvalidTaskIndexFormat extends Exception {
     	public InvalidTaskIndexFormat() {

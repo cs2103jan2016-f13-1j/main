@@ -155,7 +155,7 @@ public class TestCommandParser {
      * 
      * @throws InvalidLabelFormat
      */
-    @Test
+    
     public void testSmartDetectionOfTime() throws InvalidLabelFormat {
     	CommandParser parser = new CommandParser();
     	Task task;
@@ -230,7 +230,7 @@ public class TestCommandParser {
      * 
      * @throws InvalidLabelFormat 
      */
-    @Test
+    
     public void testDetectStartTime() throws InvalidLabelFormat {
     	CommandParser parser = new CommandParser();
     	Task task = parser.parseAdd("Attempt quiz from 5pm 10 apr");
@@ -432,8 +432,13 @@ public class TestCommandParser {
     	task2 = parser.parseEdit(task, "edit from 4pm to 10pm");
     	System.out.println(task.toString());
     	System.out.println(task2.toString());
-    	System.out.println();
+    	System.out.println(task.getSimpleDate());
+    	System.out.println(task.getSimpleTime());
     }
+    
+    // =============================
+    // Test parsing indexes
+    // =============================
     
     /**
      * Test parsing of indexes.
@@ -552,6 +557,10 @@ public class TestCommandParser {
         }
         assertEquals(true, thrown);        
     }
+    
+    // =============================
+    // Latest stuff
+    // =============================
     
     @Ignore @Test
     public void testsToNote() throws InvalidLabelFormat {
