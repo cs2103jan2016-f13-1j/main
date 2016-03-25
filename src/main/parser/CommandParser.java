@@ -25,7 +25,6 @@ import main.data.Task;
  */
 
 public class CommandParser {
-    private final boolean PREPOSITION_ALL = true;
     private final int DATE_INDEX = 0;
     private final int DATE_START_RANGED = 0;
     private final int DATE_END_RANGED = 1;
@@ -109,28 +108,7 @@ public class CommandParser {
             		startDate = getDate(dates, DATE_INDEX);
             		endDate = null;
         		}
-            	
-            	/*
-            	String regex;
-            	boolean hasAMPM = checkAMPM(commandString);
-            	if (hasPreposition) {     	//do this first //else confirm prepo gone	
-            		if (!hasAMPM) { //if dont have, no need to appemd am pm
-	            		regex = getSpecialTimeRegex();
-	            		title = removeRegex(regex, title);
-            		}
-            	}
 
-            	regex = getTimeRegex();
-            	title = removeRegex(regex, title);
-            	regex = getDateRegex();
-            	title = removeRegex(regex, title);
-            	regex = getDateRegexText();
-            	title = removeRegex(regex, title);
-            	regex = getDayRegex();
-            	title = removeRegex(regex, title);
-            	*/
-            	
-            	
                 title = removeDateFromTitle(title, startDate, endDate);
             }
         }
@@ -150,42 +128,6 @@ public class CommandParser {
         return task;
     }
     
-   
-    
-    private String getTimeRegex() {
-    	return REGEX_PREPOSITION_ALL + "?" + REGEX_TIME_TWELVE + REGEX_AM_PM;
-    }
-    
-    private String getSpecialTimeRegex() {
-    	return REGEX_PREPOSITION_ALL + REGEX_TIME_TWELVE + "?";
-    }
-    
-    private String getDateRegex() {
-    	return REGEX_PREPOSITION_ALL + "?" + REGEX_DATE_NUM;
-    }
-    
-    private String getDateRegexText() {
-    	return REGEX_PREPOSITION_ALL + "?" + REGEX_DATE_TEXT + " " + REGEX_MONTH_TEXT;
-    }
-    
-    private String getDayRegex() {
-    	return  REGEX_PREPOSITION_ALL + "?" + REGEX_DAY;
-    }
-    
-    private String removeRegex(String regex, String input) {
-    	Pattern p = Pattern.compile(regex);
-    	Matcher m = p.matcher(input);
-    	String removed = input;
-
-    	while (m.find()) {
-        	String match = m.group();
-        	removed = removed.replaceAll(match,"");
-    	  	removed = removed.replaceAll("\\s+", " ").trim();    		
-    	}
-    	
-    	return removed;
-    }
-    
     /**
      * Check if valid time is specified.
      * 24format not supported because can be confused with normal numbers.
@@ -195,27 +137,6 @@ public class CommandParser {
      * @return {@code Boolean} if time found
      */
     private boolean checkForTime(String commandString) {
-    	Pattern pattern = Pattern.compile(REGEX_TIME_TWELVE + REGEX_AM_PM);
-        Matcher matcher = pattern.matcher(commandString);
-        return matcher.find();
-    }
-    
-    private boolean checkForDate(String commandString) {
-         String regex = getDateRegex();
-         Pattern pattern = Pattern.compile(regex);
-         Matcher matcher = pattern.matcher(commandString);
-         boolean hasFound = matcher.find();
-         if (hasFound == false) {
-         	regex = getDateRegexText();
-         	pattern = Pattern.compile(regex);
-         	matcher = pattern.matcher(commandString);       
-         	hasFound = matcher.find();
-         }
-         
-         return hasFound;
-    }
-    
-    private boolean checkAMPM(String commandString) {
     	Pattern pattern = Pattern.compile(REGEX_TIME_TWELVE + REGEX_AM_PM);
         Matcher matcher = pattern.matcher(commandString);
         return matcher.find();
@@ -237,43 +158,7 @@ public class CommandParser {
         Matcher matcher = pattern.matcher(commandString);
         return matcher.find();
     }
-    
-    private boolean checkForDeadline(String commandString) {
-    	String preposition = REGEX_PREPOSITION_DEADLINE;
-    	Pattern pattern = Pattern.compile(preposition);
-        Matcher matcher = pattern.matcher(commandString);
-        return matcher.find();
-    }
-    /**
-     * This method generate a list of pre-defined prepositions to be used.
-     * 
-     * @param prepositionType
-     * 			{@code Boolean} flag indicating the list type.
-     * 			True for the whole list while false for a partial list.
-     * @return {@code ArrayList<String>} containing prepositions
-     */
-    private ArrayList<String> populatePrepositions(boolean prepositionType) {
-    	ArrayList<String> prepositions = new ArrayList<String>();
-    	
-    	if (prepositionType) {
-	    	prepositions.add("from");
-	    	prepositions.add("at");
-	    	prepositions.add("on");
-	    	prepositions.add("by");
-	    	prepositions.add("before");
-	    	prepositions.add("after");
-	    	prepositions.add("to");
-	    	prepositions.add("-");
-    	} else {
-    		prepositions.add("from");
-        	prepositions.add("after");
-        	prepositions.add("at");
-        	prepositions.add("on");
-    	}
-    	
-    	return prepositions;
-    }
-    
+   
     /**
      * This method corrects user input of dd/mm into mm/dd for date parsing.
      * 
@@ -345,8 +230,38 @@ public class CommandParser {
         return dates;
     }
     
+    private boolean checkForDate(String commandString) {
+        String regex = getDateRegex();
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(commandString);
+        boolean hasFound = matcher.find();
+        if (hasFound == false) {
+        	regex = getDateRegexText();
+        	pattern = Pattern.compile(regex);
+        	matcher = pattern.matcher(commandString);       
+        	hasFound = matcher.find();
+        }
+        
+        return hasFound;
+   }
+    
+    private String getDateRegex() {
+    	return REGEX_PREPOSITION_ALL + "?" + REGEX_DATE_NUM;
+    }
+    
+    private String getDateRegexText() {
+    	return REGEX_PREPOSITION_ALL + "?" + REGEX_DATE_TEXT + " " + REGEX_MONTH_TEXT;
+    }
+    
     private Date getDate(List<Date> dates, int index) {
         return dates.get(index);
+    }
+    
+    private boolean checkForDeadline(String commandString) {
+    	String preposition = REGEX_PREPOSITION_DEADLINE;
+    	Pattern pattern = Pattern.compile(preposition);
+        Matcher matcher = pattern.matcher(commandString);
+        return matcher.find();
     }
     
     /**
@@ -511,15 +426,17 @@ public class CommandParser {
     			index = words.indexOf(toBeRemoved.get(i));
     			if (index != 0) {
 	    			index = index - INDEX_OFFSET;
-	    			isPreposition = checkIsPreposition(title, index, PREPOSITION_ALL);
+	    			String word = getWord(title, index);
+	    			word = word.concat(" ");
+	    			
+	    			isPreposition = checkForPrepositions(word);
 	
 	    			if (isPreposition) {
-	    				toBeReplaced = words.get(index).concat(" ").concat(toBeReplaced);
+	    				toBeReplaced = word.concat(toBeReplaced);
 	    			}
     			}
     		}
         	
-    		//remove regardless of case
         	toBeReplaced = "(?i)".concat(toBeReplaced); 
         	title = title.replaceAll(toBeReplaced, "");
     	}
@@ -527,29 +444,10 @@ public class CommandParser {
     	return title.replaceAll("\\s+", " ").trim();
     }
 
-   
-   
-    
-    /**
-     * This method checks if a word is a preposition.
-     * 
-     * @param title
-     * 			{@code String} title
-     * @param index
-     * 			{@code int} index of the word from its title
-     * @return {@code Boolean} true if preposition is found
-     */
-    private boolean checkIsPreposition(String title, int index, boolean type) {
-    	ArrayList<String> prepositions = new ArrayList<String>();
-	    prepositions = populatePrepositions(type);
-
+    private String getWord(String title, int index) {
     	List<String> words = new ArrayList<String>(Arrays.asList(title.toLowerCase().split(" ")));
-    	for (int i = 0; i < prepositions.size(); i++ ) {
-    		if (words.get(index).matches(prepositions.get(i))) {
-    			return true;
-    		}
-    	}
-    	return false;
+    	String word = words.get(index);
+    	return word;
     }
     
     private boolean checkForLabel(String commandString) {
@@ -590,16 +488,65 @@ public class CommandParser {
         int index = title.indexOf(tag);
         index = index + label.length() + LENGTH_OFFSET;
         
-        /*
-        if (title.length() != index) {
-            tag = tag.concat(" ");
-        } else if (title.length() == index) {
-            tag = " ".concat(tag);
-        }
-        */
         title = title.replace(tag, "");
         return title.replaceAll("\\s+", " ").trim();
     }
+    
+
+    /*
+	String regex;
+	boolean hasAMPM = checkAMPM(commandString);
+	if (hasPreposition) {     	//do this first //else confirm prepo gone	
+		if (!hasAMPM) { //if dont have, no need to appemd am pm
+    		regex = getSpecialTimeRegex();
+    		title = removeRegex(regex, title);
+		}
+	}
+
+	regex = getTimeRegex();
+	title = removeRegex(regex, title);
+	regex = getDateRegex();
+	title = removeRegex(regex, title);
+	regex = getDateRegexText();
+	title = removeRegex(regex, title);
+	regex = getDayRegex();
+	title = removeRegex(regex, title);
+	
+    
+    private String getTimeRegex() {
+    	return REGEX_PREPOSITION_ALL + "?" + REGEX_TIME_TWELVE + REGEX_AM_PM;
+    }
+    
+    private String getSpecialTimeRegex() {
+    	return REGEX_PREPOSITION_ALL + REGEX_TIME_TWELVE + "?";
+    }
+    
+    private String getDayRegex() {
+    	return  REGEX_PREPOSITION_ALL + "?" + REGEX_DAY;
+    }
+    
+    private String removeRegex(String regex, String input) {
+    	Pattern p = Pattern.compile(regex);
+    	Matcher m = p.matcher(input);
+    	String removed = input;
+
+    	while (m.find()) {
+        	String match = m.group();
+        	removed = removed.replaceAll(match,"");
+    	  	removed = removed.replaceAll("\\s+", " ").trim();    		
+    	}
+    	
+    	return removed;
+    }
+   
+    
+    private boolean checkAMPM(String commandString) {
+    	Pattern pattern = Pattern.compile(REGEX_TIME_TWELVE + REGEX_AM_PM);
+        Matcher matcher = pattern.matcher(commandString);
+        return matcher.find();
+    }
+    */
+    
     
     /*
     public Task parseEdit(Task oldTask, String commandString) throws InvalidLabelFormat {
