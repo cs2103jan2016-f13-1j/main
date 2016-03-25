@@ -34,6 +34,7 @@ public class Receiver extends Observable {
         allTasks = storage.readTasks();
         assert(allTasks != null);
         categorizeTasks(allTasks);
+        sortTasks();
     }
     
     /**
