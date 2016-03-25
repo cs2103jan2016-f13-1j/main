@@ -592,5 +592,13 @@ public class TestCommandParser {
     	//assertEquals("Buy milk from today 9pm to 10pm", task2.toString());
     }
     
+    @Test
+    public void testTime() throws InvalidLabelFormat {
+    	 CommandParser parser = new CommandParser();
+    	 Task task;
+    	 task = parser.parseAdd("do homework from 4-5pm");
+    	 System.out.println(task.toString());
+    }
+    
    
 }
