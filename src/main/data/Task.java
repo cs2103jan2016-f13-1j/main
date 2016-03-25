@@ -384,7 +384,11 @@ public class Task {
     	if (hasDateRange()) {
     		start = getDate(startDate).concat(" ").concat(getMonth(startDate));
         	end = getDate(endDate).concat(" ").concat(getMonth(endDate));
-    		stringBuilder.append(start + " - " + end);
+        	if (start.equals(end)) {
+        		stringBuilder.append(start);
+        	} else {
+        		stringBuilder.append(start + " - " + end);
+        	}
     	} else if (hasStartDate()) {
     		start = getDate(startDate).concat(" ").concat(getMonth(startDate));
     		stringBuilder.append(start);
@@ -411,6 +415,8 @@ public class Task {
     		stringBuilder.append(startTime);
     	} else if (hasEndDate()) {
     		stringBuilder.append("by " + endTime);
+    	} else {
+    		stringBuilder.append("-");
     	}
     	
     	return stringBuilder.toString();

@@ -238,6 +238,9 @@ public class CommandParser {
         		Calendar cal = Calendar.getInstance();
 		    	cal.setTime(dates.get(i));
         		
+		    	//not present means date not specified
+		    	//can check time according to now
+		    	//else leave it as overdue
 		    	if (!checkIsInfoPresent(commandString, dates)) {
 		    		if (checkForTime(commandString)) {
     			    	cal.add(Calendar.DATE, 1);
@@ -576,9 +579,8 @@ public class CommandParser {
 
         boolean hasPreposition = checkForPrepositions(commandString, PREPOSITION_ALL);
         boolean hasTime = checkForTime(commandString);
-        System.out.println("here");
+        
         if (hasPreposition || hasTime) {
-        	System.out.println("before date parsing");
         	commandString = detectAndCorrectDateInput(commandString);
         	List<Date> dates = parseDate(commandString);
             numberOfDate = dates.size();
@@ -600,6 +602,9 @@ public class CommandParser {
             		startDate = getDate(dates, DATE_INDEX);
             		endDate = null;
         		}
+            	
+            	//check for date in title here
+            	
             	
                 commandString = removeDateFromTitle(commandString, startDate, endDate);
             }

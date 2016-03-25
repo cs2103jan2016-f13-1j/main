@@ -43,23 +43,31 @@ class TodoTaskComparator implements Comparator<Task> {
             if (t1.hasSingleDate() && t2.hasSingleDate()) {
                 //If both only has one date
                 return t1.getSingleDate().compareTo(t2.getSingleDate());
-            } else if (t1.hasSingleDate() && !t2.hasSingleDate()) {
+            } else if (t1.hasSingleDate() && t2.hasDateRange()) {
                 //If one has single date and the other is ranged
                 if (t2.hasStarted()) {
                     //t2 have stared
-                    return t1.getSingleDate().compareTo(t2.getEndDate());
+                    return t2.getEndDate().compareTo(t1.getSingleDate());
                 } else {
                     //t2 have not started
-                    return t1.getSingleDate().compareTo(t2.getStartDate());
+                    if (t1.getSingleDate().compareTo(t2.getStartDate()) == 0) {
+                        return -1;
+                    } else {
+                        return t1.getSingleDate().compareTo(t2.getStartDate());
+                    }
                 }
-            } else if (!t1.hasSingleDate() && t2.hasSingleDate()) {
+            } else if (t1.hasDateRange() && t2.hasSingleDate()) {
               //If one is ranged and the other has single date
                 if (t1.hasStarted()) {
                     //t1 have stared
-                    return t2.getSingleDate().compareTo(t1.getEndDate());
+                    return t1.getEndDate().compareTo(t2.getSingleDate());
                 } else {
                     //t1 have not started
-                    return t2.getSingleDate().compareTo(t1.getStartDate());
+                    if (t1.getStartDate().compareTo(t2.getSingleDate()) == 0) {
+                        return 1;
+                    } else {
+                        return t1.getStartDate().compareTo(t2.getSingleDate());
+                    }
                 }
             } else {
                 //Both tasks are ranged dates
