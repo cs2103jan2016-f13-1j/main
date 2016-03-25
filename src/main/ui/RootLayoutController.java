@@ -172,6 +172,7 @@ public class RootLayoutController implements Observer {
 
     @Override
     public void update(Observable o, Object arg) {
+        
         if (o instanceof Receiver) {
             if (commandToBeExecuted instanceof AddCommand) {
                 logger.log(Level.INFO, "(ADD TASK) update() is called");
@@ -869,10 +870,19 @@ public class RootLayoutController implements Observer {
      * 
      */
     private void parseSearch() {
-        if (userInputArray.length <= 1) {
+        if (userInput.equals(COMMAND_SEARCH)) {
             logger.log(Level.INFO, "SEARCH command has no arguments. Interpreting as ADD command instead");
             // no arguments found. parse the input as an Add operation instead
             parseAdd();
+            return;
+        }
+
+        //this allow a search without a search term
+        if (userInput.equals(COMMAND_SEARCH + WHITESPACE)) {
+            logger.log(Level.INFO, "Searching: " + userInput);
+            commandToBeExecuted = new SearchCommand(receiver, WHITESPACE);
+            userArguments = WHITESPACE;
+            invoker.execute(commandToBeExecuted);
             return;
         }
 
