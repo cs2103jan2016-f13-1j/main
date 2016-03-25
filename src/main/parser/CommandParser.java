@@ -442,35 +442,43 @@ public class CommandParser {
 		assert(hour >= 0);
 		assert(min >= 0);
 		
-		String minute = ":";
+		String colon = ":";
+		String dot = ".";
 		if (min < DOUBLE_DIGIT) {
-			minute = minute.concat("0");
+			colon = colon.concat("0");
+			dot = dot.concat("0");
 		}
 
-		minute = minute.concat(Integer.toString(dateTime.getMinute()));
-
+		colon = colon.concat(Integer.toString(dateTime.getMinute()));
+		dot = dot.concat(Integer.toString(dateTime.getMinute()));
+		
 		timings.add(Integer.toString(hour));
-		timings.add(Integer.toString(hour).concat(minute));
+		timings.add(Integer.toString(hour).concat(colon));
+		timings.add(Integer.toString(hour).concat(dot));
 
 		if (hour < 12) {
 			if (hour == 0) {
 				String temp = STRING_TWELVE;
 				timings.add(temp.concat(STRING_AM));
-				timings.add(temp.concat(minute).concat(STRING_AM));
+				timings.add(temp.concat(colon).concat(STRING_AM));
+				timings.add(temp.concat(dot).concat(STRING_AM));
 			} else {
 				timings.add(Integer.toString(hour).concat(STRING_AM));
-				timings.add(Integer.toString(hour).concat(minute).concat(STRING_AM));
+				timings.add(Integer.toString(hour).concat(colon).concat(STRING_AM));
+				timings.add(Integer.toString(hour).concat(dot).concat(STRING_AM));
 			}
 		} else if (hour >= 12) {	
 			hour = hour - 12;
 			if (hour == 0) {
 				String temp = STRING_TWELVE;
 				timings.add(temp.concat(STRING_PM));
-				timings.add(temp.concat(minute).concat(STRING_PM));
+				timings.add(temp.concat(colon).concat(STRING_PM));
+				timings.add(temp.concat(dot).concat(STRING_PM));
 			} else {
 				timings.add(Integer.toString(hour));
 				timings.add(Integer.toString(hour).concat(STRING_PM));
-				timings.add(Integer.toString(hour).concat(minute).concat(STRING_PM));	
+				timings.add(Integer.toString(hour).concat(colon).concat(STRING_PM));
+				timings.add(Integer.toString(hour).concat(dot).concat(STRING_PM));
 			}
 		}
 		return timings;
