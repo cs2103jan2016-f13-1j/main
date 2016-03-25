@@ -235,6 +235,8 @@ public class TestLogic implements Observer {
             invoker.execute(new AddCommand(receiver, task2));
             invoker.execute(new AddCommand(receiver, task3));
             assertTrue(todo.size() == 3);
+            invoker.execute(new SearchCommand(receiver, ""));
+            assertTrue(todo.size() == 3);
             invoker.execute(new SearchCommand(receiver, "a b c"));
             assertTrue(todo.size() == 3);
             invoker.execute(new SearchCommand(receiver, "d"));

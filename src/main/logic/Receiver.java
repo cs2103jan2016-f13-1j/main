@@ -268,17 +268,6 @@ public class Receiver extends Observable {
     }
     
     /**
-     * This method allows you to clear any existing search filters.
-     * Can also be used just to refresh the observer's list.
-     */
-    public void clearSearch() {
-        categorizeTasks(allTasks);
-        sortTasks();
-        setChanged();
-        notifyObservers();
-    }
-    
-    /**
      * This method cycles the priority of the task. The priority increases/decreases
      * respectively according to the true/false boolean {@code increase}.
      * @param   task

@@ -34,6 +34,6 @@ public class SearchCommand implements Command {
     }
     
     public void undo() {
-        receiver.clearSearch();
+        receiver.search("");
     }
 }
