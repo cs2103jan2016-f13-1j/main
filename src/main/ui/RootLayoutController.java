@@ -188,7 +188,7 @@ public class RootLayoutController implements Observer {
                         refreshListView();
                         listViewTodo.getSelectionModel().selectLast();
                         listViewTodo.scrollTo(todoTasks.size() - 1);
-                        snackbar.fireEvent(new SnackbarEvent("Task added! ","UNDO",5000,(me)->{}));
+//                        snackbar.fireEvent(new SnackbarEvent("Task added! ","UNDO",5000,(me)->{}));
                         // showResult(true, "Task added!");
                     }
                 });
@@ -250,7 +250,7 @@ public class RootLayoutController implements Observer {
         initMouseListener();
         initKeyboardListener();
         initCommandBarListener();
-        snackbar.registerSnackbarContainer(rootLayout);
+//        snackbar.registerSnackbarContainer(rootLayout);
         // initTabSelectionListener();
         logger.log(Level.INFO, "UI initialization complete");
     }

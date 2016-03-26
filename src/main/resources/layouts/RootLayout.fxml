@@ -55,12 +55,12 @@
             </Tab>
          </tabs>
       </JFXTabPane>
-      <JFXTextField fx:id="commandBar" prefHeight="48.0" labelFloat="true" promptText="Type something..." AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="40.0">
+      <JFXTextField fx:id="commandBar" labelFloat="true" prefHeight="48.0" promptText="Type something..." AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="40.0">
          <font>
             <Font name="Noto Sans" size="18.0" />
          </font>
       </JFXTextField>
-      <JFXButton fx:id="btnFeedback" alignment="CENTER" buttonType="RAISED" maxHeight="-Infinity" minHeight="68.0" style="-fx-background-color: white;" visible="false" AnchorPane.bottomAnchor="70.0" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="40.0" AnchorPane.topAnchor="750.0">
+      <JFXButton fx:id="btnFeedback" alignment="CENTER" buttonType="RAISED" layoutY="796.0" style="-fx-background-color: white;" visible="false" AnchorPane.bottomAnchor="70.0" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="40.0" AnchorPane.topAnchor="850.0">
          <font>
             <Font name="Noto Sans" size="13.0" />
          </font>
