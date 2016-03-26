@@ -121,12 +121,13 @@ public class CommandParser {
             	if (hasTime && hasPreposition == false) {
             		startDate = getDate(dates, DATE_INDEX);
             		endDate = null;
-        		}
+            	}
 
-                title = removeDateFromTitle(title, startDate, endDate);
-                if (hasDateRange) {
-                	title = removeRangeFromTitle(title);
-                }
+            	if (hasDateRange) {
+            		title = removeRangeFromTitle(title);
+            	}
+            	title = removeDateFromTitle(title, startDate, endDate);
+               
             }
         }
         
@@ -190,7 +191,7 @@ public class CommandParser {
      * 			{@code String} user input
      * @return {@code  String} with time range corrected
      */
-    private static String correctRangeTime(String input) {
+    private String correctRangeTime(String input) {
     	input = input.replaceAll("()-()","$1 - $2");
         return input;
     }
@@ -507,7 +508,7 @@ public class CommandParser {
      * @return {@code String} with time range removed
      */
     private String removeRangeFromTitle(String title) {
-    	String range = REGEX_PREPOSITION_ALL + REGEX_TIME_RANGE;
+    	String range = "(" + REGEX_PREPOSITION_ALL + "?)" + REGEX_TIME_RANGE;
     	Pattern pattern = Pattern.compile(range);
         Matcher matcher = pattern.matcher(title);
         if (matcher.find()) {
@@ -632,7 +633,7 @@ public class CommandParser {
     	if (isIndex) {
     		commandString = removeFirst(commandString);
     	}
-    	
+    
     	boolean isLabelPresent = false;
     	isLabelPresent = checkForLabel(commandString);
         if (isLabelPresent) {
@@ -646,8 +647,17 @@ public class CommandParser {
 
         boolean hasPreposition = checkForPrepositions(commandString);
         boolean hasTime = checkForTime(commandString);
+        boolean hasDateRange = false;
+        
+        if (hasTime) {
+        	hasDateRange = checkForRangeTime(commandString);
+        }
         
         if (hasPreposition || hasTime) {
+        	if (hasDateRange) {
+        		commandString = correctRangeTime(commandString);
+        	}
+        	
         	commandString = detectAndCorrectDateInput(commandString);
         	List<Date> dates = parseDate(commandString);
             numberOfDate = dates.size();
@@ -664,36 +674,41 @@ public class CommandParser {
                 		endDate = getDate(dates, DATE_INDEX);
                 	}
                 }
-            	
-            	if (hasTime && hasPreposition == false) {
+
+            	if (hasTime == false && hasPreposition == false) {
             		startDate = getDate(dates, DATE_INDEX);
             		endDate = null;
-        		}
+            	}
+            	
+            	
             	
             	//check for date in title here
             	
+            	if (hasDateRange) {
+            		commandString = removeRangeFromTitle(commandString);
+            	}
             	
-                commandString = removeDateFromTitle(commandString, startDate, endDate);
+            	commandString = removeDateFromTitle(commandString, startDate, endDate);
+
             }
         }
         
         
-        	if (startDate != null && endDate != null) {
+        if (startDate != null && endDate != null) {
+        	newStart = startDate;
+        	newEnd = endDate;
+        } else {
+        	if (startDate != null) {
         		newStart = startDate;
-        		newEnd = endDate;
-        	} else {
-        		if (startDate != null) {
-        			newStart = startDate;
-        			newEnd = null;
-                }
-                
-                if (endDate != null) {
-                	newStart = null;
-                	newEnd = endDate;
-                }
+        		newEnd = null;
         	}
-		
-        
+
+        	if (endDate != null) {
+        		newStart = null;
+        		newEnd = endDate;
+        	}
+        }
+
         if (commandString.length() > 0) {
         	title = commandString;
         }       
@@ -873,6 +888,19 @@ public class CommandParser {
     		super (message);
     		logger.log(Level.WARNING, "Label cannot be parsed by parser.");
     		logger.log(Level.WARNING, "InvalidLabelFormat exception thrown.");    		
+    	}
+    }
+    
+    public class InvalidTimeFormat extends Exception {
+    	public InvalidTimeFormat() {
+    		logger.log(Level.WARNING, "Time cannot be parsed by parser.");
+    		logger.log(Level.WARNING, "InvalidTimeFormat exception thrown.");
+    	}
+
+    	public InvalidTimeFormat(String message) {
+    		super (message);
+    		logger.log(Level.WARNING, "Time cannot be parsed by parser.");
+    		logger.log(Level.WARNING, "InvalidTimeFormat exception thrown.");    		
     	}
     }
 }
