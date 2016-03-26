@@ -611,8 +611,6 @@ public class CommandParser {
     }
     */
     
-    
-    /*
     public Task parseEdit(Task oldTask, String commandString) throws InvalidLabelFormat {
         int numberOfDate = 0;
         boolean hasStartDate = false;
@@ -646,7 +644,7 @@ public class CommandParser {
         	}
         }
 
-        boolean hasPreposition = checkForPrepositions(commandString, PREPOSITION_ALL);
+        boolean hasPreposition = checkForPrepositions(commandString);
         boolean hasTime = checkForTime(commandString);
         
         if (hasPreposition || hasTime) {
@@ -659,7 +657,7 @@ public class CommandParser {
                     startDate = getDate(dates, DATE_START_RANGED);
                     endDate = getDate(dates, DATE_END_RANGED);
                 } else {
-                	hasStartDate = checkForPrepositions(commandString, PREPOSITION_SELECTIVE);
+                	hasStartDate = checkForDeadline(commandString);
                 	if (hasStartDate) {
                 		startDate = getDate(dates, DATE_INDEX);
                 	} else {
@@ -718,8 +716,7 @@ public class CommandParser {
     	int index = first.length() + LENGTH_OFFSET;
     	return string.substring(index, string.length());
     }
-    */
-    
+   
     // =============================
     // Parsing Indexes
     // =============================
