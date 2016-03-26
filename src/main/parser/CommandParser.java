@@ -31,7 +31,13 @@ public class CommandParser {
     private final int DATE_MAX_SIZE = 2;
     //24 ([01]?[0-9]|2[0-3]):[0-5][0-9]
 	private final String REGEX_PREPOSITION_DEADLINE = "((?i)(from|after|at|on) )"; 
-	private final String REGEX_PREPOSITION_ALL = "((?i)(from|after|at|on|by|before|to|-) )";
+	private final String REGEX_PREPOSITION_ALL = "((?i)(from|after|at|on|by|before|to) )";
+    private final String REGEX_DATE_NUM = "(0?[1-9]|[12][0-9]|3[01])(/|-)(0?[1-9]|1[012])";
+    private final String REGEX_DATE_TEXT = "(?i)(0?[1-9]|[12][0-9]|3[01])";
+    private final String REGEX_MONTH_TEXT = "((?i)(jan)(uary)?|"
+            + "(feb)(ruary)?|" + "(mar)(ch)?|" + "(apr)(il)?|" + "(may)|"
+            + "(jun)(e)?|" + "(jul)(y)?|" + "(aug)(ust)?|" + "(sep)(tember)?|"
+            + "(oct)(ober)?|" + "(nov)(ember)?|" + "(dec)(ember)?)"; 
     private final String REGEX_TIME_TWELVE = "(0?[1-9]|[1][0-2])(([.|:][0-5][0-9])?)";
     private final String REGEX_AM_PM = "(?i)(am|pm)";
     private final String REGEX_TIME_RANGE =
@@ -42,15 +48,6 @@ public class CommandParser {
     		REGEX_TIME_TWELVE + "(" + REGEX_AM_PM + "?)"
     		+ "\\s?-\\s?" +
     		REGEX_TIME_TWELVE + REGEX_AM_PM;
-    private final String REGEX_DATE_NUM = "(0?[1-9]|[12][0-9]|3[01])(/|-)(0?[1-9]|1[012])";
-    private final String REGEX_DATE_TEXT = "(?i)(0?[1-9]|[12][0-9]|3[01])((st|nd|rd|th)?)";
-    private final String REGEX_MONTH_TEXT = "((?i)(jan)(uary)?|"
-            + "(feb)(ruary)?|" + "(mar)(ch)?|" + "(apr)(il)?|" + "(may)|"
-            + "(jun)(e)?|" + "(jul)(y)?|" + "(aug)(ust)?|" + "(sep)(tember)?|"
-            + "(oct)(ober)?|" + "(nov)(ember)?|" + "(dec)(ember)?)"; 
-    private final String REGEX_DAY = "((?i)(mon)(day)?|"
-            + "(tue)(sday)?|" + "(wed)(nesday)?|" + "(thu)(rsday)?|"
-            + "(fri)(day)?|" + "(sat)(urday)?|" + "(sun)(day)?|" + "(today)?|" + "(tomorrow)?)";
            
     private final String STRING_AM = "am";
     private final String STRING_PM = "pm";
@@ -89,12 +86,21 @@ public class CommandParser {
         boolean isLabelPresent = false;
         boolean hasPreposition = false;
         boolean hasTime = false;
+        boolean hasDateRange = false;
         title = commandString;
 
         hasTime = checkForTime(commandString);
+        if (hasTime) {
+        	hasDateRange = checkForRangeTime(commandString);
+        }
+        
         hasPreposition = checkForPrepositions(commandString);
         
         if (hasPreposition || hasTime) {
+        	if (hasDateRange) {
+            	commandString = correctRangeTime(commandString);
+            }
+        	
         	commandString = detectAndCorrectDateInput(commandString);
         	List<Date> dates = parseDate(commandString);
             numberOfDate = dates.size();
@@ -118,6 +124,9 @@ public class CommandParser {
         		}
 
                 title = removeDateFromTitle(title, startDate, endDate);
+                if (hasDateRange) {
+                	title = removeRangeFromTitle(title);
+                }
             }
         }
         
@@ -150,6 +159,13 @@ public class CommandParser {
         return matcher.find();
     }
     
+    private boolean checkForRangeTime(String commandString) {
+    	String prepositions = REGEX_TIME_RANGE;
+    	Pattern pattern = Pattern.compile(prepositions);
+        Matcher matcher = pattern.matcher(commandString);
+        return matcher.find();
+    }
+    
     /**
      * This method checks the {@code String} taken in with a list of prepositions.
      * 
@@ -167,17 +183,18 @@ public class CommandParser {
         return matcher.find();
     }
    
-    private boolean checkForRangeTime(String commandString) {
-    	String prepositions = REGEX_TIME_RANGE;
-    	Pattern pattern = Pattern.compile(prepositions);
-        Matcher matcher = pattern.matcher(commandString);
-        return matcher.find();
-    }
-    
+    /**
+     * Correct ranged time in user input for parsing.
+     * 
+     * @param input
+     * 			{@code String} user input
+     * @return {@code  String} with time range corrected
+     */
     private static String correctRangeTime(String input) {
     	input = input.replaceAll("()-()","$1 - $2");
-            return input;
+        return input;
     }
+
     /**
      * This method corrects user input of dd/mm into mm/dd for date parsing.
      * 
@@ -213,7 +230,7 @@ public class CommandParser {
     private List<Date> parseDate(String commandString) {
         PrettyTimeParser parser = new PrettyTimeParser();
         List<Date> dates = parser.parse(commandString);
-        
+  
         Date now = new Date();
         Date update = null;
         
@@ -229,7 +246,7 @@ public class CommandParser {
 		    	//can check time according to now
 		    	//else leave it as overdue
 		    	//if (!checkIsInfoPresent(commandString, dates)) {
-		    	if (!checkForDate(commandString)) {
+		    	if (!checkForDate(commandString) && !checkForDateText(commandString)) {
 		    		if (checkForTime(commandString)) {
     			    	cal.add(Calendar.DATE, 1);
     			    	update = cal.getTime();
@@ -239,33 +256,33 @@ public class CommandParser {
     					update = cal.getTime();
     					dates.set(i,update);
     				}
-		    	}
+		    	} 
         	}
         	
         	if (dates.size() == 2 && update != null) {
         		now = update;
         	}
         }
+        
         return dates;
     }
     
     private boolean checkForDate(String commandString) {
         String regex = getDateRegex();
         Pattern pattern = Pattern.compile(regex);
-        Matcher matcher = pattern.matcher(commandString);
-        boolean hasFound = matcher.find();
-        if (hasFound == false) {
-        	regex = getDateRegexText();
-        	pattern = Pattern.compile(regex);
-        	matcher = pattern.matcher(commandString);       
-        	hasFound = matcher.find();
-        }
-        
-        return hasFound;
+        Matcher matcher = pattern.matcher(commandString);        
+        return matcher.find();
    }
     
     private String getDateRegex() {
     	return REGEX_PREPOSITION_ALL + "?" + REGEX_DATE_NUM;
+    }
+    
+    private boolean checkForDateText(String commandString) {
+    	 String regex = getDateRegexText();
+         Pattern pattern = Pattern.compile(regex);
+         Matcher matcher = pattern.matcher(commandString);
+         return matcher.find();
     }
     
     private String getDateRegexText() {
@@ -276,6 +293,14 @@ public class CommandParser {
         return dates.get(index);
     }
     
+    /**
+     * Check if deadline is specified.
+     * This is done through detection of preposition that indicates deadline.
+     * 
+     * @param commandString
+     * 			{@code String} user input
+     * @return {@code boolean} if deadline found
+     */
     private boolean checkForDeadline(String commandString) {
     	String preposition = REGEX_PREPOSITION_DEADLINE;
     	Pattern pattern = Pattern.compile(preposition);
@@ -469,6 +494,23 @@ public class CommandParser {
     	return word;
     }
     
+    /**
+     * Removes time range specified in {@code String} taken in.
+     * 
+     * @param title
+     * 			{@code String} to be checked 
+     * @return {@code String} with time range removed
+     */
+    private String removeRangeFromTitle(String title) {
+    	String range = REGEX_PREPOSITION_ALL + REGEX_TIME_RANGE;
+    	Pattern pattern = Pattern.compile(range);
+        Matcher matcher = pattern.matcher(title);
+        if (matcher.find()) {
+        	title = title.replaceAll(matcher.group(), "");
+        }
+        return title.replaceAll("\\s+", " ").trim();
+    }
+    
     private boolean checkForLabel(String commandString) {
         if (commandString.contains("#")) {
             return true;
@@ -511,7 +553,6 @@ public class CommandParser {
         return title.replaceAll("\\s+", " ").trim();
     }
     
-
     /*
 	String regex;
 	boolean hasAMPM = checkAMPM(commandString);
@@ -557,7 +598,6 @@ public class CommandParser {
     	
     	return removed;
     }
-   
     
     private boolean checkAMPM(String commandString) {
     	Pattern pattern = Pattern.compile(REGEX_TIME_TWELVE + REGEX_AM_PM);
