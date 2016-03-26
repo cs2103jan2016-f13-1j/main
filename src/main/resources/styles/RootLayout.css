@@ -5,12 +5,12 @@
 	-fx-background-color: #303F9F;
 }
 .jfx-tab-pane .tab-header-area .headers-region .tab-selected-line {
-	-fx-stroke: #FF5252;
+	-fx-stroke: #4CAF50;
 }
 
 .jfx-text-field {
 
-	-fx-focus-color: #FF5252;
+	-fx-focus-color: #4CAF50;
     -fx-unfocus-color: #303F9F;
 }
 
@@ -19,21 +19,21 @@
 	-fx-background-color:transparent;
 -fx-border-color:transparent;
 -fx-background-radius: 0.0em;
--fx-border-radius:2.0em;
+-fx-border-radius:0em;
 }
 
 .jfx-list-view .scroll-bar:horizontal .increment-button ,
 .jfx-list-view .scroll-bar:horizontal .decrement-button {
 -fx-background-color:transparent;
 -fx-background-radius: 0.0em;
--fx-padding:0.0 0.0 10.0 0.0;
+-fx-padding:0.0 0.0 0.0 0.0;
 }
 
 .jfx-list-view .scroll-bar:vertical .increment-button ,
 .jfx-list-view .scroll-bar:vertical .decrement-button {
 -fx-background-color:transparent;
 -fx-background-radius: 0.0em;
--fx-padding:0.0 10.0 0.0 0.0;
+-fx-padding:0.0 0.0 0.0 0.0;
 }
 .jfx-list-view .scroll-bar .increment-arrow,
 .jfx-list-view .scroll-bar .decrement-arrow{
@@ -43,7 +43,19 @@
 
 .jfx-list-view .scroll-bar:horizontal .thumb,
 .jfx-list-view .scroll-bar:vertical .thumb {
--fx-background-color:derive(black,90.0%);
--fx-background-insets: 2.0, 0.0, 0.0;
--fx-background-radius: 2.0em;
+-fx-background-color:transparent;
+-fx-background-insets: 0.0, 0.0, 0.0;
+-fx-background-radius: 0.0em;
+}
+
+.jfx-snackbar-content {
+	-fx-background-color: #323232;
+}
+
+.jfx-snackbar-toast {
+	-fx-text-fill: WHITE;	
+}
+
+.jfx-snackbar-action {
+	-fx-text-fill: #ff4081;	
 }
