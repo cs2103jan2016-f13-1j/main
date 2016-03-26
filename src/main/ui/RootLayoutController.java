@@ -12,7 +12,6 @@ import com.jfoenix.controls.JFXListCell;
 import com.jfoenix.controls.JFXListView;
 import com.jfoenix.controls.JFXSnackbar;
 import com.jfoenix.controls.JFXTextField;
-import com.jfoenix.controls.JFXSnackbar.SnackbarEvent;
 import com.sun.javafx.scene.control.skin.VirtualFlow;
 
 import javafx.application.Platform;
@@ -49,6 +48,7 @@ import main.logic.Command;
 import main.logic.DeleteCommand;
 import main.logic.EditCommand;
 import main.logic.Invoker;
+import main.logic.PriorityCommand;
 import main.logic.Receiver;
 import main.logic.SearchCommand;
 import main.parser.CommandParser;
@@ -75,9 +75,9 @@ public class RootLayoutController implements Observer {
     private static final String MESSAGE_FEEDBACK_ACTION_SEARCH = "Searching:";
     private static final String MESSAGE_ERROR_NOT_FOUND = "Task -%1$s- not found.";
 
-    // Ctrl+Tab hotkey
     private static final KeyCombination HOTKEY_CTRL_TAB = new KeyCodeCombination(KeyCode.TAB,
             KeyCombination.CONTROL_DOWN);
+    private static final KeyCombination HOTKEY_CTRL_P = new KeyCodeCombination(KeyCode.P, KeyCombination.CONTROL_DOWN);
 
     @FXML // fx:id="rootLayout"
     private AnchorPane rootLayout; // Value injected by FXMLLoader
@@ -141,7 +141,7 @@ public class RootLayoutController implements Observer {
 
     @FXML // fx:id="btnRedo"
     private Button btnRedo; // Value injected by FXMLLoader
-    
+
     @FXML // fxid="snackbar"
     private JFXSnackbar snackbar;
 
@@ -177,7 +177,7 @@ public class RootLayoutController implements Observer {
 
     @Override
     public void update(Observable o, Object arg) {
-        
+
         if (o instanceof Receiver) {
             if (commandToBeExecuted instanceof AddCommand) {
                 logger.log(Level.INFO, "(ADD TASK) update() is called");
@@ -188,7 +188,8 @@ public class RootLayoutController implements Observer {
                         refreshListView();
                         listViewTodo.getSelectionModel().selectLast();
                         listViewTodo.scrollTo(todoTasks.size() - 1);
-                        snackbar.fireEvent(new SnackbarEvent("Task added! ","UNDO",5000,(me)->{}));
+                        // snackbar.fireEvent(new SnackbarEvent("Task added!
+                        // ","UNDO",5000,(me)->{}));
                         // showResult(true, "Task added!");
                     }
                 });
@@ -225,6 +226,19 @@ public class RootLayoutController implements Observer {
                 restoreListViewPreviousSelection();
                 showFeedback(true, MESSAGE_FEEDBACK_ACTION_SEARCH,
                         " Found " + todoTasks.size() + " tasks for -" + userArguments + "-");
+            } else if (commandToBeExecuted instanceof PriorityCommand) {
+                logger.log(Level.INFO, "(CHANGE TASK PRIORITY) update() is called");
+                Platform.runLater(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        saveSelectedTaskIndex();
+                        refreshListView();
+                        restoreListViewPreviousSelection();
+                        // showResult(true, "Task deleted!");
+
+                    }
+                });
             }
         }
 
@@ -250,7 +264,7 @@ public class RootLayoutController implements Observer {
         initMouseListener();
         initKeyboardListener();
         initCommandBarListener();
-        snackbar.registerSnackbarContainer(rootLayout);
+        // snackbar.registerSnackbarContainer(rootLayout);
         // initTabSelectionListener();
         logger.log(Level.INFO, "UI initialization complete");
     }
@@ -345,6 +359,9 @@ public class RootLayoutController implements Observer {
                     keyEvent.consume();
                 } else if (HOTKEY_CTRL_TAB.match(keyEvent)) {
                     handleCtrlTab();
+                    keyEvent.consume();
+                } else if (HOTKEY_CTRL_P.match(keyEvent)) {
+                    handleCtrlP();
                     keyEvent.consume();
                 } else if (keyEvent.getCode() == KeyCode.TAB) {
                     // do nothing here to prevent the ui from changing focus
@@ -728,6 +745,24 @@ public class RootLayoutController implements Observer {
     /**
      * 
      */
+    private void handleCtrlP() {
+        Platform.runLater(new Runnable() {
+
+            @Override
+            public void run() {
+                saveSelectedTaskIndex();
+                Task oldTask = todoTasks.get(getSelectedTaskIndex());
+                commandToBeExecuted = new PriorityCommand(receiver, oldTask);
+                invoker.execute(commandToBeExecuted);
+
+                logger.log(Level.INFO, "Pressed CTRL+P key: Task " + getSelectedTaskIndex() + 1 + " Priority");
+            }
+        });
+    }
+
+    /**
+     * 
+     */
     private void extractUserInput() {
         userInputArray = userInput.split(" ");
         userCommand = userInputArray[0].toLowerCase();
@@ -884,7 +919,7 @@ public class RootLayoutController implements Observer {
             return;
         }
 
-        //this allow a search without a search term
+        // this allow a search without a search term
         if (userInput.equals(COMMAND_SEARCH + WHITESPACE)) {
             logger.log(Level.INFO, "Searching: " + userInput);
             commandToBeExecuted = new SearchCommand(receiver, WHITESPACE);

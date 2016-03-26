@@ -7,8 +7,8 @@ import java.util.Observable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import main.storage.Storage;
 import main.data.Task;
+import main.storage.Storage;
 
 /**
  * This is a singleton class
