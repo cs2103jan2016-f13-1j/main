@@ -126,8 +126,8 @@ public class CommandParser {
             	if (hasDateRange) {
             		title = removeRangeFromTitle(title);
             	}
+            	
             	title = removeDateFromTitle(title, startDate, endDate);
-               
             }
         }
         
@@ -237,7 +237,7 @@ public class CommandParser {
         
         Calendar today = Calendar.getInstance();
         today.setTime(now);
-        
+
         for (int i = 0; i < dates.size(); i++) {
         	if (dates.get(i).before(now)) {
         		Calendar cal = Calendar.getInstance();
@@ -248,6 +248,7 @@ public class CommandParser {
 		    	//else leave it as overdue
 		    	//if (!checkIsInfoPresent(commandString, dates)) {
 		    	if (!checkForDate(commandString) && !checkForDateText(commandString)) {
+		    		
 		    		if (checkForTime(commandString)) {
     			    	cal.add(Calendar.DATE, 1);
     			    	update = cal.getTime();
@@ -480,7 +481,6 @@ public class CommandParser {
 	    			word = word.concat(" ");
 	    			
 	    			isPreposition = checkForPrepositions(word);
-	
 	    			if (isPreposition) {
 	    				toBeReplaced = word.concat(toBeReplaced);
 	    			}
@@ -615,7 +615,7 @@ public class CommandParser {
     public Task parseEdit(Task oldTask, String commandString) throws InvalidLabelFormat {
         int numberOfDate = 0;
         boolean hasStartDate = false;
-    
+        String original = commandString;
         String title = oldTask.getTitle();
         String label = oldTask.getLabel();
         Date newStart = oldTask.getStartDate();
@@ -680,10 +680,6 @@ public class CommandParser {
             		endDate = null;
             	}
             	
-            	
-            	
-            	//check for date in title here
-            	
             	if (hasDateRange) {
             		commandString = removeRangeFromTitle(commandString);
             	}
@@ -693,21 +689,118 @@ public class CommandParser {
             }
         }
         
-        
-        if (startDate != null && endDate != null) {
-        	newStart = startDate;
-        	newEnd = endDate;
-        } else {
-        	if (startDate != null) {
-        		newStart = startDate;
-        		newEnd = null;
-        	}
+        //if date not detected in title
+        //reuse date and month from old task
+    	if (!checkForDate(original) && !checkForDateText(original)) {
+    		Calendar newCal = Calendar.getInstance();
+    		Calendar currentCal = Calendar.getInstance();
+    		if (startDate != null) {
+    			//if old field only have one date
+    			//but now have range
+    			//borrow from the other field
+    			if (newStart != null) {  
+    				newCal.setTime(newStart);
+    			} else if (newEnd != null) {
+    				newCal.setTime(newEnd);
+    			}
+    			
+    			int day = newCal.get(Calendar.DAY_OF_MONTH);
+    			int month = newCal.get(Calendar.MONTH);
 
-        	if (endDate != null) {
-        		newStart = null;
-        		newEnd = endDate;
-        	}
-        }
+    			currentCal.setTime(startDate);
+    			currentCal.set(Calendar.DAY_OF_MONTH, day);
+    			currentCal.set(Calendar.MONTH, month);
+
+    			newStart = currentCal.getTime();
+    		} else {
+    			newStart = null;
+    		}
+    		
+    		if (endDate != null) {
+    			if (newEnd != null) {  
+    				newCal.setTime(newEnd);
+    			} else if (newStart != null) {
+    				newCal.setTime(newStart);
+    			}
+    			
+    			int day = newCal.get(Calendar.DAY_OF_MONTH);
+    			int month = newCal.get(Calendar.MONTH);
+
+    			currentCal.setTime(endDate);
+    			currentCal.set(Calendar.DAY_OF_MONTH, day);
+    			currentCal.set(Calendar.MONTH, month);
+
+    			newEnd = currentCal.getTime();
+    		} else {
+    			newEnd = null;
+    		}
+    	} else if (!checkForTime(original) && !checkForRangeTime(original)) {
+            //if time not detected in title
+            //reuse time from old task
+    		Calendar newCal = Calendar.getInstance();
+    		Calendar currentCal = Calendar.getInstance();
+
+    		if (startDate != null) {
+    			if (newStart != null) {  
+    				newCal.setTime(newStart);
+    			} else if (newEnd != null) {
+    				newCal.setTime(newEnd);
+    			}
+    			
+    			int hour = newCal.get(Calendar.HOUR);
+    			int min = newCal.get(Calendar.MINUTE);
+    			int ampm = newCal.get(Calendar.AM_PM);
+  
+    			currentCal.setTime(startDate);
+    			currentCal.set(Calendar.HOUR, hour);
+    			currentCal.set(Calendar.MINUTE, min);
+    			currentCal.set(Calendar.AM_PM, ampm);
+    			
+    			newStart = currentCal.getTime();
+    		} else {
+    			newStart = null;
+    		}
+    		
+    		if (endDate != null) {
+    			if (newEnd != null) {  
+    				newCal.setTime(newEnd);
+    			} else if (newStart != null) {
+    				newCal.setTime(newStart);
+    			}
+    			
+    			int hour = newCal.get(Calendar.HOUR);
+    			int min = newCal.get(Calendar.MINUTE);
+    			int ampm = newCal.get(Calendar.AM_PM);
+    			
+    			currentCal.setTime(endDate);
+    			currentCal.set(Calendar.HOUR, hour);
+    			currentCal.set(Calendar.MINUTE, min);
+    			currentCal.set(Calendar.AM_PM, ampm);
+    			
+    			newEnd = currentCal.getTime();
+    		} else {
+    			newEnd = null;
+    		}
+    	} else {
+    		if (startDate != null && endDate != null) {
+            	newStart = startDate;
+            	newEnd = endDate;
+            } else {
+            	if (startDate != null) {
+            		newStart = startDate;
+            		newEnd = null;
+            	}
+
+            	if (endDate != null) {
+            		newStart = null;
+            		newEnd = endDate;
+            	}
+            }
+    	}
+        
+
+        
+        
 
         if (commandString.length() > 0) {
         	title = commandString;
@@ -716,6 +809,8 @@ public class CommandParser {
         Task newTask = new Task(title, newStart, newEnd, label, createdDate);
     	return newTask;
     }
+    
+    
     
     private boolean isIndex(String word) {
     	try {
