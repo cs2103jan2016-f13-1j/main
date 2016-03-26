@@ -10,7 +10,9 @@ import java.util.logging.Logger;
 import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXListCell;
 import com.jfoenix.controls.JFXListView;
+import com.jfoenix.controls.JFXSnackbar;
 import com.jfoenix.controls.JFXTextField;
+import com.jfoenix.controls.JFXSnackbar.SnackbarEvent;
 import com.sun.javafx.scene.control.skin.VirtualFlow;
 
 import javafx.application.Platform;
@@ -139,6 +141,9 @@ public class RootLayoutController implements Observer {
 
     @FXML // fx:id="btnRedo"
     private Button btnRedo; // Value injected by FXMLLoader
+    
+    @FXML // fxid="snackbar"
+    private JFXSnackbar snackbar;
 
     private VirtualFlow<IndexedCell<String>> virtualFlow;
     private IndexedCell<String> firstVisibleIndexedCell;
@@ -183,6 +188,7 @@ public class RootLayoutController implements Observer {
                         refreshListView();
                         listViewTodo.getSelectionModel().selectLast();
                         listViewTodo.scrollTo(todoTasks.size() - 1);
+                        snackbar.fireEvent(new SnackbarEvent("Task added! ","UNDO",5000,(me)->{}));
                         // showResult(true, "Task added!");
                     }
                 });
@@ -244,6 +250,7 @@ public class RootLayoutController implements Observer {
         initMouseListener();
         initKeyboardListener();
         initCommandBarListener();
+        snackbar.registerSnackbarContainer(rootLayout);
         // initTabSelectionListener();
         logger.log(Level.INFO, "UI initialization complete");
     }
