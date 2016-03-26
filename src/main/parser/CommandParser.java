@@ -30,8 +30,8 @@ public class CommandParser {
     private final int DATE_END_RANGED = 1;
     private final int DATE_MAX_SIZE = 2;
     //24 ([01]?[0-9]|2[0-3]):[0-5][0-9]
-	private final String REGEX_PREPOSITION_DEADLINE = "((?i)(from|after|at|on) )"; 
-	private final String REGEX_PREPOSITION_ALL = "((?i)(from|after|at|on|by|before|to) )";
+	private final String REGEX_PREPOSITION_DEADLINE = "(?i)\\b(from|after|at|on)\\b "; 
+	private final String REGEX_PREPOSITION_ALL = "(?i)\\b(from|after|at|on|by|before|to)\\b ";
     private final String REGEX_DATE_NUM = "(0?[1-9]|[12][0-9]|3[01])(/|-)(0?[1-9]|1[012])";
     private final String REGEX_DATE_TEXT = "(?i)(0?[1-9]|[12][0-9]|3[01])";
     private final String REGEX_MONTH_TEXT = "((?i)(jan)(uary)?|"
