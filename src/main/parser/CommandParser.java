@@ -34,9 +34,9 @@ public class CommandParser {
     private final int DATE_MAX_SIZE = 2;
     //24 ([01]?[0-9]|2[0-3]):[0-5][0-9]
 	private final String REGEX_PREPOSITION_STARTING = "(?i)\\b(from|after|at|on)\\b "; 
-	private final String REGEX_PREPOSITION_ALL = "(?i)\\b(from|after|at|on|by|before|to)\\b ";
+	private final String REGEX_PREPOSITION_ALL = "(?i)(\\b(from|after|at|on|by|before|to)\\b )";
     private final String REGEX_DATE_NUM = "(0?[1-9]|[12][0-9]|3[01])(/|-)(0?[1-9]|1[012])";
-    private final String REGEX_DATE_TEXT = "(?i)(0?[1-9]|[12][0-9]|3[01])";
+    private final String REGEX_DATE_TEXT = "(?i)(0?[1-9]|[12][0-9]|3[01]) ";
     private final String REGEX_MONTH_TEXT = "((?i)(jan)(uary)?|"
             + "(feb)(ruary)?|" + "(mar)(ch)?|" + "(apr)(il)?|" + "(may)|"
             + "(jun)(e)?|" + "(jul)(y)?|" + "(aug)(ust)?|" + "(sep)(tember)?|"
@@ -291,7 +291,7 @@ public class CommandParser {
     }
     
     private String getDateRegexText() {
-    	return REGEX_PREPOSITION_ALL + "?" + REGEX_DATE_TEXT + " " + REGEX_MONTH_TEXT;
+    	return REGEX_PREPOSITION_ALL + "?" + REGEX_DATE_TEXT + REGEX_MONTH_TEXT;
     }
     
     private Date getDate(List<Date> dates, int index) {
