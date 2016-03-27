@@ -248,6 +248,27 @@ public class TestCommandParser {
 	}
 
 	/**
+	 * Test detection of time in user input
+	 * Method checkForTime has been updated to private.
+	 * This is for reference only.
+	 * 
+	 */
+	/*
+	@Test
+	public void testCheckTime() {
+		CommandParser parser = new CommandParser();
+		assertEquals(true, parser.checkForTime("1am"));
+		assertEquals(true, parser.checkForTime("2PM"));
+		assertEquals(true, parser.checkForTime("12:50pm"));
+		
+		assertEquals(false, parser.checkForTime("13am"));
+		assertEquals(false, parser.checkForTime("112pm"));
+		assertEquals(false, parser.checkForTime("12:60pm"));
+		assertEquals(false, parser.checkForTime("12:592pm"));
+	}
+	*/
+	
+	/**
 	 * Test detection of ranged time in user input.
 	 * Method checkForRangeTime has been updated to private.
 	 * This is for reference only.
