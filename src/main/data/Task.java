@@ -43,14 +43,6 @@ public class Task {
     	this.createdDate = new Date();
     }
     
-    public Task(String title, Date startDate, Date endDate, String label, Date createdDate) {
-    	this.title = title;
-    	this.startDate = startDate;
-    	this.endDate = endDate;
-    	this.label = label;
-    	this.createdDate = createdDate;
-    }
-    
     public String getTitle() {
         return title;
     }
@@ -165,6 +157,10 @@ public class Task {
     
     public Date getCreatedDate() {
         return createdDate;
+    }
+    
+    public void setCreatedDate(Date createdDate) {
+    	this.createdDate = createdDate;
     }
     
     public int compareTo(Task task) {
