@@ -11,14 +11,14 @@
 <?import javafx.scene.shape.Rectangle?>
 <?import javafx.scene.text.Font?>
 
-<HBox fx:id="horizontalBox" alignment="CENTER_LEFT" maxHeight="-Infinity" minHeight="80.0" nodeOrientation="LEFT_TO_RIGHT" prefHeight="80.0" spacing="20.0" stylesheets="@../styles/CustomListCellLayout.css" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1">
+<HBox fx:id="horizontalBox" alignment="CENTER_LEFT" cacheHint="SPEED" maxHeight="-Infinity" minHeight="80.0" nodeOrientation="LEFT_TO_RIGHT" prefHeight="80.0" spacing="20.0" stylesheets="@../styles/CustomListCellLayout.css" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1">
    <children>
-      <JFXButton fx:id="labelTaskTime" buttonType="RAISED" minWidth="175.0" prefHeight="48.0" prefWidth="175.0" text="00:00 - 00:00" textAlignment="CENTER">
+      <JFXButton fx:id="labelTaskTime" buttonType="RAISED" cacheHint="SPEED" minWidth="175.0" prefHeight="48.0" prefWidth="175.0" text="00:00 - 00:00" textAlignment="CENTER">
          <font>
             <Font name="Noto Sans" size="24.0" />
          </font>
       </JFXButton>
-      <StackPane>
+      <StackPane cacheHint="SPEED">
          <children>
             <Line endY="39.0" startY="-40.0" stroke="#0000001f" />
             <Circle fx:id="circleIndex" fill="WHITE" radius="20.0" stroke="#979797" strokeType="INSIDE" />
@@ -29,7 +29,7 @@
             </Label>
          </children>
       </StackPane>
-      <VBox fx:id="verticalBox" alignment="CENTER_LEFT" minWidth="330.0">
+      <VBox fx:id="verticalBox" alignment="CENTER_LEFT" cacheHint="SPEED" minWidth="330.0">
          <children>
             <Label fx:id="labelTaskTitle" maxWidth="330.0" text="Appointment with boss tyson">
                <font>
@@ -43,7 +43,7 @@
             </Label>
          </children>
       </VBox>
-      <StackPane alignment="BOTTOM_RIGHT" prefHeight="80.0" prefWidth="155.0">
+      <StackPane alignment="BOTTOM_RIGHT" cacheHint="SPEED" prefHeight="80.0" prefWidth="155.0">
          <children>
             <Rectangle fx:id="rectangleTaskPriority" arcHeight="5.0" arcWidth="5.0" fill="#ff6f1f" height="80.0" stroke="TRANSPARENT" strokeType="INSIDE" width="21.0" />
             <Label fx:id="labelTaskLabel" alignment="CENTER" minWidth="86.0" prefHeight="24.0" style="-fx-background-color: TRANSPARENT; -fx-border-radius: 4 4 4 4; -fx-background-radius: 4 4 4 4; -fx-border-color: #303F9F; -fx-border-width: 1.5;" text="Work" textFill="#303f9f">
