@@ -678,7 +678,7 @@ public class CommandParser {
                 	}
                 }
 
-            	if (hasTime == false && hasPreposition == false) {
+            	if (hasTime == true && hasPreposition == false) {
             		startDate = getDate(dates, DATE_INDEX);
             		endDate = null;
             	}
@@ -688,7 +688,6 @@ public class CommandParser {
             	}
             	
             	commandString = removeDateFromTitle(commandString, startDate, endDate);
-
             }
         }
         
