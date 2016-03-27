@@ -767,6 +767,7 @@ public class CommandParser {
 		return inputString;
 	}
 
+	//check point
 	public Task parseEdit(Task oldTask, String commandString) throws InvalidLabelFormat {
 		int numberOfDate = 0;
 		boolean hasStartDate = false;
@@ -934,6 +935,17 @@ public class CommandParser {
 		return newTask;
 	}
 
+	/**
+	 * This method gets the day and month from {@code Calendar} newCal and sets it in {@code Calendar} currentCal.
+	 * 
+	 * @param newCal
+	 * 			{@code Calendar} for day and month to be obtained
+	 * @param currentCal
+	 * 			{@code Calendar} for day and month to be set
+	 * @param date
+	 * 			{@code Date} date to be set for {@code Calendar} currentCal
+	 * @return {@code Calendar} with updated day and month
+	 */
 	private Calendar setDayMonth(Calendar newCal, Calendar currentCal, Date date) {
 		int day = newCal.get(Calendar.DAY_OF_MONTH);
 		int month = newCal.get(Calendar.MONTH);
@@ -945,6 +957,17 @@ public class CommandParser {
 		return currentCal;
 	}
 
+	/**
+	 * This method gets the hour and minutes from {@code Calendar} newCal and sets it in {@code Calendar} currentCal.
+	 * 
+	 * @param newCal
+	 * 			{@code Calendar} for hour and minutes to be obtained
+	 * @param currentCal
+	 * 			{@code Calendar} for hour and minutes to be set
+	 * @param date
+	 * 			{@code Date} date to be set for {@code Calendar} currentCal
+	 * @return {@code Calendar} with updated hour and minutes
+	 */
 	private Calendar setHourMin(Calendar newCal, Calendar currentCal, Date date) {
 		int hour = newCal.get(Calendar.HOUR);
 		int min = newCal.get(Calendar.MINUTE);
@@ -965,19 +988,20 @@ public class CommandParser {
 	/**
 	 * This method detects the types of indexes and processes them.
 	 * 
-	 * @param commandString
-	 * 			{@code String} user input
+	 * @param inputString
+	 * 			{@code String} input to be processed
 	 * @return {@code ArrayList<Integer>} of index(es)
 	 * @throws InvalidTaskIndexFormat if format is invalid
 	 */
-	public ArrayList<Integer> parseIndexes(String commandString) throws InvalidTaskIndexFormat {
+	public ArrayList<Integer> parseIndexes(String inputString) throws InvalidTaskIndexFormat {
 		try {
 			logger.log(Level.INFO, "Parsing indexes.");
-			String indexString = getStringWithoutCommand(commandString);
-			indexString = removeWhiteSpace(indexString);
-
+			
+			String indexString = getStringWithoutCommand(inputString);
+			indexString = removeExtraSpaces(indexString);
 			ArrayList<Integer> indexes = new ArrayList<Integer>();
-			indexes = extractIndex(indexString);
+			indexes = getIndex(indexString);
+			
 			logger.log(Level.INFO, "Indexes retrieved.");
 			return indexes;
 		} catch (Exception e) {
@@ -994,21 +1018,15 @@ public class CommandParser {
 		return indexString;
 	}
 
-	private String removeWhiteSpace(String string) {
-		string = string.replaceAll("\\s","");
-		assert(!string.isEmpty());
-		return string;
-	}
-
 	/**
 	 * This method obtains all numbers based on {@code String} taken in.
 	 * 
 	 * @param index
-	 * 			{@code String} of index
+	 * 			{@code String} to be processed
 	 * @return {@code ArrayList<Integer>} of index(es) 
 	 * @throws InvalidTaskIndexFormat 
 	 */
-	private ArrayList<Integer> extractIndex(String index) throws InvalidTaskIndexFormat {
+	private ArrayList<Integer> getIndex(String index) throws InvalidTaskIndexFormat {
 		ArrayList<String> indexes = new ArrayList<String>();
 		ArrayList<String> tempRangedIndexes = new ArrayList<String>();
 		ArrayList<Integer> multipleIndexes = new ArrayList<Integer>();
@@ -1034,8 +1052,7 @@ public class CommandParser {
 				tempRangedIndexes.clear();
 				rangedIndexes.clear();
 			} else {
-				int indexToAdd;
-				indexToAdd = Integer.parseInt(indexes.get(i));
+				int indexToAdd = Integer.parseInt(indexes.get(i));
 				multipleIndexes.add(indexToAdd);
 			}
 		}
@@ -1051,6 +1068,13 @@ public class CommandParser {
 		return arrayStrings;
 	}
 
+	/**
+	 * This method gets the range of indexes.
+	 * 
+	 * @param arrayStrings
+	 * 			{@code ArrayList<String>} to be processed
+	 * @return {@code ArrayList<Integer>} of index(es) range
+	 */
 	private ArrayList<Integer> getRangedIndexes(ArrayList<String> arrayStrings) {
 		ArrayList<Integer> ranged = new ArrayList<Integer>();
 
@@ -1061,12 +1085,20 @@ public class CommandParser {
 		return ranged;    	
 	}
 
+	/**
+	 * This method gets multiple indexes.
+	 * 
+	 * @param arrayIntegers
+	 * 			{@code ArrayList<Integer>} to be processed
+	 * @return {@code ArrayList<Integer>} of indexes
+	 */
 	private ArrayList<Integer> getMultipleIndexes(ArrayList<Integer> arrayIntegers) {
 		ArrayList<Integer> multiple = new ArrayList<Integer>();
 		int start, end;
 		int possibleRange = arrayIntegers.size() - 1;
 
 		for (int i = 0; i < possibleRange; i++) {
+			//Check and fix range for descending cases
 			if (arrayIntegers.get(i) < arrayIntegers.get(i+1)) {
 				start = arrayIntegers.get(i);
 				end = arrayIntegers.get(i+1);
@@ -1074,7 +1106,8 @@ public class CommandParser {
 				start = arrayIntegers.get(i+1);
 				end = arrayIntegers.get(i);
 			}
-
+			
+			//prevent duplicates from being added twice
 			for (int j = start; j <= end; j++) {
 				if (!multiple.contains(j)) {
 					multiple.add(j);
