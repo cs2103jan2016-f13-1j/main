@@ -620,6 +620,17 @@ public class CommandParser {
     }
     */
     
+    public Date getDateForSearch(String input) {
+    	PrettyTimeParser parser = new PrettyTimeParser();
+    	input = detectAndCorrectDateInput(input);
+        List<Date> dates = parser.parse(input);
+        if (dates.size() == 0) {
+        	return null;
+        } else {
+        	return dates.get(0);
+        }
+    }
+    
     public int getIndexForEdit(String input) {
     	 boolean hasTime = false;
          boolean hasDateRange = false;
