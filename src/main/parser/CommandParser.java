@@ -169,8 +169,8 @@ public class CommandParser {
     }
     
     private boolean checkForRangeTime(String commandString) {
-    	String prepositions = REGEX_TIME_RANGE;
-    	Pattern pattern = Pattern.compile(prepositions);
+    	String regex = REGEX_TIME_RANGE;
+    	Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(commandString);
         return matcher.find();
     }
@@ -186,8 +186,8 @@ public class CommandParser {
      * @return {@code Boolean} indicating if prepositions are detected in {@code String}
      */
     private boolean checkForPrepositions(String commandString) {
-    	String prepositions = REGEX_PREPOSITION_ALL;
-    	Pattern pattern = Pattern.compile(prepositions);
+    	String regex = REGEX_PREPOSITION_ALL;
+    	Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(commandString);
         return matcher.find();
     }
@@ -312,8 +312,8 @@ public class CommandParser {
      * @return {@code boolean} if deadline found
      */
     private boolean checkForDeadline(String commandString) {
-    	String preposition = REGEX_PREPOSITION_STARTING;
-    	Pattern pattern = Pattern.compile(preposition);
+    	String regex = REGEX_PREPOSITION_STARTING;
+    	Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(commandString);
         return matcher.find();
     }
@@ -516,8 +516,9 @@ public class CommandParser {
      * @return {@code String} with time range removed
      */
     private String removeRangeFromTitle(String title) {
-    	String range = "(" + REGEX_PREPOSITION_ALL + "?)" + REGEX_TIME_RANGE;
-    	Pattern pattern = Pattern.compile(range);
+    	//here
+    	String regex = "(" + REGEX_PREPOSITION_ALL + "?)" + REGEX_TIME_RANGE;
+    	Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(title);
         if (matcher.find()) {
         	title = title.replaceAll(matcher.group(), "");
