@@ -278,25 +278,25 @@ public class CommandParser {
         
         return dates;
     }
-    
+
     private boolean checkForDate(String commandString) {
-        String regex = getDateRegex();
-        Pattern pattern = Pattern.compile(regex);
-        Matcher matcher = pattern.matcher(commandString);        
-        return matcher.find();
-   }
-    
+    	String regex = getDateRegex();
+    	Pattern pattern = Pattern.compile(regex);
+    	Matcher matcher = pattern.matcher(commandString);        
+    	return matcher.find();
+    }
+
     private String getDateRegex() {
     	return REGEX_PREPOSITION_ALL + "?" + REGEX_DATE_NUM;
     }
-    
+
     private boolean checkForDateText(String commandString) {
-    	 String regex = getDateRegexText();
-         Pattern pattern = Pattern.compile(regex);
-         Matcher matcher = pattern.matcher(commandString);
-         return matcher.find();
+    	String regex = getDateRegexText();
+    	Pattern pattern = Pattern.compile(regex);
+    	Matcher matcher = pattern.matcher(commandString);
+    	return matcher.find();
     }
-    
+
     private String getDateRegexText() {
     	return REGEX_PREPOSITION_ALL + "?" + REGEX_DATE_TEXT + REGEX_MONTH_TEXT;
     }
