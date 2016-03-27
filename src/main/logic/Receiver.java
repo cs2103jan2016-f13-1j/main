@@ -207,10 +207,10 @@ public class Receiver extends Observable {
                 if (term.contains("#")) {
                     if (t.getLabel() == null) {
                         found = false;
-                    } else if (!("#" + t.getLabel()).contains(term)) {
+                    } else if (!("#" + t.getLabel()).toLowerCase().contains(term.toLowerCase())) {
                         found = false;
                     }
-                } else if (!t.getTitle().contains(term)) {
+                } else if (!t.getTitle().toLowerCase().contains(term.toLowerCase())) {
                     found = false;
                 }
             }
