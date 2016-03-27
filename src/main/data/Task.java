@@ -125,6 +125,10 @@ public class Task {
         return priority;
     }
     
+    public void setPriority(int priority) {
+    	this.priority = priority;
+    }
+    
     public int togglePriority(boolean increase) {
     	int limit = 3;
     	if (increase) {

@@ -619,8 +619,10 @@ public class CommandParser {
         int numberOfDate = 0;
         boolean hasStartDate = false;
         String original = commandString;
+        
         String title = oldTask.getTitle();
         String label = oldTask.getLabel();
+        int priority = oldTask.getPriority();
         Date newStart = oldTask.getStartDate();
         Date newEnd = oldTask.getEndDate();
         Date createdDate = oldTask.getCreatedDate();
@@ -799,21 +801,17 @@ public class CommandParser {
             	}
             }
     	}
-        
-
-        
-        
 
         if (commandString.length() > 0) {
         	title = commandString;
         }       
     	
-        Task newTask = new Task(title, newStart, newEnd, label, createdDate);
+        Task newTask = new Task(title, newStart, newEnd, label);
+        newTask.setCreatedDate(createdDate);
+        newTask.setPriority(priority);
     	return newTask;
     }
-    
-    
-    
+        
     private boolean isIndex(String word) {
     	try {
     		Integer.parseInt(word);
