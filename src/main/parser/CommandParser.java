@@ -651,12 +651,15 @@ public class CommandParser {
         boolean hasPreposition = checkForPrepositions(commandString);
         boolean hasTime = checkForTime(commandString);
         boolean hasDateRange = false;
+        boolean hasDate = false;
         
         if (hasTime) {
         	hasDateRange = checkForRangeTime(commandString);
         }
         
-        if (hasPreposition || hasTime) {
+        hasDate = checkForDate(commandString) || !checkForDateText(commandString);
+        
+        if (hasPreposition || hasTime || hasDate) {
         	if (hasDateRange) {
         		commandString = correctRangeTime(commandString);
         	}
@@ -664,7 +667,6 @@ public class CommandParser {
         	commandString = detectAndCorrectDateInput(commandString);
         	List<Date> dates = parseDate(commandString);
             numberOfDate = dates.size();
-            
             if (numberOfDate > 0) {
             	if (numberOfDate == DATE_MAX_SIZE) {
                     startDate = getDate(dates, DATE_START_RANGED);
@@ -677,8 +679,9 @@ public class CommandParser {
                 		endDate = getDate(dates, DATE_INDEX);
                 	}
                 }
-
-            	if (hasTime == true && hasPreposition == false) {
+            	
+            	//dinner 7pm
+            	if ((hasTime == true || hasDate == true) && hasPreposition == false) {
             		startDate = getDate(dates, DATE_INDEX);
             		endDate = null;
             	}
@@ -705,14 +708,7 @@ public class CommandParser {
     			} else if (newEnd != null) {
     				newCal.setTime(newEnd);
     			}
-    			
-    			int day = newCal.get(Calendar.DAY_OF_MONTH);
-    			int month = newCal.get(Calendar.MONTH);
-
-    			currentCal.setTime(startDate);
-    			currentCal.set(Calendar.DAY_OF_MONTH, day);
-    			currentCal.set(Calendar.MONTH, month);
-
+    			currentCal = setDayMonth(newCal, currentCal, startDate);
     			newStart = currentCal.getTime();
     		} else {
     			newStart = null;
@@ -725,13 +721,7 @@ public class CommandParser {
     				newCal.setTime(newStart);
     			}
     			
-    			int day = newCal.get(Calendar.DAY_OF_MONTH);
-    			int month = newCal.get(Calendar.MONTH);
-
-    			currentCal.setTime(endDate);
-    			currentCal.set(Calendar.DAY_OF_MONTH, day);
-    			currentCal.set(Calendar.MONTH, month);
-
+    			currentCal = setDayMonth(newCal, currentCal, endDate);
     			newEnd = currentCal.getTime();
     		} else {
     			newEnd = null;
@@ -739,9 +729,13 @@ public class CommandParser {
     	} else if (!checkForTime(original) && !checkForRangeTime(original)) {
             //if time not detected in title
             //reuse time from old task
+    		System.out.println(startDate);
+    		System.out.println(endDate);
     		Calendar newCal = Calendar.getInstance();
     		Calendar currentCal = Calendar.getInstance();
-
+    		
+    		//somewhere here
+    		
     		if (startDate != null) {
     			if (newStart != null) {  
     				newCal.setTime(newStart);
@@ -749,15 +743,7 @@ public class CommandParser {
     				newCal.setTime(newEnd);
     			}
     			
-    			int hour = newCal.get(Calendar.HOUR);
-    			int min = newCal.get(Calendar.MINUTE);
-    			int ampm = newCal.get(Calendar.AM_PM);
-  
-    			currentCal.setTime(startDate);
-    			currentCal.set(Calendar.HOUR, hour);
-    			currentCal.set(Calendar.MINUTE, min);
-    			currentCal.set(Calendar.AM_PM, ampm);
-    			
+    			currentCal = setHourMin(newCal, currentCal, startDate);
     			newStart = currentCal.getTime();
     		} else {
     			newStart = null;
@@ -770,15 +756,7 @@ public class CommandParser {
     				newCal.setTime(newStart);
     			}
     			
-    			int hour = newCal.get(Calendar.HOUR);
-    			int min = newCal.get(Calendar.MINUTE);
-    			int ampm = newCal.get(Calendar.AM_PM);
-    			
-    			currentCal.setTime(endDate);
-    			currentCal.set(Calendar.HOUR, hour);
-    			currentCal.set(Calendar.MINUTE, min);
-    			currentCal.set(Calendar.AM_PM, ampm);
-    			
+    			currentCal = setHourMin(newCal, currentCal, endDate);
     			newEnd = currentCal.getTime();
     		} else {
     			newEnd = null;
@@ -814,6 +792,30 @@ public class CommandParser {
     	String first = getFirstWord(string);
     	int index = first.length() + LENGTH_OFFSET;
     	return string.substring(index, string.length());
+    }
+
+    private Calendar setDayMonth(Calendar newCal, Calendar currentCal, Date date) {
+    	int day = newCal.get(Calendar.DAY_OF_MONTH);
+		int month = newCal.get(Calendar.MONTH);
+
+		currentCal.setTime(date);
+		currentCal.set(Calendar.DAY_OF_MONTH, day);
+		currentCal.set(Calendar.MONTH, month);
+		
+		return currentCal;
+    }
+    
+    private Calendar setHourMin(Calendar newCal, Calendar currentCal, Date date) {
+    	int hour = newCal.get(Calendar.HOUR);
+		int min = newCal.get(Calendar.MINUTE);
+		int ampm = newCal.get(Calendar.AM_PM);
+		
+		currentCal.setTime(date);
+		currentCal.set(Calendar.HOUR, hour);
+		currentCal.set(Calendar.MINUTE, min);
+		currentCal.set(Calendar.AM_PM, ampm);
+		
+		return currentCal;
     }
    
     // =============================
