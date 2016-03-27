@@ -41,7 +41,7 @@ public class CommandParser {
             + "(feb)(ruary)?|" + "(mar)(ch)?|" + "(apr)(il)?|" + "(may)|"
             + "(jun)(e)?|" + "(jul)(y)?|" + "(aug)(ust)?|" + "(sep)(tember)?|"
             + "(oct)(ober)?|" + "(nov)(ember)?|" + "(dec)(ember)?)"; 
-    private final String REGEX_TIME_TWELVE = "(0?[1-9]|[1][0-2])(([.|:][0-5][0-9])?)";
+	private final String REGEX_TIME_TWELVE = "\\b((1[012]|0?[1-9])(([:|.][0-5][0-9])?))";
     private final String REGEX_AM_PM = "(?i)(am|pm)";
     private final String REGEX_TIME_RANGE =
     		REGEX_TIME_TWELVE + REGEX_AM_PM
