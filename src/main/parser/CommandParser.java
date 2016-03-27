@@ -33,7 +33,7 @@ public class CommandParser {
     private final int DATE_END_RANGED = 1;
     private final int DATE_MAX_SIZE = 2;
     //24 ([01]?[0-9]|2[0-3]):[0-5][0-9]
-	private final String REGEX_PREPOSITION_DEADLINE = "(?i)\\b(from|after|at|on)\\b "; 
+	private final String REGEX_PREPOSITION_STARTING = "(?i)\\b(from|after|at|on)\\b "; 
 	private final String REGEX_PREPOSITION_ALL = "(?i)\\b(from|after|at|on|by|before|to)\\b ";
     private final String REGEX_DATE_NUM = "(0?[1-9]|[12][0-9]|3[01])(/|-)(0?[1-9]|1[012])";
     private final String REGEX_DATE_TEXT = "(?i)(0?[1-9]|[12][0-9]|3[01])";
@@ -307,7 +307,7 @@ public class CommandParser {
      * @return {@code boolean} if deadline found
      */
     private boolean checkForDeadline(String commandString) {
-    	String preposition = REGEX_PREPOSITION_DEADLINE;
+    	String preposition = REGEX_PREPOSITION_STARTING;
     	Pattern pattern = Pattern.compile(preposition);
         Matcher matcher = pattern.matcher(commandString);
         return matcher.find();
