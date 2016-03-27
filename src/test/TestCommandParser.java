@@ -323,7 +323,6 @@ public class TestCommandParser {
 	 * @throws InvalidLabelFormat
 	 */
 	@Test
-	//pending here
 	public void testTaskWithTimeRange() throws InvalidLabelFormat {
 		CommandParser parser = new CommandParser();
 		Task task = parser.parseAdd("Do homework on 20 apr 2-4pm");
@@ -337,6 +336,18 @@ public class TestCommandParser {
 
 		task = parser.parseAdd("Do homework on 21st apr 2pm-4pm");
 		assertEquals("Do homework from 21 Apr 2pm to 4pm", task.toString());
+		
+		task = parser.parseAdd("Do homework on 20 apr 10-11pm");
+		assertEquals("Do homework from 20 Apr 10pm to 11pm", task.toString());
+
+		task = parser.parseAdd("Do homework from 10pm-11 on 20 apr");
+		assertEquals("Do homework from 20 Apr 10pm to 11am", task.toString());
+
+		task = parser.parseAdd("Do homework on 20 apr 10pm-11pm");
+		assertEquals("Do homework from 20 Apr 10pm to 11pm", task.toString());
+
+		task = parser.parseAdd("Do homework on 21st apr 10pm-11pm");
+		assertEquals("Do homework from 21 Apr 10pm to 11pm", task.toString());
 	}
 	
 	/**
