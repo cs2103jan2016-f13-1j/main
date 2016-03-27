@@ -81,7 +81,7 @@ public class TestCommandParser {
 	 * 
 	 * @throws InvalidLabelFormat
 	 */
-	@Ignore
+	@Test
 	public void testHasTime() throws InvalidLabelFormat {
 		CommandParser parser = new CommandParser();
 		Task task;
@@ -376,7 +376,7 @@ public class TestCommandParser {
 	 * 
 	 * @throws InvalidLabelFormat 
 	 */
-	//ohshit
+	@Test
 	public void testTaskToString() throws InvalidLabelFormat {
 		CommandParser parser = new CommandParser();
 
@@ -385,10 +385,9 @@ public class TestCommandParser {
 
 		task = parser.parseAdd("Cook dinner #home");
 		assertEquals("Cook dinner #home", task.toString());
-
+		
 		task = parser.parseAdd("Cook dinner on 14/3 at 7pm #home");
-		System.out.println(task.toString());
-		//assertEquals("Cook dinner from 14 Mar 7pm #home",task.toString());
+		assertEquals("Cook dinner from 14 Mar 7pm #home",task.toString());
 
 		task = parser.parseAdd("Cook dinner on 15/3 7.15pm");
 		assertEquals("Cook dinner from 15 Mar 7:15pm",task.toString());
@@ -573,7 +572,7 @@ public class TestCommandParser {
 	 * 
 	 * @throws InvalidLabelFormat
 	 */
-	@Ignore
+	@Test
 	public void testEditTime() throws InvalidLabelFormat {
 		CommandParser parser = new CommandParser();
 		Task task, task2;
