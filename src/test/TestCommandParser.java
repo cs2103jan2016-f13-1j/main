@@ -321,6 +321,7 @@ public class TestCommandParser {
 	/*
 	public void testCheckDate() {
 		CommandParser parser = new CommandParser();
+		
 		assertEquals(true, parser.checkForDate("1/5"));
 		assertEquals(true, parser.checkForDate("1/12"));
 		assertEquals(true, parser.checkForDate("30-5"));
@@ -336,6 +337,40 @@ public class TestCommandParser {
 		assertEquals(false, parser.checkForDate("33/50"));
 	}
 	 */
+	
+	/**
+	 * Test detection of date in text format in user input.
+	 * Method checkForDateText has been updated to private.
+	 * This is for reference only.
+	 */
+	/*
+	public void testCheckDateText() {
+		CommandParser parser = new CommandParser();
+
+		assertEquals(true, parser.checkForDateText("1 march"));
+		assertEquals(true, parser.checkForDateText("31 april"));
+		assertEquals(true, parser.checkForDateText("20 may"));
+		
+		assertEquals(true, parser.checkForDateText("1 mar"));
+		assertEquals(true, parser.checkForDateText("31 apr"));
+		assertEquals(true, parser.checkForDateText("20 jun"));
+		
+		assertEquals(true, parser.checkForDateText("from 1 march"));
+		assertEquals(true, parser.checkForDateText("by 31 april"));
+		assertEquals(true, parser.checkForDateText("on 20 may"));
+		
+		assertEquals(true, parser.checkForDateText("from 1 mar"));
+		assertEquals(true, parser.checkForDateText("by 31 apr"));
+		assertEquals(true, parser.checkForDateText("on 20 jun"));
+		
+		assertEquals(false, parser.checkForDateText("32 march"));
+		assertEquals(false, parser.checkForDateText("55 june"));
+		
+		assertEquals(false, parser.checkForDateText("1 januaryy"));
+		assertEquals(false, parser.checkForDateText("1 janu"));
+		assertEquals(false, parser.checkForDateText("1 jjan"));
+	}
+	*/
 	
 	/**
 	 * Test for correct parsing of ranged time in user input.
