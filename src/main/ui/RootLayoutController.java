@@ -47,6 +47,7 @@ import main.data.Task;
 import main.logic.AddCommand;
 import main.logic.Command;
 import main.logic.DeleteCommand;
+import main.logic.DoneCommand;
 import main.logic.EditCommand;
 import main.logic.Invoker;
 import main.logic.PriorityCommand;
@@ -79,6 +80,7 @@ public class RootLayoutController implements Observer {
     private static final KeyCombination HOTKEY_CTRL_TAB = new KeyCodeCombination(KeyCode.TAB,
             KeyCombination.CONTROL_DOWN);
     private static final KeyCombination HOTKEY_CTRL_P = new KeyCodeCombination(KeyCode.P, KeyCombination.CONTROL_DOWN);
+    private static final KeyCombination HOTKEY_CTRL_D = new KeyCodeCombination(KeyCode.D, KeyCombination.CONTROL_DOWN);
 
     @FXML // fx:id="rootLayout"
     private AnchorPane rootLayout; // Value injected by FXMLLoader
@@ -240,6 +242,19 @@ public class RootLayoutController implements Observer {
 
                     }
                 });
+            } else if (commandToBeExecuted instanceof DoneCommand) {
+                logger.log(Level.INFO, "(DONE TASK) update() is called");
+                Platform.runLater(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        saveSelectedTaskIndex();
+                        refreshListView();
+                        restoreListViewPreviousSelection();
+                        // showResult(true, "Task deleted!");
+
+                    }
+                });
             }
         }
 
@@ -378,6 +393,9 @@ public class RootLayoutController implements Observer {
                     keyEvent.consume();
                 } else if (HOTKEY_CTRL_P.match(keyEvent)) {
                     handleCtrlP();
+                    keyEvent.consume();
+                } else if (HOTKEY_CTRL_D.match(keyEvent)) {
+                    handleCtrlD();
                     keyEvent.consume();
                 } else if (keyEvent.getCode() == KeyCode.TAB) {
                     // do nothing here to prevent the ui from changing focus
@@ -779,6 +797,23 @@ public class RootLayoutController implements Observer {
     /**
      * 
      */
+    private void handleCtrlD() {
+        Platform.runLater(new Runnable() {
+
+            @Override
+            public void run() {
+                saveSelectedTaskIndex();
+                taskToBeExecuted = todoTasks.get(getSelectedTaskIndex());
+                commandToBeExecuted = new DoneCommand(receiver, taskToBeExecuted);
+                invoker.execute(commandToBeExecuted);
+                logger.log(Level.INFO, "Pressed CTRL+D key: Task " + getSelectedTaskIndex() + 1 + " done");
+            }
+        });
+    }
+
+    /**
+     * 
+     */
     private void extractUserInput() {
         userInputArray = userInput.split(" ");
         userCommand = userInputArray[0].toLowerCase();
@@ -957,9 +992,9 @@ public class RootLayoutController implements Observer {
         }
 
         logger.log(Level.INFO, "Searching: " + userArguments);
-        
+
         Date dateFromUserInput = commandParser.getDateForSearch(userArguments);
-        
+
         // search input contains no date
         if (dateFromUserInput == null) {
             logger.log(Level.INFO, "SEARCH command has no date: " + userArguments);
