@@ -80,6 +80,8 @@ public class CustomListCellController extends JFXListCell<Task> {
 
         if (empty) {
             setGraphic(null);
+        } else if (task == null) {
+            setGraphic(null);
         } else {
             showTaskIndex(getIndex() + 1);
             setLabelTaskTitle(task);
@@ -87,12 +89,14 @@ public class CustomListCellController extends JFXListCell<Task> {
             showTaskDate(task);
             showTaskLabel(task);
             showTaskPriority(task);
-            setGraphic(getHorizontalBox()); // HBox is the parent layout of all
-                                            // the other UI components here.
-                                            // Returning an instance of this
-                                            // will include the other UI
-                                            // components here as well
+            // HBox is the parent layout of all
+            // the other UI components here.
+            // Returning an instance of this
+            // will include the other UI
+            // components here as well
+            setGraphic(getHorizontalBox());
         }
+
     }
 
     public HBox getHorizontalBox() {
