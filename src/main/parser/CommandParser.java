@@ -158,9 +158,14 @@ public class CommandParser {
      * @return {@code Boolean} if time found
      */
     private boolean checkForTime(String commandString) {
-    	Pattern pattern = Pattern.compile(REGEX_TIME_TWELVE + REGEX_AM_PM);
+    	String regex = getTimeRegex();
+    	Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(commandString);
         return matcher.find();
+    }
+    
+    private String getTimeRegex() {
+    	return REGEX_TIME_TWELVE + REGEX_AM_PM;
     }
     
     private boolean checkForRangeTime(String commandString) {
