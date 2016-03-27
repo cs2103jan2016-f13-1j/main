@@ -1,6 +1,6 @@
 package test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -444,6 +444,29 @@ public class TestCommandParser {
 		assertEquals(-1, index);
 	}
 	
+	@Test
+	public void testGetDateForSearch() {
+		CommandParser parser = new CommandParser();
+		Date date;
+		
+		date = parser.getDateForSearch("1 march");
+		assertNotNull(date);
+		
+		date = parser.getDateForSearch("1/3");
+		assertNotNull(date);
+		
+		date = parser.getDateForSearch("today");
+		assertNotNull(date);
+		
+		date = parser.getDateForSearch("tomorrow");
+		assertNotNull(date);
+		
+		date = parser.getDateForSearch("meeting");
+		assertNull(date);
+		
+		date = parser.getDateForSearch("finance proposal");
+		assertNull(date);
+	}
 	/**
 	 * Test editing of an existing task.
 	 *
