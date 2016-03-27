@@ -227,7 +227,7 @@ public class TestCommandParser {
 	 * 
 	 * @throws InvalidLabelFormat 
 	 */
-	@Test
+	
 	public void testDetectStartTime() throws InvalidLabelFormat {
 		CommandParser parser = new CommandParser();
 		Task task = parser.parseAdd("Attempt quiz from 5pm 10 apr");
@@ -318,6 +318,7 @@ public class TestCommandParser {
 	 * @throws InvalidLabelFormat
 	 */
 	@Test
+	//pending here
 	public void testTaskWithTimeRange() throws InvalidLabelFormat {
 		CommandParser parser = new CommandParser();
 		Task task = parser.parseAdd("Do homework on 20 apr 2-4pm");
@@ -421,6 +422,12 @@ public class TestCommandParser {
 		assertEquals(0, task.togglePriority(true));
 	}
 
+	/**
+	 * Test completed status toggling.
+	 * A status can either be done or undone.
+	 * 
+	 * @throws InvalidLabelFormat
+	 */
 	@Test
 	public void testToggleDone() throws InvalidLabelFormat {
 		CommandParser parser = new CommandParser();
@@ -442,7 +449,6 @@ public class TestCommandParser {
 
 	/**
 	 * Test extracting index for edit.
-	 * 
 	 */
 	@Test
 	public void testGetIndexForEdit() {
@@ -465,6 +471,11 @@ public class TestCommandParser {
 		assertEquals(-1, index);
 	}
 	
+	/**
+	 * Test if date is detected in string.
+	 * If detected, Date object is returned.
+	 * Else, null is returned.
+	 */
 	@Test
 	public void testGetDateForSearch() {
 		CommandParser parser = new CommandParser();
@@ -488,6 +499,7 @@ public class TestCommandParser {
 		date = parser.getDateForSearch("finance proposal");
 		assertNull(date);
 	}
+	
 	/**
 	 * Test editing of an existing task.
 	 *
@@ -519,6 +531,11 @@ public class TestCommandParser {
     	assertEquals("Buy milk at discount from today 10pm to 11pm", task2.toString());
 	}
 	
+	/**
+	 * Test editing time of existing task.
+	 * 
+	 * @throws InvalidLabelFormat
+	 */
 	@Ignore
 	public void testEditTime() throws InvalidLabelFormat {
 		CommandParser parser = new CommandParser();
@@ -549,6 +566,13 @@ public class TestCommandParser {
     	assertEquals("Buy milk from today 9pm to 10pm", task2.toString());
 	}
 	
+	/**
+	 * Test editing of task.
+	 * If information is not specified, use the old task information.
+	 * This allows updating of only the date or time.
+	 * 
+	 * @throws InvalidLabelFormat
+	 */
 	@Test
 	public void testEditReuseOldInfo() throws InvalidLabelFormat {
 		CommandParser parser = new CommandParser();
@@ -711,6 +735,10 @@ public class TestCommandParser {
 	// =============================
 	// Latest stuff
 	// =============================
+	
+	
+	
+	
 	
 	public void testEditDate() throws InvalidLabelFormat {
 		CommandParser parser = new CommandParser();
