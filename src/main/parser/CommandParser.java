@@ -615,7 +615,7 @@ public class CommandParser {
     }
     */
     
-    public Task parseEdit(Task oldTask, String commandString) throws InvalidLabelFormat {
+    public Task parseEdit(Task oldTask, String commandString, boolean hasIndex) throws InvalidLabelFormat {
         int numberOfDate = 0;
         boolean hasStartDate = false;
         String original = commandString;
@@ -633,9 +633,7 @@ public class CommandParser {
     	//remove edit command
     	commandString = removeFirst(commandString);
     	
-    	String word = getFirstWord(commandString);
-    	boolean isIndex = isIndex(word);
-    	if (isIndex) {
+    	if (hasIndex) {
     		commandString = removeFirst(commandString);
     	}
     
@@ -810,15 +808,6 @@ public class CommandParser {
         newTask.setCreatedDate(createdDate);
         newTask.setPriority(priority);
     	return newTask;
-    }
-        
-    private boolean isIndex(String word) {
-    	try {
-    		Integer.parseInt(word);
-    	} catch(NumberFormatException e) {
-    		return false;
-    	}
-    	return true;
     }
     
     private String removeFirst(String string) throws InvalidLabelFormat {
