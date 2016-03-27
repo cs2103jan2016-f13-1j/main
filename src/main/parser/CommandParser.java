@@ -675,11 +675,11 @@ public class CommandParser {
         	removed = removed.replaceAll(match,"");
     	  	removed = removed.replaceAll("\\s+", " ").trim();    		
     	}
-    	
+  
     	return removed;
     }
     
-    public Task parseEdit(Task oldTask, String commandString, boolean hasIndex) throws InvalidLabelFormat {
+    public Task parseEdit(Task oldTask, String commandString) throws InvalidLabelFormat {
         int numberOfDate = 0;
         boolean hasStartDate = false;
         String original = commandString;
@@ -693,13 +693,6 @@ public class CommandParser {
         
         Date startDate = null;
         Date endDate = null;
-        
-    	//remove edit command
-    	commandString = removeFirst(commandString);
-    	
-    	if (hasIndex) {
-    		commandString = removeFirst(commandString);
-    	}
     
     	boolean isLabelPresent = false;
     	isLabelPresent = checkForLabel(commandString);
@@ -852,12 +845,6 @@ public class CommandParser {
         newTask.setCreatedDate(createdDate);
         newTask.setPriority(priority);
     	return newTask;
-    }
-    
-    private String removeFirst(String string) throws InvalidLabelFormat {
-    	String first = getFirstWord(string);
-    	int index = first.length() + LENGTH_OFFSET;
-    	return string.substring(index, string.length());
     }
 
     private Calendar setDayMonth(Calendar newCal, Calendar currentCal, Date date) {
