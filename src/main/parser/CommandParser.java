@@ -33,10 +33,9 @@ public class CommandParser {
 	private final int DATE_END_RANGED = 1;
 	private final int DATE_MAX_SIZE = 2;
 	//24 ([01]?[0-9]|2[0-3]):[0-5][0-9]
+	
 	private final String REGEX_PREPOSITION_STARTING = "(?i)\\b(from|after|at|on)\\b "; 
-	private final String REGEX_PREPOSITION_ALL = "(?i)(\\b(from|after|at|on|by|before|to)\\b )";
-	//private final String REGEX_DATE_NUM = "(0?[1-9]|[12][0-9]|3[01])(/|-)(0?[1-9]|1[012])";
-	//to string works with ^ but not v
+	private final String REGEX_PREPOSITION_ALL = "(?i)(\\b(from|after|at|on|by|before|to) )";
 	private final String REGEX_DATE_NUM = "\\b((0?[1-9]|[12][0-9]|3[01])([/|-])(0?[1-9]|1[012]))\\b";
 	private final String REGEX_DATE_TEXT = "(?i)(0?[1-9]|[12][0-9]|3[01]) ";
 	private final String REGEX_MONTH_TEXT = "((?i)(jan)(uary)?|"
@@ -98,7 +97,6 @@ public class CommandParser {
 				commandString = correctRangeTime(commandString);
 			}
 
-			commandString = detectAndCorrectDateInput(commandString);
 			List<Date> dates = parseDate(commandString);
 			numberOfDate = dates.size();
 
@@ -242,8 +240,8 @@ public class CommandParser {
 
 	private List<Date> parseDate(String commandString) {
 		PrettyTimeParser parser = new PrettyTimeParser();
-		List<Date> dates = parser.parse(commandString);
-
+		List<Date> dates = parser.parse(detectAndCorrectDateInput(commandString));
+		
 		Date now = new Date();
 		Date update = null;
 
@@ -258,9 +256,7 @@ public class CommandParser {
 				//not present means date not specified
 				//can check time according to now
 				//else leave it as overdue
-				//if (!checkIsInfoPresent(commandString, dates)) {
 				if (!checkForDate(commandString) && !checkForDateText(commandString)) {
-
 					if (checkForTime(commandString)) {
 						cal.add(Calendar.DATE, 1);
 						update = cal.getTime();
@@ -334,7 +330,7 @@ public class CommandParser {
 	 * @return {@code String} without date information
 	 */
 	private String removeDateFromTitle(String title, Date startDate, Date endDate) {       
-		List<Date> datesList = parseDate(detectAndCorrectDateInput(title));
+		List<Date> datesList = parseDate(title);
 		int numberOfDate = datesList.size();
 		LocalDateTime dateTime;
 
@@ -572,6 +568,7 @@ public class CommandParser {
 		return title.replaceAll("\\s+", " ").trim();
 	}
 
+	//extract parser out prolly
 	public Date getDateForSearch(String input) {
 		PrettyTimeParser parser = new PrettyTimeParser();
 		input = detectAndCorrectDateInput(input);
@@ -684,7 +681,6 @@ public class CommandParser {
 				commandString = correctRangeTime(commandString);
 			}
 
-			commandString = detectAndCorrectDateInput(commandString);
 			List<Date> dates = parseDate(commandString);
 			numberOfDate = dates.size();
 			if (numberOfDate > 0) {
