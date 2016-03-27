@@ -1,6 +1,7 @@
 package main.ui;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.EmptyStackException;
 import java.util.Observable;
 import java.util.Observer;
@@ -259,7 +260,7 @@ public class RootLayoutController implements Observer {
     @FXML
     private void initialize() {
         logger.log(Level.INFO, "Initializing the UI...");
-        
+
         assert rootLayout != null : "fx:id=\"rootLayout\" was not injected: check your FXML file 'RootLayout.fxml'.";
         assert snackbar != null : "fx:id=\"snackbar\" was not injected: check your FXML file 'RootLayout.fxml'.";
         assert tabPane != null : "fx:id=\"tabPane\" was not injected: check your FXML file 'RootLayout.fxml'.";
@@ -273,7 +274,7 @@ public class RootLayoutController implements Observer {
         assert textFlowFeedback != null : "fx:id=\"textFlowFeedback\" was not injected: check your FXML file 'RootLayout.fxml'.";
         assert textUserAction != null : "fx:id=\"textUserAction\" was not injected: check your FXML file 'RootLayout.fxml'.";
         assert textUserParsedResult != null : "fx:id=\"textUserParsedResult\" was not injected: check your FXML file 'RootLayout.fxml'.";
-        
+
         initLogicAndParser();
         initListView();
         initMouseListener();
@@ -881,22 +882,31 @@ public class RootLayoutController implements Observer {
             return;
         }
 
-        // parsing edit command with index
-        try {
-            int taskIndex = Integer.parseInt(userInputArray[1]) - 1;
-            logger.log(Level.INFO, "EDIT command index is " + taskIndex);
-            Task taskToBeEdited = todoTasks.get(taskIndex);
-            showFeedback(true, MESSAGE_FEEDBACK_ACTION_EDIT, taskToBeEdited.toString());
-            taskToBeExecuted = commandParser.parseEdit(taskToBeEdited, userInput);
-            commandToBeExecuted = new EditCommand(receiver, taskToBeEdited, taskToBeExecuted);
-            return;
-        } catch (NumberFormatException nfe) {
-            // parse the edit command based on the currently selected item
+        int taskIndex = commandParser.getIndexForEdit(userInput);
+        logger.log(Level.INFO, "EDIT command index is " + taskIndex);
+
+        // no index is found in user input
+        if (taskIndex == -1) {
             logger.log(Level.INFO, "EDIT command has no index. Editing current selected task");
             parseEditForSelectedTask();
+            return;
+        }
+
+        // parsing edit command with index
+        try {
+            logger.log(Level.INFO, "EDIT command index is " + taskIndex);
+            taskIndex--; // decrement user input index to match array natural
+                         // ordering
+            Task taskToBeEdited = todoTasks.get(taskIndex);
+            showFeedback(true, MESSAGE_FEEDBACK_ACTION_EDIT, taskToBeEdited.toString());
+            userArguments = userArguments.substring(2);
+            logger.log(Level.INFO, "EDIT command arguments is: " + userArguments);
+            taskToBeExecuted = commandParser.parseEdit(taskToBeEdited, userArguments);
+            commandToBeExecuted = new EditCommand(receiver, taskToBeEdited, taskToBeExecuted);
+            return;
         } catch (IndexOutOfBoundsException ioobe) {
-            logger.log(Level.INFO, "EDIT command index is out of range. index = " + userInputArray[1]
-                    + " ArrayList size = " + todoTasks.size());
+            logger.log(Level.INFO, "EDIT command index is out of range. index = " + taskIndex + " ArrayList size = "
+                    + todoTasks.size());
             showFeedback(true, MESSAGE_FEEDBACK_ACTION_EDIT, String.format(MESSAGE_ERROR_NOT_FOUND, userInputArray[1]));
             clearStoredUserInput();
             return;
@@ -907,14 +917,17 @@ public class RootLayoutController implements Observer {
     }
 
     /**
-     * @param taskToBeEdited
-     * @throws InvalidLabelFormat
+     * Parse the Edit command for the currently selected task item on the List
+     * 
+     * @param @throws
      */
     private void parseEditForSelectedTask() {
         Task taskToBeEdited = todoTasks.get(getSelectedTaskIndex());
         showFeedback(true, MESSAGE_FEEDBACK_ACTION_EDIT, taskToBeEdited.toString());
         try {
-            taskToBeExecuted = commandParser.parseEdit(taskToBeEdited, userInput);
+            logger.log(Level.INFO, "EDIT command arguments is: " + userArguments);
+            taskToBeExecuted = commandParser.parseEdit(taskToBeEdited, userArguments);
+            logger.log(Level.INFO, "EDIT command editedTaskObject is: " + taskToBeExecuted.toString());
             commandToBeExecuted = new EditCommand(receiver, taskToBeEdited, taskToBeExecuted);
             return;
         } catch (InvalidLabelFormat e) {
@@ -943,8 +956,19 @@ public class RootLayoutController implements Observer {
             return;
         }
 
-        logger.log(Level.INFO, "Searching: " + userInput);
-        commandToBeExecuted = new SearchCommand(receiver, userArguments);
+        logger.log(Level.INFO, "Searching: " + userArguments);
+        
+        Date dateFromUserInput = commandParser.getDateForSearch(userArguments);
+        
+        // search input contains no date
+        if (dateFromUserInput == null) {
+            logger.log(Level.INFO, "SEARCH command has no date: " + userArguments);
+            commandToBeExecuted = new SearchCommand(receiver, userArguments);
+        } else {
+            logger.log(Level.INFO, "SEARCH command has date: " + userArguments);
+            commandToBeExecuted = new SearchCommand(receiver, dateFromUserInput);
+        }
+
         invoker.execute(commandToBeExecuted);
     }
 
