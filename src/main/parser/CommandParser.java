@@ -43,14 +43,6 @@ public class CommandParser {
             + "(oct)(ober)?|" + "(nov)(ember)?|" + "(dec)(ember)?)"; 
 	private final String REGEX_TIME_TWELVE = "\\b((1[012]|0?[1-9])(([:|.][0-5][0-9])?))";
     private final String REGEX_AM_PM = "(?i)(am|pm)";
-    private final String REGEX_TIME_RANGE =
-    		REGEX_TIME_TWELVE + REGEX_AM_PM
-    		+ "\\s?-\\s?" +
-    		REGEX_TIME_TWELVE + "(" + REGEX_AM_PM + "?)"
-    		+ "|" +
-    		REGEX_TIME_TWELVE + "(" + REGEX_AM_PM + "?)"
-    		+ "\\s?-\\s?" +
-    		REGEX_TIME_TWELVE + REGEX_AM_PM;
            
     private final String STRING_AM = "am";
     private final String STRING_PM = "pm";
@@ -169,10 +161,20 @@ public class CommandParser {
     }
     
     private boolean checkForRangeTime(String commandString) {
-    	String regex = REGEX_TIME_RANGE;
+    	String regex = getTimeRangeRegex();
     	Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(commandString);
         return matcher.find();
+    }
+    
+    private String getTimeRangeRegex() {
+    	return REGEX_TIME_TWELVE + REGEX_AM_PM + "?" 
+        		+ "\\s?-\\s?" +
+        		REGEX_TIME_TWELVE + REGEX_AM_PM
+        		+ "|" +
+        		REGEX_TIME_TWELVE + REGEX_AM_PM 
+        		+ "\\s?-\\s?" +
+        		REGEX_TIME_TWELVE + REGEX_AM_PM + "?\\b";
     }
     
     /**
@@ -517,7 +519,7 @@ public class CommandParser {
      */
     private String removeRangeFromTitle(String title) {
     	//here
-    	String regex = "(" + REGEX_PREPOSITION_ALL + "?)" + REGEX_TIME_RANGE;
+    	String regex = "(" + REGEX_PREPOSITION_ALL + "?)" + getTimeRangeRegex();;
     	Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(title);
         if (matcher.find()) {
