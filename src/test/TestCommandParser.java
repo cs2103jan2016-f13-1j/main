@@ -251,12 +251,12 @@ public class TestCommandParser {
 	 * Test detection of time in user input
 	 * Method checkForTime has been updated to private.
 	 * This is for reference only.
-	 * 
 	 */
 	/*
 	@Test
 	public void testCheckTime() {
 		CommandParser parser = new CommandParser();
+		
 		assertEquals(true, parser.checkForTime("1am"));
 		assertEquals(true, parser.checkForTime("2PM"));
 		assertEquals(true, parser.checkForTime("12:50pm"));
@@ -277,40 +277,45 @@ public class TestCommandParser {
 	 * @throws InvalidLabelFormat
 	 */
 	/*
-	public void testDetectRange() throws InvalidLabelFormat {
+	public void testCheckRange() throws InvalidLabelFormat {
 		CommandParser parser = new CommandParser();
-		boolean hasFound;
-
-		hasFound = false;
-		hasFound = parser.checkForRangeTime("Do homework from 4pm-5");
-		assertEquals(true, hasFound);
-
-		hasFound = false;
-		hasFound = parser.checkForRangeTime("Do homework from 4-5pm");
-		assertEquals(true, hasFound);
-
-		hasFound = false;
-		hasFound = parser.checkForRangeTime("Do homework from 4pm-5pm");
-		assertEquals(true, hasFound);
-
-		//detect invalid
-		hasFound = true;
-		hasFound = parser.checkForRangeTime("Do homework from 4-5");
-		assertEquals(false, hasFound);
-
-		hasFound = true;
-		hasFound = parser.checkForRangeTime("Do homework from 40pm-5");
-		assertEquals(false, hasFound);
-
-		hasFound = true;
-		hasFound = parser.checkForRangeTime("Do homework from 40pm-51pm");
-		assertEquals(false, hasFound);
-
-		hasFound = true;
-		hasFound = parser.checkForRangeTime("Do homework from 4-51pm");
-		assertEquals(false, hasFound);
+		
+		assertEquals(true, parser.checkForRangeTime("1am-4"));
+		assertEquals(true, parser.checkForRangeTime("1-4am"));
+		assertEquals(true, parser.checkForRangeTime("1am-4am"));
+		
+		assertEquals(true, parser.checkForRangeTime("10am-11"));
+		assertEquals(true, parser.checkForRangeTime("10-11am"));
+		assertEquals(true, parser.checkForRangeTime("10am-11am"));
+		
+		assertEquals(true, parser.checkForRangeTime("1:30am-4:30"));
+		assertEquals(true, parser.checkForRangeTime("1:30-4:30am"));
+		assertEquals(true, parser.checkForRangeTime("1:30am-4:30am"));
+		
+		assertEquals(true, parser.checkForRangeTime("10:30am-11:30"));
+		assertEquals(true, parser.checkForRangeTime("10:30-11:30am"));
+		assertEquals(true, parser.checkForRangeTime("10:30am-11:30am"));
+	
+		assertEquals(false, parser.checkForRangeTime("1-4"));
+		
+		assertEquals(false, parser.checkForRangeTime("1am-41"));
+		assertEquals(false, parser.checkForRangeTime("1-41am"));
+		assertEquals(false, parser.checkForRangeTime("1am-41am"));
+		
+		assertEquals(false, parser.checkForRangeTime("41am-1"));
+		assertEquals(false, parser.checkForRangeTime("41-1am"));
+		assertEquals(false, parser.checkForRangeTime("41am-1am"));
+		
+		assertEquals(false, parser.checkForRangeTime("1:60m-4:60"));
+		assertEquals(false, parser.checkForRangeTime("1:60-4:60am"));
+		assertEquals(false, parser.checkForRangeTime("1:60am-4:60am"));
+		
+		assertEquals(false, parser.checkForRangeTime("10:60am-11:60"));
+		assertEquals(false, parser.checkForRangeTime("10:60-11:60am"));
+		assertEquals(false, parser.checkForRangeTime("10:60am-11:60am"));		
 	}
 	*/
+
 
 	/**
 	 * Test for correct parsing of ranged time in user input.
@@ -573,7 +578,7 @@ public class TestCommandParser {
 	 * 
 	 * @throws InvalidLabelFormat
 	 */
-	@Test
+	
 	public void testEditReuseOldInfo() throws InvalidLabelFormat {
 		CommandParser parser = new CommandParser();
 		Task task, task2;
