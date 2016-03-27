@@ -620,6 +620,65 @@ public class CommandParser {
     }
     */
     
+    public int getIndexForEdit(String input) {
+    	 boolean hasTime = false;
+         boolean hasDateRange = false;
+         boolean hasDate = false;
+         String regex = "";
+         ArrayList<String> index = new ArrayList<String>();
+     
+         hasTime = checkForTime(input);         
+         if (hasTime) {
+         	hasDateRange = checkForRangeTime(input);
+         	 
+            if (hasDateRange) {
+           		input = removeRangeFromTitle(input);
+            }
+            
+            regex = getTimeRegex();
+            input =  removeRegex(regex, input);
+         }
+
+         hasDate = checkForDate(input);
+         if (hasDate) {
+        	 regex = getDateRegex();
+        	 input =  removeRegex(regex, input);
+        	 hasDate = false;
+         }
+
+         hasDate = checkForDateText(input);
+         if (hasDate) {
+        	 regex = getDateRegexText();
+        	 input =  removeRegex(regex, input);
+        	 hasDate = false;
+         }
+     
+         Collections.addAll(index, input.split(" "));
+         if (index.size() == 1) {
+        	 return -1;
+         } else {
+        	 try {
+        		 return (Integer.parseInt(index.get(1)));
+        	 } catch (Exception e) {
+        		 return -1;
+        	 }
+         }
+    }
+    
+    private String removeRegex(String regex, String input) {
+    	Pattern p = Pattern.compile(regex);
+    	Matcher m = p.matcher(input);
+    	String removed = input;
+
+    	while (m.find()) {
+        	String match = m.group();
+        	removed = removed.replaceAll(match,"");
+    	  	removed = removed.replaceAll("\\s+", " ").trim();    		
+    	}
+    	
+    	return removed;
+    }
+    
     public Task parseEdit(Task oldTask, String commandString, boolean hasIndex) throws InvalidLabelFormat {
         int numberOfDate = 0;
         boolean hasStartDate = false;
@@ -734,8 +793,10 @@ public class CommandParser {
     	} else if (!checkForTime(original) && !checkForRangeTime(original)) {
             //if time not detected in title
             //reuse time from old task
+    		/*
     		System.out.println(startDate);
     		System.out.println(endDate);
+    		*/
     		Calendar newCal = Calendar.getInstance();
     		Calendar currentCal = Calendar.getInstance();
     		
