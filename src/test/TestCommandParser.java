@@ -488,18 +488,29 @@ public class TestCommandParser {
 		task = parser.parseAdd("Buy milk by 10 april 7pm");
 		task2 = parser.parseEdit(task, "edit by 4pm");
 		assertEquals("Buy milk by 10 Apr 4pm", task2.toString());
+		assertEquals(0, task2.getPriority());
 		
 		task = parser.parseAdd("Buy milk by 10 april 7pm");
+		task.togglePriority(true);
 		task2 = parser.parseEdit(task, "edit from 1 to 3pm");
 		assertEquals("Buy milk from 10 Apr 1pm to 3pm", task2.toString());
+		assertEquals(1, task2.getPriority());
 		
 		task = parser.parseAdd("Buy milk by 10 apr");
+		task.togglePriority(true);
+		task.togglePriority(true);
     	task2 = parser.parseEdit(task, "edit by 20 april 8pm");
     	assertEquals("Buy milk by 20 Apr 8pm", task2.toString());
+    	assertEquals(2, task2.getPriority());
 		
 		task = parser.parseAdd("Buy kitkat by 10 april 7pm");
+		task.togglePriority(true);
+		task.togglePriority(true);
+		task.togglePriority(true);
+		task.setPriority(3);
 		task2 = parser.parseEdit(task, "edit by 11 april");
 		assertEquals("Buy kitkat by 11 Apr 7pm", task2.toString());
+		assertEquals(3, task2.getPriority());
 		
 		task = parser.parseAdd("Buy kitkat by 10 april 7pm");
 		task2 = parser.parseEdit(task, "edit FROM 11 APR TO 12 APRIL");
