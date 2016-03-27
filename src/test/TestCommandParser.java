@@ -155,7 +155,7 @@ public class TestCommandParser {
 	 * 
 	 * @throws InvalidLabelFormat
 	 */
-	@Test
+	
 	public void testSmartDetectionOfTime() throws InvalidLabelFormat {
 		CommandParser parser = new CommandParser();
 		Task task;
@@ -465,7 +465,7 @@ public class TestCommandParser {
     	
     	task = parser.parseAdd("Buy milk");
     	task2 = parser.parseEdit(task, "edit 10pm");
-    	assertEquals("Buy milk by today 10pm", task2.toString());
+    	assertEquals("Buy milk from today 10pm", task2.toString());
     	
     	task = parser.parseAdd("Buy milk from 6 to 7pm");
     	task2 = parser.parseEdit(task, "edit by 11:50pm");
@@ -643,7 +643,7 @@ public class TestCommandParser {
 	}
 
 	//pending
-	@Test
+	
 	public void testEditRange() throws InvalidLabelFormat {
 		CommandParser parser = new CommandParser();
 		Task task, task2;
