@@ -21,18 +21,28 @@ import java.util.Locale;
  */
 
 public class Task {	   
-    private String title = null;
-    private Date startDate = null;
-    private Date endDate = null;
-    private String label = null;
-    private boolean done = false;
-    private int priority = 0;
-    private Date createdDate = null;
-    private Date completedDate = null;
+    private String title;
+    private Date startDate;
+    private Date endDate;
+    private String label;
+    private boolean done;
+    private int priority;
+    private Date createdDate;
+    private Date completedDate;
+    private boolean collideWithPrev;
+    private boolean collideWithNext;
     
     public Task(String title) {
         this.title = title;
+        this.startDate = null;
+        this.endDate = null;
+        this.label = null;
+        this.done = false;
+        this.priority = 0;
         this.createdDate = new Date();
+        this.completedDate = null;
+        this.collideWithPrev = false;
+        this.collideWithNext = false;
     }
 
     public Task(String title, Date startDate, Date endDate, String label) {
@@ -40,7 +50,28 @@ public class Task {
     	this.startDate = startDate;
     	this.endDate = endDate;
     	this.label = label;
+    	this.done = false;
+    	this.priority = 0;
     	this.createdDate = new Date();
+    	this.completedDate = null;
+    	this.collideWithPrev = false;
+    	this.collideWithNext = false;
+    }
+    
+    public boolean getCollideWithPrev() {
+        return collideWithPrev;
+    }
+    
+    public void setCollideWithPrev(boolean collide) {
+        this.collideWithPrev = collide;
+    }
+    
+    public boolean getCollideWithNext() {
+        return collideWithNext;
+    }
+    
+    public void setCollideWithNext(boolean collide) {
+        this.collideWithNext = collide;
     }
     
     public String getTitle() {
