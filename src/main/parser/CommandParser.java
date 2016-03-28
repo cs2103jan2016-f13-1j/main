@@ -909,18 +909,21 @@ public class CommandParser {
 				newEnd = null;
 			}
 		} else {
+			//no date and time
 			if (startDate != null && endDate != null) {
 				newStart = startDate;
 				newEnd = endDate;
 			} else {
-				if (startDate != null) {
-					newStart = startDate;
-					newEnd = null;
-				}
+				if (!(startDate == null && endDate == null)) {
+					if (startDate != null) {
+						newStart = startDate;
+						newEnd = null;
+					}
 
-				if (endDate != null) {
-					newStart = null;
-					newEnd = endDate;
+					if (endDate != null) {
+						newStart = null;
+						newEnd = endDate;
+					}
 				}
 			}
 		}
