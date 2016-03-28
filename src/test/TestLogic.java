@@ -358,6 +358,39 @@ public class TestLogic implements Observer {
 	}
 	
 	/*
+     * Tests the detection of tasks with overlapping timings
+     */
+    @Test
+    public void timeCollisionTest() {
+        try {
+            invoker.execute(new AddCommand(receiver, parser.parseAdd("a at 1pm")));
+            invoker.execute(new AddCommand(receiver, parser.parseAdd("b at 1pm")));
+            invoker.execute(new AddCommand(receiver, parser.parseAdd("c at 1-2pm")));
+            invoker.execute(new AddCommand(receiver, parser.parseAdd("d at 1-3pm")));
+            invoker.execute(new AddCommand(receiver, parser.parseAdd("e at 3pm")));
+            invoker.execute(new AddCommand(receiver, parser.parseAdd("f by 3pm")));
+            assertFalse(todo.get(0).getCollideWithPrev());
+            assertTrue(todo.get(0).getCollideWithNext());
+            assertTrue(todo.get(1).getCollideWithPrev());
+            assertTrue(todo.get(1).getCollideWithNext());
+            assertTrue(todo.get(2).getCollideWithPrev());
+            assertTrue(todo.get(2).getCollideWithNext());
+            assertTrue(todo.get(3).getCollideWithPrev());
+            assertFalse(todo.get(3).getCollideWithNext());
+            assertFalse(todo.get(4).getCollideWithPrev());
+            assertFalse(todo.get(4).getCollideWithNext());
+            assertFalse(todo.get(5).getCollideWithPrev());
+            assertFalse(todo.get(5).getCollideWithNext());
+
+            while (!todo.isEmpty()) {
+                invoker.execute(new DeleteCommand(receiver, todo.get(0)));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+	
+	/*
 	 * Tests set location command with undo and redo
 	 */
 	@Test
