@@ -12,10 +12,14 @@ import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXListCell;
 import com.jfoenix.controls.JFXListView;
 import com.jfoenix.controls.JFXSnackbar;
+import com.jfoenix.controls.JFXTabPane;
 import com.jfoenix.controls.JFXTextField;
 import com.sun.javafx.scene.control.skin.VirtualFlow;
 
 import javafx.application.Platform;
+import javafx.beans.InvalidationListener;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -29,9 +33,10 @@ import javafx.scene.control.IndexedCell;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.control.SelectionMode;
+import javafx.scene.control.SelectionModel;
 import javafx.scene.control.SingleSelectionModel;
 import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
@@ -86,7 +91,7 @@ public class RootLayoutController implements Observer {
     private AnchorPane rootLayout; // Value injected by FXMLLoader
 
     @FXML // fx:id="tabPane"
-    private TabPane tabPane; // Value injected by FXMLLoader
+    private JFXTabPane tabPane; // Value injected by FXMLLoader
 
     @FXML // fx:id="tabTodo"
     private Tab tabTodo; // Value injected by FXMLLoader
@@ -148,7 +153,8 @@ public class RootLayoutController implements Observer {
     @FXML // fxid="snackbar"
     private JFXSnackbar snackbar;
 
-    private VirtualFlow<IndexedCell<String>> virtualFlow;
+    private VirtualFlow<IndexedCell<String>> virtualFlowTodo;
+    private VirtualFlow<IndexedCell<String>> virtualFlowCompleted;
     private IndexedCell<String> firstVisibleIndexedCell;
     private IndexedCell<String> lastVisibleIndexedCell;
 
@@ -173,8 +179,8 @@ public class RootLayoutController implements Observer {
     private int previousSelectedTaskIndex;
     private int previousCaretPosition;
     private boolean isEditMode;
-    private boolean isUndo;
-    private boolean isRedo;
+    private JFXListView<Task> currentListView;
+    private ArrayList<Task> currentTaskList;
 
     private static final Logger logger = Logger.getLogger(RootLayoutController.class.getName());
 
@@ -228,7 +234,7 @@ public class RootLayoutController implements Observer {
                 refreshListView();
                 restoreListViewPreviousSelection();
                 showFeedback(true, MESSAGE_FEEDBACK_ACTION_SEARCH,
-                        " Found " + todoTasks.size() + " tasks for -" + userArguments + "-");
+                        " Found " + currentTaskList.size() + " tasks for -" + userArguments + "-");
             } else if (commandToBeExecuted instanceof PriorityCommand) {
                 logger.log(Level.INFO, "(CHANGE TASK PRIORITY) update() is called");
                 Platform.runLater(new Runnable() {
@@ -267,8 +273,10 @@ public class RootLayoutController implements Observer {
 
     public void selectFirstItemFromListView() {
         logger.log(Level.INFO, "Set Select the first item on the ListView");
-        listViewTodo.getSelectionModel().selectNext();
+        listViewTodo.getSelectionModel().selectFirst();
+        listViewCompleted.getSelectionModel().selectFirst();
         initCustomViewportBehaviorForListView();
+        setCurrentTaskListAndListView(tabTodo.getText());
 
     }
 
@@ -291,36 +299,32 @@ public class RootLayoutController implements Observer {
         assert textUserParsedResult != null : "fx:id=\"textUserParsedResult\" was not injected: check your FXML file 'RootLayout.fxml'.";
 
         initLogicAndParser();
+        initTabSelectionListener();
         initListView();
         initMouseListener();
         initKeyboardListener();
         initCommandBarListener();
         // snackbar.registerSnackbarContainer(rootLayout);
-        // initTabSelectionListener();
+        initTabSelectionListener();
         logger.log(Level.INFO, "UI initialization complete");
     }
 
-    // /**
-    // *
-    // */
-    // private void initTabSelectionListener() {
-    // ObservableList<Tab> tabList = tabPane.getTabs();
-    // for (int i = 0; i < tabList.size(); i++) {
-    // tabList.get(i).setOnSelectionChanged(new EventHandler<Event>() {
-    //
-    // @Override
-    // public void handle(Event event) {
-    // if (getSelectedTabName().equals(STRING_TODAY)) {
-    // labelDateToday.setVisible(true);
-    // } else {
-    // labelDateToday.setVisible(false);
-    // }
-    //
-    // labelCurrentMode.setText(getSelectedTabName());
-    // }
-    // });
-    // }
-    // }
+    /**
+    *
+    */
+    private void initTabSelectionListener() {
+
+        tabPane.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Tab>() {
+
+            @Override
+            public void changed(ObservableValue<? extends Tab> observable, Tab oldValue, Tab newValue) {
+                System.out.println(oldValue.getText());
+                System.out.println(newValue.getText());
+                setCurrentTaskListAndListView(newValue.getText());
+            }
+        });
+
+    }
 
     /**
      * 
@@ -497,6 +501,7 @@ public class RootLayoutController implements Observer {
      */
     private void refreshListView() {
         observableTodoTasks.clear();
+        observableCompletedTasks.clear();
         populateListView();
         updateTabAndLabelWithTotalTasks();
         // toggleUndoRedo();
@@ -518,9 +523,14 @@ public class RootLayoutController implements Observer {
             if (node instanceof VirtualFlow) {
                 // get an instance of VirtualFlow. this is essentially the
                 // viewport for ListView
-                virtualFlow = (VirtualFlow<IndexedCell<String>>) node;
-                System.out.println("found virtual flow");
-
+                virtualFlowTodo = (VirtualFlow<IndexedCell<String>>) node;
+            }
+        }
+        for (Node node : listViewCompleted.getChildrenUnmodifiable()) {
+            if (node instanceof VirtualFlow) {
+                // get an instance of VirtualFlow. this is essentially the
+                // viewport for ListView
+                virtualFlowCompleted = (VirtualFlow<IndexedCell<String>>) node;
             }
         }
     }
@@ -531,20 +541,29 @@ public class RootLayoutController implements Observer {
      * visible within the viewport
      */
     private void adjustViewportForListView() {
-        firstVisibleIndexedCell = virtualFlow.getFirstVisibleCellWithinViewPort();
-        lastVisibleIndexedCell = virtualFlow.getLastVisibleCellWithinViewPort();
+
+        firstVisibleIndexedCell = getCurrentVirtualFlow().getFirstVisibleCellWithinViewPort();
+        lastVisibleIndexedCell = getCurrentVirtualFlow().getLastVisibleCellWithinViewPort();
+
         System.out.println("first visible cell: " + firstVisibleIndexedCell.getIndex());
         System.out.println("last visible cell: " + lastVisibleIndexedCell.getIndex());
 
         if (getSelectedTaskIndex() < firstVisibleIndexedCell.getIndex()) {
 
             // viewport will scroll and show the current item at the top
-            listViewTodo.scrollTo(getSelectedTaskIndex());
+            getCurrentListView().scrollTo(getSelectedTaskIndex());
         } else if (getSelectedTaskIndex() > lastVisibleIndexedCell.getIndex()) {
 
             // viewport will scroll and show the current item at the bottom
-            listViewTodo.scrollTo(firstVisibleIndexedCell.getIndex() + 1);
+            getCurrentListView().scrollTo(firstVisibleIndexedCell.getIndex() + 1);
         }
+    }
+
+    private VirtualFlow<IndexedCell<String>> getCurrentVirtualFlow() {
+        if (getSelectedTabName().equals(tabCompleted.getText())) {
+            return virtualFlowCompleted;
+        }
+        return virtualFlowTodo;
     }
 
     /**
@@ -662,24 +681,15 @@ public class RootLayoutController implements Observer {
             @Override
             public void run() {
                 if (keyEvent.getCode() == KeyCode.UP) {
-                    listViewTodo.getSelectionModel().selectPrevious();
+                    getCurrentListView().getSelectionModel().selectPrevious();
                     adjustViewportForListView();
                 } else if (keyEvent.getCode() == KeyCode.DOWN) {
-                    listViewTodo.getSelectionModel().selectNext();
+                    getCurrentListView().getSelectionModel().selectNext();
                     adjustViewportForListView();
-                }
-
-                // Set current task title to command bar when in Edit mode
-                if (isEditMode) {
-                    commandBar.setText(todoTasks.get(getSelectedTaskIndex()).toString());
-                    moveCaretPositionToLast();
-                    logger.log(Level.INFO, "(EDIT MODE) Pressed " + keyEvent.getCode()
-                            + " arrow key: currently selected index is " + getSelectedTaskIndex());
-                    return;
                 }
 
                 logger.log(Level.INFO, "Pressed " + keyEvent.getCode() + " arrow key: currently selected index is "
-                        + getSelectedTaskIndex());
+                        + getSelectedTaskIndex() + " current listview: " + currentListView.getId());
             }
         });
 
@@ -770,10 +780,19 @@ public class RootLayoutController implements Observer {
 
                 requestFocusForCommandBar();
                 restoreCaretPosition();
-                logger.log(Level.INFO,
-                        "Pressed CTRL+TAB key: current selected Tab is " + "\"" + getSelectedTabName() + "\"");
             }
+
         });
+
+        if (getSelectedTabName().equals("To-do")) {
+            currentListView = listViewTodo;
+            currentTaskList = todoTasks;
+        } else if (getSelectedTabName().equals("Completed")) {
+            currentListView = listViewCompleted;
+            currentTaskList = completedTasks;
+        }
+
+        logger.log(Level.INFO, "Pressed CTRL+TAB key: current selected Tab is " + "\"" + getSelectedTabName() + "\"");
     }
 
     /**
@@ -785,7 +804,7 @@ public class RootLayoutController implements Observer {
             @Override
             public void run() {
                 saveSelectedTaskIndex();
-                Task oldTask = todoTasks.get(getSelectedTaskIndex());
+                Task oldTask = currentTaskList.get(getSelectedTaskIndex());
                 commandToBeExecuted = new PriorityCommand(receiver, oldTask);
                 invoker.execute(commandToBeExecuted);
 
@@ -803,7 +822,7 @@ public class RootLayoutController implements Observer {
             @Override
             public void run() {
                 saveSelectedTaskIndex();
-                taskToBeExecuted = todoTasks.get(getSelectedTaskIndex());
+                taskToBeExecuted = currentTaskList.get(getSelectedTaskIndex());
                 commandToBeExecuted = new DoneCommand(receiver, taskToBeExecuted);
                 invoker.execute(commandToBeExecuted);
                 logger.log(Level.INFO, "Pressed CTRL+D key: Task " + getSelectedTaskIndex() + 1 + " done");
@@ -886,16 +905,15 @@ public class RootLayoutController implements Observer {
         System.out.println("parse result: " + parseResult);
 
         if (taskIndexesToBeDeleted.size() == 1) {
-            int taskIndex = taskIndexesToBeDeleted.get(0); // get the the one
-                                                           // and only
-            // index
+            int taskIndex = taskIndexesToBeDeleted.get(0);
+            taskIndex--;
 
             // if selected index is out of bound
-            if (taskIndex <= 0 || taskIndex > todoTasks.size()) {
+            if (taskIndex <= 0 || taskIndex > currentTaskList.size()) {
                 showFeedback(true, MESSAGE_FEEDBACK_ACTION_DELETE, String.format(MESSAGE_ERROR_NOT_FOUND, taskIndex));
                 clearStoredUserInput();
             } else {
-                inputFeedback = todoTasks.get(taskIndex - 1).toString();
+                inputFeedback = currentTaskList.get(taskIndex).toString();
                 showFeedback(true, MESSAGE_FEEDBACK_ACTION_DELETE, inputFeedback);
             }
 
@@ -932,7 +950,7 @@ public class RootLayoutController implements Observer {
             logger.log(Level.INFO, "EDIT command index is " + taskIndex);
             taskIndex--; // decrement user input index to match array natural
                          // ordering
-            Task taskToBeEdited = todoTasks.get(taskIndex);
+            Task taskToBeEdited = currentTaskList.get(taskIndex);
             showFeedback(true, MESSAGE_FEEDBACK_ACTION_EDIT, taskToBeEdited.toString());
             userArguments = userArguments.substring(2);
             logger.log(Level.INFO, "EDIT command arguments is: " + userArguments);
@@ -941,7 +959,7 @@ public class RootLayoutController implements Observer {
             return;
         } catch (IndexOutOfBoundsException ioobe) {
             logger.log(Level.INFO, "EDIT command index is out of range. index = " + taskIndex + " ArrayList size = "
-                    + todoTasks.size());
+                    + currentTaskList.size());
             showFeedback(true, MESSAGE_FEEDBACK_ACTION_EDIT, String.format(MESSAGE_ERROR_NOT_FOUND, userInputArray[1]));
             clearStoredUserInput();
             return;
@@ -957,7 +975,7 @@ public class RootLayoutController implements Observer {
      * @param @throws
      */
     private void parseEditForSelectedTask() {
-        Task taskToBeEdited = todoTasks.get(getSelectedTaskIndex());
+        Task taskToBeEdited = currentTaskList.get(getSelectedTaskIndex());
         showFeedback(true, MESSAGE_FEEDBACK_ACTION_EDIT, taskToBeEdited.toString());
         try {
             logger.log(Level.INFO, "EDIT command arguments is: " + userArguments);
@@ -1009,14 +1027,14 @@ public class RootLayoutController implements Observer {
 
     private ArrayList<Task> getTasksToBeDeleted(int taskIndex) {
         ArrayList<Task> tasksToBeDeleted = new ArrayList<>(1);
-        tasksToBeDeleted.add(todoTasks.get(taskIndex));
+        tasksToBeDeleted.add(currentTaskList.get(taskIndex));
         return tasksToBeDeleted;
     }
 
     private ArrayList<Task> getTasksToBeDeleted(ArrayList<Integer> taskIndexes) {
         ArrayList<Task> tasksToBeDeleted = new ArrayList<>(taskIndexes.size());
         for (Integer i : taskIndexes) {
-            tasksToBeDeleted.add(todoTasks.get(i - 1));
+            tasksToBeDeleted.add(currentTaskList.get(i - 1));
         }
         return tasksToBeDeleted;
     }
@@ -1108,14 +1126,33 @@ public class RootLayoutController implements Observer {
      */
     private void restoreListViewPreviousSelection() {
         // if previous selected index was the last index in the previous list
-        if (previousSelectedTaskIndex == todoTasks.size()) {
-            listViewTodo.getSelectionModel().selectLast();
-            listViewTodo.scrollTo(todoTasks.size() - 1);
+        if (previousSelectedTaskIndex == getCurrentTaskList().size()) {
+            getCurrentListView().getSelectionModel().selectLast();
+            getCurrentListView().scrollTo(getCurrentTaskList().size() - 1);
             logger.log(Level.INFO, "Restore ListView selection to last item");
         } else {
-            listViewTodo.getSelectionModel().select(previousSelectedTaskIndex);
-            listViewTodo.scrollTo(previousSelectedTaskIndex);
+            getCurrentListView().getSelectionModel().select(previousSelectedTaskIndex);
+            getCurrentListView().scrollTo(previousSelectedTaskIndex);
             logger.log(Level.INFO, "Restore ListView selection to previous to previous item");
+        }
+    }
+
+    private JFXListView<Task> getCurrentListView() {
+        return currentListView;
+    }
+
+    private ArrayList<Task> getCurrentTaskList() {
+        return currentTaskList;
+    }
+
+    private void setCurrentTaskListAndListView(String tabName) {
+        if (tabName.equals(tabTodo.getText())) {
+            currentListView = listViewTodo;
+            currentTaskList = todoTasks;
+        }
+        if (tabName.equals(tabCompleted.getText())) {
+            currentListView = listViewCompleted;
+            currentTaskList = completedTasks;
         }
     }
 
@@ -1123,14 +1160,15 @@ public class RootLayoutController implements Observer {
      * 
      */
     private int getSelectedTaskIndex() {
-        return listViewTodo.getSelectionModel().getSelectedIndex();
+        return getCurrentListView().getSelectionModel().getSelectedIndex();
     }
 
     /**
      * @return String
      */
     private String getSelectedTabName() {
-        return tabPane.getTabs().get(tabPane.getSelectionModel().getSelectedIndex()).getText();
+        System.out.println(tabPane.getSelectionModel().getSelectedItem().getText());
+        return tabPane.getSelectionModel().getSelectedItem().getText();
     }
 
     private void saveCommandBarText() {
