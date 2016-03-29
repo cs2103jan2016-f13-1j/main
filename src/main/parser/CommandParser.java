@@ -120,12 +120,37 @@ public class CommandParser {
 		}
 
 		hasPreposition = checkForPrepositions(inputString);
+		boolean hasTimeWithoutAmPm = checkForTimeWithoutAmPm(inputString);
 		
+		
+		if (hasDate && hasTime) {
+			dates = parseDateTime(inputString);
+		} else if (hasDate || hasDay) {
+			dates = parseDateOnly(inputString);
+		} else if (hasTime) {
+			dates = parseTimeOnly(inputString);
+		}
+		if (hasPreposition && hasTimeWithoutAmPm) {
+			dates = parseDateTime(inputString);
+			dates = fixTimeToNearest(dates, hasDate);
+		}
+		
+		/*
 		if (hasPreposition) {
+			boolean hasTimeWithoutAmPm = checkForTimeWithoutAmPm(inputString);
 			
+			if (hasDate && (hasTime || hasTimeWithoutAmPm)) {
+				dates = parseDateTime(inputString);
+				if (hasTimeWithoutAmPm) {
+					dates = fixTimeToNearest(dates);
+				}
+			} else if (hasDate) {
+				dates = parseDateOnly(inputString);
+			} else {
+				dates = parseTimeOnly(inputString);
+			}
 		} else {
 			//no preposition
-			
 			if (hasDate && hasTime) {
 				dates = parseDateTime(inputString);
 			} else if (hasDate) {
@@ -135,7 +160,7 @@ public class CommandParser {
 			}
 			
 		}
-		
+		*/
 		
 		numberOfDate = dates.size();
 
@@ -144,19 +169,22 @@ public class CommandParser {
 				startDate = getDate(dates, DATE_START_RANGED);
 				endDate = getDate(dates, DATE_END_RANGED);
 			} else {
-				hasStartDate = checkForStartPreposition(inputString);
-			
-				if (hasStartDate) {
-					startDate = getDate(dates, DATE_INDEX);
+				if (hasPreposition) {
+					hasStartDate = checkForStartPreposition(inputString);
+					if (hasStartDate) {
+						startDate = getDate(dates, DATE_INDEX);
+					} else {
+						endDate = getDate(dates, DATE_INDEX);
+					}
 				} else {
-					endDate = getDate(dates, DATE_INDEX);
+					//no preposition
+					//one date/time only
+					//assume start
+					if (hasTime || hasDate) {
+						startDate = getDate(dates, DATE_INDEX);
+						endDate = null;
+					}
 				}
-			}
-
-			//if only time specified without preposition, assume start
-			if ((hasTime == true || hasDate == true) && hasPreposition == false && hasDateRange == false) {
-				startDate = getDate(dates, DATE_INDEX);
-				endDate = null;
 			}
 
 			if (hasDateRange) {
@@ -170,7 +198,6 @@ public class CommandParser {
 		//old 
 		if (hasPreposition || hasTime) {
 			
-
 			dates = parseDateExtra(inputString);
 			numberOfDate = dates.size();
 
@@ -226,6 +253,17 @@ public class CommandParser {
 
 	private String getTimeRegex() {
 		return REGEX_TIME_TWELVE + REGEX_AM_PM;
+	}
+	
+	private boolean checkForTimeWithoutAmPm(String inputString) {
+		String regex = getTimeRegexWithoutAmPm();
+		Pattern pattern = Pattern.compile(regex);
+		Matcher matcher = pattern.matcher(inputString);
+		return matcher.find();
+	}
+
+	private String getTimeRegexWithoutAmPm() {
+		return REGEX_TIME_TWELVE + REGEX_AM_PM + "?";
 	}
 
 	/**
@@ -325,6 +363,7 @@ public class CommandParser {
 	
 	private List<Date> parseDateOnly(String inputString) {
 		List<Date> dates = parseDateTime(inputString);
+		System.out.println(dates);
 		for (int i = 0; i < dates.size(); i++) {
 			dates.add(setTimeToZero(dates.get(i)));
 			dates.remove(i);
@@ -344,31 +383,38 @@ public class CommandParser {
 	
 	private List<Date> parseTimeOnly(String inputString) {
 		List<Date> dates = parseDateTime(inputString);
-		dates = fixDateForTimeOnly(dates);
+		dates = fixTimeToNearest(dates, false);
 		return dates;
 	}
 	
-	private List<Date> fixDateForTimeOnly(List<Date> dates) {
+	private List<Date> fixTimeToNearest(List<Date> dates, boolean hasDate) {
 		Date now = new Date();
 		Calendar currentDate = Calendar.getInstance();
 		currentDate.setTime(now);
 		
 		Calendar date = Calendar.getInstance();
-		
-		for (int i = 0; i < dates.size(); i++) {
-			if (dates.get(i).before(now)) {
-				//get nearest
-				currentDate.add(Calendar.HOUR_OF_DAY, 12);
+		if (!hasDate) {
+			for (int i = 0; i < dates.size(); i++) {
+				if (dates.get(i).before(now)) {
+					//get nearest
+					currentDate.add(Calendar.HOUR_OF_DAY, 12);
+					
+					date.setTime(dates.get(i));
+					date.add(Calendar.DATE, 1);
+					
+					//if date is before, nearest have not past
+					if (date.before(currentDate)) {
+						dates.set(i,date.getTime());
+					}
+				}
 				
-				date.setTime(dates.get(i));
-				date.add(Calendar.DATE, 1);
-				
-				//if date is before, nearest have not past
-				if (date.before(currentDate)) {
-					dates.set(i,date.getTime());
+				if (dates.size() == 2) {
+					//update to start
+					now = dates.get(i);
 				}
 			}
 		}
+		
 		return dates;
 	}
 	
