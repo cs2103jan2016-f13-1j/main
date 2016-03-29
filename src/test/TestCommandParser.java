@@ -27,9 +27,10 @@ public class TestCommandParser {
 	 * Even with prepositions, it should not be dated.
 	 * 
 	 * @throws InvalidLabelFormat 
+	 * @throws InvalidTitle 
 	 */
 	@Ignore
-	public void testDetectFloating() throws InvalidLabelFormat {
+	public void testDetectFloating() throws InvalidLabelFormat, InvalidTitle {
 		CommandParser parser = new CommandParser();
 
 		Task task = parser.parseAdd("Do assignment 1");
@@ -63,9 +64,10 @@ public class TestCommandParser {
 	 * The title should be the whole user input.
 	 * 
 	 * @throws InvalidLabelFormat 
+	 * @throws InvalidTitle 
 	 */
 	@Ignore
-	public void testAddFloating() throws InvalidLabelFormat {
+	public void testAddFloating() throws InvalidLabelFormat, InvalidTitle {
 		CommandParser parser = new CommandParser();
 
 		Task task = parser.parseAdd("Cook dinner");
@@ -81,9 +83,10 @@ public class TestCommandParser {
 	 * Test for time detection without preposition if time is explicitly specified.
 	 * 
 	 * @throws InvalidLabelFormat
+	 * @throws InvalidTitle 
 	 */
 	@Ignore
-	public void testHasTime() throws InvalidLabelFormat {
+	public void testHasTime() throws InvalidLabelFormat, InvalidTitle {
 		CommandParser parser = new CommandParser();
 		Task task;
 
@@ -103,9 +106,10 @@ public class TestCommandParser {
 	 * 
 	 * @throws ParseException for dateFormat.parse()
 	 * @throws InvalidLabelFormat 
+	 * @throws InvalidTitle 
 	 */
 	@Ignore
-	public void testAdd() throws ParseException, InvalidLabelFormat {
+	public void testAdd() throws ParseException, InvalidLabelFormat, InvalidTitle {
 		CommandParser parser = new CommandParser();
 		Task task = parser.parseAdd("Cook dinner on 24 Mar 7pm #home");
 		SimpleDateFormat dateFormat = new SimpleDateFormat("EEE MMM d HH:mm:ss Z yyyy");
@@ -121,9 +125,10 @@ public class TestCommandParser {
 	 * Test for label extraction.
 	 * 
 	 * @throws InvalidLabelFormat 
+	 * @throws InvalidTitle 
 	 */
 	@Ignore
-	public void testLabel() throws IndexOutOfBoundsException, InvalidLabelFormat{
+	public void testLabel() throws IndexOutOfBoundsException, InvalidLabelFormat, InvalidTitle{
 		CommandParser parser = new CommandParser();
 
 		Task task = parser.parseAdd("Cook dinner #home");
@@ -155,9 +160,10 @@ public class TestCommandParser {
 	 * Date should be relative to current time when being parsed.
 	 * 
 	 * @throws InvalidLabelFormat
+	 * @throws InvalidTitle 
 	 */
 	
-	public void testSmartDetectionOfTime() throws InvalidLabelFormat {
+	public void testSmartDetectionOfTime() throws InvalidLabelFormat, InvalidTitle {
 		CommandParser parser = new CommandParser();
 		Task task;
 
@@ -178,9 +184,10 @@ public class TestCommandParser {
 	 * Test for extraction of date information in title.
 	 * 
 	 * @throws InvalidLabelFormat 
+	 * @throws InvalidTitle 
 	 */
 	@Ignore
-	public void testDatedTaskTitle() throws InvalidLabelFormat{
+	public void testDatedTaskTitle() throws InvalidLabelFormat, InvalidTitle{
 		CommandParser parser = new CommandParser();
 		Task task = parser.parseAdd("Attend meeting from Monday to Wednesday");
 		assertEquals("Attend meeting", task.getTitle());
@@ -227,9 +234,10 @@ public class TestCommandParser {
 	 * Feedback shown is relative to the current period.
 	 * 
 	 * @throws InvalidLabelFormat 
+	 * @throws InvalidTitle 
 	 */
 	
-	public void testDetectStartTime() throws InvalidLabelFormat {
+	public void testDetectStartTime() throws InvalidLabelFormat, InvalidTitle {
 		CommandParser parser = new CommandParser();
 		Task task = parser.parseAdd("Attempt quiz from 5pm 10 apr");
 		assertEquals("Attempt quiz", task.getTitle());
@@ -377,9 +385,10 @@ public class TestCommandParser {
 	 * Test for correct parsing of ranged time in user input.
 	 * 
 	 * @throws InvalidLabelFormat
+	 * @throws InvalidTitle 
 	 */
 	@Ignore
-	public void testTaskWithTimeRange() throws InvalidLabelFormat {
+	public void testTaskWithTimeRange() throws InvalidLabelFormat, InvalidTitle {
 		CommandParser parser = new CommandParser();
 		Task task = parser.parseAdd("Do homework on 20 apr 2-4pm");
 		assertEquals("Do homework from 20 Apr 2pm to 4pm", task.toString());
@@ -411,9 +420,10 @@ public class TestCommandParser {
 	 * Feedback shown is relative to the current period.
 	 * 
 	 * @throws InvalidLabelFormat 
+	 * @throws InvalidTitle 
 	 */
 	@Ignore
-	public void testTaskToString() throws InvalidLabelFormat {
+	public void testTaskToString() throws InvalidLabelFormat, InvalidTitle {
 		CommandParser parser = new CommandParser();
 
 		Task task = parser.parseAdd("Cook dinner");
@@ -455,9 +465,10 @@ public class TestCommandParser {
 	 * @throws InterruptedException for Thread.sleep().
 	 * Ensures that there are differences in time when creating task.
 	 * @throws InvalidLabelFormat 
+	 * @throws InvalidTitle 
 	 */
 
-	public void testCompareTo() throws InterruptedException, InvalidLabelFormat {
+	public void testCompareTo() throws InterruptedException, InvalidLabelFormat, InvalidTitle {
 		CommandParser parser = new CommandParser();
 		Task task1, task2;
 
@@ -482,9 +493,10 @@ public class TestCommandParser {
 	 * There are only four levels of priority.
 	 * 
 	 * @throws InvalidLabelFormat 
+	 * @throws InvalidTitle 
 	 */
 	@Ignore
-	public void testTogglePriority() throws InvalidLabelFormat {
+	public void testTogglePriority() throws InvalidLabelFormat, InvalidTitle {
 		CommandParser parser = new CommandParser();
 		Task task = parser.parseAdd("Cook dinner #home");
 		assertEquals(0, task.getPriority());
@@ -499,9 +511,10 @@ public class TestCommandParser {
 	 * A status can either be done or undone.
 	 * 
 	 * @throws InvalidLabelFormat
+	 * @throws InvalidTitle 
 	 */
 	@Ignore
-	public void testToggleDone() throws InvalidLabelFormat {
+	public void testToggleDone() throws InvalidLabelFormat, InvalidTitle {
 		CommandParser parser = new CommandParser();
 		Task task = parser.parseAdd("Do assignment");
 		assertEquals(false, task.isDone());
@@ -576,9 +589,10 @@ public class TestCommandParser {
 	 * Test editing of an existing task.
 	 *
 	 * @throws InvalidLabelFormat
+	 * @throws InvalidTitle 
 	 */
 	@Ignore
-	public void testEditBasic() throws InvalidLabelFormat {
+	public void testEditBasic() throws InvalidLabelFormat, InvalidTitle {
 		CommandParser parser = new CommandParser();
 		Task task, task2;
 		
@@ -607,9 +621,10 @@ public class TestCommandParser {
 	 * Test editing time of existing task.
 	 * 
 	 * @throws InvalidLabelFormat
+	 * @throws InvalidTitle 
 	 */
 	@Ignore
-	public void testEditTime() throws InvalidLabelFormat {
+	public void testEditTime() throws InvalidLabelFormat, InvalidTitle {
 		CommandParser parser = new CommandParser();
 		Task task, task2;
     	
@@ -644,9 +659,10 @@ public class TestCommandParser {
 	 * This allows updating of only the date or time.
 	 * 
 	 * @throws InvalidLabelFormat
+	 * @throws InvalidTitle 
 	 */
 	
-	public void testEditReuseOldInfo() throws InvalidLabelFormat {
+	public void testEditReuseOldInfo() throws InvalidLabelFormat, InvalidTitle {
 		CommandParser parser = new CommandParser();
 		Task task, task2;
 		
@@ -897,7 +913,7 @@ public class TestCommandParser {
 	}
 	
 	//date only 26 march
-	public void testEditDate() throws InvalidLabelFormat {
+	public void testEditDate() throws InvalidLabelFormat, InvalidTitle {
 		CommandParser parser = new CommandParser();
 		Task task, task2;
 
@@ -912,7 +928,7 @@ public class TestCommandParser {
 
 	//pending
 	
-	public void testEditRange() throws InvalidLabelFormat {
+	public void testEditRange() throws InvalidLabelFormat, InvalidTitle {
 		CommandParser parser = new CommandParser();
 		Task task, task2;
 
