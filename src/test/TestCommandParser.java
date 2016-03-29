@@ -14,6 +14,7 @@ import main.data.Task;
 import main.parser.CommandParser;
 import main.parser.CommandParser.InvalidLabelFormat;
 import main.parser.CommandParser.InvalidTaskIndexFormat;
+import main.parser.CommandParser.InvalidTitle;
 
 /**
  * @author Joleen
@@ -808,7 +809,7 @@ public class TestCommandParser {
 	// =============================
 	
 	@Test 
-	public void testNoPreposition() throws InvalidLabelFormat {
+	public void testNoPreposition() throws InvalidLabelFormat, InvalidTitle {
 		CommandParser parser = new CommandParser();
 		Task task;
 		
@@ -836,6 +837,63 @@ public class TestCommandParser {
 		//if ending not specified, am
 		task = parser.parseAdd("Buy apple 1pm-3");
 		assertEquals("Buy apple from today 1pm to this Wed 3am", task.toString());	
+	}
+	
+	@Test
+	public void testInvalidTitle() throws InvalidLabelFormat, InvalidTitle {
+		CommandParser parser = new CommandParser();
+		Task task;
+		boolean thrown;
+		
+		thrown = false;
+		try {
+			task = parser.parseAdd("29 mar");
+			System.out.println(task.toString());
+		} catch (InvalidTitle e) {
+			thrown = true;
+		}
+		assertEquals(true, thrown);  
+		
+		thrown = false;
+		try {
+			task = parser.parseAdd("3pm");
+			System.out.println(task.toString());
+		} catch (InvalidTitle e) {
+			thrown = true;
+		}
+		assertEquals(true, thrown);  
+		
+		thrown = false;
+		try {
+			task = parser.parseAdd("29 mar 3pm");
+		} catch (InvalidTitle e) {
+			thrown = true;
+		}
+		assertEquals(true, thrown);  
+		
+		thrown = false;
+		try {
+			task = parser.parseAdd("29 mar 3pm-5pm");
+		} catch (InvalidTitle e) {
+			thrown = true;
+		}
+		assertEquals(true, thrown);
+		
+		thrown = false;
+		try {
+			task = parser.parseAdd("3");
+		} catch (InvalidTitle e) {
+			thrown = true;
+		}
+		assertEquals(false, thrown);  
+		
+		thrown = false;
+		try {
+			task = parser.parseAdd("29 march 3");
+		} catch (InvalidTitle e) {
+			thrown = true;
+		}
+		assertEquals(false, thrown);
 	}
 	
 	//date only 26 march
