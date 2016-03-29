@@ -452,6 +452,17 @@ public class CommandParser {
 		return dates.get(index);
 	}
 
+	private boolean checkForDay(String inputString) {
+		String regex = getDayRegex();
+		Pattern pattern = Pattern.compile(regex);
+		Matcher matcher = pattern.matcher(inputString);
+		return matcher.find();
+	}
+	
+	private String getDayRegex() {
+		return REGEX_PREPOSITION_ALL + "?" + REGEX_DAYS;
+	}
+	
 	/**
 	 * This method checks the {@code String} taken in for prepositions.
 	 * More specifically, it checks if there is preposition that indicates a starting time.
