@@ -78,28 +78,80 @@ public class CommandParser {
 		Date startDate = null;
 		Date endDate = null;
 		
+		boolean hasDate = false;
 		boolean hasTime = false;
 		boolean hasDateRange = false;
 		boolean hasPreposition = false;
 		boolean hasStartDate = false;
 		boolean hasLabel = false;
 		int numberOfDate = 0;
+		List<Date> dates = new ArrayList<Date>();
 		
 		title = inputString;
-
+		
+		hasDate =  checkForDate(inputString)  || checkForDateText(inputString);
+		
 		hasTime = checkForTime(inputString);
 		if (hasTime) {
 			hasDateRange = checkForRangeTime(inputString);
-		}
-
-		hasPreposition = checkForPrepositions(inputString);
-
-		if (hasPreposition || hasTime) {
 			if (hasDateRange) {
 				inputString = correctRangeTime(inputString);
 			}
+		}
 
-			List<Date> dates = parseDateExtra(inputString);
+		hasPreposition = checkForPrepositions(inputString);
+		
+		if (hasPreposition) {
+			
+		} else {
+			//no preposition
+			
+			if (hasDate && hasTime) {
+				dates = parseDateTime(inputString);
+			} else if (hasDate) {
+				dates = parseDateOnly(inputString);
+			} else if (hasTime) {
+				dates = parseTimeOnly(inputString);
+			}
+			
+		}
+		
+		
+		numberOfDate = dates.size();
+
+		if (numberOfDate > 0) {
+			if (numberOfDate == DATE_MAX_SIZE) {
+				startDate = getDate(dates, DATE_START_RANGED);
+				endDate = getDate(dates, DATE_END_RANGED);
+			} else {
+				hasStartDate = checkForStartPreposition(inputString);
+			
+				if (hasStartDate) {
+					startDate = getDate(dates, DATE_INDEX);
+				} else {
+					endDate = getDate(dates, DATE_INDEX);
+				}
+			}
+
+			//if only time specified without preposition, assume start
+			if ((hasTime == true || hasDate == true) && hasPreposition == false && hasDateRange == false) {
+				startDate = getDate(dates, DATE_INDEX);
+				endDate = null;
+			}
+
+			if (hasDateRange) {
+				title = removeRangeFromTitle(title);
+			}
+
+			title = removeDateFromTitle(title, startDate, endDate);
+		}
+			
+		/*
+		//old 
+		if (hasPreposition || hasTime) {
+			
+
+			dates = parseDateExtra(inputString);
 			numberOfDate = dates.size();
 
 			if (numberOfDate > 0) {
@@ -128,6 +180,7 @@ public class CommandParser {
 				title = removeDateFromTitle(title, startDate, endDate);
 			}
 		}
+		*/
 
 		hasLabel = checkForLabel(inputString);
 		if (hasLabel) {
@@ -246,9 +299,71 @@ public class CommandParser {
 		return String.join(" ", words);
 	}
 	
+	/**
+	 * This method uses PrettyTimeParser to generate dates from {@code String} inputString.
+	 * @param inputString
+	 * 			{@code String} input to be parsed
+	 * @return {@code List<Date>} of dates generated if possible
+	 */
+	private List<Date> parseDateTime(String inputString) {
+		PrettyTimeParser parser = new PrettyTimeParser();
+		inputString = correctDateNumFormat(inputString);
+		List<Date> dates = parser.parse(inputString);
+		return dates;
+	}
+	
+	private List<Date> parseDateOnly(String inputString) {
+		List<Date> dates = parseDateTime(inputString);
+		for (int i = 0; i < dates.size(); i++) {
+			dates.add(setTimeToZero(dates.get(i)));
+			dates.remove(i);
+		}
+		return dates;
+	}
+	
+	private Date setTimeToZero(Date date) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        return cal.getTime();
+    }
+	
+	private List<Date> parseTimeOnly(String inputString) {
+		List<Date> dates = parseDateTime(inputString);
+		dates = fixDateForTimeOnly(dates);
+		return dates;
+	}
+	
+	private List<Date> fixDateForTimeOnly(List<Date> dates) {
+		Date now = new Date();
+		Calendar currentDate = Calendar.getInstance();
+		currentDate.setTime(now);
+		
+		Calendar date = Calendar.getInstance();
+		
+		for (int i = 0; i < dates.size(); i++) {
+			if (dates.get(i).before(now)) {
+				//get nearest
+				currentDate.add(Calendar.HOUR_OF_DAY, 12);
+				
+				date.setTime(dates.get(i));
+				date.add(Calendar.DATE, 1);
+				
+				//if date is before, nearest have not past
+				if (date.before(currentDate)) {
+					dates.set(i,date.getTime());
+				}
+			}
+		}
+		return dates;
+	}
+	
 	//here
 	private List<Date> parseDateExtra(String inputString) {
-		List<Date> dates = parseDate(inputString);
+		List<Date> dates = parseDateTime(inputString);
 		
 		Date now = new Date();
 		Date update = null;
@@ -282,19 +397,6 @@ public class CommandParser {
 			}
 		}
 
-		return dates;
-	}
-	
-	/**
-	 * This method uses PrettyTimeParser to generate dates from {@code String} inputString.
-	 * @param inputString
-	 * 			{@code String} input to be parsed
-	 * @return {@code List<Date>} of dates generated if possible
-	 */
-	private List<Date> parseDate(String inputString) {
-		PrettyTimeParser parser = new PrettyTimeParser();
-		inputString = correctDateNumFormat(inputString);
-		List<Date> dates = parser.parse(inputString);
 		return dates;
 	}
 
@@ -672,7 +774,7 @@ public class CommandParser {
 	 * @return {@code Date} if date found, {@code null} if date is not found
 	 */
 	public Date getDateForSearch(String inputString) {
-		List<Date> dates = parseDate(inputString);
+		List<Date> dates = parseDateTime(inputString);
 		if (dates.size() == 0) {
 			return null;
 		} else {
