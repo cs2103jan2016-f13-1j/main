@@ -38,15 +38,15 @@ public class CommandParser {
 	
 	private final String REGEX_PREPOSITION_STARTING = "(?i)\\b(from|after|at|on)\\b ?"; 
 	private final String REGEX_PREPOSITION_ALL = "(?i)(\\b(from|after|at|on|by|before|to)\\b ?)";
-	public final String REGEX_DAYS = "\\b((?i)(mon)(day)?|" + "(tue)(s|sday)?|" + "(wed)(s|nesday)?|"
-	        + "(thu)(r|rs|rsday)?|" + "(fri)(day)?|" + "(sat)(urday)?|" + "(sun)(day)?)\\b";
+	public final String REGEX_DAYS = "\\b((?i)((mon)(day)?|(tue)(sday|s)?|"
+			+ "(wed)(nesday|s)?|(thu)(rsday|rs|r)?|(fri)(day)?|(sat)(urday)?|(sun)(day)?))\\b";
 	private final String REGEX_DATE_NUM = "\\b((0?[1-9]|[12][0-9]|3[01])([/|-])(0?[1-9]|1[012]))\\b";	
 	private final String REGEX_DATE_TEXT = "\\b(0?[1-9]|[12][0-9]|3[01]) ";
 	private final String REGEX_MONTH_TEXT = "((?i)(jan)(uary)?|"
 			+ "(feb)(ruary)?|" + "(mar)(ch)?|" + "(apr)(il)?|" + "(may)|"
 			+ "(jun)(e)?|" + "(jul)(y)?|" + "(aug)(ust)?|" + "(sep)(tember)?|"
 			+ "(oct)(ober)?|" + "(nov)(ember)?|" + "(dec)(ember)?)\\b";
-	private final String REGEX_TIME_TWELVE = "\\b((1[012]|0?[1-9])(([:|.][0-5][0-9])?))";
+	private final String REGEX_TIME_TWELVE = "((1[012]|0?[1-9])(([:|.][0-5][0-9])?))";
 	private final String REGEX_AM_PM = "(?i)(am|pm)";
 
 	private final String STRING_AM = "am";
@@ -111,7 +111,7 @@ public class CommandParser {
 			throw new InvalidTitle("Invalid title detected.");
 		}
 	
-		//hasDay = checkForDay(inputString); //pending for range, mismatch if past
+		hasDay = checkForDay(inputString); //pending for range, mismatch if past
 		hasDate =  checkForDate(inputString)  || checkForDateText(inputString);
 		
 		hasTime = checkForTime(inputString);
@@ -128,17 +128,21 @@ public class CommandParser {
 			hasStartDate = checkForStartPreposition(inputString);
 		} 
 		
-		if (hasPreposition && hasTimeWithoutAmPm) {
+		if (hasDate && hasTime) {
 			dates = parseDateTime(inputString);
-			dates = fixTimeToNearest(dates, hasDate);
-		} else if (hasDate && hasTime) {
-			dates = parseDateTime(inputString);
-		} else if (hasDate || hasDay) {
+		} else if (hasDate) {
 			dates = parseDateOnly(inputString);
+		} else if (hasDay && hasTime) {
+			dates = parseDateTime(inputString);
+		} else if (hasDay) {
+			dates = parseDayOnly(inputString);
 		} else if (hasTime) {
 			dates = parseTimeOnly(inputString);
+		} else if (hasPreposition && hasTimeWithoutAmPm) {
+			dates = parseDateTime(inputString);
+			dates = fixTimeToNearest(dates, hasDate);
 		}
-
+		
 		numberOfDate = dates.size();
 		if (numberOfDate > 0) {
 			dates = assignDates(dates, hasPreposition, hasStartDate);
@@ -148,41 +152,16 @@ public class CommandParser {
 			if (hasDateRange) {
 				title = removeRangeFromTitle(title);
 			}
-
+			
+			if (hasDay) {
+				title = removeDayFromTitle(title);
+			}
 			title = removeDateFromTitle(title, startDate, endDate);
 		}
 
 		Task task = new Task (title, startDate, endDate, label);
 		logger.log(Level.INFO, "Task object built.");
 		return task;
-	}
-	
-	
-	private List<Date> assignDates(List<Date> dates, boolean hasPreposition, boolean hasStartDate) {
-		List<Date> assigned = new ArrayList<Date>();
-		int numberOfDate = dates.size();
-		
-		if (numberOfDate == DATE_MAX_SIZE) {
-			assigned.add(DATE_START,getDate(dates, DATE_START));
-			assigned.add(DATE_END,getDate(dates, DATE_END));
-		} else {
-			if (hasPreposition) {
-				if (hasStartDate) {
-					assigned.add(DATE_START,getDate(dates, DATE_INDEX));
-					assigned.add(DATE_END, null);
-				} else {
-					assigned.add(DATE_START, null);
-					assigned.add(DATE_END,getDate(dates, DATE_INDEX));
-				}
-			} else {
-				//no preposition
-				//one date/time only
-				//assume start
-				assigned.add(DATE_START,getDate(dates, DATE_INDEX));
-				assigned.add(DATE_END,null);
-			}
-		}
-		return assigned;
 	}
 
 	/**
@@ -193,7 +172,7 @@ public class CommandParser {
 	 * 			{@code String} input to be check
 	 * @return {@code boolean} true if time found
 	 */
-	private boolean checkForTime(String inputString) {
+	public boolean checkForTime(String inputString) {
 		String regex = getTimeRegex();
 		Pattern pattern = Pattern.compile(regex);
 		Matcher matcher = pattern.matcher(inputString);
@@ -201,7 +180,7 @@ public class CommandParser {
 	}
 
 	private String getTimeRegex() {
-		return REGEX_TIME_TWELVE + REGEX_AM_PM;
+		return "\\b" + REGEX_TIME_TWELVE + REGEX_AM_PM;
 	}
 	
 	private boolean checkForTimeWithoutAmPm(String inputString) {
@@ -212,7 +191,7 @@ public class CommandParser {
 	}
 
 	private String getTimeRegexWithoutAmPm() {
-		return REGEX_TIME_TWELVE + REGEX_AM_PM + "?";
+		return "\\b " + REGEX_TIME_TWELVE + "\\b" + REGEX_AM_PM + "?";
 	}
 
 	/**
@@ -230,13 +209,13 @@ public class CommandParser {
 	}
 
 	private String getTimeRangeRegex() {
-		return REGEX_TIME_TWELVE + REGEX_AM_PM + "?" 
+		return "\\b" + REGEX_TIME_TWELVE + REGEX_AM_PM + "?" 
 				+ "\\s?-\\s?" +
-				REGEX_TIME_TWELVE + REGEX_AM_PM
+				"\\b" + REGEX_TIME_TWELVE + REGEX_AM_PM
 				+ "|" +
-				REGEX_TIME_TWELVE + REGEX_AM_PM 
+				"\\b" + REGEX_TIME_TWELVE + REGEX_AM_PM 
 				+ "\\s?-\\s?" +
-				REGEX_TIME_TWELVE + REGEX_AM_PM + "?\\b";
+				"\\b" + REGEX_TIME_TWELVE + REGEX_AM_PM + "?\\b";
 	}
 
 	/**
@@ -335,6 +314,28 @@ public class CommandParser {
         return cal.getTime();
     }
 	
+	private List<Date> parseDayOnly(String inputString) {
+		List<Date> dates = parseDateOnly(inputString);
+		dates = fixDayRange(dates);
+
+		return dates;
+	}
+	
+	private List<Date> fixDayRange(List<Date> dates) {
+		if (dates.size() == DATE_MAX_SIZE) {
+			Date start = dates.get(DATE_START);
+			Date end = dates.get(DATE_END);
+			if (start.after(end)) {
+				Calendar cal = Calendar.getInstance();
+				cal.setTime(end);
+				cal.add(Calendar.WEEK_OF_YEAR, 1);
+				dates.set(DATE_END, cal.getTime());
+			}
+			
+		}
+		return dates;
+	}
+	
 	private List<Date> parseTimeOnly(String inputString) {
 		List<Date> dates = parseDateTime(inputString);
 		dates = fixTimeToNearest(dates, false);
@@ -370,6 +371,33 @@ public class CommandParser {
 		}
 		
 		return dates;
+	}
+	
+	private List<Date> assignDates(List<Date> dates, boolean hasPreposition, boolean hasStartDate) {
+		List<Date> assigned = new ArrayList<Date>();
+		int numberOfDate = dates.size();
+		
+		if (numberOfDate == DATE_MAX_SIZE) {
+			assigned.add(DATE_START,getDate(dates, DATE_START));
+			assigned.add(DATE_END,getDate(dates, DATE_END));
+		} else {
+			if (hasPreposition) {
+				if (hasStartDate) {
+					assigned.add(DATE_START,getDate(dates, DATE_INDEX));
+					assigned.add(DATE_END, null);
+				} else {
+					assigned.add(DATE_START, null);
+					assigned.add(DATE_END,getDate(dates, DATE_INDEX));
+				}
+			} else {
+				//no preposition
+				//one date/time only
+				//assume start
+				assigned.add(DATE_START,getDate(dates, DATE_INDEX));
+				assigned.add(DATE_END,null);
+			}
+		}
+		return assigned;
 	}
 	
 	//here
@@ -722,13 +750,23 @@ public class CommandParser {
 		String regex = "(" + REGEX_PREPOSITION_ALL + "?)" + getTimeRangeRegex();;
 		Pattern pattern = Pattern.compile(regex);
 		Matcher matcher = pattern.matcher(title);
-		if (matcher.find()) {
+		while (matcher.find()) {
 			title = title.replaceAll(matcher.group(), "");
 		}
 		title = removeExtraSpaces(title);
 		return title;
 	}
-
+	
+	private String removeDayFromTitle(String title) {
+		String regex = getDayRegex();
+		Pattern pattern = Pattern.compile(regex);
+		Matcher matcher = pattern.matcher(title);
+		while (matcher.find()) {
+			title = title.replaceAll(matcher.group(), "");
+		}
+		title = removeExtraSpaces(title);
+		return title;
+	}
 	/**
 	 * This method checks for indication of label through detection of '#'.
 	 * 
