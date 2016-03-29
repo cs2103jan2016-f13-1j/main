@@ -135,33 +135,6 @@ public class CommandParser {
 			dates = fixTimeToNearest(dates, hasDate);
 		}
 		
-		/*
-		if (hasPreposition) {
-			boolean hasTimeWithoutAmPm = checkForTimeWithoutAmPm(inputString);
-			
-			if (hasDate && (hasTime || hasTimeWithoutAmPm)) {
-				dates = parseDateTime(inputString);
-				if (hasTimeWithoutAmPm) {
-					dates = fixTimeToNearest(dates);
-				}
-			} else if (hasDate) {
-				dates = parseDateOnly(inputString);
-			} else {
-				dates = parseTimeOnly(inputString);
-			}
-		} else {
-			//no preposition
-			if (hasDate && hasTime) {
-				dates = parseDateTime(inputString);
-			} else if (hasDate) {
-				dates = parseDateOnly(inputString);
-			} else if (hasTime) {
-				dates = parseTimeOnly(inputString);
-			}
-			
-		}
-		*/
-		
 		numberOfDate = dates.size();
 
 		if (numberOfDate > 0) {
@@ -193,43 +166,6 @@ public class CommandParser {
 
 			title = removeDateFromTitle(title, startDate, endDate);
 		}
-			
-		/*
-		//old 
-		if (hasPreposition || hasTime) {
-			
-			dates = parseDateExtra(inputString);
-			numberOfDate = dates.size();
-
-			if (numberOfDate > 0) {
-				if (numberOfDate == DATE_MAX_SIZE) {
-					startDate = getDate(dates, DATE_START_RANGED);
-					endDate = getDate(dates, DATE_END_RANGED);
-				} else {
-					hasStartDate = checkForStartPreposition(inputString);
-					
-					if (hasStartDate) {
-						startDate = getDate(dates, DATE_INDEX);
-					} else {
-						endDate = getDate(dates, DATE_INDEX);
-					}
-				}
-
-				if (hasTime == true && hasPreposition == false) {
-					startDate = getDate(dates, DATE_INDEX);
-					endDate = null;
-				}
-
-				if (hasDateRange) {
-					title = removeRangeFromTitle(title);
-				}
-
-				title = removeDateFromTitle(title, startDate, endDate);
-			}
-		}
-		*/
-
-		
 
 		Task task = new Task (title, startDate, endDate, label);
 		logger.log(Level.INFO, "Task object built.");
@@ -1322,7 +1258,8 @@ public class CommandParser {
 			logger.log(Level.WARNING, "InvalidLabelFormat exception thrown.");    		
 		}
 	}
-
+	
+	@SuppressWarnings("serial")
 	public class InvalidTimeFormat extends Exception {
 		public InvalidTimeFormat() {
 			logger.log(Level.WARNING, "Time cannot be parsed by parser.");
@@ -1336,6 +1273,7 @@ public class CommandParser {
 		}
 	}
 	
+	@SuppressWarnings("serial")
 	public class InvalidTitle extends Exception {
 		public InvalidTitle() {
 			logger.log(Level.WARNING, "Title cannot be parsed by parser.");
