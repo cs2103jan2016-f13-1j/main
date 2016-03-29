@@ -147,6 +147,30 @@ public class TestCommandParser {
 	}
 	*/
 	
+	/**
+	 * Test detection of days in text format in user input.
+	 * Method checkForDay has been updated to private.
+	 * This is for reference only.
+	 */
+	/*
+	public void testCheckDayText() {
+		CommandParser parser = new CommandParser();
+
+		assertEquals(true, parser.checkForDay("monday"));
+		assertEquals(true, parser.checkForDay("thur"));
+		assertEquals(true, parser.checkForDay("thurs"));
+		
+		assertEquals(true, parser.checkForDay("from monday"));
+		assertEquals(true, parser.checkForDay("on thur"));
+		assertEquals(true, parser.checkForDay("at thurs"));
+		
+		
+		assertEquals(false, parser.checkForDay("mondayy"));
+		assertEquals(false, parser.checkForDay("mmon"));
+		assertEquals(false, parser.checkForDay("monn"));
+	}
+	*/
+	
 	// =============================
 	// Add's stuff
 	// =============================
@@ -295,7 +319,7 @@ public class TestCommandParser {
 	 * @throws InvalidLabelFormat
 	 * @throws InvalidTitle
 	 */
-	@Test
+	@Ignore
 	public void testInvalidTitle() throws InvalidLabelFormat, InvalidTitle {
 		CommandParser parser = new CommandParser();
 		Task task;
@@ -353,33 +377,12 @@ public class TestCommandParser {
 	}
 	
 	/**
-	 * Test for time detection without preposition if time is explicitly specified.
-	 * 
-	 * @throws InvalidLabelFormat
-	 * @throws InvalidTitle 
-	 */
-	@Test
-	public void testHasTime() throws InvalidLabelFormat, InvalidTitle {
-		CommandParser parser = new CommandParser();
-		Task task;
-
-		task = parser.parseAdd("Dinner 7pm");
-		assertEquals("Dinner from today 7pm", task.toString());
-
-		task = parser.parseAdd("Dinner 7PM today");
-		assertEquals("Dinner from today 7pm", task.toString());
-
-		task = parser.parseAdd("Homework 5.15pm");
-		assertEquals("Homework from today 5:15pm", task.toString());
-	}
-	
-	/**
 	 * Test for adding a task without preposition.
 	 * 
 	 * @throws InvalidLabelFormat
 	 * @throws InvalidTitle 
 	 */
-	@Test 
+	@Ignore
 	public void testNoPreposition() throws InvalidLabelFormat, InvalidTitle {
 		CommandParser parser = new CommandParser();
 		Task task;
@@ -410,48 +413,40 @@ public class TestCommandParser {
 		assertEquals("Buy apple from today 1pm to this Wed 3am", task.toString());	
 	}
 	
-	
-	
-	
-//checkpoint
-	
-
 	/**
-	 * Test adding of dated task.
-	 * Asserts title and time has been parsed correctly.
+	 * Test for time detection without preposition if time is explicitly specified.
 	 * 
-	 * @throws ParseException for dateFormat.parse()
-	 * @throws InvalidLabelFormat 
+	 * @throws InvalidLabelFormat
 	 * @throws InvalidTitle 
 	 */
 	@Ignore
-	public void testAdd() throws ParseException, InvalidLabelFormat, InvalidTitle {
+	public void testHasTime() throws InvalidLabelFormat, InvalidTitle {
 		CommandParser parser = new CommandParser();
-		Task task = parser.parseAdd("Cook dinner on 24 Mar 7pm #home");
-		SimpleDateFormat dateFormat = new SimpleDateFormat("EEE MMM d HH:mm:ss Z yyyy");
-		String startDate = "Thu Mar 24 19:00:00 SGT 2016";
-		Date expectedStart = dateFormat.parse(startDate);
+		Task task;
 
-		assertEquals(true, task.hasDate());
-		assertEquals(expectedStart, task.getStartDate());
-		assertEquals("Cook dinner", task.getTitle());
+		task = parser.parseAdd("Dinner 7pm");
+		assertEquals("Dinner from today 7pm", task.toString());
+
+		task = parser.parseAdd("Dinner 7PM today");
+		assertEquals("Dinner from today 7pm", task.toString());
+
+		task = parser.parseAdd("Homework 5.15pm");
+		assertEquals("Homework from today 5:15pm", task.toString());
 	}
-
 	
-
 	/**
 	 * Date should be relative to current time when being parsed.
 	 * 
 	 * @throws InvalidLabelFormat
 	 * @throws InvalidTitle 
 	 */
-	
+	@Test
 	public void testSmartDetectionOfTime() throws InvalidLabelFormat, InvalidTitle {
 		CommandParser parser = new CommandParser();
 		Task task;
 
 		task = parser.parseAdd("Do homework by 2");
-		assertEquals("Do homework by today 2am", task.toString());
+		assertEquals("Do homework by this Wed 2am", task.toString());
 
 		task = parser.parseAdd("Do homework by 6am");
 		assertEquals("Do homework by today 6am", task.toString());
@@ -464,82 +459,31 @@ public class TestCommandParser {
 	}
 	
 	/**
-	 * Test for extraction of date information in title.
-	 * 
-	 * @throws InvalidLabelFormat 
-	 * @throws InvalidTitle 
-	 */
-	@Ignore
-	public void testDatedTaskTitle() throws InvalidLabelFormat, InvalidTitle{
-		CommandParser parser = new CommandParser();
-		Task task = parser.parseAdd("Attend meeting from Monday to Wednesday");
-		assertEquals("Attend meeting", task.getTitle());
-
-		task = parser.parseAdd("Attend meeting from 4 to 6");
-		assertEquals("Attend meeting", task.getTitle());
-
-		task = parser.parseAdd("Cook dinner at 7");
-		assertEquals("Cook dinner", task.getTitle());
-
-		task = parser.parseAdd("Attend meeting on Wed");
-		assertEquals("Attend meeting", task.getTitle());
-
-		task = parser.parseAdd("Do homework by Sunday");
-		assertEquals("Do homework", task.getTitle());
-
-		task = parser.parseAdd("Send 100 email before 8pm");
-		assertEquals("Send 100 email", task.getTitle());
-
-		task = parser.parseAdd("Meet at \"Taco Tuesday\" on Wednesday 5pm");
-		assertEquals("Meet at \"Taco Tuesday\"", task.getTitle());
-
-		task =  parser.parseAdd("Chase \"2pm\" Korean band on Saturday 7pm");
-		assertEquals("Chase \"2pm\" Korean band", task.getTitle());
-
-		task = parser.parseAdd("Attend meeting from Monday to Wednesday 6pm");
-		assertEquals("Attend meeting", task.getTitle());
-
-		task = parser.parseAdd("Cook dinner at 7pm at home");
-		assertEquals("Cook dinner at home", task.getTitle());
-
-		task = parser.parseAdd("Cook dinner on 24 Mar 7pm");
-		assertEquals("Cook dinner", task.getTitle());
-
-		task = parser.parseAdd("Do assignment by Sunday 8pm");
-		assertEquals("Do assignment", task.getTitle());
-
-		task = parser.parseAdd("Send 100 email before sunday 7pm");
-		assertEquals("Send 100 email", task.getTitle());
-	}
-
-	/**
 	 * Test for start time detection when parsing.
 	 * Feedback shown is relative to the current period.
 	 * 
 	 * @throws InvalidLabelFormat 
 	 * @throws InvalidTitle 
 	 */
-	
+	@Test
 	public void testDetectStartTime() throws InvalidLabelFormat, InvalidTitle {
 		CommandParser parser = new CommandParser();
-		Task task = parser.parseAdd("Attempt quiz from 5pm 10 apr");
+		Task task = parser.parseAdd("Attempt quiz from 5pm 20 apr");
 		assertEquals("Attempt quiz", task.getTitle());
-		assertEquals("Attempt quiz from 10 Apr 5pm", task.toString());
+		assertEquals("Attempt quiz from 20 Apr 5pm", task.toString());
 
-		task = parser.parseAdd("Watch webcast after 3am on 10 APR");
+		task = parser.parseAdd("Watch webcast after 3am on 20 APR");
 		assertEquals("Watch webcast", task.getTitle());  	
-		assertEquals("Watch webcast from 10 Apr 3am", task.toString());
+		assertEquals("Watch webcast from 20 Apr 3am", task.toString());
 
-		task = parser.parseAdd("Watch movie at 10pm");
+		task = parser.parseAdd("Watch movie at 2pm");
 		assertEquals("Watch movie", task.getTitle());
-		assertEquals("Watch movie from today 10pm", task.toString());
+		assertEquals("Watch movie from today 2pm", task.toString());
 
-		task = parser.parseAdd("Watch movie on 10 Apr 7pm");
+		task = parser.parseAdd("Watch movie on 20 Apr 7pm");
 		assertEquals("Watch movie", task.getTitle());
-		assertEquals("Watch movie from 10 Apr 7pm", task.toString());
-	}
-
-	
+		assertEquals("Watch movie from 20 Apr 7pm", task.toString());
+	}	
 	
 	/**
 	 * Test for correct parsing of ranged time in user input.
@@ -547,7 +491,7 @@ public class TestCommandParser {
 	 * @throws InvalidLabelFormat
 	 * @throws InvalidTitle 
 	 */
-	@Ignore
+	@Test
 	public void testTaskWithTimeRange() throws InvalidLabelFormat, InvalidTitle {
 		CommandParser parser = new CommandParser();
 		Task task = parser.parseAdd("Do homework on 20 apr 2-4pm");
@@ -582,7 +526,7 @@ public class TestCommandParser {
 	 * @throws InvalidLabelFormat 
 	 * @throws InvalidTitle 
 	 */
-	@Ignore
+	@Test
 	public void testTaskToString() throws InvalidLabelFormat, InvalidTitle {
 		CommandParser parser = new CommandParser();
 
@@ -616,6 +560,86 @@ public class TestCommandParser {
 		task = parser.parseAdd("Go camp from 1-3 8am to 3-3 9pm");
 		assertEquals("Go camp from 1 Mar 8am to 3 Mar 9pm", task.toString());
 	}
+	
+	
+//checkpoint
+	
+
+	/**
+	 * Test adding of dated task.
+	 * Asserts title and time has been parsed correctly.
+	 * 
+	 * @throws ParseException for dateFormat.parse()
+	 * @throws InvalidLabelFormat 
+	 * @throws InvalidTitle 
+	 */
+	@Test
+	public void testAdd() throws ParseException, InvalidLabelFormat, InvalidTitle {
+		CommandParser parser = new CommandParser();
+		Task task = parser.parseAdd("Cook dinner on 24 Mar 7pm #home");
+		SimpleDateFormat dateFormat = new SimpleDateFormat("EEE MMM d HH:mm:ss Z yyyy");
+		String startDate = "Thu Mar 24 19:00:00 SGT 2016";
+		Date expectedStart = dateFormat.parse(startDate);
+
+		assertEquals(true, task.hasDate());
+		assertEquals(expectedStart, task.getStartDate());
+		assertEquals("Cook dinner", task.getTitle());
+	}
+
+	
+	/**
+	 * Test for extraction of date information in title.
+	 * 
+	 * @throws InvalidLabelFormat 
+	 * @throws InvalidTitle 
+	 */
+	//pending
+	public void testDatedTaskTitle() throws InvalidLabelFormat, InvalidTitle{
+		CommandParser parser = new CommandParser();
+		Task task = parser.parseAdd("Attend meeting from Monday to Wednesday");
+		assertEquals("Attend meeting", task.getTitle());
+
+		task = parser.parseAdd("Attend meeting from 4 to 6");
+		assertEquals("Attend meeting", task.getTitle());
+
+		task = parser.parseAdd("Cook dinner at 7");
+		assertEquals("Cook dinner", task.getTitle());
+
+		task = parser.parseAdd("Attend meeting on Wed");
+		
+		assertEquals("Attend meeting", task.getTitle());
+
+		task = parser.parseAdd("Do homework by Sunday");
+		assertEquals("Do homework", task.getTitle());
+
+		task = parser.parseAdd("Send 100 email before 8pm");
+		assertEquals("Send 100 email", task.getTitle());
+
+		task = parser.parseAdd("Meet at \"Taco Tuesday\" on Wednesday 5pm");
+		assertEquals("Meet at \"Taco Tuesday\"", task.getTitle());
+
+		task =  parser.parseAdd("Chase \"2pm\" Korean band on Saturday 7pm");
+		assertEquals("Chase \"2pm\" Korean band", task.getTitle());
+
+		task = parser.parseAdd("Attend meeting from Monday to Wednesday 6pm");
+		assertEquals("Attend meeting", task.getTitle());
+
+		task = parser.parseAdd("Cook dinner at 7pm at home");
+		assertEquals("Cook dinner at home", task.getTitle());
+
+		task = parser.parseAdd("Cook dinner on 24 Mar 7pm");
+		assertEquals("Cook dinner", task.getTitle());
+
+		task = parser.parseAdd("Do assignment by Sunday 8pm");
+		assertEquals("Do assignment", task.getTitle());
+
+		task = parser.parseAdd("Send 100 email before sunday 7pm");
+		assertEquals("Send 100 email", task.getTitle());
+	}
+
+	
+	
+	
 
 	/**
 	 * Test method for comparing task.
@@ -828,7 +852,7 @@ public class TestCommandParser {
 	 * 
 	 * @throws InvalidTaskIndexFormat
 	 */
-	@Ignore
+	@Test
 	public void testIndexes() throws InvalidTaskIndexFormat {
 		CommandParser parser = new CommandParser();
 		ArrayList<Integer> indexes = parser.parseIndexes("delete 1");
@@ -869,7 +893,7 @@ public class TestCommandParser {
 	 * 
 	 * @throws InvalidTaskIndexFormat
 	 */
-	@Ignore
+	@Test
 	public void testUnconventionalIndexes() throws InvalidTaskIndexFormat {
 		CommandParser parser = new CommandParser();
 		ArrayList<Integer> indexes = new ArrayList<Integer>();
@@ -908,7 +932,7 @@ public class TestCommandParser {
 	 * 
 	 * @throws InvalidTaskIndexFormat
 	 */
-	@Ignore
+	@Test
 	public void testInvalidDelete() throws InvalidTaskIndexFormat {
 		boolean thrown;
 		CommandParser parser = new CommandParser();
@@ -947,7 +971,8 @@ public class TestCommandParser {
 	
 	
 	
-	//date only 26 march
+	
+	//26mar
 	public void testEditDate() throws InvalidLabelFormat, InvalidTitle {
 		CommandParser parser = new CommandParser();
 		Task task, task2;
@@ -966,7 +991,11 @@ public class TestCommandParser {
 	public void testEditRange() throws InvalidLabelFormat, InvalidTitle {
 		CommandParser parser = new CommandParser();
 		Task task, task2;
-
+		
+		task = parser.parseAdd("Do homework by 6am");
+		System.out.println(task.toString());
+		
+		/*
 		task = parser.parseAdd("Buy milk");
 		task2 = parser.parseEdit(task, "10-11pm");
 		assertEquals("Buy milk from today 10pm to 11pm", task2.toString());
@@ -982,7 +1011,7 @@ public class TestCommandParser {
 		task = parser.parseAdd("Buy milk");
 		task2 = parser.parseEdit(task, "1 20 jun");
 		System.out.println(task2.hasDate());
-		System.out.println(task2.toString());
+		System.out.println(task2.toString());*/
 
 	}
 }
