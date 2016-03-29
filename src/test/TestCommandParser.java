@@ -328,7 +328,6 @@ public class TestCommandParser {
 		thrown = false;
 		try {
 			task = parser.parseAdd("29 mar");
-			System.out.println(task.toString());
 		} catch (InvalidTitle e) {
 			thrown = true;
 		}
@@ -337,7 +336,6 @@ public class TestCommandParser {
 		thrown = false;
 		try {
 			task = parser.parseAdd("3pm");
-			System.out.println(task.toString());
 		} catch (InvalidTitle e) {
 			thrown = true;
 		}
@@ -579,7 +577,6 @@ public class TestCommandParser {
 		assertEquals("Attend meeting from next Mon 12am to next Wed 12am", task.toString());
 		
 		task = parser.parseAdd("Do homework from 1/2 to 2/2");
-		System.out.println(task.toString());
 		assertEquals("Do homework from 1 Feb 12am to 2 Feb 12am", task.toString());
 	}
 	
@@ -641,7 +638,6 @@ public class TestCommandParser {
 		//assertEquals("Meet at \"Taco Tuesday\"", task.getTitle());
 
 		task =  parser.parseAdd("Chase \"2pm\" Korean band on Saturday 7pm");
-		System.out.println(task.toString());
 		assertEquals("Chase \"2pm\" Korean band", task.getTitle());
 
 		task = parser.parseAdd("Attend meeting from Monday to Wednesday 6pm");
@@ -964,7 +960,6 @@ public class TestCommandParser {
 		thrown = false;
 		try {
 			indexes = parser.parseIndexes("del -1,-2");
-			System.out.println(indexes);
 		} catch (InvalidTaskIndexFormat e) {
 			thrown = true;
 		}
@@ -981,7 +976,6 @@ public class TestCommandParser {
 		thrown = false;
 		try {
 			indexes = parser.parseIndexes("del abc,def");
-			System.out.println("abc" + indexes);
 		} catch (InvalidTaskIndexFormat e) {
 			thrown = true;
 		}
