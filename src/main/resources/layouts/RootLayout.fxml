@@ -2,21 +2,20 @@
 
 <?import com.jfoenix.controls.JFXButton?>
 <?import com.jfoenix.controls.JFXListView?>
-<?import com.jfoenix.controls.JFXSnackbar?>
 <?import com.jfoenix.controls.JFXTabPane?>
 <?import com.jfoenix.controls.JFXTextField?>
 <?import java.lang.String?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.Group?>
+<?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.text.TextFlow?>
 
-<AnchorPane fx:id="rootLayout" cacheHint="SPEED" minHeight="-Infinity" minWidth="-Infinity" prefHeight="1000.0" prefWidth="860.0" stylesheets="@../styles/RootLayout.css" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.ui.RootLayoutController">
+<AnchorPane fx:id="rootLayout" cacheHint="SPEED" minHeight="100.0" minWidth="-Infinity" prefHeight="1000.0" prefWidth="860.0" stylesheets="@../styles/RootLayout.css" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.ui.RootLayoutController">
    <children>
-      <JFXSnackbar fx:id="snackbar" prefWidth="300" />
       <JFXTabPane fx:id="tabPane" cacheHint="SPEED" tabMinHeight="48.0" tabMinWidth="420.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <tabs>
             <Tab fx:id="tabTodo" closable="false" text="To-do">
@@ -36,7 +35,7 @@
                            </styleClass></JFXListView>
                      </children>
                      <padding>
-                        <Insets bottom="120.0" left="40.0" right="40.0" top="40.0" />
+                        <Insets bottom="100.0" left="40.0" right="40.0" top="40.0" />
                      </padding>
                   </AnchorPane>
                </content>
@@ -76,6 +75,28 @@
             </Group>
          </graphic>
       </JFXButton>
+      <AnchorPane fx:id="anchorPaneExecutionResult" style="-fx-background-color: #323232;" visible="false" AnchorPane.bottomAnchor="900.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="50.0">
+         <children>
+            <Label fx:id="labelExecutedCommand" layoutX="10.0" layoutY="10.0" text="Deleted:" textFill="#c5cae9" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+               <font>
+                  <Font name="Noto Sans" size="16.0" />
+               </font>
+            </Label>
+            <Label fx:id="labelExecutionDetails" layoutX="190.0" prefHeight="58.0" text="this is a verrrrry long text this is a verrrrry long text this is a verrrrry long text this is a verrrrry long text" textFill="WHITE" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="70.0" AnchorPane.rightAnchor="100.0" AnchorPane.topAnchor="0.0">
+               <font>
+                  <Font name="Noto Sans" size="16.0" />
+               </font>
+            </Label>
+            <Label fx:id="labelSuggestedAction" layoutX="714.0" prefHeight="58.0" text="UNDO (F2)" textFill="#ffc107" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+               <font>
+                  <Font name="Noto Sans" size="16.0" />
+               </font>
+            </Label>
+         </children>
+         <padding>
+            <Insets left="60.0" right="60.0" />
+         </padding>
+      </AnchorPane>
    </children>
    
 </AnchorPane>

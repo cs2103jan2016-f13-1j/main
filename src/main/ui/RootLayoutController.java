@@ -11,13 +11,11 @@ import java.util.logging.Logger;
 import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXListCell;
 import com.jfoenix.controls.JFXListView;
-import com.jfoenix.controls.JFXSnackbar;
 import com.jfoenix.controls.JFXTabPane;
 import com.jfoenix.controls.JFXTextField;
 import com.sun.javafx.scene.control.skin.VirtualFlow;
 
 import javafx.application.Platform;
-import javafx.beans.InvalidationListener;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -28,13 +26,10 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.Group;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
 import javafx.scene.control.IndexedCell;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
-import javafx.scene.control.SelectionMode;
-import javafx.scene.control.SelectionModel;
 import javafx.scene.control.SingleSelectionModel;
 import javafx.scene.control.Tab;
 import javafx.scene.input.KeyCode;
@@ -43,6 +38,7 @@ import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
@@ -58,13 +54,13 @@ import main.logic.Invoker;
 import main.logic.PriorityCommand;
 import main.logic.Receiver;
 import main.logic.SearchCommand;
+import main.logic.UndoneCommand;
 import main.parser.CommandParser;
 import main.parser.CommandParser.InvalidLabelFormat;
 import main.parser.CommandParser.InvalidTaskIndexFormat;
 
 @SuppressWarnings("restriction")
 public class RootLayoutController implements Observer {
-    private static final String STRING_TODAY = "Today";
     private static final String COMMAND_EDIT = "edit";
     private static final String COMMAND_DELETE = "delete";
     private static final String COMMAND_DELETE_SHORTHAND = "del";
@@ -72,7 +68,6 @@ public class RootLayoutController implements Observer {
     private static final String WHITESPACE = " ";
     private static final String EMPTY_STRING = "";
     private static final String STRING_TAB_TASK_SIZE = "(%1$s)";
-    private static final String MESSAGE_LABEL_MODE_EDIT = "Edit mode";
     private static final String MESSAGE_LISTVIEW_TODO_EMPTY = "You have no task!";
     private static final String MESSAGE_LISTVIEW_COMPLETED_EMPTY = "You have no completed task!";
     private static final String MESSAGE_FEEDBACK_ACTION_ADD = "Adding: ";
@@ -123,35 +118,18 @@ public class RootLayoutController implements Observer {
     @FXML // fx:id="textUserParsedResult"
     private Text textUserParsedResult; // Value injected by FXMLLoader
 
-    @FXML // fx:id="labelUserAction"
-    private Label labelUserAction; // Value injected by FXMLLoader
+    @FXML // fx:id="anchorPaneExecutionResult"
+    private AnchorPane anchorPaneExecutionResult; // Value injected by
+                                                  // FXMLLoader
 
-    @FXML // fx:id="labelUserParsedInput"
-    private Label labelUserParsedInput; // Value injected by FXMLLoader
+    @FXML // fx:id="labelExecutedCommand"
+    private Label labelExecutedCommand; // Value injected by FXMLLoader
 
-    @FXML // fx:id="labelUserParsedInput"
-    private Label labelUserResult; // Value injected by FXMLLoader
+    @FXML // fx:id="labelExecutionDetails"
+    private Label labelExecutionDetails; // Value injected by FXMLLoader
 
-    @FXML // fx:id="groupUndo"
-    private Group groupUndo; // Value injected by FXMLLoader
-
-    @FXML // fx:id="labelUndo"
-    private Label labelUndo; // Value injected by FXMLLoader
-
-    @FXML // fx:id="btnUndo"
-    private Button btnUndo; // Value injected by FXMLLoader
-
-    @FXML // fx:id="groupRedo"
-    private Group groupRedo; // Value injected by FXMLLoader
-
-    @FXML // fx:id="labelRedo"
-    private Label labelRedo; // Value injected by FXMLLoader
-
-    @FXML // fx:id="btnRedo"
-    private Button btnRedo; // Value injected by FXMLLoader
-
-    @FXML // fxid="snackbar"
-    private JFXSnackbar snackbar;
+    @FXML // fx:id="labelSuggestedAction"
+    private Label labelSuggestedAction; // Value injected by FXMLLoader
 
     private VirtualFlow<IndexedCell<String>> virtualFlowTodo;
     private VirtualFlow<IndexedCell<String>> virtualFlowCompleted;
@@ -165,7 +143,6 @@ public class RootLayoutController implements Observer {
     private Task taskToBeExecuted;
     private ArrayList<Integer> taskIndexesToBeDeleted;
 
-    // private ArrayList<Task> allTasks;
     private ArrayList<Task> todoTasks;
     private ArrayList<Task> completedTasks;
     private ObservableList<Task> observableTodoTasks = FXCollections.observableArrayList();
@@ -178,7 +155,7 @@ public class RootLayoutController implements Observer {
     private String previousTextInCommandBar;
     private int previousSelectedTaskIndex;
     private int previousCaretPosition;
-    private boolean isEditMode;
+
     private JFXListView<Task> currentListView;
     private ArrayList<Task> currentTaskList;
 
@@ -197,8 +174,6 @@ public class RootLayoutController implements Observer {
                         refreshListView();
                         listViewTodo.getSelectionModel().selectLast();
                         listViewTodo.scrollTo(todoTasks.size() - 1);
-                        // snackbar.fireEvent(new SnackbarEvent("Task added!
-                        // ","UNDO",5000,(me)->{}));
                         // showResult(true, "Task added!");
                     }
                 });
@@ -262,6 +237,8 @@ public class RootLayoutController implements Observer {
                     }
                 });
             }
+
+            showExecutionResult(true);
         }
 
     }
@@ -285,7 +262,6 @@ public class RootLayoutController implements Observer {
         logger.log(Level.INFO, "Initializing the UI...");
 
         assert rootLayout != null : "fx:id=\"rootLayout\" was not injected: check your FXML file 'RootLayout.fxml'.";
-        assert snackbar != null : "fx:id=\"snackbar\" was not injected: check your FXML file 'RootLayout.fxml'.";
         assert tabPane != null : "fx:id=\"tabPane\" was not injected: check your FXML file 'RootLayout.fxml'.";
         assert tabTodo != null : "fx:id=\"tabTodo\" was not injected: check your FXML file 'RootLayout.fxml'.";
         assert listViewTodo != null : "fx:id=\"listViewTodo\" was not injected: check your FXML file 'RootLayout.fxml'.";
@@ -297,6 +273,10 @@ public class RootLayoutController implements Observer {
         assert textFlowFeedback != null : "fx:id=\"textFlowFeedback\" was not injected: check your FXML file 'RootLayout.fxml'.";
         assert textUserAction != null : "fx:id=\"textUserAction\" was not injected: check your FXML file 'RootLayout.fxml'.";
         assert textUserParsedResult != null : "fx:id=\"textUserParsedResult\" was not injected: check your FXML file 'RootLayout.fxml'.";
+        assert anchorPaneExecutionResult != null : "fx:id=\"anchorPaneExecutionResult\" was not injected: check your FXML file 'RootLayout.fxml'.";
+        assert labelExecutedCommand != null : "fx:id=\"labelExecutedCommand\" was not injected: check your FXML file 'RootLayout.fxml'.";
+        assert labelExecutionDetails != null : "fx:id=\"labelExecutionDetails\" was not injected: check your FXML file 'RootLayout.fxml'.";
+        assert labelSuggestedAction != null : "fx:id=\"labelSuggestedAction\" was not injected: check your FXML file 'RootLayout.fxml'.";
 
         initLogicAndParser();
         initTabSelectionListener();
@@ -304,8 +284,7 @@ public class RootLayoutController implements Observer {
         initMouseListener();
         initKeyboardListener();
         initCommandBarListener();
-        // snackbar.registerSnackbarContainer(rootLayout);
-        initTabSelectionListener();
+
         logger.log(Level.INFO, "UI initialization complete");
     }
 
@@ -318,8 +297,6 @@ public class RootLayoutController implements Observer {
 
             @Override
             public void changed(ObservableValue<? extends Tab> observable, Tab oldValue, Tab newValue) {
-                System.out.println(oldValue.getText());
-                System.out.println(newValue.getText());
                 setCurrentTaskListAndListView(newValue.getText());
             }
         });
@@ -480,7 +457,7 @@ public class RootLayoutController implements Observer {
 
         updateTabAndLabelWithTotalTasks();
     }
-    
+
     /**
      * 
      */
@@ -492,12 +469,6 @@ public class RootLayoutController implements Observer {
         setCurrentTaskListAndListView(getSelectedTabName());
         // toggleUndoRedo();
     }
-    
-    private void toggleUndoRedo() {
-        groupUndo.setVisible(invoker.isUndoAvailable());
-        groupRedo.setVisible(invoker.isRedoAvailable());
-
-    }
 
     private void updateTabAndLabelWithTotalTasks() {
         // if(!isEditMode){
@@ -507,8 +478,6 @@ public class RootLayoutController implements Observer {
         tabCompleted.setText("Completed" + WHITESPACE + String.format(STRING_TAB_TASK_SIZE, completedTasks.size()));
 
     }
-
-   
 
     /**
      * This method currently accesses the private API, the VirtualFlow class.
@@ -679,7 +648,7 @@ public class RootLayoutController implements Observer {
      * 
      */
     private void handleArrowKeys(KeyEvent keyEvent) {
-        
+
         if (keyEvent.getCode() == KeyCode.UP) {
             getCurrentListView().getSelectionModel().selectPrevious();
             adjustViewportForListView();
@@ -694,7 +663,7 @@ public class RootLayoutController implements Observer {
 
             @Override
             public void run() {
-               
+
             }
         });
 
@@ -915,7 +884,8 @@ public class RootLayoutController implements Observer {
 
             // if selected index is out of bound
             if (taskIndex <= 0 || taskIndex > currentTaskList.size()) {
-                showFeedback(true, MESSAGE_FEEDBACK_ACTION_DELETE, String.format(MESSAGE_ERROR_NOT_FOUND, taskIndex));
+                showFeedback(true, MESSAGE_FEEDBACK_ACTION_DELETE,
+                        String.format(MESSAGE_ERROR_NOT_FOUND, userArguments));
                 clearStoredUserInput();
             } else {
                 inputFeedback = currentTaskList.get(taskIndex).toString();
@@ -957,12 +927,13 @@ public class RootLayoutController implements Observer {
                          // ordering
             Task taskToBeEdited = currentTaskList.get(taskIndex);
             showFeedback(true, MESSAGE_FEEDBACK_ACTION_EDIT, taskToBeEdited.toString());
-            userArguments = userArguments.substring(2);
+            userArguments = userInput.substring(userInputArray[0].length() + userInputArray[1].length() + 1).trim();
             logger.log(Level.INFO, "EDIT command arguments is: " + userArguments);
             taskToBeExecuted = commandParser.parseEdit(taskToBeEdited, userArguments);
             commandToBeExecuted = new EditCommand(receiver, taskToBeEdited, taskToBeExecuted);
             return;
         } catch (IndexOutOfBoundsException ioobe) {
+            ioobe.printStackTrace();
             logger.log(Level.INFO, "EDIT command index is out of range. index = " + taskIndex + " ArrayList size = "
                     + currentTaskList.size());
             showFeedback(true, MESSAGE_FEEDBACK_ACTION_EDIT, String.format(MESSAGE_ERROR_NOT_FOUND, userInputArray[1]));
@@ -1057,23 +1028,9 @@ public class RootLayoutController implements Observer {
     /**
      * 
      */
-    private void showFeedback(boolean isVisible) {
-        // if (isVisible) {
-        // logger.log(Level.INFO, "Showing user feedback");
-        // showResult(false, EMPTY_STRING);
-        // }
-        //
-        // labelUserAction.setVisible(isVisible);
-        // labelUserParsedInput.setVisible(isVisible);
-    }
-
-    /**
-     * 
-     */
     private void showFeedback(boolean isVisible, String userAction, String userFeedback) {
         if (isVisible) {
             logger.log(Level.INFO, "Showing user feedback: " + userFeedback);
-            // showResult(!isVisible, EMPTY_STRING);
         }
 
         textUserAction.setText(userAction);
@@ -1093,31 +1050,65 @@ public class RootLayoutController implements Observer {
         // labelUserParsedInput.setText(userFeedback);
     }
 
-    // /**
-    // * @param resultString
-    // */
-    // private void showResult(boolean isVisible, String resultString) {
-    // if (isVisible) {
-    // logger.log(Level.INFO, "Showing result: " + resultString);
-    // showFeedback(!isVisible);
-    // }
-    //
-    // labelUserResult.setText(resultString);
-    // labelUserResult.setVisible(isVisible);
-    // }
-    // /**
-    // *
-    // */
-    // private void showUndo() {
-    // groupUndo.setVisible(true);
-    // }
-    //
-    // /**
-    // *
-    // */
-    // private void showRedo() {
-    // groupRedo.setVisible(true);
-    // }
+    /**
+     * 
+     */
+    private void showExecutionResult(boolean isVisible) {
+        if (isVisible) {
+            logger.log(Level.INFO, "Showing user execution result: ");
+            anchorPaneExecutionResult.setVisible(isVisible);
+        }
+
+        if (commandToBeExecuted instanceof AddCommand) {
+            labelExecutedCommand.setText("Added:");
+            labelExecutedCommand.setTextFill(Color.web(AppColor.PRIMARY_BLUE_LIGHT, 0.7));
+            labelExecutionDetails.setText(taskToBeExecuted.toString());
+        }
+
+        if (commandToBeExecuted instanceof EditCommand) {
+            labelExecutedCommand.setText("Edited:");
+            labelExecutedCommand.setTextFill(Color.web(AppColor.PRIMARY_GREEN_LIGHT, 0.7));
+            labelExecutionDetails.setText(taskToBeExecuted.toString());
+
+        }
+
+        if (commandToBeExecuted instanceof DeleteCommand) {
+            labelExecutedCommand.setText("Deleted:");
+            labelExecutedCommand.setTextFill(Color.web(AppColor.PRIMARY_RED_LIGHT, 0.7));
+            labelExecutionDetails.setText(taskToBeExecuted.toString());
+
+        }
+
+        if (commandToBeExecuted instanceof SearchCommand) {
+            // textCommandExecuted.setText("Searching:");
+            // textCommandExecuted.setFill(Color.web("303F9F", 0.7));
+            // textExecutionDetails.setText(userFeedback);
+
+        }
+
+        if (commandToBeExecuted instanceof DoneCommand) {
+            labelExecutedCommand.setText("Mark done:");
+            labelExecutedCommand.setTextFill(Color.web(AppColor.PRIMARY_LIME_LIGHT, 0.7));
+            labelExecutionDetails.setText(taskToBeExecuted.toString());
+
+        }
+
+        if (commandToBeExecuted instanceof UndoneCommand) {
+            // textCommandExecuted.setText("Undo");
+            // textCommandExecuted.setFill(Color.web("303F9F", 0.7));
+            // textExecutionDetails.setText(userFeedback);
+            // textExecutionDetails.setFill(Color.web("#00111a", 0.7));
+        }
+
+        // textFlowFeedback.getChildren().clear();
+        // textFlowFeedback.getChildren().addAll(textUserAction,
+        // textUserParsedResult);
+
+        // labelUserAction.setVisible(isVisible);
+        // labelUserParsedInput.setVisible(isVisible);
+        // labelUserAction.setText(userAction);
+        // labelUserParsedInput.setText(userFeedback);
+    }
 
     /**
      * 
