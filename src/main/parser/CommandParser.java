@@ -130,6 +130,7 @@ public class CommandParser {
 		} else if (hasTime) {
 			dates = parseTimeOnly(inputString);
 		}
+		
 		if (hasPreposition && hasTimeWithoutAmPm) {
 			dates = parseDateTime(inputString);
 			dates = fixTimeToNearest(dates, hasDate);
@@ -299,11 +300,16 @@ public class CommandParser {
 	
 	private List<Date> parseDateOnly(String inputString) {
 		List<Date> dates = parseDateTime(inputString);
-		System.out.println(dates);
-		for (int i = 0; i < dates.size(); i++) {
+		int size = dates.size();
+		for (int i = 0; i < size; i++) {
 			dates.add(setTimeToZero(dates.get(i)));
-			dates.remove(i);
 		}
+		
+		dates.remove(0);
+		if (size == DATE_MAX_SIZE) {
+			dates.remove(0);	
+		}
+		
 		return dates;
 	}
 	
