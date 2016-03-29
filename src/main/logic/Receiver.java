@@ -29,14 +29,18 @@ public class Receiver extends Observable {
     private ArrayList<Task> todoTasks;
     private ArrayList<Task> completedTasks;
     
+    private ScheduleManager scheduler;
+    
     private Receiver() {
         storage = Storage.getInstance();
+        scheduler = new ScheduleManager();
         assert(storage != null);
         
         allTasks = storage.readTasks();
         assert(allTasks != null);
         categorizeTasks(allTasks);
         sortTasks();
+        updateCollision();
     }
     
     /**
@@ -335,6 +339,7 @@ public class Receiver extends Observable {
     private void initiateSave() {
         categorizeTasks(allTasks);
         sortTasks();
+        updateCollision();
         saveToStorage();
         setChanged();
         notifyObservers();
@@ -357,6 +362,30 @@ public class Receiver extends Observable {
         Collections.sort(todoTasks, new TodoTaskComparator());
         Collections.sort(completedTasks, new CompletedTaskComparator());
         logger.log(Level.INFO,"Tasks sorted");
+    }
+    
+    private void updateCollision() {
+        Task previousTask;
+        Task currentTask;
+        Task nextTask;
+        
+        for (int i = 0; i < todoTasks.size(); i++) {
+            currentTask = todoTasks.get(i);
+            previousTask = null;
+            nextTask = null;
+            
+            if (todoTasks.size() > 1) {
+                if (i == 0) {
+                    nextTask = todoTasks.get(i + 1);
+                } else if (i == (todoTasks.size() - 1)) {
+                    previousTask = todoTasks.get(i - 1);
+                } else {
+                    previousTask = todoTasks.get(i - 1);
+                    nextTask = todoTasks.get(i + 1);
+                }
+            }
+            scheduler.updateCollision(previousTask, currentTask, nextTask);
+        }
     }
     
     private void saveToStorage() {
