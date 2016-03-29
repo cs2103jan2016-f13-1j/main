@@ -480,7 +480,19 @@ public class RootLayoutController implements Observer {
 
         updateTabAndLabelWithTotalTasks();
     }
-
+    
+    /**
+     * 
+     */
+    private void refreshListView() {
+        observableTodoTasks.clear();
+        observableCompletedTasks.clear();
+        populateListView();
+        updateTabAndLabelWithTotalTasks();
+        setCurrentTaskListAndListView(getSelectedTabName());
+        // toggleUndoRedo();
+    }
+    
     private void toggleUndoRedo() {
         groupUndo.setVisible(invoker.isUndoAvailable());
         groupRedo.setVisible(invoker.isRedoAvailable());
@@ -496,16 +508,7 @@ public class RootLayoutController implements Observer {
 
     }
 
-    /**
-     * 
-     */
-    private void refreshListView() {
-        observableTodoTasks.clear();
-        observableCompletedTasks.clear();
-        populateListView();
-        updateTabAndLabelWithTotalTasks();
-        // toggleUndoRedo();
-    }
+   
 
     /**
      * This method currently accesses the private API, the VirtualFlow class.
@@ -655,7 +658,7 @@ public class RootLayoutController implements Observer {
             commandParser = new CommandParser();
         }
 
-        userInput = commandBar.getText();
+        userInput = commandBar.getText().trim();
         assert userInput != null;
 
         if (userInput.isEmpty()) {
@@ -676,20 +679,22 @@ public class RootLayoutController implements Observer {
      * 
      */
     private void handleArrowKeys(KeyEvent keyEvent) {
+        
+        if (keyEvent.getCode() == KeyCode.UP) {
+            getCurrentListView().getSelectionModel().selectPrevious();
+            adjustViewportForListView();
+        } else if (keyEvent.getCode() == KeyCode.DOWN) {
+            getCurrentListView().getSelectionModel().selectNext();
+            adjustViewportForListView();
+        }
+
+        logger.log(Level.INFO, "Pressed " + keyEvent.getCode() + " arrow key: currently selected index is "
+                + getSelectedTaskIndex() + " current listview: " + currentListView.getId());
         Platform.runLater(new Runnable() {
 
             @Override
             public void run() {
-                if (keyEvent.getCode() == KeyCode.UP) {
-                    getCurrentListView().getSelectionModel().selectPrevious();
-                    adjustViewportForListView();
-                } else if (keyEvent.getCode() == KeyCode.DOWN) {
-                    getCurrentListView().getSelectionModel().selectNext();
-                    adjustViewportForListView();
-                }
-
-                logger.log(Level.INFO, "Pressed " + keyEvent.getCode() + " arrow key: currently selected index is "
-                        + getSelectedTaskIndex() + " current listview: " + currentListView.getId());
+               
             }
         });
 
@@ -825,7 +830,7 @@ public class RootLayoutController implements Observer {
                 taskToBeExecuted = currentTaskList.get(getSelectedTaskIndex());
                 commandToBeExecuted = new DoneCommand(receiver, taskToBeExecuted);
                 invoker.execute(commandToBeExecuted);
-                logger.log(Level.INFO, "Pressed CTRL+D key: Task " + getSelectedTaskIndex() + 1 + " done");
+                logger.log(Level.INFO, "Pressed CTRL+D key: Task " + (getSelectedTaskIndex() + 1) + " done");
             }
         });
     }
