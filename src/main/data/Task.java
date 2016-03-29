@@ -205,6 +205,10 @@ public class Task {
     	return 0;
     }
 
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     * This method generates the task feedback for UI to display to user.
+     */
     public String toString() {
     	int indexTitle = 0;
     	int indexStartDate = 1;
@@ -227,23 +231,19 @@ public class Task {
     		if (hasDateRange()) {
     			stringBuilder.append(" from " + startDate);
     			stringBuilder.append(" " + startTime);
-    			
+   
     			if (!startDate.equals(endDate)) {
         			stringBuilder.append(" to " + endDate);
         			stringBuilder.append(" " + endTime);
         		} else {
         			stringBuilder.append(" to " + endTime);
         		}   	  
-    		} else {
-    			if (startDate != null) {
+    		} else if (startDate != null) {
     				stringBuilder.append(" from " + startDate);
     				stringBuilder.append(" " + startTime);
-    			}
-    			
-    			if (endDate != null) {
+    		} else if (endDate != null) {
     				stringBuilder.append(" by " + endDate);
     				stringBuilder.append(" " + endTime);
-    			}
     		}
     	}
     
@@ -269,7 +269,7 @@ public class Task {
      */
     private ArrayList<String> getTaskFields() {
         ArrayList<String> fields = new ArrayList<String>();
-
+        
         fields.add(title);
         
         if (hasDate()) {
@@ -305,12 +305,13 @@ public class Task {
     }
     
     private String convertDate(Date date) {
-    	if (dateIsToday()) {
+    	if (dateIsToday(date)) {
     		return "today";
     	}
     	
     	DayOfWeek day = getDay(date);
     	String dayShort = getShortDay(day);
+    	
     	if (dateIsThisWeek(date)) {
     		return "this ".concat(dayShort);
     	} else if (dateIsNextWeek(date)){
@@ -322,22 +323,16 @@ public class Task {
     	}
     }
     
-    public boolean dateIsToday() {
+    public boolean dateIsToday(Date date) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("ddMMyyyy");
         String today = dateFormat.format(new Date());
         
-       if (hasStartDate()) {
-            String start = dateFormat.format(startDate);
-            if (today.equals(start)) {
-                return true;
-            }
-        } else if (hasEndDate()) {
-            String end = dateFormat.format(endDate);
-            if (today.equals(end)) {
-                return true;
-            }
+        String dateString = dateFormat.format(date);
+        if (today.equals(dateString)) {
+            return true;
+        } else {
+        	return false;
         }
-        return false;
     }
     
     private boolean dateIsThisWeek(Date date) {
@@ -363,6 +358,7 @@ public class Task {
 		int currentWeek = calendar.get(Calendar.WEEK_OF_YEAR);
 		
 		calendar.setTime(date);
+		
 		int dateWeek = calendar.get(Calendar.WEEK_OF_YEAR);
 		int difference = dateWeek - currentWeek;
 		
@@ -435,6 +431,7 @@ public class Task {
 			startMonthString = startMonth.getDisplayName(TextStyle.FULL, locale);
 			start = getDate(startDate).concat(" ").concat(startMonthString);
     	}
+    	
     	if (endDate != null) {
 			Month endMonth = getMonth(endDate);
 			endMonthString = endMonth.getDisplayName(TextStyle.FULL, locale);
@@ -472,6 +469,7 @@ public class Task {
     	} else if (hasEndDate()) {
     		stringBuilder.append("by " + endTime);
     	} else {
+    		//floating task
     		stringBuilder.append("-");
     	}
     	
@@ -486,6 +484,12 @@ public class Task {
     	}
     }
     
+    /**
+     * This method checks if a task is today.
+     * If the task has a ranged time, it will always be today until it ends.
+     * 
+     * @return {@code Boolean} true if is today
+     */
     public boolean isToday() {
     	if (hasDateRange()) {
     		if (hasStarted()) {
@@ -494,10 +498,20 @@ public class Task {
     			return false;
     		}
     	} else {
-    		return dateIsToday();
+    		return dateIsToday(getSingleDate());
     	}
     }
     
+    /**
+     * This method checks if a task is tomorrow.
+     * 
+     * If the task has a ranged time and it has started, check the end time.
+     * If the end time is after tomorrow, then the task is tomorrow.
+     * If the task has a ranged time and it has not started, check the start time.
+     * If the start time is tomorrow, then the task is tomorrow.
+     * 
+     * @return {@code Boolean} true if is tomorrow
+     */
     public boolean isTomorrow() throws ParseException {   	
     	Calendar cal = Calendar.getInstance();
     	cal.setTime(new Date());
@@ -507,7 +521,8 @@ public class Task {
     	String tomorrow = dateFormat.format(cal.getTime());
     	String starting = "";
     	String ending = "";
-    	Date tml, start = null, end = null;
+    	String single = "";
+    	Date tml, start = null, end = null, singleDate = null;
     	
     	tml = dateFormat.parse(tomorrow);
     	
@@ -525,42 +540,39 @@ public class Task {
     				return true;
     			}
     		}
-    	} else {
-    		if (hasStartDate()) {
-    			starting = dateFormat.format(startDate);
-    			start = dateFormat.parse(starting);
-    			
-    			if (start.equals(tml)) {
-    				return true;
-    			}
-    		} else if (hasEndDate()) {
-    			ending = dateFormat.format(endDate);
-    			end = dateFormat.parse(ending);
-    			if (end.equals(tml)) {
-    				return true;
-    			}
+    	} else if (hasSingleDate()){
+    		single = dateFormat.format(getSingleDate());
+    		singleDate = dateFormat.parse(single);
+    		if (singleDate.equals(tml)) {
+    			return true;
     		}
     	}
  
     	return false;	
     }
 
+    /**
+     * This methods check if a task is upcoming.
+     * An upcoming task must be after today and tomorrow.
+     * 
+     * @return {@code Boolean} true if upcoming
+     * @throws ParseException
+     */
     public boolean isUpcoming() throws ParseException {
-    	if (hasDate()) {
-    		if (!dateIsToday() && !isTomorrow()) {
-    			 Date today = new Date();
-    			 
-    		    if (hasStartDate()) {
-    		    	 if (today.before(startDate)) {
-    		    		 return true;
-    		    	 }
-    		     } else if (hasEndDate()) { 
-    		    	 if (today.before(endDate)) {
-    		    		 return true;
-    		    	 }
-    		     } 			
-    		}
+    	if (!isToday() && !isTomorrow()) {
+    		Date today = new Date();
+
+    		if (hasStartDate()) {
+    			if (today.before(startDate)) {
+    				return true;
+    			}
+    		} else if (hasEndDate()) { 
+    			if (today.before(endDate)) {
+    				return true;
+    			}
+    		} 			
     	}
+
     	return false;
     }
     
