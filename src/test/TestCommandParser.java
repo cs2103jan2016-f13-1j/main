@@ -27,7 +27,7 @@ public class TestCommandParser {
 	 * 
 	 * @throws InvalidLabelFormat 
 	 */
-	@Test
+	@Ignore
 	public void testDetectFloating() throws InvalidLabelFormat {
 		CommandParser parser = new CommandParser();
 
@@ -63,7 +63,7 @@ public class TestCommandParser {
 	 * 
 	 * @throws InvalidLabelFormat 
 	 */
-	@Test
+	@Ignore
 	public void testAddFloating() throws InvalidLabelFormat {
 		CommandParser parser = new CommandParser();
 
@@ -81,7 +81,7 @@ public class TestCommandParser {
 	 * 
 	 * @throws InvalidLabelFormat
 	 */
-	@Test
+	@Ignore
 	public void testHasTime() throws InvalidLabelFormat {
 		CommandParser parser = new CommandParser();
 		Task task;
@@ -103,7 +103,7 @@ public class TestCommandParser {
 	 * @throws ParseException for dateFormat.parse()
 	 * @throws InvalidLabelFormat 
 	 */
-	@Test
+	@Ignore
 	public void testAdd() throws ParseException, InvalidLabelFormat {
 		CommandParser parser = new CommandParser();
 		Task task = parser.parseAdd("Cook dinner on 24 Mar 7pm #home");
@@ -121,7 +121,7 @@ public class TestCommandParser {
 	 * 
 	 * @throws InvalidLabelFormat 
 	 */
-	@Test
+	@Ignore
 	public void testLabel() throws IndexOutOfBoundsException, InvalidLabelFormat{
 		CommandParser parser = new CommandParser();
 
@@ -178,7 +178,7 @@ public class TestCommandParser {
 	 * 
 	 * @throws InvalidLabelFormat 
 	 */
-	@Test
+	@Ignore
 	public void testDatedTaskTitle() throws InvalidLabelFormat{
 		CommandParser parser = new CommandParser();
 		Task task = parser.parseAdd("Attend meeting from Monday to Wednesday");
@@ -377,7 +377,7 @@ public class TestCommandParser {
 	 * 
 	 * @throws InvalidLabelFormat
 	 */
-	@Test
+	@Ignore
 	public void testTaskWithTimeRange() throws InvalidLabelFormat {
 		CommandParser parser = new CommandParser();
 		Task task = parser.parseAdd("Do homework on 20 apr 2-4pm");
@@ -411,7 +411,7 @@ public class TestCommandParser {
 	 * 
 	 * @throws InvalidLabelFormat 
 	 */
-	@Test
+	@Ignore
 	public void testTaskToString() throws InvalidLabelFormat {
 		CommandParser parser = new CommandParser();
 
@@ -482,7 +482,7 @@ public class TestCommandParser {
 	 * 
 	 * @throws InvalidLabelFormat 
 	 */
-	@Test
+	@Ignore
 	public void testTogglePriority() throws InvalidLabelFormat {
 		CommandParser parser = new CommandParser();
 		Task task = parser.parseAdd("Cook dinner #home");
@@ -499,7 +499,7 @@ public class TestCommandParser {
 	 * 
 	 * @throws InvalidLabelFormat
 	 */
-	@Test
+	@Ignore
 	public void testToggleDone() throws InvalidLabelFormat {
 		CommandParser parser = new CommandParser();
 		Task task = parser.parseAdd("Do assignment");
@@ -521,7 +521,7 @@ public class TestCommandParser {
 	/**
 	 * Test extracting index for edit.
 	 */
-	@Test
+	@Ignore
 	public void testGetIndexForEdit() {
 		CommandParser parser = new CommandParser();
 		int index;
@@ -547,7 +547,7 @@ public class TestCommandParser {
 	 * If detected, Date object is returned.
 	 * Else, null is returned.
 	 */
-	@Test
+	@Ignore
 	public void testGetDateForSearch() {
 		CommandParser parser = new CommandParser();
 		Date date;
@@ -576,7 +576,7 @@ public class TestCommandParser {
 	 *
 	 * @throws InvalidLabelFormat
 	 */
-	@Test
+	@Ignore
 	public void testEditBasic() throws InvalidLabelFormat {
 		CommandParser parser = new CommandParser();
 		Task task, task2;
@@ -607,7 +607,7 @@ public class TestCommandParser {
 	 * 
 	 * @throws InvalidLabelFormat
 	 */
-	@Test
+	@Ignore
 	public void testEditTime() throws InvalidLabelFormat {
 		CommandParser parser = new CommandParser();
 		Task task, task2;
@@ -690,7 +690,7 @@ public class TestCommandParser {
 	 * 
 	 * @throws InvalidTaskIndexFormat
 	 */
-	@Test
+	@Ignore
 	public void testIndexes() throws InvalidTaskIndexFormat {
 		CommandParser parser = new CommandParser();
 		ArrayList<Integer> indexes = parser.parseIndexes("delete 1");
@@ -731,7 +731,7 @@ public class TestCommandParser {
 	 * 
 	 * @throws InvalidTaskIndexFormat
 	 */
-	@Test
+	@Ignore
 	public void testUnconventionalIndexes() throws InvalidTaskIndexFormat {
 		CommandParser parser = new CommandParser();
 		ArrayList<Integer> indexes = new ArrayList<Integer>();
@@ -770,7 +770,7 @@ public class TestCommandParser {
 	 * 
 	 * @throws InvalidTaskIndexFormat
 	 */
-	@Test
+	@Ignore
 	public void testInvalidDelete() throws InvalidTaskIndexFormat {
 		boolean thrown;
 		CommandParser parser = new CommandParser();
@@ -807,8 +807,36 @@ public class TestCommandParser {
 	// Latest stuff
 	// =============================
 	
-	
-	
+	@Test 
+	public void testNoPreposition() throws InvalidLabelFormat {
+		CommandParser parser = new CommandParser();
+		Task task;
+		
+		task = parser.parseAdd("Buy apple 1 may 3pm");
+		assertEquals("Buy apple from 1 May 3pm", task.toString());
+		
+		//date only = 12am
+		task = parser.parseAdd("Buy apple 1 may");
+		assertEquals("Buy apple from 1 May 12am", task.toString());
+		
+		//1pm has past, nearest is 1am so take 1pm
+		task = parser.parseAdd("Buy apple 1pm");
+		assertEquals("Buy apple from today 1pm", task.toString());
+		
+		//1am has past, nearest is 1am so still matching
+		task = parser.parseAdd("Buy apple 1am");
+		assertEquals("Buy apple from this Wed 1am", task.toString());
+		
+		task = parser.parseAdd("Buy apple 1-3pm");
+		assertEquals("Buy apple from today 1pm to 3pm", task.toString());
+		
+		task = parser.parseAdd("Buy apple 1pm-3pm");
+		assertEquals("Buy apple from today 1pm to 3pm", task.toString());
+		
+		//if ending not specified, am
+		task = parser.parseAdd("Buy apple 1pm-3");
+		assertEquals("Buy apple from today 1pm to this Wed 3am", task.toString());	
+	}
 	
 	//date only 26 march
 	public void testEditDate() throws InvalidLabelFormat {
