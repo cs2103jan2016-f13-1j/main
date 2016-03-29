@@ -982,7 +982,7 @@ public class TestCommandParser {
 		assertEquals(true, thrown);        
 	}
 
-	// =============================
+		// =============================
 		// Latest stuff
 		// =============================
 		
@@ -1019,7 +1019,7 @@ public class TestCommandParser {
 	    	//assertEquals("Buy chocolate by today 10pm", task2.toString());
 		}
 		
-	//exception
+		//exception
 		public void testEditSingleField() throws InvalidLabelFormat, InvalidTitle {
 			CommandParser parser = new CommandParser();
 			Task task, task2;
