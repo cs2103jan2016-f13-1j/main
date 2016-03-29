@@ -601,7 +601,8 @@ public class CommandParser {
 	 * @return {@code String} with time range removed
 	 */
 	private String removeRangeFromTitle(String title) {
-		String regex = "(" + REGEX_PREPOSITION_ALL + "?)" + getTimeRangeRegex();;
+		//String regex = "(" + REGEX_PREPOSITION_ALL + "?)" + getTimeRangeRegex();
+		String regex = "(" + REGEX_PREPOSITION_ALL + "?)(" + getTimeRangeRegex()+ ")";
 		Pattern pattern = Pattern.compile(regex);
 		Matcher matcher = pattern.matcher(title);
 		while (matcher.find()) {
