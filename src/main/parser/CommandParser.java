@@ -65,8 +65,9 @@ public class CommandParser {
 	 * 		   {@code String} input to be processed
 	 * @return {@code Task} built
 	 * @throws InvalidLabelFormat 
+	 * @throws InvalidTitle 
 	 */
-	public Task parseAdd(String inputString) throws InvalidLabelFormat {
+	public Task parseAdd(String inputString) throws InvalidLabelFormat, InvalidTitle {
 		logger.setLevel(Level.OFF);
 
 		assert(inputString != null);
@@ -89,6 +90,21 @@ public class CommandParser {
 		
 		title = inputString;
 		
+		hasLabel = checkForLabel(inputString);
+		if (hasLabel) {
+			try {
+				label = getLabel(inputString);
+			} catch (Exception e) {
+				throw new InvalidLabelFormat("Invalid label input detected.");
+			}
+			
+			title = removeLabelFromTitle(title, label);
+		}
+		
+		if (removeDateTime(title).length() == 0) {
+			throw new InvalidTitle("Invalid title detected.");
+		}
+	
 		hasDate =  checkForDate(inputString)  || checkForDateText(inputString);
 		
 		hasTime = checkForTime(inputString);
@@ -182,16 +198,7 @@ public class CommandParser {
 		}
 		*/
 
-		hasLabel = checkForLabel(inputString);
-		if (hasLabel) {
-			try {
-				label = getLabel(inputString);
-			} catch (Exception e) {
-				throw new InvalidLabelFormat("Invalid label input detected.");
-			}
-			
-			title = removeLabelFromTitle(title, label);
-		}
+		
 
 		Task task = new Task (title, startDate, endDate, label);
 		logger.log(Level.INFO, "Task object built.");
@@ -1265,6 +1272,19 @@ public class CommandParser {
 			super (message);
 			logger.log(Level.WARNING, "Time cannot be parsed by parser.");
 			logger.log(Level.WARNING, "InvalidTimeFormat exception thrown.");    		
+		}
+	}
+	
+	public class InvalidTitle extends Exception {
+		public InvalidTitle() {
+			logger.log(Level.WARNING, "Title cannot be parsed by parser.");
+			logger.log(Level.WARNING, "InvalidTitle exception thrown.");
+		}
+
+		public InvalidTitle(String message) {
+			super (message);
+			logger.log(Level.WARNING, "Title cannot be parsed by parser.");
+			logger.log(Level.WARNING, "InvalidTitle exception thrown.");    		
 		}
 	}
 }
