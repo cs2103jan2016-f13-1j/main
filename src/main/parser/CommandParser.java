@@ -95,7 +95,7 @@ public class CommandParser {
 		List<Date> dates = new ArrayList<Date>();
 		
 		title = inputString;
-		
+		x
 		hasLabel = checkForLabel(inputString);
 		if (hasLabel) {
 			try {
@@ -1007,10 +1007,10 @@ public class CommandParser {
 
 	//here onwards
 	//check point
-	public Task parseEdit(Task oldTask, String commandString) throws InvalidLabelFormat {
+	public Task parseEdit(Task oldTask, String inputString) throws InvalidLabelFormat, InvalidTitle {
 		int numberOfDate = 0;
 		boolean hasStartDate = false;
-		String original = commandString;
+		String original = inputString;
 
 		String title = oldTask.getTitle();
 		String label = oldTask.getLabel();
@@ -1022,41 +1022,47 @@ public class CommandParser {
 		Date startDate = null;
 		Date endDate = null;
 
-		boolean isLabelPresent = false;
-		isLabelPresent = checkForLabel(commandString);
-		if (isLabelPresent) {
+		boolean hasLabel = false;
+		hasLabel = checkForLabel(inputString);
+		if (hasLabel) {
 			try {
-				label = getLabel(commandString);
-				commandString = removeLabelFromTitle(commandString, label);
+				label = getLabel(inputString);
 			} catch (Exception e) {
 				throw new InvalidLabelFormat("Invalid label input detected.");
 			}
+			
+			title = removeLabelFromTitle(title, label);
 		}
 
-		boolean hasPreposition = checkForPrepositions(commandString);
-		boolean hasTime = checkForTime(commandString);
+		if (removeDateTime(title).length() == 0) {
+			throw new InvalidTitle("Invalid title detected.");
+		}
+		
+		//here
+		boolean hasPreposition = checkForPrepositions(inputString);
+		boolean hasTime = checkForTime(inputString);
 		boolean hasDateRange = false;
 		boolean hasDate = false;
 
 		if (hasTime) {
-			hasDateRange = checkForRangeTime(commandString);
+			hasDateRange = checkForRangeTime(inputString);
 		}
 
-		hasDate = checkForDate(commandString) || !checkForDateText(commandString);
+		hasDate = checkForDate(inputString) || !checkForDateText(inputString);
 
 		if (hasPreposition || hasTime || hasDate) {
 			if (hasDateRange) {
-				commandString = correctRangeTime(commandString);
+				inputString = correctRangeTime(inputString);
 			}
 
-			List<Date> dates = parseDateExtra(commandString);
+			List<Date> dates = parseDateExtra(inputString);
 			numberOfDate = dates.size();
 			if (numberOfDate > 0) {
 				if (numberOfDate == DATE_MAX_SIZE) {
 					startDate = getDate(dates, DATE_START_RANGED);
 					endDate = getDate(dates, DATE_END_RANGED);
 				} else {
-					hasStartDate = checkForStartPreposition(commandString);
+					hasStartDate = checkForStartPreposition(inputString);
 					if (hasStartDate) {
 						startDate = getDate(dates, DATE_INDEX);
 					} else {
@@ -1071,10 +1077,10 @@ public class CommandParser {
 				}
 
 				if (hasDateRange) {
-					commandString = removeRangeFromTitle(commandString);
+					inputString = removeRangeFromTitle(inputString);
 				}
 
-				commandString = removeDateFromTitle(commandString, startDate, endDate);
+				inputString = removeDateFromTitle(inputString, startDate, endDate);
 			}
 		}
 
@@ -1167,8 +1173,8 @@ public class CommandParser {
 			}
 		}
 
-		if (commandString.length() > 0) {
-			title = commandString;
+		if (inputString.length() > 0) {
+			title = inputString;
 		}       
 
 		Task newTask = new Task(title, newStart, newEnd, label);
