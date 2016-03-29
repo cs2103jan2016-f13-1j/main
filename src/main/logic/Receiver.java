@@ -38,6 +38,11 @@ public class Receiver extends Observable {
         
         allTasks = storage.readTasks();
         assert(allTasks != null);
+        
+        initializeLists();
+        assert(todoTasks != null);
+        assert(completedTasks != null);
+        
         categorizeTasks(allTasks);
         sortTasks();
         updateCollision();
@@ -133,6 +138,7 @@ public class Receiver extends Observable {
         for (Task t : allTasks) {
             if (t.equals(task)) {
                 t.setIsCompleted();
+                break;
             }
         }
         initiateSave();
@@ -238,17 +244,17 @@ public class Receiver extends Observable {
     public void search(Date searchDate) {
         logger.log(Level.INFO, "search command for date " + searchDate);
         ArrayList<Task> searchResults = new ArrayList<Task>();
-        Calendar dateToSearch = convertDate(searchDate);
+        Calendar dateToSearch = removeTimeFromDate(searchDate);
         
         for (Task t : allTasks) {
             if (t.hasDateRange()) {
-                Calendar startDate = convertDate(t.getStartDate());
-                Calendar endDate = convertDate(t.getEndDate());
+                Calendar startDate = removeTimeFromDate(t.getStartDate());
+                Calendar endDate = removeTimeFromDate(t.getEndDate());
                 if (startDate.equals(dateToSearch) || endDate.equals(dateToSearch)) {
                     searchResults.add(t);
                 }
             } else if (t.hasSingleDate()) {
-                Calendar singleDate = convertDate(t.getSingleDate());
+                Calendar singleDate = removeTimeFromDate(t.getSingleDate());
                 if (singleDate.equals(dateToSearch)) {
                     searchResults.add(t);
                 }
@@ -261,7 +267,7 @@ public class Receiver extends Observable {
     }
     
     //Removes all time details from the given Date
-    private Calendar convertDate(Date date) {
+    private Calendar removeTimeFromDate(Date date) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
         calendar.set(Calendar.HOUR_OF_DAY, 0);
@@ -336,6 +342,11 @@ public class Receiver extends Observable {
         return storage.getFilePath();
     }
     
+    private void initializeLists() {
+        todoTasks = new ArrayList<Task>();
+        completedTasks = new ArrayList<Task>();
+    }
+    
     private void initiateSave() {
         categorizeTasks(allTasks);
         sortTasks();
@@ -346,8 +357,8 @@ public class Receiver extends Observable {
     }
     
     private void categorizeTasks(ArrayList<Task> tasks) {
-        todoTasks = new ArrayList<Task>();
-        completedTasks = new ArrayList<Task>();
+        todoTasks.clear();
+        completedTasks.clear();
         
         for (Task task : tasks) {
             if (task.isDone()) {
