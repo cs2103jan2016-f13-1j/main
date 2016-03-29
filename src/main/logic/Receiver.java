@@ -38,6 +38,11 @@ public class Receiver extends Observable {
         
         allTasks = storage.readTasks();
         assert(allTasks != null);
+        
+        initializeLists();
+        assert(todoTasks != null);
+        assert(completedTasks != null);
+        
         categorizeTasks(allTasks);
         sortTasks();
         updateCollision();
@@ -133,6 +138,7 @@ public class Receiver extends Observable {
         for (Task t : allTasks) {
             if (t.equals(task)) {
                 t.setIsCompleted();
+                break;
             }
         }
         initiateSave();
@@ -336,6 +342,11 @@ public class Receiver extends Observable {
         return storage.getFilePath();
     }
     
+    private void initializeLists() {
+        todoTasks = new ArrayList<Task>();
+        completedTasks = new ArrayList<Task>();
+    }
+    
     private void initiateSave() {
         categorizeTasks(allTasks);
         sortTasks();
@@ -346,8 +357,8 @@ public class Receiver extends Observable {
     }
     
     private void categorizeTasks(ArrayList<Task> tasks) {
-        todoTasks = new ArrayList<Task>();
-        completedTasks = new ArrayList<Task>();
+        todoTasks.clear();
+        completedTasks.clear();
         
         for (Task task : tasks) {
             if (task.isDone()) {
