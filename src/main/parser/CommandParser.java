@@ -31,6 +31,8 @@ public class CommandParser {
 	private final int DATE_INDEX = 0;
 	private final int DATE_START_RANGED = 0;
 	private final int DATE_END_RANGED = 1;
+	private final int DATE_START = 0;
+	private final int DATE_END = 1;
 	private final int DATE_MAX_SIZE = 2;
 	//24 ([01]?[0-9]|2[0-3]):[0-5][0-9]
 	
@@ -84,6 +86,7 @@ public class CommandParser {
 		boolean hasDay = false;
 		boolean hasDate = false;
 		boolean hasTime = false;
+		boolean hasTimeWithoutAmPm = false;
 		boolean hasDateRange = false;
 		boolean hasPreposition = false;
 		boolean hasStartDate = false;
@@ -120,46 +123,27 @@ public class CommandParser {
 		}
 
 		hasPreposition = checkForPrepositions(inputString);
-		boolean hasTimeWithoutAmPm = checkForTimeWithoutAmPm(inputString);
+		if (hasPreposition) {
+			hasTimeWithoutAmPm = checkForTimeWithoutAmPm(inputString);
+			hasStartDate = checkForStartPreposition(inputString);
+		} 
 		
-		
-		if (hasDate && hasTime) {
+		if (hasPreposition && hasTimeWithoutAmPm) {
+			dates = parseDateTime(inputString);
+			dates = fixTimeToNearest(dates, hasDate);
+		} else if (hasDate && hasTime) {
 			dates = parseDateTime(inputString);
 		} else if (hasDate || hasDay) {
 			dates = parseDateOnly(inputString);
 		} else if (hasTime) {
 			dates = parseTimeOnly(inputString);
 		}
-		
-		if (hasPreposition && hasTimeWithoutAmPm) {
-			dates = parseDateTime(inputString);
-			dates = fixTimeToNearest(dates, hasDate);
-		}
-		
-		numberOfDate = dates.size();
 
+		numberOfDate = dates.size();
 		if (numberOfDate > 0) {
-			if (numberOfDate == DATE_MAX_SIZE) {
-				startDate = getDate(dates, DATE_START_RANGED);
-				endDate = getDate(dates, DATE_END_RANGED);
-			} else {
-				if (hasPreposition) {
-					hasStartDate = checkForStartPreposition(inputString);
-					if (hasStartDate) {
-						startDate = getDate(dates, DATE_INDEX);
-					} else {
-						endDate = getDate(dates, DATE_INDEX);
-					}
-				} else {
-					//no preposition
-					//one date/time only
-					//assume start
-					if (hasTime || hasDate) {
-						startDate = getDate(dates, DATE_INDEX);
-						endDate = null;
-					}
-				}
-			}
+			dates = assignDates(dates, hasPreposition, hasStartDate);
+			startDate = dates.get(DATE_START);
+			endDate = dates.get(DATE_END);
 
 			if (hasDateRange) {
 				title = removeRangeFromTitle(title);
@@ -171,6 +155,34 @@ public class CommandParser {
 		Task task = new Task (title, startDate, endDate, label);
 		logger.log(Level.INFO, "Task object built.");
 		return task;
+	}
+	
+	
+	private List<Date> assignDates(List<Date> dates, boolean hasPreposition, boolean hasStartDate) {
+		List<Date> assigned = new ArrayList<Date>();
+		int numberOfDate = dates.size();
+		
+		if (numberOfDate == DATE_MAX_SIZE) {
+			assigned.add(DATE_START,getDate(dates, DATE_START));
+			assigned.add(DATE_END,getDate(dates, DATE_END));
+		} else {
+			if (hasPreposition) {
+				if (hasStartDate) {
+					assigned.add(DATE_START,getDate(dates, DATE_INDEX));
+					assigned.add(DATE_END, null);
+				} else {
+					assigned.add(DATE_START, null);
+					assigned.add(DATE_END,getDate(dates, DATE_INDEX));
+				}
+			} else {
+				//no preposition
+				//one date/time only
+				//assume start
+				assigned.add(DATE_START,getDate(dates, DATE_INDEX));
+				assigned.add(DATE_END,null);
+			}
+		}
+		return assigned;
 	}
 
 	/**
