@@ -244,17 +244,17 @@ public class Receiver extends Observable {
     public void search(Date searchDate) {
         logger.log(Level.INFO, "search command for date " + searchDate);
         ArrayList<Task> searchResults = new ArrayList<Task>();
-        Calendar dateToSearch = convertDate(searchDate);
+        Calendar dateToSearch = removeTimeFromDate(searchDate);
         
         for (Task t : allTasks) {
             if (t.hasDateRange()) {
-                Calendar startDate = convertDate(t.getStartDate());
-                Calendar endDate = convertDate(t.getEndDate());
+                Calendar startDate = removeTimeFromDate(t.getStartDate());
+                Calendar endDate = removeTimeFromDate(t.getEndDate());
                 if (startDate.equals(dateToSearch) || endDate.equals(dateToSearch)) {
                     searchResults.add(t);
                 }
             } else if (t.hasSingleDate()) {
-                Calendar singleDate = convertDate(t.getSingleDate());
+                Calendar singleDate = removeTimeFromDate(t.getSingleDate());
                 if (singleDate.equals(dateToSearch)) {
                     searchResults.add(t);
                 }
@@ -267,7 +267,7 @@ public class Receiver extends Observable {
     }
     
     //Removes all time details from the given Date
-    private Calendar convertDate(Date date) {
+    private Calendar removeTimeFromDate(Date date) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
         calendar.set(Calendar.HOUR_OF_DAY, 0);
