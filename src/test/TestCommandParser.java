@@ -23,240 +23,6 @@ import main.parser.CommandParser.InvalidTitle;
 
 public class TestCommandParser {
 	/**
-	 * Test for the detection of floating task.
-	 * Even with prepositions, it should not be dated.
-	 * 
-	 * @throws InvalidLabelFormat 
-	 * @throws InvalidTitle 
-	 */
-	@Ignore
-	public void testDetectFloating() throws InvalidLabelFormat, InvalidTitle {
-		CommandParser parser = new CommandParser();
-
-		Task task = parser.parseAdd("Do assignment 1");
-		assertEquals(false, task.hasDate());
-
-		task = parser.parseAdd("Undo task 3");
-		assertEquals(false, task.hasDate());
-
-		task = parser.parseAdd("Fetch my brothers from school");
-		assertEquals(false, task.hasDate());
-
-		task = parser.parseAdd("Send 100 emails from my computer");
-		assertEquals(false, task.hasDate());
-
-		task = parser.parseAdd("Drive by the supermarket");
-		assertEquals(false, task.hasDate());
-
-		task = parser.parseAdd("Attack enemy base on signal");
-		assertEquals(false, task.hasDate());
-
-		task = parser.parseAdd("Send 100 email before I sleep");
-		assertEquals(false, task.hasDate());
-
-		task = parser.parseAdd("Watch \"day after tomorrow\" movie");
-		assertEquals(false, task.hasDate());
-	}
-
-	/**
-	 * Test to ensure floating task are added correctly.
-	 * It should not be dated.
-	 * The title should be the whole user input.
-	 * 
-	 * @throws InvalidLabelFormat 
-	 * @throws InvalidTitle 
-	 */
-	@Ignore
-	public void testAddFloating() throws InvalidLabelFormat, InvalidTitle {
-		CommandParser parser = new CommandParser();
-
-		Task task = parser.parseAdd("Cook dinner");
-		assertEquals(false, task.hasDate());
-		assertEquals("Cook dinner", task.getTitle());
-
-		task = parser.parseAdd("Attack enemy base on signal");
-		assertEquals(false, task.hasDate());
-		assertEquals("Attack enemy base on signal", task.getTitle());
-	}
-
-	/**
-	 * Test for time detection without preposition if time is explicitly specified.
-	 * 
-	 * @throws InvalidLabelFormat
-	 * @throws InvalidTitle 
-	 */
-	@Ignore
-	public void testHasTime() throws InvalidLabelFormat, InvalidTitle {
-		CommandParser parser = new CommandParser();
-		Task task;
-
-		task = parser.parseAdd("Dinner 7pm");
-		assertEquals("Dinner from today 7pm", task.toString());
-
-		task = parser.parseAdd("Dinner 7PM today");
-		assertEquals("Dinner from today 7pm", task.toString());
-
-		task = parser.parseAdd("Homework 5.15pm");
-		assertEquals("Homework from today 5:15pm", task.toString());
-	}
-
-	/**
-	 * Test adding of dated task.
-	 * Asserts title and time has been parsed correctly.
-	 * 
-	 * @throws ParseException for dateFormat.parse()
-	 * @throws InvalidLabelFormat 
-	 * @throws InvalidTitle 
-	 */
-	@Ignore
-	public void testAdd() throws ParseException, InvalidLabelFormat, InvalidTitle {
-		CommandParser parser = new CommandParser();
-		Task task = parser.parseAdd("Cook dinner on 24 Mar 7pm #home");
-		SimpleDateFormat dateFormat = new SimpleDateFormat("EEE MMM d HH:mm:ss Z yyyy");
-		String startDate = "Thu Mar 24 19:00:00 SGT 2016";
-		Date expectedStart = dateFormat.parse(startDate);
-
-		assertEquals(true, task.hasDate());
-		assertEquals(expectedStart, task.getStartDate());
-		assertEquals("Cook dinner", task.getTitle());
-	}
-
-	/**
-	 * Test for label extraction.
-	 * 
-	 * @throws InvalidLabelFormat 
-	 * @throws InvalidTitle 
-	 */
-	@Ignore
-	public void testLabel() throws IndexOutOfBoundsException, InvalidLabelFormat, InvalidTitle{
-		CommandParser parser = new CommandParser();
-
-		Task task = parser.parseAdd("Cook dinner #home");
-		assertEquals("Cook dinner", task.getTitle());
-		assertEquals("home", task.getLabel());
-
-		task = parser.parseAdd("#home Cook dinner");
-		assertEquals("Cook dinner", task.getTitle());
-		assertEquals("home", task.getLabel());
-
-		boolean thrown = false;
-		try {
-			task = parser.parseAdd("Cook dinner #");
-		} catch (InvalidLabelFormat e) {
-			thrown = true;
-		}
-		assertEquals(true, thrown);
-
-		thrown = false;
-		try {
-			task = parser.parseAdd("  #  ");
-		} catch (InvalidLabelFormat e) {
-			thrown = true;
-		}
-		assertEquals(true, thrown);
-	}
-
-	/**
-	 * Date should be relative to current time when being parsed.
-	 * 
-	 * @throws InvalidLabelFormat
-	 * @throws InvalidTitle 
-	 */
-	
-	public void testSmartDetectionOfTime() throws InvalidLabelFormat, InvalidTitle {
-		CommandParser parser = new CommandParser();
-		Task task;
-
-		task = parser.parseAdd("Do homework by 2");
-		assertEquals("Do homework by today 2am", task.toString());
-
-		task = parser.parseAdd("Do homework by 6am");
-		assertEquals("Do homework by today 6am", task.toString());
-
-		task = parser.parseAdd("Do homework by 10pm");
-		assertEquals("Do homework by today 10pm", task.toString());  
-
-		task = parser.parseAdd("Do homework by 10 mar 2pm");
-		assertEquals("Do homework by 10 Mar 2pm", task.toString());
-	}
-	
-	/**
-	 * Test for extraction of date information in title.
-	 * 
-	 * @throws InvalidLabelFormat 
-	 * @throws InvalidTitle 
-	 */
-	@Ignore
-	public void testDatedTaskTitle() throws InvalidLabelFormat, InvalidTitle{
-		CommandParser parser = new CommandParser();
-		Task task = parser.parseAdd("Attend meeting from Monday to Wednesday");
-		assertEquals("Attend meeting", task.getTitle());
-
-		task = parser.parseAdd("Attend meeting from 4 to 6");
-		assertEquals("Attend meeting", task.getTitle());
-
-		task = parser.parseAdd("Cook dinner at 7");
-		assertEquals("Cook dinner", task.getTitle());
-
-		task = parser.parseAdd("Attend meeting on Wed");
-		assertEquals("Attend meeting", task.getTitle());
-
-		task = parser.parseAdd("Do homework by Sunday");
-		assertEquals("Do homework", task.getTitle());
-
-		task = parser.parseAdd("Send 100 email before 8pm");
-		assertEquals("Send 100 email", task.getTitle());
-
-		task = parser.parseAdd("Meet at \"Taco Tuesday\" on Wednesday 5pm");
-		assertEquals("Meet at \"Taco Tuesday\"", task.getTitle());
-
-		task =  parser.parseAdd("Chase \"2pm\" Korean band on Saturday 7pm");
-		assertEquals("Chase \"2pm\" Korean band", task.getTitle());
-
-		task = parser.parseAdd("Attend meeting from Monday to Wednesday 6pm");
-		assertEquals("Attend meeting", task.getTitle());
-
-		task = parser.parseAdd("Cook dinner at 7pm at home");
-		assertEquals("Cook dinner at home", task.getTitle());
-
-		task = parser.parseAdd("Cook dinner on 24 Mar 7pm");
-		assertEquals("Cook dinner", task.getTitle());
-
-		task = parser.parseAdd("Do assignment by Sunday 8pm");
-		assertEquals("Do assignment", task.getTitle());
-
-		task = parser.parseAdd("Send 100 email before sunday 7pm");
-		assertEquals("Send 100 email", task.getTitle());
-	}
-
-	/**
-	 * Test for start time detection when parsing.
-	 * Feedback shown is relative to the current period.
-	 * 
-	 * @throws InvalidLabelFormat 
-	 * @throws InvalidTitle 
-	 */
-	
-	public void testDetectStartTime() throws InvalidLabelFormat, InvalidTitle {
-		CommandParser parser = new CommandParser();
-		Task task = parser.parseAdd("Attempt quiz from 5pm 10 apr");
-		assertEquals("Attempt quiz", task.getTitle());
-		assertEquals("Attempt quiz from 10 Apr 5pm", task.toString());
-
-		task = parser.parseAdd("Watch webcast after 3am on 10 APR");
-		assertEquals("Watch webcast", task.getTitle());  	
-		assertEquals("Watch webcast from 10 Apr 3am", task.toString());
-
-		task = parser.parseAdd("Watch movie at 10pm");
-		assertEquals("Watch movie", task.getTitle());
-		assertEquals("Watch movie from today 10pm", task.toString());
-
-		task = parser.parseAdd("Watch movie on 10 Apr 7pm");
-		assertEquals("Watch movie", task.getTitle());
-		assertEquals("Watch movie from 10 Apr 7pm", task.toString());
-	}
-
-	/**
 	 * Test detection of time in user input
 	 * Method checkForTime has been updated to private.
 	 * This is for reference only.
@@ -381,6 +147,400 @@ public class TestCommandParser {
 	}
 	*/
 	
+	// =============================
+	// Add's stuff
+	// =============================
+	
+	/**
+	 * Test for the detection of floating task.
+	 * Even with prepositions, it should not be dated.
+	 * 
+	 * @throws InvalidLabelFormat 
+	 * @throws InvalidTitle 
+	 */
+	@Ignore
+	public void testDetectFloating() throws InvalidLabelFormat, InvalidTitle {
+		CommandParser parser = new CommandParser();
+
+		Task task = parser.parseAdd("Do assignment 1");
+		assertEquals(false, task.hasDate());
+
+		task = parser.parseAdd("Undo task 3");
+		assertEquals(false, task.hasDate());
+
+		task = parser.parseAdd("Fetch my brothers from school");
+		assertEquals(false, task.hasDate());
+
+		task = parser.parseAdd("Send 100 emails from my computer");
+		assertEquals(false, task.hasDate());
+
+		task = parser.parseAdd("Drive by the supermarket");
+		assertEquals(false, task.hasDate());
+
+		task = parser.parseAdd("Attack enemy base on signal");
+		assertEquals(false, task.hasDate());
+
+		task = parser.parseAdd("Send 100 email before I sleep");
+		assertEquals(false, task.hasDate());
+
+		task = parser.parseAdd("Watch \"day after tomorrow\" movie");
+		assertEquals(false, task.hasDate());
+	}
+
+	/**
+	 * Test to ensure floating task are added correctly.
+	 * It should not be dated.
+	 * The title should be the whole user input.
+	 * 
+	 * @throws InvalidLabelFormat 
+	 * @throws InvalidTitle 
+	 */
+	@Ignore
+	public void testAddFloating() throws InvalidLabelFormat, InvalidTitle {
+		CommandParser parser = new CommandParser();
+
+		Task task = parser.parseAdd("Cook dinner");
+		assertEquals(false, task.hasDate());
+		assertEquals("Cook dinner", task.getTitle());
+
+		task = parser.parseAdd("Attack enemy base on signal");
+		assertEquals(false, task.hasDate());
+		assertEquals("Attack enemy base on signal", task.getTitle());
+	}
+	
+	/**
+	 * Test for label extraction.
+	 * 
+	 * @throws InvalidLabelFormat 
+	 * @throws InvalidTitle 
+	 */
+	@Ignore
+	public void testLabel() throws IndexOutOfBoundsException, InvalidLabelFormat, InvalidTitle{
+		CommandParser parser = new CommandParser();
+
+		Task task = parser.parseAdd("Cook dinner #home");
+		assertEquals("Cook dinner", task.getTitle());
+		assertEquals("home", task.getLabel());
+
+		task = parser.parseAdd("#home Cook dinner");
+		assertEquals("Cook dinner", task.getTitle());
+		assertEquals("home", task.getLabel());
+
+		boolean thrown = false;
+		try {
+			task = parser.parseAdd("Cook dinner #");
+		} catch (InvalidLabelFormat e) {
+			thrown = true;
+		}
+		assertEquals(true, thrown);
+
+		thrown = false;
+		try {
+			task = parser.parseAdd("  #  ");
+		} catch (InvalidLabelFormat e) {
+			thrown = true;
+		}
+		assertEquals(true, thrown);
+	}
+	
+	/**
+	 * Test priority toggling.
+	 * There are only four levels of priority.
+	 * 
+	 * @throws InvalidLabelFormat 
+	 * @throws InvalidTitle 
+	 */
+	@Ignore
+	public void testTogglePriority() throws InvalidLabelFormat, InvalidTitle {
+		CommandParser parser = new CommandParser();
+		Task task = parser.parseAdd("Cook dinner #home");
+		assertEquals(0, task.getPriority());
+		assertEquals(1, task.togglePriority(true));
+		assertEquals(2, task.togglePriority(true));
+		assertEquals(3, task.togglePriority(true));
+		assertEquals(0, task.togglePriority(true));
+	}
+
+	/**
+	 * Test completed status toggling.
+	 * A status can either be done or undone.
+	 * 
+	 * @throws InvalidLabelFormat
+	 * @throws InvalidTitle 
+	 */
+	@Ignore
+	public void testToggleDone() throws InvalidLabelFormat, InvalidTitle {
+		CommandParser parser = new CommandParser();
+		Task task = parser.parseAdd("Do assignment");
+		assertEquals(false, task.isDone());
+
+		task.setIsCompleted();
+		assertEquals(true, task.isDone());
+
+		task.setNotCompleted();
+		assertEquals(false, task.isDone());
+
+		task.toggleDone();
+		assertEquals(true, task.isDone());
+
+		task.toggleDone();
+		assertEquals(false, task.isDone());
+	}
+
+	/**
+	 * Test for invalid title detection.
+	 * This is mainly for dated task.
+	 * Because if not dated, title is whole user input.
+	 * 
+	 * @throws InvalidLabelFormat
+	 * @throws InvalidTitle
+	 */
+	@Test
+	public void testInvalidTitle() throws InvalidLabelFormat, InvalidTitle {
+		CommandParser parser = new CommandParser();
+		Task task;
+		boolean thrown;
+		
+		thrown = false;
+		try {
+			task = parser.parseAdd("29 mar");
+			System.out.println(task.toString());
+		} catch (InvalidTitle e) {
+			thrown = true;
+		}
+		assertEquals(true, thrown);  
+		
+		thrown = false;
+		try {
+			task = parser.parseAdd("3pm");
+			System.out.println(task.toString());
+		} catch (InvalidTitle e) {
+			thrown = true;
+		}
+		assertEquals(true, thrown);  
+		
+		thrown = false;
+		try {
+			task = parser.parseAdd("29 mar 3pm");
+		} catch (InvalidTitle e) {
+			thrown = true;
+		}
+		assertEquals(true, thrown);  
+		
+		thrown = false;
+		try {
+			task = parser.parseAdd("29 mar 3pm-5pm");
+		} catch (InvalidTitle e) {
+			thrown = true;
+		}
+		assertEquals(true, thrown);
+		
+		thrown = false;
+		try {
+			task = parser.parseAdd("3");
+		} catch (InvalidTitle e) {
+			thrown = true;
+		}
+		assertEquals(false, thrown);  
+		
+		thrown = false;
+		try {
+			task = parser.parseAdd("29 march 3");
+		} catch (InvalidTitle e) {
+			thrown = true;
+		}
+		assertEquals(false, thrown);
+	}
+	
+	/**
+	 * Test for time detection without preposition if time is explicitly specified.
+	 * 
+	 * @throws InvalidLabelFormat
+	 * @throws InvalidTitle 
+	 */
+	@Test
+	public void testHasTime() throws InvalidLabelFormat, InvalidTitle {
+		CommandParser parser = new CommandParser();
+		Task task;
+
+		task = parser.parseAdd("Dinner 7pm");
+		assertEquals("Dinner from today 7pm", task.toString());
+
+		task = parser.parseAdd("Dinner 7PM today");
+		assertEquals("Dinner from today 7pm", task.toString());
+
+		task = parser.parseAdd("Homework 5.15pm");
+		assertEquals("Homework from today 5:15pm", task.toString());
+	}
+	
+	/**
+	 * Test for adding a task without preposition.
+	 * 
+	 * @throws InvalidLabelFormat
+	 * @throws InvalidTitle 
+	 */
+	@Test 
+	public void testNoPreposition() throws InvalidLabelFormat, InvalidTitle {
+		CommandParser parser = new CommandParser();
+		Task task;
+		
+		task = parser.parseAdd("Buy apple 1 may 3pm");
+		assertEquals("Buy apple from 1 May 3pm", task.toString());
+		
+		//date only = 12am
+		task = parser.parseAdd("Buy apple 1 may");
+		assertEquals("Buy apple from 1 May 12am", task.toString());
+		
+		//1pm has past, nearest is 1am so take 1pm
+		task = parser.parseAdd("Buy apple 1pm");
+		assertEquals("Buy apple from today 1pm", task.toString());
+		
+		//1am has past, nearest is 1am so still matching
+		task = parser.parseAdd("Buy apple 1am");
+		assertEquals("Buy apple from this Wed 1am", task.toString());
+		
+		task = parser.parseAdd("Buy apple 1-3pm");
+		assertEquals("Buy apple from today 1pm to 3pm", task.toString());
+		
+		task = parser.parseAdd("Buy apple 1pm-3pm");
+		assertEquals("Buy apple from today 1pm to 3pm", task.toString());
+		
+		//if ending not specified, am
+		task = parser.parseAdd("Buy apple 1pm-3");
+		assertEquals("Buy apple from today 1pm to this Wed 3am", task.toString());	
+	}
+	
+	
+	
+	
+//checkpoint
+	
+
+	/**
+	 * Test adding of dated task.
+	 * Asserts title and time has been parsed correctly.
+	 * 
+	 * @throws ParseException for dateFormat.parse()
+	 * @throws InvalidLabelFormat 
+	 * @throws InvalidTitle 
+	 */
+	@Ignore
+	public void testAdd() throws ParseException, InvalidLabelFormat, InvalidTitle {
+		CommandParser parser = new CommandParser();
+		Task task = parser.parseAdd("Cook dinner on 24 Mar 7pm #home");
+		SimpleDateFormat dateFormat = new SimpleDateFormat("EEE MMM d HH:mm:ss Z yyyy");
+		String startDate = "Thu Mar 24 19:00:00 SGT 2016";
+		Date expectedStart = dateFormat.parse(startDate);
+
+		assertEquals(true, task.hasDate());
+		assertEquals(expectedStart, task.getStartDate());
+		assertEquals("Cook dinner", task.getTitle());
+	}
+
+	
+
+	/**
+	 * Date should be relative to current time when being parsed.
+	 * 
+	 * @throws InvalidLabelFormat
+	 * @throws InvalidTitle 
+	 */
+	
+	public void testSmartDetectionOfTime() throws InvalidLabelFormat, InvalidTitle {
+		CommandParser parser = new CommandParser();
+		Task task;
+
+		task = parser.parseAdd("Do homework by 2");
+		assertEquals("Do homework by today 2am", task.toString());
+
+		task = parser.parseAdd("Do homework by 6am");
+		assertEquals("Do homework by today 6am", task.toString());
+
+		task = parser.parseAdd("Do homework by 10pm");
+		assertEquals("Do homework by today 10pm", task.toString());  
+
+		task = parser.parseAdd("Do homework by 10 mar 2pm");
+		assertEquals("Do homework by 10 Mar 2pm", task.toString());
+	}
+	
+	/**
+	 * Test for extraction of date information in title.
+	 * 
+	 * @throws InvalidLabelFormat 
+	 * @throws InvalidTitle 
+	 */
+	@Ignore
+	public void testDatedTaskTitle() throws InvalidLabelFormat, InvalidTitle{
+		CommandParser parser = new CommandParser();
+		Task task = parser.parseAdd("Attend meeting from Monday to Wednesday");
+		assertEquals("Attend meeting", task.getTitle());
+
+		task = parser.parseAdd("Attend meeting from 4 to 6");
+		assertEquals("Attend meeting", task.getTitle());
+
+		task = parser.parseAdd("Cook dinner at 7");
+		assertEquals("Cook dinner", task.getTitle());
+
+		task = parser.parseAdd("Attend meeting on Wed");
+		assertEquals("Attend meeting", task.getTitle());
+
+		task = parser.parseAdd("Do homework by Sunday");
+		assertEquals("Do homework", task.getTitle());
+
+		task = parser.parseAdd("Send 100 email before 8pm");
+		assertEquals("Send 100 email", task.getTitle());
+
+		task = parser.parseAdd("Meet at \"Taco Tuesday\" on Wednesday 5pm");
+		assertEquals("Meet at \"Taco Tuesday\"", task.getTitle());
+
+		task =  parser.parseAdd("Chase \"2pm\" Korean band on Saturday 7pm");
+		assertEquals("Chase \"2pm\" Korean band", task.getTitle());
+
+		task = parser.parseAdd("Attend meeting from Monday to Wednesday 6pm");
+		assertEquals("Attend meeting", task.getTitle());
+
+		task = parser.parseAdd("Cook dinner at 7pm at home");
+		assertEquals("Cook dinner at home", task.getTitle());
+
+		task = parser.parseAdd("Cook dinner on 24 Mar 7pm");
+		assertEquals("Cook dinner", task.getTitle());
+
+		task = parser.parseAdd("Do assignment by Sunday 8pm");
+		assertEquals("Do assignment", task.getTitle());
+
+		task = parser.parseAdd("Send 100 email before sunday 7pm");
+		assertEquals("Send 100 email", task.getTitle());
+	}
+
+	/**
+	 * Test for start time detection when parsing.
+	 * Feedback shown is relative to the current period.
+	 * 
+	 * @throws InvalidLabelFormat 
+	 * @throws InvalidTitle 
+	 */
+	
+	public void testDetectStartTime() throws InvalidLabelFormat, InvalidTitle {
+		CommandParser parser = new CommandParser();
+		Task task = parser.parseAdd("Attempt quiz from 5pm 10 apr");
+		assertEquals("Attempt quiz", task.getTitle());
+		assertEquals("Attempt quiz from 10 Apr 5pm", task.toString());
+
+		task = parser.parseAdd("Watch webcast after 3am on 10 APR");
+		assertEquals("Watch webcast", task.getTitle());  	
+		assertEquals("Watch webcast from 10 Apr 3am", task.toString());
+
+		task = parser.parseAdd("Watch movie at 10pm");
+		assertEquals("Watch movie", task.getTitle());
+		assertEquals("Watch movie from today 10pm", task.toString());
+
+		task = parser.parseAdd("Watch movie on 10 Apr 7pm");
+		assertEquals("Watch movie", task.getTitle());
+		assertEquals("Watch movie from 10 Apr 7pm", task.toString());
+	}
+
+	
+	
 	/**
 	 * Test for correct parsing of ranged time in user input.
 	 * 
@@ -488,50 +648,11 @@ public class TestCommandParser {
 		assertEquals(-1, task1.compareTo(task2));
 	}
 
-	/**
-	 * Test priority toggling.
-	 * There are only four levels of priority.
-	 * 
-	 * @throws InvalidLabelFormat 
-	 * @throws InvalidTitle 
-	 */
-	@Ignore
-	public void testTogglePriority() throws InvalidLabelFormat, InvalidTitle {
-		CommandParser parser = new CommandParser();
-		Task task = parser.parseAdd("Cook dinner #home");
-		assertEquals(0, task.getPriority());
-		assertEquals(1, task.togglePriority(true));
-		assertEquals(2, task.togglePriority(true));
-		assertEquals(3, task.togglePriority(true));
-		assertEquals(0, task.togglePriority(true));
-	}
-
-	/**
-	 * Test completed status toggling.
-	 * A status can either be done or undone.
-	 * 
-	 * @throws InvalidLabelFormat
-	 * @throws InvalidTitle 
-	 */
-	@Ignore
-	public void testToggleDone() throws InvalidLabelFormat, InvalidTitle {
-		CommandParser parser = new CommandParser();
-		Task task = parser.parseAdd("Do assignment");
-		assertEquals(false, task.isDone());
-
-		task.setIsCompleted();
-		assertEquals(true, task.isDone());
-
-		task.setNotCompleted();
-		assertEquals(false, task.isDone());
-
-		task.toggleDone();
-		assertEquals(true, task.isDone());
-
-		task.toggleDone();
-		assertEquals(false, task.isDone());
-	}
-
+	
+	// =============================
+	// Edit's stuff
+	// =============================
+	
 	/**
 	 * Test extracting index for edit.
 	 */
@@ -824,93 +945,7 @@ public class TestCommandParser {
 	// Latest stuff
 	// =============================
 	
-	@Test 
-	public void testNoPreposition() throws InvalidLabelFormat, InvalidTitle {
-		CommandParser parser = new CommandParser();
-		Task task;
-		
-		task = parser.parseAdd("Buy apple 1 may 3pm");
-		assertEquals("Buy apple from 1 May 3pm", task.toString());
-		
-		//date only = 12am
-		task = parser.parseAdd("Buy apple 1 may");
-		assertEquals("Buy apple from 1 May 12am", task.toString());
-		
-		//1pm has past, nearest is 1am so take 1pm
-		task = parser.parseAdd("Buy apple 1pm");
-		assertEquals("Buy apple from today 1pm", task.toString());
-		
-		//1am has past, nearest is 1am so still matching
-		task = parser.parseAdd("Buy apple 1am");
-		assertEquals("Buy apple from this Wed 1am", task.toString());
-		
-		task = parser.parseAdd("Buy apple 1-3pm");
-		assertEquals("Buy apple from today 1pm to 3pm", task.toString());
-		
-		task = parser.parseAdd("Buy apple 1pm-3pm");
-		assertEquals("Buy apple from today 1pm to 3pm", task.toString());
-		
-		//if ending not specified, am
-		task = parser.parseAdd("Buy apple 1pm-3");
-		assertEquals("Buy apple from today 1pm to this Wed 3am", task.toString());	
-	}
 	
-	@Test
-	public void testInvalidTitle() throws InvalidLabelFormat, InvalidTitle {
-		CommandParser parser = new CommandParser();
-		Task task;
-		boolean thrown;
-		
-		thrown = false;
-		try {
-			task = parser.parseAdd("29 mar");
-			System.out.println(task.toString());
-		} catch (InvalidTitle e) {
-			thrown = true;
-		}
-		assertEquals(true, thrown);  
-		
-		thrown = false;
-		try {
-			task = parser.parseAdd("3pm");
-			System.out.println(task.toString());
-		} catch (InvalidTitle e) {
-			thrown = true;
-		}
-		assertEquals(true, thrown);  
-		
-		thrown = false;
-		try {
-			task = parser.parseAdd("29 mar 3pm");
-		} catch (InvalidTitle e) {
-			thrown = true;
-		}
-		assertEquals(true, thrown);  
-		
-		thrown = false;
-		try {
-			task = parser.parseAdd("29 mar 3pm-5pm");
-		} catch (InvalidTitle e) {
-			thrown = true;
-		}
-		assertEquals(true, thrown);
-		
-		thrown = false;
-		try {
-			task = parser.parseAdd("3");
-		} catch (InvalidTitle e) {
-			thrown = true;
-		}
-		assertEquals(false, thrown);  
-		
-		thrown = false;
-		try {
-			task = parser.parseAdd("29 march 3");
-		} catch (InvalidTitle e) {
-			thrown = true;
-		}
-		assertEquals(false, thrown);
-	}
 	
 	//date only 26 march
 	public void testEditDate() throws InvalidLabelFormat, InvalidTitle {
