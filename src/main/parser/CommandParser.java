@@ -36,6 +36,8 @@ public class CommandParser {
 	
 	private final String REGEX_PREPOSITION_STARTING = "(?i)\\b(from|after|at|on)\\b ?"; 
 	private final String REGEX_PREPOSITION_ALL = "(?i)(\\b(from|after|at|on|by|before|to)\\b ?)";
+	public final String REGEX_DAYS = "\\b((?i)(mon)(day)?|" + "(tue)(s|sday)?|" + "(wed)(s|nesday)?|"
+	        + "(thu)(r|rs|rsday)?|" + "(fri)(day)?|" + "(sat)(urday)?|" + "(sun)(day)?)\\b";
 	private final String REGEX_DATE_NUM = "\\b((0?[1-9]|[12][0-9]|3[01])([/|-])(0?[1-9]|1[012]))\\b";	
 	private final String REGEX_DATE_TEXT = "\\b(0?[1-9]|[12][0-9]|3[01]) ";
 	private final String REGEX_MONTH_TEXT = "((?i)(jan)(uary)?|"
@@ -79,6 +81,7 @@ public class CommandParser {
 		Date startDate = null;
 		Date endDate = null;
 		
+		boolean hasDay = false;
 		boolean hasDate = false;
 		boolean hasTime = false;
 		boolean hasDateRange = false;
@@ -105,6 +108,7 @@ public class CommandParser {
 			throw new InvalidTitle("Invalid title detected.");
 		}
 	
+		//hasDay = checkForDay(inputString); //pending for range, mismatch if past
 		hasDate =  checkForDate(inputString)  || checkForDateText(inputString);
 		
 		hasTime = checkForTime(inputString);
