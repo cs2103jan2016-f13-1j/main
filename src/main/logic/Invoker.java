@@ -37,15 +37,17 @@ public class Invoker {
 	/** 
 	 * Undo the next available command.
 	 */
-	public void undo() throws EmptyStackException {
+	public Command undo() throws EmptyStackException {
+	    Command command;
 	    try {
-    		Command command = undoHistory.pop();
+    		command = undoHistory.pop();
     		command.undo();
     		redoHistory.push(command);
 	    } catch (Exception e) {
 	        logger.log(Level.WARNING, "Stack is empty, check if undo is available before calling");
 	        throw new EmptyStackException();
 	    }
+	    return command;
 	}
 
 	/** 
