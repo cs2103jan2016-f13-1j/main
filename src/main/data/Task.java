@@ -305,12 +305,13 @@ public class Task {
     }
     
     private String convertDate(Date date) {
-    	if (dateIsToday()) {
+    	if (dateIsToday(date)) {
     		return "today";
     	}
     	
     	DayOfWeek day = getDay(date);
     	String dayShort = getShortDay(day);
+    	
     	if (dateIsThisWeek(date)) {
     		return "this ".concat(dayShort);
     	} else if (dateIsNextWeek(date)){
@@ -322,22 +323,16 @@ public class Task {
     	}
     }
     
-    public boolean dateIsToday() {
+    public boolean dateIsToday(Date date) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("ddMMyyyy");
         String today = dateFormat.format(new Date());
         
-       if (hasStartDate()) {
-            String start = dateFormat.format(startDate);
-            if (today.equals(start)) {
-                return true;
-            }
-        } else if (hasEndDate()) {
-            String end = dateFormat.format(endDate);
-            if (today.equals(end)) {
-                return true;
-            }
+        String dateString = dateFormat.format(date);
+        if (today.equals(dateString)) {
+            return true;
+        } else {
+        	return false;
         }
-        return false;
     }
     
     private boolean dateIsThisWeek(Date date) {
