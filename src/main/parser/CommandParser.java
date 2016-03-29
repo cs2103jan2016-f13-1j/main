@@ -71,7 +71,7 @@ public class CommandParser {
 	 * @throws InvalidLabelFormat 
 	 * @throws InvalidTitle 
 	 */
-	public Task parseAdd(String inputString, boolean isAdd) throws InvalidLabelFormat, InvalidTitle {
+	public Task parseAdd(String inputString) throws InvalidLabelFormat, InvalidTitle {
 		logger.setLevel(Level.OFF);
 
 		assert(inputString != null);
@@ -106,13 +106,11 @@ public class CommandParser {
 			
 			title = removeLabelFromTitle(title, label);
 		}
-		
-		if (isAdd) {
-			if (removeDateTime(title).length() == 0) {
-				throw new InvalidTitle("Invalid title detected.");
-			}
+
+		if (removeDateTime(title).length() == 0) {
+			throw new InvalidTitle("Invalid title detected.");
 		}
-		
+				
 		hasDay = checkForDay(inputString);
 		hasDate =  checkForDate(inputString)  || checkForDateText(inputString);
 		
@@ -1176,8 +1174,7 @@ public class CommandParser {
 			newTitle = inputString;
 		}       
 */
-		
-		Task editedTask = parseAdd(inputString, false);
+		Task editedTask = parseAdd(inputString);
 		
 		if (editedTask.getTitle().length() != 0) {
 			newTitle = editedTask.getTitle();
@@ -1193,10 +1190,8 @@ public class CommandParser {
 		boolean hasTimeWithoutAmPm = false;
 		List<Date> dates = new ArrayList<Date>();
 		
-		
 		//hasDay = checkForDay(inputString);
 		
-		//System.
 		
 		hasDate =  checkForDate(inputString)  || checkForDateText(inputString);
 		hasTime = checkForTime(inputString) || checkForRangeTime(inputString);
