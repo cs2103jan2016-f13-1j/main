@@ -1216,20 +1216,28 @@ public class CommandParser {
 				}
 			} 
 		}
-		
+	
 		if (editedTask.hasDate()) {
+			System.out.println("3");
+			
 			if (hasDate && !hasTime) {
 				System.out.println("x");
 				//only date, reuse time
 				dates = reuseTime(editedTask, oldTask);
 			} else if (!hasDate && hasTime) {
+				System.out.println("4");
 				//only time, reuse date
 				dates = reuseDate(editedTask, oldTask);
+			} else {
+				//have both
+				//update by overwriting
 			}
+			
+			System.out.println("2");
 			newStart = dates.get(DATE_START);
 			newEnd = dates.get(DATE_END);
 		}
-		
+		System.out.println("27");
 		Task newTask = new Task(newTitle, newStart, newEnd, newLabel);
 		newTask.setCreatedDate(createdDate);
 		newTask.setPriority(priority);
@@ -1276,15 +1284,11 @@ public class CommandParser {
 		} 
 		
 		if (startDate == null) {
-			if (oldStart == null) {
-				oldStart = null;
-			}	
+			oldStart = null;
 		}
 		
 		if (endDate == null) {
-			if (oldEnd == null) {
-				oldEnd = null;
-			}
+			oldEnd = null;
 		}
 		
 		dates.add(oldStart);
@@ -1352,15 +1356,11 @@ public class CommandParser {
 		}
 		
 		if (startDate == null) {
-			if (oldStart == null) {
-				oldStart = null;
-			}	
+			oldStart = null;
 		}
 		
 		if (endDate == null) {
-			if (oldEnd == null) {
-				oldEnd = null;
-			}
+			oldEnd = null;
 		}
 		
 		dates.add(oldStart);
