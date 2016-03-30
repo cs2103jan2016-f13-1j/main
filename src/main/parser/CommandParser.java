@@ -1179,8 +1179,14 @@ public class CommandParser {
 		if (inputString.length() > 0) {
 			newTitle = inputString;
 		}       
-*/
-		Task editedTask = parseAdd(inputString);
+*/		
+		Task editedTask;
+		try {
+			editedTask = parseAdd(inputString);
+		} catch (InvalidTitle exception) {
+			//exception doesn't matter if edit is using parseAdd
+			editedTask = exception.getTask();
+		}
 		
 		if (editedTask.getTitle().length() != 0) {
 			newTitle = editedTask.getTitle();
@@ -1197,7 +1203,6 @@ public class CommandParser {
 		List<Date> dates = new ArrayList<Date>();
 		
 		//hasDay = checkForDay(inputString);
-		
 		
 		hasDate =  checkForDate(inputString)  || checkForDateText(inputString);
 		hasTime = checkForTime(inputString) || checkForRangeTime(inputString);
