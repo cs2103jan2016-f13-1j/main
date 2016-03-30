@@ -497,9 +497,11 @@ public class Task {
     		} else {
     			return false;
     		}
-    	} else {
+    	} else if (hasDate()) {
     		return dateIsToday(getSingleDate());
     	}
+    	
+    	return false;
     }
     
     /**
@@ -540,7 +542,7 @@ public class Task {
     				return true;
     			}
     		}
-    	} else if (hasSingleDate()){
+    	} else if (hasDate()) {
     		single = dateFormat.format(getSingleDate());
     		singleDate = dateFormat.parse(single);
     		if (singleDate.equals(tml)) {
@@ -556,7 +558,7 @@ public class Task {
      * An upcoming task must be after today and tomorrow.
      * 
      * @return {@code Boolean} true if upcoming
-     * @throws ParseException
+     * @throws ParseException for isTomorrow()
      */
     public boolean isUpcoming() throws ParseException {
     	if (!isToday() && !isTomorrow()) {
