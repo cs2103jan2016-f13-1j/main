@@ -801,7 +801,6 @@ public class TestCommandParser {
     	assertEquals("Buy milk from today 10pm to 11pm", task2.toString());
     	
     	task = parser.parseAdd("Buy milk at 2pm");
-    	System.out.println(task.toString());
     	task2 = parser.parseEdit(task, "10pm to 11pm");
     	assertEquals("Buy milk from today 10pm to 11pm", task2.toString());
     	
@@ -855,6 +854,13 @@ public class TestCommandParser {
 		assertEquals("Buy milk from 1 May 3pm to 4am #party", task2.toString());
 	}
 	
+	/**
+	 * Test editing date of existing task.
+	 * Old information should be retained.
+	 * 
+	 * @throws InvalidLabelFormat
+	 * @throws InvalidTitle 
+	 */
 	@Test
 	public void testEditDateOnly() throws InvalidLabelFormat, InvalidTitle {
 		CommandParser parser = new CommandParser();
