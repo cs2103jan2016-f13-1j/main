@@ -107,10 +107,11 @@ public class CommandParser {
 			title = removeLabelFromTitle(title, label);
 		}
 
+		/*
 		if (removeDateTime(title).length() == 0) {
 			throw new InvalidTitle("Invalid title detected.");
 		}
-				
+		*/
 		hasDay = checkForDay(inputString);
 		hasDate =  checkForDate(inputString)  || checkForDateText(inputString);
 		
@@ -159,9 +160,14 @@ public class CommandParser {
 			}
 			title = removeDateFromTitle(title, startDate, endDate);
 		}
-
+		
 		Task task = new Task (title, startDate, endDate, label);
 		logger.log(Level.INFO, "Task object built.");
+		
+		if (title.length() == 0) {
+			throw new InvalidTitle("Invalid title detected.", task);
+		}
+		
 		return task;
 	}
 
@@ -1566,15 +1572,21 @@ public class CommandParser {
 	
 	@SuppressWarnings("serial")
 	public class InvalidTitle extends Exception {
+		Task task;
 		public InvalidTitle() {
 			logger.log(Level.WARNING, "Title cannot be parsed by parser.");
 			logger.log(Level.WARNING, "InvalidTitle exception thrown.");
 		}
 
-		public InvalidTitle(String message) {
+		public InvalidTitle(String message, Task task) {
 			super (message);
+			this.task = task;
 			logger.log(Level.WARNING, "Title cannot be parsed by parser.");
 			logger.log(Level.WARNING, "InvalidTitle exception thrown.");    		
+		}
+		
+		public Task getTask() {
+			return task;
 		}
 	}
 }
