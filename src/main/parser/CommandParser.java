@@ -583,19 +583,25 @@ public class CommandParser {
 		if (!hasDate) {
 			for (int i = 0; i < dates.size(); i++) {
 				if (dates.get(i).before(now)) {
-					//date has past, need to check next nearest
-					//get nearest
+					//time has past, need to check next nearest
+					//plus 12 hours
 					date.setTime(dates.get(i));
 					date.add(Calendar.HOUR_OF_DAY, 12);
 					
-					//if date is after current, still within the day
+					//if time is after current, still within the day
 					if (date.after(currentDate)) {
+						dates.set(i,date.getTime());
+					} else {
+						//time is before current
+						//time has past
+						//plus 12 hours to get to next nearest
+						date.add(Calendar.HOUR_OF_DAY, 12);
 						dates.set(i,date.getTime());
 					}
 				}
 				
 				if (dates.size() == 2) {
-					//update to start
+					//if is range, check against the fixed datetime
 					now = dates.get(i);
 				}
 			}
