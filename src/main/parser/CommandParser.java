@@ -29,12 +29,9 @@ import main.data.Task;
 
 public class CommandParser {
 	private final int DATE_INDEX = 0;
-	private final int DATE_START_RANGED = 0;
-	private final int DATE_END_RANGED = 1;
 	private final int DATE_START = 0;
 	private final int DATE_END = 1;
 	private final int DATE_MAX_SIZE = 2;
-	//24 ([01]?[0-9]|2[0-3]):[0-5][0-9]
 	
 	private final String REGEX_PREPOSITION_STARTING = "(?i)\\b(from|after|at|on)\\b ?"; 
 	private final String REGEX_PREPOSITION_ALL = "(?i)(\\b(from|after|at|on|by|before|to)\\b ?)";
@@ -155,7 +152,8 @@ public class CommandParser {
 				//quotes not escaped
 				title = removeDayFromTitle(title);
 			}
-			title = removeDateFromTitle(title, startDate, endDate);
+			
+			title = removeDateFromTitle(title, dates);
 		}
 		
 		Task task = new Task (title, startDate, endDate, label);
@@ -373,7 +371,6 @@ public class CommandParser {
 
 	private String getTimeRegexWithoutAmPm() {
 		return REGEX_PREPOSITION_ALL + "\\b " + REGEX_TIME_TWELVE + "\\b$";
-		//return "\\b " + REGEX_TIME_TWELVE + "\\b" + REGEX_AM_PM + "?";
 	}
 	
 	/**
@@ -495,7 +492,6 @@ public class CommandParser {
 				cal.add(Calendar.WEEK_OF_YEAR, 1);
 				dates.set(DATE_END, cal.getTime());
 			}
-			
 		}
 		return dates;
 	}
@@ -531,8 +527,7 @@ public class CommandParser {
 		if (!hasDate) {
 			for (int i = 0; i < dates.size(); i++) {
 				if (dates.get(i).before(now)) {
-					//date has past, need to check next nearest
-					//get nearest
+				    //date has past, need to check next nearest
 					currentDate.add(Calendar.HOUR_OF_DAY, 12);
 					
 					date.setTime(dates.get(i));
@@ -550,7 +545,6 @@ public class CommandParser {
 				}
 			}
 		}
-		
 		return dates;
 	}
 	
@@ -581,7 +575,6 @@ public class CommandParser {
 			for (int i = 0; i < dates.size(); i++) {
 				if (dates.get(i).before(now)) {
 					//time has past, need to check next nearest
-					//plus 12 hours
 					date.setTime(dates.get(i));
 					date.add(Calendar.HOUR_OF_DAY, 12);
 					
@@ -589,8 +582,7 @@ public class CommandParser {
 					if (date.after(currentDate)) {
 						dates.set(i,date.getTime());
 					} else {
-						//time is before current
-						//time has past
+						//time is before current, time has past
 						//plus 12 hours to get to next nearest
 						date.add(Calendar.HOUR_OF_DAY, 12);
 						dates.set(i,date.getTime());
@@ -598,11 +590,10 @@ public class CommandParser {
 				}
 				
 				if (dates.size() == 2) {
-					//if is range, check against the fixed datetime
+					//if is range, check against the fixed start date
 					now = dates.get(i);
 				}
 			}
-		
 		return dates;
 	}
 	
@@ -658,7 +649,6 @@ public class CommandParser {
 	 * @return {@code String} with time range removed
 	 */
 	private String removeRangeFromTitle(String title) {
-		//String regex = "(" + REGEX_PREPOSITION_ALL + "?)" + getTimeRangeRegex();
 		String regex = "(" + REGEX_PREPOSITION_ALL + "?)(" + getTimeRangeRegex()+ ")";
 		Pattern pattern = Pattern.compile(regex);
 		Matcher matcher = pattern.matcher(title);
@@ -698,10 +688,11 @@ public class CommandParser {
 	 * 			{@code Date} end date
 	 * @return {@code String} without date information
 	 */
-	private String removeDateFromTitle(String title, Date startDate, Date endDate) {   
+	private String removeDateFromTitle(String title, List<Date> datesList) {   
 		LocalDateTime dateTime;
-		List<Date> datesList = parseDateExtra(title);
-		int numberOfDate = datesList.size();
+		
+		Date startDate = datesList.get(DATE_START);
+		Date endDate = datesList.get(DATE_END);
 
 		if (startDate != null) {
 			dateTime = startDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
@@ -720,7 +711,7 @@ public class CommandParser {
 			title = checkAndRemove(title, days);
 			title = checkAndRemove(title, timings);
 
-			if (numberOfDate == DATE_MAX_SIZE) {
+			if (startDate != null && endDate != null) {
 				dateTime = endDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
 			} else {
 				break;
@@ -914,48 +905,6 @@ public class CommandParser {
 		return word;
 	}
 	
-	///////////
-
-	//here //toberemoved after edit is modified
-	private List<Date> parseDateExtra(String inputString) {
-		List<Date> dates = parseDateTime(inputString);
-		
-		Date now = new Date();
-		Date update = null;
-
-		Calendar today = Calendar.getInstance();
-		today.setTime(now);
-
-		for (int i = 0; i < dates.size(); i++) {
-			if (dates.get(i).before(now)) {
-				Calendar cal = Calendar.getInstance();
-				cal.setTime(dates.get(i));
-
-				//not present means date not specified
-				//can check time according to now
-				//else leave it as overdue
-				if (!checkForDate(inputString) && !checkForDateText(inputString)) {
-					if (checkForTime(inputString)) {
-						cal.add(Calendar.DATE, 1);
-						update = cal.getTime();
-						dates.set(i,update);
-					} else {
-						cal.add(Calendar.HOUR_OF_DAY, 12);
-						update = cal.getTime();
-						dates.set(i,update);
-					}
-				} 
-			}
-
-			if (dates.size() == 2 && update != null) {
-				now = update;
-			}
-		}
-
-		return dates;
-	}
-
-	
 	// =============================
 	// Edit's stuff
 	// =============================
@@ -1036,7 +985,6 @@ public class CommandParser {
 		if (hasDate) {
 			regex = getDateRegexText();
 			inputString = removeRegex(regex, inputString);
-			hasDate = false;
 		}
 
 		return inputString;
@@ -1060,25 +1008,27 @@ public class CommandParser {
 			inputString = inputString.replaceAll(match,"");
 			inputString = removeExtraSpaces(inputString); 		
 		}
+		
 		return inputString;
 	}
 
-	//here onwards
-	//check point
+	/**
+	 * This method allows for editing of exisitng tasks.
+	 * 
+	 * @param oldTask
+	 * 			{@code Task} to be edited
+	 * @param inputString
+	 * 			{@code String} of new information
+	 * @return {@code Task} edited task
+	 * @throws InvalidLabelFormat
+	 */
 	public Task parseEdit(Task oldTask, String inputString) throws InvalidLabelFormat {		
-		String original = inputString;
 		String newTitle = oldTask.getTitle();
 		String newLabel = oldTask.getLabel();
 		Date newStart = oldTask.getStartDate();
 		Date newEnd = oldTask.getEndDate();
 		Date createdDate = oldTask.getCreatedDate();
 		int priority = oldTask.getPriority();
-
-		Date startDate = null;
-		Date endDate = null;
-		int numberOfDate = 0;
-		boolean hasStartDate = false;
-		boolean hasLabel = false;
 		
 		Task editedTask;
 		try {
@@ -1101,8 +1051,6 @@ public class CommandParser {
 		boolean hasPreposition = false;
 		boolean hasTimeWithoutAmPm = false;
 		List<Date> dates = new ArrayList<Date>();
-		
-		//hasDay = checkForDay(inputString);
 		
 		hasDate =  checkForDate(inputString)  || checkForDateText(inputString);
 		hasTime = checkForTime(inputString) || checkForRangeTime(inputString);
@@ -1141,6 +1089,15 @@ public class CommandParser {
 		return newTask;
 	}
 	
+	/**
+	 * This method duplicates the time information in {@code Task} oldTask to {@code Task} editedTask.
+	 * 
+	 * @param editedTask
+	 * 			{@code Task} edited task that needs the old time information
+	 * @param oldTask
+	 * 			{@code Task} with the old time information
+	 * @return {@code List<Date>} of updated dates
+	 */
 	private List<Date> reuseTime(Task editedTask, Task oldTask) {
 		List<Date> dates = new ArrayList<Date>();
 		Calendar reuse = Calendar.getInstance();
@@ -1184,6 +1141,7 @@ public class CommandParser {
 			}
 		}
 		
+		//if edited is null, overwrite
 		if (startDate == null) {
 			oldStart = null;
 		}
@@ -1191,37 +1149,45 @@ public class CommandParser {
 		if (endDate == null) {
 			oldEnd = null;
 		}
-		
-		
+	
 		dates.add(oldStart);
 		dates.add(oldEnd);
 		return dates;		
 	}
 	
 	/**
-	 * This method gets the hour and minutes from {@code Calendar} newCal and sets it in {@code Calendar} currentCal.
+	 * This method gets the hour and minutes from {@code Calendar} reuse and sets it in {@code Calendar} latest.
 	 * 
-	 * @param newCal
+	 * @param reuse
 	 * 			{@code Calendar} for hour and minutes to be obtained
-	 * @param currentCal
+	 * @param latest
 	 * 			{@code Calendar} for hour and minutes to be set
 	 * @param date
-	 * 			{@code Date} date to be set for {@code Calendar} currentCal
+	 * 			{@code Date} date to be set for {@code Calendar} latest
 	 * @return {@code Calendar} with updated hour and minutes
 	 */
-	private Calendar setHourMin(Calendar newCal, Calendar currentCal, Date date) {
-		int hour = newCal.get(Calendar.HOUR);
-		int min = newCal.get(Calendar.MINUTE);
-		int ampm = newCal.get(Calendar.AM_PM);
+	private Calendar setHourMin(Calendar reuse, Calendar latest, Date date) {
+		int hour = reuse.get(Calendar.HOUR);
+		int min = reuse.get(Calendar.MINUTE);
+		int ampm = reuse.get(Calendar.AM_PM);
 
-		currentCal.setTime(date);
-		currentCal.set(Calendar.HOUR, hour);
-		currentCal.set(Calendar.MINUTE, min);
-		currentCal.set(Calendar.AM_PM, ampm);
+		latest.setTime(date);
+		latest.set(Calendar.HOUR, hour);
+		latest.set(Calendar.MINUTE, min);
+		latest.set(Calendar.AM_PM, ampm);
 
-		return currentCal;
+		return latest;
 	}
 	
+	/**
+	 * This method duplicates the date information in {@code Task} oldTask to {@code Task} editedTask.
+	 * 
+	 * @param editedTask
+	 * 			{@code Task} edited task that needs the old date information
+	 * @param oldTask
+	 * 			{@code Task} with the old date information
+	 * @return {@code List<Date>} of updated dates
+	 */
 	private List<Date> reuseDate(Task editedTask, Task oldTask) {
 		List<Date> dates = new ArrayList<Date>();
 		Calendar reuse = Calendar.getInstance();
@@ -1233,9 +1199,6 @@ public class CommandParser {
 		Date oldEnd = oldTask.getEndDate();
 		
 		if (startDate != null) {
-			//if old field only have one date
-			//but now have range
-			//borrow from the other field
 			if (oldStart != null) {  
 				reuse.setTime(oldStart);
 			} else if (oldEnd != null) {
@@ -1271,28 +1234,26 @@ public class CommandParser {
 	}
 	
 	/**
-	 * This method gets the day and month from {@code Calendar} newCal and sets it in {@code Calendar} currentCal.
+	 * This method gets the day and month from {@code Calendar} reuse and sets it in {@code Calendar} latest.
 	 * 
-	 * @param newCal
+	 * @param reuse
 	 * 			{@code Calendar} for day and month to be obtained
-	 * @param currentCal
+	 * @param latest
 	 * 			{@code Calendar} for day and month to be set
 	 * @param date
-	 * 			{@code Date} date to be set for {@code Calendar} currentCal
+	 * 			{@code Date} date to be set for {@code Calendar} latest
 	 * @return {@code Calendar} with updated day and month
 	 */
-	private Calendar setDayMonth(Calendar newCal, Calendar currentCal, Date date) {
-		int day = newCal.get(Calendar.DAY_OF_MONTH);
-		int month = newCal.get(Calendar.MONTH);
+	private Calendar setDayMonth(Calendar reuse, Calendar latest, Date date) {
+		int day = reuse.get(Calendar.DAY_OF_MONTH);
+		int month = reuse.get(Calendar.MONTH);
 
-		currentCal.setTime(date);
-		currentCal.set(Calendar.DAY_OF_MONTH, day);
-		currentCal.set(Calendar.MONTH, month);
+		latest.setTime(date);
+		latest.set(Calendar.DAY_OF_MONTH, day);
+		latest.set(Calendar.MONTH, month);
 
-		return currentCal;
-	}
-
-	
+		return latest;
+	}	
 
 	// =============================
 	// Parsing Indexes
