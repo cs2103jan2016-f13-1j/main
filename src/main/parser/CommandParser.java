@@ -1014,7 +1014,7 @@ public class CommandParser {
 
 	//here onwards
 	//check point
-	public Task parseEdit(Task oldTask, String inputString) throws InvalidLabelFormat, InvalidTitle {		
+	public Task parseEdit(Task oldTask, String inputString) throws InvalidLabelFormat {		
 		String original = inputString;
 		String newTitle = oldTask.getTitle();
 		String newLabel = oldTask.getLabel();
