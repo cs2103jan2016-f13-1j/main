@@ -514,7 +514,7 @@ public class Task {
      * 
      * @return {@code Boolean} true if is tomorrow
      */
-    public boolean isTomorrow() throws ParseException {   	
+    public boolean isTomorrow() {   	
     	Calendar cal = Calendar.getInstance();
     	cal.setTime(new Date());
     	cal.add(Calendar.DATE, 1);
@@ -524,32 +524,53 @@ public class Task {
     	String starting = "";
     	String ending = "";
     	String single = "";
-    	Date tml, start = null, end = null, singleDate = null;
+    	Date tml= null, start = null, end = null, singleDate = null;
     	
-    	tml = dateFormat.parse(tomorrow);
+    	try {
+    		tml = dateFormat.parse(tomorrow);
+    	} catch (Exception e) {
+    		return false;
+    	}
     	
     	if (hasDateRange()) {
     		if (hasStarted()) {
-    			ending = dateFormat.format(endDate);  			
-    			end = dateFormat.parse(ending);
+    			ending = dateFormat.format(endDate);
+    			
+    			try {
+    				end = dateFormat.parse(ending);
+    			} catch (Exception e) {
+    				return false;
+    			}
+    			
     			if (end.after(tml)) {
     				return true;
     			}
     		} else {
     			starting = dateFormat.format(startDate);
-    			start = dateFormat.parse(starting);
+    			
+    			try {
+    				start = dateFormat.parse(starting);
+    			} catch (Exception e) {
+    				return false;
+    			}
+    			
     			if (start.equals(tml)) {
     				return true;
     			}
     		}
     	} else if (hasDate()) {
     		single = dateFormat.format(getSingleDate());
-    		singleDate = dateFormat.parse(single);
+    		
+    		try {
+    			singleDate = dateFormat.parse(single);
+    		} catch (Exception e) {
+    			return true;
+    		}
+    		
     		if (singleDate.equals(tml)) {
     			return true;
     		}
     	}
- 
     	return false;	
     }
 
@@ -558,9 +579,8 @@ public class Task {
      * An upcoming task must be after today and tomorrow.
      * 
      * @return {@code Boolean} true if upcoming
-     * @throws ParseException for isTomorrow()
      */
-    public boolean isUpcoming() throws ParseException {
+    public boolean isUpcoming() {
     	if (!isToday() && !isTomorrow()) {
     		Date today = new Date();
 
@@ -574,7 +594,6 @@ public class Task {
     			}
     		} 			
     	}
-
     	return false;
     }
     
