@@ -63,14 +63,16 @@ public class Invoker {
 	/** 
 	 * Redo the next available command.
 	 */
-	public void redo() throws EmptyStackException {
+	public Command redo() throws EmptyStackException {
+	    Command command;
 	    try {
-    		Command command = redoHistory.pop();
+    		command = redoHistory.pop();
     		command.execute();
     		undoHistory.push(command);
 	    } catch (Exception e) {
 	        logger.log(Level.WARNING, "Stack is empty, check if redo is available before calling");
 	        throw new EmptyStackException();
 	    }
+	    return command;
 	}
 }

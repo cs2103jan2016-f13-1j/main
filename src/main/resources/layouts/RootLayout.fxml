@@ -59,25 +59,9 @@
             <Font name="Noto Sans" size="18.0" />
          </font>
       </JFXTextField>
-      <JFXButton fx:id="btnFeedback" alignment="CENTER" buttonType="RAISED" cacheHint="SPEED" layoutY="796.0" style="-fx-background-color: white;" visible="false" AnchorPane.bottomAnchor="70.0" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="40.0" AnchorPane.topAnchor="850.0">
-         <font>
-            <Font name="Noto Sans" size="13.0" />
-         </font>
-         <graphic>
-            <Group fx:id="groupFeedback">
-               <children>
-                  <TextFlow fx:id="textFlowFeedback">
-                     <children>
-                        <Text fx:id="textUserAction" strokeType="OUTSIDE" strokeWidth="0.0" text="User action:" />
-                        <Text fx:id="textUserParsedResult" strokeType="OUTSIDE" strokeWidth="0.0" text="Parsed feedback" />
-                     </children></TextFlow>
-               </children>
-            </Group>
-         </graphic>
-      </JFXButton>
-      <AnchorPane fx:id="anchorPaneExecutionResult" style="-fx-background-color: #323232;" visible="false" AnchorPane.bottomAnchor="900.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="50.0">
+      <AnchorPane fx:id="anchorPaneExecutionResult" opacity="0.0" style="-fx-background-color: #323232;" AnchorPane.bottomAnchor="100.0" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="40.0" AnchorPane.topAnchor="850.0">
          <children>
-            <Label fx:id="labelExecutedCommand" layoutX="10.0" layoutY="10.0" text="Deleted:" textFill="#c5cae9" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <Label fx:id="labelExecutedCommand" layoutX="10.0" layoutY="10.0" text="Deleted:" textAlignment="RIGHT" textFill="#c5cae9" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
                <font>
                   <Font name="Noto Sans" size="16.0" />
                </font>
@@ -97,6 +81,28 @@
             <Insets left="60.0" right="60.0" />
          </padding>
       </AnchorPane>
+      <JFXButton fx:id="btnFeedback" alignment="CENTER" buttonType="RAISED" cacheHint="SPEED" layoutY="796.0" style="-fx-background-color: white;" visible="false" AnchorPane.bottomAnchor="60.0" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="40.0" AnchorPane.topAnchor="890.0">
+         <font>
+            <Font name="Noto Sans" size="13.0" />
+         </font>
+         <graphic>
+            <Group fx:id="groupFeedback">
+               <children>
+                  <TextFlow fx:id="textFlowFeedback">
+                     <children>
+                        <Text fx:id="textUserAction" strokeType="OUTSIDE" strokeWidth="0.0" text="User action:">
+                           <font>
+                              <Font name="Noto Sans" size="20.0" />
+                           </font></Text>
+                        <Text fx:id="textUserParsedResult" strokeType="OUTSIDE" strokeWidth="0.0" text="Parsed feedback">
+                           <font>
+                              <Font size="20.0" />
+                           </font></Text>
+                     </children></TextFlow>
+               </children>
+            </Group>
+         </graphic>
+      </JFXButton>
    </children>
    
 </AnchorPane>
