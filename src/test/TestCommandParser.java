@@ -936,6 +936,32 @@ public class TestCommandParser {
 		assertEquals("Buy kitkat from 11 Apr 7pm to 12 Apr 7pm", task2.toString());	
 	}
 	
+	@Test
+	public void testOverallEdit2() throws InvalidLabelFormat, InvalidTitle {
+		CommandParser parser = new CommandParser();
+		Task task, task2;
+		
+		task = parser.parseAdd("Drink coffee from 1/6 to 3/6 8pm #overdose");
+		task2 = parser.parseEdit(task, "1/7 to 3/7");
+		assertEquals("Drink coffee from 1 Jul 8pm to 3 Jul 8pm #overdose", task2.toString());
+		
+		task2 = parser.parseEdit(task, "Drink hot chocolate");
+		assertEquals("Drink hot chocolate from 1 Jun 8pm to 3 Jun 8pm #overdose", task2.toString());
+		
+		task2 = parser.parseEdit(task, "#beedohbeedoh");
+		assertEquals("Drink coffee from 1 Jun 8pm to 3 Jun 8pm #beedohbeedoh", task2.toString());
+		
+		task2 = parser.parseEdit(task, "1 july");
+		assertEquals("Drink coffee from 1 Jul 8pm #overdose", task2.toString());
+		
+		task2 = parser.parseEdit(task, "from 9 to 10pm");
+		assertEquals("Drink coffee from 1 Jun 9pm to 3 Jun 10pm #overdose", task2.toString());
+		
+		task2 = parser.parseEdit(task, "by 1 may 2pm");
+		System.out.println(task2.toString());
+		assertEquals("Drink coffee by 1 May 2pm #overdose", task2.toString());
+	}
+	
 	// =============================
 	// Test parsing indexes
 	// =============================
