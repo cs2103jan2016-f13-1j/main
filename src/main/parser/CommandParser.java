@@ -106,12 +106,6 @@ public class CommandParser {
 			
 			title = removeLabelFromTitle(title, label);
 		}
-
-		/*
-		if (removeDateTime(title).length() == 0) {
-			throw new InvalidTitle("Invalid title detected.");
-		}
-		*/
 		
 		hasDay = checkForDay(inputString);
 		hasDate =  checkForDate(inputString)  || checkForDateText(inputString);
@@ -608,7 +602,7 @@ public class CommandParser {
 					now = dates.get(i);
 				}
 			}
-		}
+		
 		return dates;
 	}
 	
@@ -1273,30 +1267,28 @@ public class CommandParser {
 				}
 			} 
 		}
-	
+		
 		if (editedTask.hasDate()) {			
 			if (hasDate && !hasTime) {
-				System.out.println("x");
 				//only date, reuse time
 				dates = reuseTime(editedTask, oldTask);
 			} else if (!hasDate && hasTime) {
-				System.out.println("4");
 				//only time, reuse date
 				dates = reuseDate(editedTask, oldTask);
 			} else {
 				//have both
 				//update by overwriting
+				dates.add(editedTask.getStartDate());
+				dates.add(editedTask.getEndDate());
 			}
 			
-			System.out.println("2");
 			newStart = dates.get(DATE_START);
 			newEnd = dates.get(DATE_END);
 		}
-		System.out.println("27");
+		
 		Task newTask = new Task(newTitle, newStart, newEnd, newLabel);
 		newTask.setCreatedDate(createdDate);
 		newTask.setPriority(priority);
-		//System.out.println("completed edited: " + newTask.toString());
 		return newTask;
 	}
 	
@@ -1309,12 +1301,7 @@ public class CommandParser {
 		Date endDate = editedTask.getEndDate();
 		Date oldStart = oldTask.getStartDate();
 		Date oldEnd = oldTask.getEndDate();
-		
-		System.out.println(startDate);
-		System.out.println(endDate);
-		System.out.println(oldStart);
-		System.out.println(oldEnd);
-		
+	
 		if (startDate != null) {
 			if (oldStart != null) {  
 				reuse.setTime(oldStart);
@@ -1335,7 +1322,18 @@ public class CommandParser {
 
 			latest = setHourMin(reuse, latest, endDate);
 			oldEnd = latest.getTime();
-		} 
+		}
+
+		if (!oldTask.hasDate()) {
+			//floating task
+			//reset time here else it will take current
+			if (oldStart != null) {
+				oldStart = setTimeToZero(oldStart);
+			}
+			if (oldEnd != null) {
+				oldEnd = setTimeToZero(oldEnd);
+			}
+		}
 		
 		if (startDate == null) {
 			oldStart = null;
@@ -1344,6 +1342,7 @@ public class CommandParser {
 		if (endDate == null) {
 			oldEnd = null;
 		}
+		
 		
 		dates.add(oldStart);
 		dates.add(oldEnd);
