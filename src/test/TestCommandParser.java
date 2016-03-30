@@ -184,7 +184,7 @@ public class TestCommandParser {
 	 * @throws InvalidLabelFormat 
 	 * @throws InvalidTitle 
 	 */
-	@Ignore
+	@Test
 	public void testDetectFloating() throws InvalidLabelFormat, InvalidTitle {
 		CommandParser parser = new CommandParser();
 
@@ -221,7 +221,7 @@ public class TestCommandParser {
 	 * @throws InvalidLabelFormat 
 	 * @throws InvalidTitle 
 	 */
-	@Ignore
+	@Test
 	public void testAddFloating() throws InvalidLabelFormat, InvalidTitle {
 		CommandParser parser = new CommandParser();
 
@@ -240,7 +240,7 @@ public class TestCommandParser {
 	 * @throws InvalidLabelFormat 
 	 * @throws InvalidTitle 
 	 */
-	@Ignore
+	@Test
 	public void testLabel() throws InvalidLabelFormat, InvalidTitle{
 		CommandParser parser = new CommandParser();
 
@@ -276,7 +276,7 @@ public class TestCommandParser {
 	 * @throws InvalidLabelFormat 
 	 * @throws InvalidTitle 
 	 */
-	@Ignore
+	@Test
 	public void testTogglePriority() throws InvalidLabelFormat, InvalidTitle {
 		CommandParser parser = new CommandParser();
 		Task task = parser.parseAdd("Cook dinner #home");
@@ -294,7 +294,7 @@ public class TestCommandParser {
 	 * @throws InvalidLabelFormat
 	 * @throws InvalidTitle 
 	 */
-	@Ignore
+	@Test
 	public void testToggleDone() throws InvalidLabelFormat, InvalidTitle {
 		CommandParser parser = new CommandParser();
 		Task task = parser.parseAdd("Do assignment");
@@ -321,7 +321,7 @@ public class TestCommandParser {
 	 * @throws InvalidLabelFormat
 	 * @throws InvalidTitle
 	 */
-	@Ignore
+	@Test
 	public void testInvalidTitle() throws InvalidLabelFormat, InvalidTitle {
 		CommandParser parser = new CommandParser();
 		Task task;
@@ -382,7 +382,7 @@ public class TestCommandParser {
 	 * @throws InvalidLabelFormat
 	 * @throws InvalidTitle 
 	 */
-	@Ignore
+	@Test
 	public void testNoPreposition() throws InvalidLabelFormat, InvalidTitle {
 		CommandParser parser = new CommandParser();
 		Task task;
@@ -419,7 +419,7 @@ public class TestCommandParser {
 	 * @throws InvalidLabelFormat
 	 * @throws InvalidTitle 
 	 */
-	@Ignore
+	@Test
 	public void testHasTime() throws InvalidLabelFormat, InvalidTitle {
 		CommandParser parser = new CommandParser();
 		Task task;
@@ -446,7 +446,6 @@ public class TestCommandParser {
 		Task task;
 
 		task = parser.parseAdd("Do homework by 2");
-		System.out.println(task.toString());
 		assertEquals("Do homework by this Thu 2am", task.toString());
 		
 		task = parser.parseAdd("Do homework by 10");
@@ -469,7 +468,7 @@ public class TestCommandParser {
 	 * @throws InvalidLabelFormat 
 	 * @throws InvalidTitle 
 	 */
-	@Ignore
+	@Test
 	public void testDetectStartTime() throws InvalidLabelFormat, InvalidTitle {
 		CommandParser parser = new CommandParser();
 		Task task = parser.parseAdd("Attempt quiz from 5pm 20 apr");
@@ -495,7 +494,7 @@ public class TestCommandParser {
 	 * @throws InvalidLabelFormat
 	 * @throws InvalidTitle 
 	 */
-	@Ignore
+	@Test
 	public void testTaskWithTimeRange() throws InvalidLabelFormat, InvalidTitle {
 		CommandParser parser = new CommandParser();
 		Task task = parser.parseAdd("Do homework on 20 apr 2-4pm");
@@ -530,7 +529,7 @@ public class TestCommandParser {
 	 * @throws InvalidLabelFormat 
 	 * @throws InvalidTitle 
 	 */
-	@Ignore
+	@Test
 	public void testTaskToString() throws InvalidLabelFormat, InvalidTitle {
 		CommandParser parser = new CommandParser();
 
@@ -571,7 +570,7 @@ public class TestCommandParser {
 	 * @throws InvalidLabelFormat
 	 * @throws InvalidTitle
 	 */
-	@Ignore
+	@Test
 	public void testDays() throws InvalidLabelFormat, InvalidTitle {
 		CommandParser parser = new CommandParser();
 		//now is tues
@@ -585,10 +584,6 @@ public class TestCommandParser {
 		task = parser.parseAdd("Do homework from 1/2 to 2/2");
 		assertEquals("Do homework from 1 Feb 12am to 2 Feb 12am", task.toString());
 	}
-	
-	
-//checkpoint
-	
 
 	/**
 	 * Test adding of dated task.
@@ -598,7 +593,7 @@ public class TestCommandParser {
 	 * @throws InvalidLabelFormat 
 	 * @throws InvalidTitle 
 	 */
-	@Ignore
+	@Test
 	public void testAdd() throws ParseException, InvalidLabelFormat, InvalidTitle {
 		CommandParser parser = new CommandParser();
 		Task task = parser.parseAdd("Cook dinner on 24 Mar 7pm #home");
@@ -611,16 +606,13 @@ public class TestCommandParser {
 		assertEquals("Cook dinner", task.getTitle());
 	}
 
-	
-	//beyond this
-	
 	/**
 	 * Test for extraction of date information in title.
 	 * 
 	 * @throws InvalidLabelFormat 
 	 * @throws InvalidTitle 
 	 */
-	@Ignore //left quoted //pending
+	@Test //left quoted //pending
 	public void testDatedTaskTitle() throws InvalidLabelFormat, InvalidTitle{
 		CommandParser parser = new CommandParser();
 		Task task = parser.parseAdd("Attend meeting from Monday to Wednesday");
@@ -664,10 +656,6 @@ public class TestCommandParser {
 		assertEquals("Send 100 email", task.getTitle());
 	}
 
-	
-	
-	
-
 	/**
 	 * Test method for comparing task.
 	 * Tasks are compared by their creation date.
@@ -698,7 +686,6 @@ public class TestCommandParser {
 		task2 = parser.parseAdd("Attend meeting #important");
 		assertEquals(-1, task1.compareTo(task2));
 	}
-
 	
 	// =============================
 	// Edit's stuff
@@ -707,7 +694,7 @@ public class TestCommandParser {
 	/**
 	 * Test extracting index for edit.
 	 */
-	@Ignore
+	@Test
 	public void testGetIndexForEdit() {
 		CommandParser parser = new CommandParser();
 		int index;
@@ -733,7 +720,7 @@ public class TestCommandParser {
 	 * If detected, Date object is returned.
 	 * Else, null is returned.
 	 */
-	@Ignore
+	@Test
 	public void testGetDateForSearch() {
 		CommandParser parser = new CommandParser();
 		Date date;
@@ -763,7 +750,7 @@ public class TestCommandParser {
 	 * @throws InvalidLabelFormat
 	 * @throws InvalidTitle 
 	 */
-	
+	@Test
 	public void testEditBasic() throws InvalidLabelFormat, InvalidTitle {
 		CommandParser parser = new CommandParser();
 		Task task, task2;
@@ -796,13 +783,13 @@ public class TestCommandParser {
 	 * @throws InvalidLabelFormat
 	 * @throws InvalidTitle 
 	 */
-	@Ignore
+	@Test
 	public void testEditTimeOnly() throws InvalidLabelFormat, InvalidTitle {
 		CommandParser parser = new CommandParser();
 		Task task, task2;
     	
      	task = parser.parseAdd("Buy milk");
-    	task2 = parser.parseEdit(task, "by 10pm");
+    	task2 = parser.parseEdit(task, "by 10");
     	assertEquals("Buy milk by today 10pm", task2.toString());
     	
     	task = parser.parseAdd("Buy milk");
@@ -827,46 +814,76 @@ public class TestCommandParser {
     	assertEquals("Buy milk from today 9pm to 10pm", task2.toString());
 	}
 	
+	@Test
+	public void testEditTimeOnly2() throws InvalidLabelFormat, InvalidTitle {
+		CommandParser parser = new CommandParser();
+		Task task, task2;
+		
+		task = parser.parseAdd("Buy milk on 1 may at 2pm #party");
+
+		task2 = parser.parseEdit(task, "3am");
+		assertEquals("Buy milk from 1 May 3am #party", task2.toString());
+
+		task2 = parser.parseEdit(task, "3pm");
+		assertEquals("Buy milk from 1 May 3pm #party", task2.toString());
+
+		task2 = parser.parseEdit(task, "at 4");
+		assertEquals("Buy milk from 1 May 4am #party", task2.toString());
+
+		task2 = parser.parseEdit(task, "at 4am");
+		assertEquals("Buy milk from 1 May 4am #party", task2.toString());
+
+		task2 = parser.parseEdit(task, "at 4pm");
+		assertEquals("Buy milk from 1 May 4pm #party", task2.toString());
+
+		task2 = parser.parseEdit(task, "3-4pm");
+		assertEquals("Buy milk from 1 May 3pm to 4pm #party", task2.toString());
+
+		task2 = parser.parseEdit(task, "3pm-4pm");
+		assertEquals("Buy milk from 1 May 3pm to 4pm #party", task2.toString());
+
+		task2 = parser.parseEdit(task, "3pm-4");
+		assertEquals("Buy milk from 1 May 3pm to 4am #party", task2.toString());
+
+		task2 = parser.parseEdit(task, "from 3-4pm");
+		assertEquals("Buy milk from 1 May 3pm to 4pm #party", task2.toString());
+
+		task2 = parser.parseEdit(task, "from 3pm-4pm");
+		assertEquals("Buy milk from 1 May 3pm to 4pm #party", task2.toString());
+
+		task2 = parser.parseEdit(task, "from 3pm-4");
+		assertEquals("Buy milk from 1 May 3pm to 4am #party", task2.toString());
+	}
 	
+	@Test
 	public void testEditDateOnly() throws InvalidLabelFormat, InvalidTitle {
 		CommandParser parser = new CommandParser();
 		Task task, task2;
-    	/*
+    	
      	task = parser.parseAdd("Buy milk 1 may 2pm");
     	task2 = parser.parseEdit(task, "1 june");
     	assertEquals("Buy milk from 1 Jun 2pm", task2.toString());
     	
-    	*/
     	task = parser.parseAdd("Buy milk 1 may 2pm");
     	task2 = parser.parseEdit(task, "by 1 june");
+    	assertEquals("Buy milk by 1 Jun 2pm", task2.toString());
 
-    	System.out.println(task2.toString());
-    	assertEquals("Buy milk from today 10pm", task2.toString());
-/*
-    	task = parser.parseAdd("Buy milk");
-    	task2 = parser.parseEdit(task, "10pm to 11pm");
-    	assertEquals("Buy milk from today 10pm to 11pm", task2.toString());
+    	task = parser.parseAdd("Buy milk 1 may 2pm");
+    	task2 = parser.parseEdit(task, "2/5");
+    	assertEquals("Buy milk from 2 May 2pm", task2.toString());
     	
-    	task = parser.parseAdd("Buy milk at 2pm");
-    	System.out.println(task.toString());
-    	task2 = parser.parseEdit(task, "10pm to 11pm");
-    	assertEquals("Buy milk from today 10pm to 11pm", task2.toString());
+    	task = parser.parseAdd("Buy milk 1 may 2pm");
+    	task2 = parser.parseEdit(task, "by 2/5");
+    	assertEquals("Buy milk by 2 May 2pm", task2.toString());  
     	
-    	task = parser.parseAdd("Buy milk from 6 to 7pm");
-    	task2 = parser.parseEdit(task, "by 11:51pm");
-    	assertEquals("Buy milk by today 11:51pm", task2.toString());
+    	task = parser.parseAdd("Buy milk 1 may 2pm");
+    	task2 = parser.parseEdit(task, "from 1 june to 3 june");
+    	assertEquals("Buy milk from 1 Jun 2pm to 3 Jun 2pm", task2.toString());
     	
-    	task = parser.parseAdd("Buy milk from 6 to 7pm");
-    	task2 = parser.parseEdit(task, "from 9 to 10pm");
-    	assertEquals("Buy milk from today 9pm to 10pm", task2.toString());
-    	*/
+    	task = parser.parseAdd("Buy milk 1 may 2pm");
+    	task2 = parser.parseEdit(task, "from 1/6 to 2/6");
+    	assertEquals("Buy milk from 1 Jun 2pm to 2 Jun 2pm", task2.toString());
 	}
-	
-	
-	
-	
-	
-	
 	
 	/**
 	 * Test editing of task.
@@ -876,12 +893,11 @@ public class TestCommandParser {
 	 * @throws InvalidLabelFormat
 	 * @throws InvalidTitle 
 	 */
-	
-	public void testEditReuseOldInfo() throws InvalidLabelFormat, InvalidTitle {
+	@Test
+	public void testOverallEdit() throws InvalidLabelFormat, InvalidTitle {
 		CommandParser parser = new CommandParser();
 		Task task, task2;
 		
-		/*
 		task = parser.parseAdd("Buy milk by 30 april 7pm");
 		task2 = parser.parseEdit(task, "by 4pm");
 		assertEquals("Buy milk by 30 Apr 4pm", task2.toString());
@@ -892,18 +908,14 @@ public class TestCommandParser {
 		task2 = parser.parseEdit(task, "from 1 to 3pm");
 		assertEquals("Buy milk from 30 Apr 1pm to 3pm", task2.toString());
 		assertEquals(1, task2.getPriority());
-		*/
-		
 		
 		task = parser.parseAdd("Buy milk by 10 apr");
 		task.togglePriority(true);
 		task.togglePriority(true);
     	task2 = parser.parseEdit(task, "by 20 april 8pm");
-    	//assertEquals("Buy milk by 20 Apr 8pm", task2.toString());
-    	//assertEquals(2, task2.getPriority());
-		
-		
-    	/*
+    	assertEquals("Buy milk by 20 Apr 8pm", task2.toString());
+    	assertEquals(2, task2.getPriority());		
+    	
 		task = parser.parseAdd("Buy kitkat by 10 april 7pm");
 		task.togglePriority(true);
 		task.togglePriority(true);
@@ -915,8 +927,7 @@ public class TestCommandParser {
 		
 		task = parser.parseAdd("Buy kitkat by 10 april 7pm");
 		task2 = parser.parseEdit(task, "FROM 11 APR TO 12 APRIL");
-		assertEquals("Buy kitkat from 11 Apr 7pm to 12 Apr 7pm", task2.toString());
-		*/
+		assertEquals("Buy kitkat from 11 Apr 7pm to 12 Apr 7pm", task2.toString());	
 	}
 	
 	// =============================
@@ -928,7 +939,7 @@ public class TestCommandParser {
 	 * 
 	 * @throws InvalidTaskIndexFormat
 	 */
-	@Ignore
+	@Test
 	public void testIndexes() throws InvalidTaskIndexFormat {
 		CommandParser parser = new CommandParser();
 		ArrayList<Integer> indexes = parser.parseIndexes("delete 1");
@@ -969,7 +980,7 @@ public class TestCommandParser {
 	 * 
 	 * @throws InvalidTaskIndexFormat
 	 */
-	@Ignore
+	@Test
 	public void testUnconventionalIndexes() throws InvalidTaskIndexFormat {
 		CommandParser parser = new CommandParser();
 		ArrayList<Integer> indexes = new ArrayList<Integer>();
@@ -1008,7 +1019,7 @@ public class TestCommandParser {
 	 * 
 	 * @throws InvalidTaskIndexFormat
 	 */
-	@Ignore
+	@Test
 	public void testInvalidDelete() throws InvalidTaskIndexFormat {
 		boolean thrown;
 		CommandParser parser = new CommandParser();
@@ -1039,127 +1050,7 @@ public class TestCommandParser {
 		assertEquals(true, thrown);        
 	}
 
-		// =============================
-		// Latest stuff
-		// =============================
-		
-		/**
-		 * Test for retaining old time while being edited.
-		 * 
-		 * @throws InvalidLabelFormat
-		 * @throws InvalidTitle
-		 */
-
-		public void testEditOnSingleDate() throws InvalidLabelFormat, InvalidTitle {
-			CommandParser parser = new CommandParser();
-			Task task, task2;
-			
-	    	task = parser.parseAdd("Buy milk at 2pm");
-	    	task2 = parser.parseEdit(task, "Buy chocolate");
-	    	assertEquals("Buy chocolate from today 2pm", task2.toString());
-
-	    	task = parser.parseAdd("Buy milk at 2pm");
-	    	task2 = parser.parseEdit(task, "Buy chocolate #party");
-	    	assertEquals("Buy chocolate from today 2pm #party", task2.toString());
-
-	     	task = parser.parseAdd("Buy milk at 2pm");
-	    	task2 = parser.parseEdit(task, "Buy chocolate from 10pm");
-	    	assertEquals("Buy chocolate from today 10pm", task2.toString());
-	    	
-	    	task = parser.parseAdd("Buy milk at 2pm");
-	    	task2 = parser.parseEdit(task, "Buy chocolate at 10pm");
-	    	assertEquals("Buy chocolate from today 10pm", task2.toString());
-	    	
-	    	task = parser.parseAdd("Buy milk at 2pm");
-	    	task2 = parser.parseEdit(task, "Buy chocolate by 10pm");
-	    	System.out.println("koko desu"+task2.toString());
-	    	//assertEquals("Buy chocolate by today 10pm", task2.toString());
-		}
-		
-		//exception
-		public void testEditSingleField() throws InvalidLabelFormat, InvalidTitle {
-			CommandParser parser = new CommandParser();
-			Task task, task2;
-			
-	    	task = parser.parseAdd("Buy milk on 1 may at 2pm #party");
-	    	
-	    	//label
-	    	task2 = parser.parseEdit(task, "#celebrate");
-	    	assertEquals("Buy milk from 1 May 2pm #celebrate", task2.toString());
-	    	
-	    	//title
-	    	task2 = parser.parseEdit(task, "Buy chocolate");
-	    	assertEquals("Buy chocolate from 1 May 2pm #party", task2.toString());
-	    	
-	    	//time
-	    	task2 = parser.parseEdit(task, "3am");
-	    	assertEquals("Buy milk from 1 May 3am #party", task2.toString());
-	    	
-	    	task2 = parser.parseEdit(task, "3pm");
-	    	assertEquals("Buy milk from 1 May 3pm #party", task2.toString());
-	    	
-	      	task2 = parser.parseEdit(task, "at 4");
-	      	assertEquals("Buy milk from 1 May 4am #party", task2.toString());
-	      	
-	      	task2 = parser.parseEdit(task, "at 4am");
-	      	assertEquals("Buy milk from 1 May 4am #party", task2.toString());
-	      	
-	     	task2 = parser.parseEdit(task, "at 4pm");
-	     	assertEquals("Buy milk from 1 May 4pm #party", task2.toString());
-
-	    	task2 = parser.parseEdit(task, "3-4pm");
-	    	assertEquals("Buy milk from 1 May 3pm to 4pm #party", task2.toString());
-	    	
-	    	task2 = parser.parseEdit(task, "3pm-4pm");
-	    	assertEquals("Buy milk from 1 May 3pm to 4pm #party", task2.toString());
-	    	
-	    	task2 = parser.parseEdit(task, "3pm-4");
-	    	assertEquals("Buy milk from 1 May 3pm to 4am #party", task2.toString());
-	    	
-	    	task2 = parser.parseEdit(task, "from 3-4pm");
-	    	assertEquals("Buy milk from 1 May 3pm to 4pm #party", task2.toString());
-	    	
-	    	task2 = parser.parseEdit(task, "from 3pm-4pm");
-	    	assertEquals("Buy milk from 1 May 3pm to 4pm #party", task2.toString());
-	    	
-	    	task2 = parser.parseEdit(task, "from 3pm-4");
-	    	assertEquals("Buy milk from 1 May 3pm to 4am #party", task2.toString());
-	    	
-	    	//date
-	    	//26 mar
-	    	//26/3
-	    	//task = parser.parseAdd("Buy milk from 3-5pm #party", true);
-	    	//task2 = parser.parseEdit(task, "10 may");
-	    	//task2 = parser.parseEdit(task, "by 10 may");
-	    	
-	    	//System.out.println(task2.toString());
-	    	//assertEquals("Buy chocolate", task2.toString());
-		}
-
-		//pending
-		
-		public void testEditRange() throws InvalidLabelFormat, InvalidTitle {
-			CommandParser parser = new CommandParser();
-			Task task, task2;
-			
-			task = parser.parseAdd("Do homework by 6am");
-			System.out.println(task.toString());
-			
-			/*
-			task = parser.parseAdd("Buy milk");
-			task2 = parser.parseEdit(task, "10-11pm");
-			assertEquals("Buy milk from today 10pm to 11pm", task2.toString());
-			task = parser.parseAdd("Buy milk");
-			task2 = parser.parseEdit(task, "10pm-11pm");
-			assertEquals("Buy milk from today 10pm to 11pm", task2.toString());
-			task = parser.parseAdd("Buy milk from 6 - 7pm");
-			task2 = parser.parseEdit(task, "11pm-10pm");
-			System.out.println(task2.toString());
-			
-			task = parser.parseAdd("Buy milk");
-			task2 = parser.parseEdit(task, "1 20 jun");
-			System.out.println(task2.hasDate());
-			System.out.println(task2.toString());*/
-
-		}
-	}
+	// =============================
+	// Latest stuff
+	// =============================
+}
