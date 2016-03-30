@@ -15,6 +15,8 @@ import com.jfoenix.controls.JFXTabPane;
 import com.jfoenix.controls.JFXTextField;
 import com.sun.javafx.scene.control.skin.VirtualFlow;
 
+import javafx.animation.FadeTransition;
+import javafx.animation.SequentialTransition;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -38,12 +40,12 @@ import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.util.Callback;
+import javafx.util.Duration;
 import main.data.Task;
 import main.logic.AddCommand;
 import main.logic.Command;
@@ -58,6 +60,7 @@ import main.logic.UndoneCommand;
 import main.parser.CommandParser;
 import main.parser.CommandParser.InvalidLabelFormat;
 import main.parser.CommandParser.InvalidTaskIndexFormat;
+import main.parser.CommandParser.InvalidTitle;
 
 @SuppressWarnings("restriction")
 public class RootLayoutController implements Observer {
@@ -237,8 +240,6 @@ public class RootLayoutController implements Observer {
                     }
                 });
             }
-
-            showExecutionResult(true);
         }
 
     }
@@ -581,13 +582,15 @@ public class RootLayoutController implements Observer {
                 if (invoker.isUndoAvailable()) {
                     saveSelectedTaskIndex();
                     try {
-                        invoker.undo();
+                        Command previousCommand = invoker.undo();
                         logger.log(Level.INFO, "Pressed F2 key: UNDO operation");
+                        showExecutionResult(previousCommand, "Undo");
                     } catch (EmptyStackException emptyStackException) {
                         logger.log(Level.WARNING, emptyStackException.getMessage());
                     }
 
                     // showResult(true, "Undo!");
+
                 }
             }
         });
@@ -606,8 +609,9 @@ public class RootLayoutController implements Observer {
                 if (invoker.isRedoAvailable()) {
                     saveSelectedTaskIndex();
                     try {
-                        invoker.redo();
+                        Command previousCommand = invoker.redo();
                         logger.log(Level.INFO, "Pressed F3 key: REDO operation");
+                        showExecutionResult(previousCommand, "Redo");
                     } catch (EmptyStackException emptyStackException) {
                         logger.log(Level.WARNING, emptyStackException.getMessage());
                     }
@@ -702,6 +706,7 @@ public class RootLayoutController implements Observer {
             // invoker.execute(commandToBeExecuted);
             // }
 
+            showExecutionResult(commandToBeExecuted, null);
         }
 
         btnFeedback.setVisible(false);
@@ -725,8 +730,11 @@ public class RootLayoutController implements Observer {
             public void run() {
                 logger.log(Level.INFO, "Pressed DELETE key: task index  " + getSelectedTaskIndex());
                 saveSelectedTaskIndex();
+                taskIndexesToBeDeleted = new ArrayList<>(1);
+                taskIndexesToBeDeleted.add(getSelectedTaskIndex());
                 commandToBeExecuted = new DeleteCommand(receiver, getTasksToBeDeleted(getSelectedTaskIndex()));
                 invoker.execute(commandToBeExecuted);
+                showExecutionResult(commandToBeExecuted, null);
                 // refreshListView();
                 // restoreListViewPreviousSelection();
                 // showUndo();
@@ -799,6 +807,7 @@ public class RootLayoutController implements Observer {
                 taskToBeExecuted = currentTaskList.get(getSelectedTaskIndex());
                 commandToBeExecuted = new DoneCommand(receiver, taskToBeExecuted);
                 invoker.execute(commandToBeExecuted);
+                showExecutionResult(commandToBeExecuted, null);
                 logger.log(Level.INFO, "Pressed CTRL+D key: Task " + (getSelectedTaskIndex() + 1) + " done");
             }
         });
@@ -846,6 +855,9 @@ public class RootLayoutController implements Observer {
 
         try {
             taskToBeExecuted = commandParser.parseAdd(userInput);
+        } catch (InvalidTitle e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         } catch (InvalidLabelFormat e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -1034,10 +1046,10 @@ public class RootLayoutController implements Observer {
         }
 
         textUserAction.setText(userAction);
-        textUserAction.setFont(new Font(20));
+        // textUserAction.setFont(new Font(20));
         textUserAction.setFill(Color.web("303F9F", 0.7));
         textUserParsedResult.setText(userFeedback);
-        textUserParsedResult.setFont(new Font(20));
+        // textUserParsedResult.setFont(new Font(20));
         textUserParsedResult.setFill(Color.web("#00111a", 0.7));
 
         // textFlowFeedback.getChildren().clear();
@@ -1053,47 +1065,77 @@ public class RootLayoutController implements Observer {
     /**
      * 
      */
-    private void showExecutionResult(boolean isVisible) {
-        if (isVisible) {
-            logger.log(Level.INFO, "Showing user execution result: ");
-            anchorPaneExecutionResult.setVisible(isVisible);
-        }
+    private void showExecutionResult(Command executedCommand, String undoOrRedo) {
 
-        if (commandToBeExecuted instanceof AddCommand) {
-            labelExecutedCommand.setText("Added:");
-            labelExecutedCommand.setTextFill(Color.web(AppColor.PRIMARY_BLUE_LIGHT, 0.7));
-            labelExecutionDetails.setText(taskToBeExecuted.toString());
-        }
+        logger.log(Level.INFO, "Showing user execution result: ");
 
-        if (commandToBeExecuted instanceof EditCommand) {
-            labelExecutedCommand.setText("Edited:");
-            labelExecutedCommand.setTextFill(Color.web(AppColor.PRIMARY_GREEN_LIGHT, 0.7));
-            labelExecutionDetails.setText(taskToBeExecuted.toString());
+        if (executedCommand instanceof AddCommand) {
+            if (undoOrRedo != null) {
+                labelExecutedCommand.setText(undoOrRedo + WHITESPACE + "add.");
+                labelExecutedCommand.setTextFill(Color.web(AppColor.PRIMARY_WHITE));
+                labelExecutionDetails.setTextFill(Color.web(AppColor.PRIMARY_WHITE, 0));
 
-        }
-
-        if (commandToBeExecuted instanceof DeleteCommand) {
-            labelExecutedCommand.setText("Deleted:");
-            labelExecutedCommand.setTextFill(Color.web(AppColor.PRIMARY_RED_LIGHT, 0.7));
-            labelExecutionDetails.setText(taskToBeExecuted.toString());
+            } else {
+                labelExecutedCommand.setText("Added:");
+                labelExecutedCommand.setTextFill(Color.web(AppColor.PRIMARY_BLUE_LIGHT, 0.7));
+                labelExecutionDetails.setText(taskToBeExecuted.toString());
+            }
 
         }
 
-        if (commandToBeExecuted instanceof SearchCommand) {
+        if (executedCommand instanceof EditCommand) {
+            if (undoOrRedo != null) {
+                labelExecutedCommand.setText(undoOrRedo + WHITESPACE + "edit.");
+                labelExecutedCommand.setTextFill(Color.web(AppColor.PRIMARY_WHITE));
+                labelExecutionDetails.setTextFill(Color.web(AppColor.PRIMARY_WHITE, 0));
+            } else {
+                labelExecutedCommand.setText("Edited:");
+                labelExecutedCommand.setTextFill(Color.web(AppColor.PRIMARY_GREEN_LIGHT, 0.7));
+                labelExecutionDetails.setText(taskToBeExecuted.toString());
+            }
+
+        }
+
+        if (executedCommand instanceof DeleteCommand) {
+            if (undoOrRedo != null) {
+                labelExecutedCommand.setText(undoOrRedo + WHITESPACE + "delete.");
+                labelExecutedCommand.setTextFill(Color.web(AppColor.PRIMARY_WHITE));
+                labelExecutionDetails.setTextFill(Color.web(AppColor.PRIMARY_WHITE, 0));
+            } else {
+                labelExecutedCommand.setText("Deleted:");
+                labelExecutedCommand.setTextFill(Color.web(AppColor.PRIMARY_RED_LIGHT, 0.7));
+
+                if (taskIndexesToBeDeleted.size() == 1) {
+                    labelExecutionDetails.setText(getCurrentTaskList().get(taskIndexesToBeDeleted.get(0)).toString());
+                } else if (taskIndexesToBeDeleted.size() > 1) {
+                    labelExecutionDetails.setText(taskIndexesToBeDeleted.size() + " tasks");
+                }
+
+            }
+
+        }
+
+        if (executedCommand instanceof SearchCommand) {
             // textCommandExecuted.setText("Searching:");
             // textCommandExecuted.setFill(Color.web("303F9F", 0.7));
             // textExecutionDetails.setText(userFeedback);
 
         }
 
-        if (commandToBeExecuted instanceof DoneCommand) {
-            labelExecutedCommand.setText("Mark done:");
-            labelExecutedCommand.setTextFill(Color.web(AppColor.PRIMARY_LIME_LIGHT, 0.7));
-            labelExecutionDetails.setText(taskToBeExecuted.toString());
+        if (executedCommand instanceof DoneCommand) {
+            if (undoOrRedo != null) {
+                labelExecutedCommand.setText(undoOrRedo + WHITESPACE + "task complete.");
+                labelExecutedCommand.setTextFill(Color.web(AppColor.PRIMARY_WHITE));
+                labelExecutionDetails.setTextFill(Color.web(AppColor.PRIMARY_WHITE, 0));
+            } else {
+                labelExecutedCommand.setText("Task complete.");
+                labelExecutedCommand.setTextFill(Color.web(AppColor.PRIMARY_LIME_LIGHT, 0.7));
+                labelExecutionDetails.setTextFill(Color.web(AppColor.PRIMARY_WHITE, 0));
+            }
 
         }
 
-        if (commandToBeExecuted instanceof UndoneCommand) {
+        if (executedCommand instanceof UndoneCommand) {
             // textCommandExecuted.setText("Undo");
             // textCommandExecuted.setFill(Color.web("303F9F", 0.7));
             // textExecutionDetails.setText(userFeedback);
@@ -1108,6 +1150,30 @@ public class RootLayoutController implements Observer {
         // labelUserParsedInput.setVisible(isVisible);
         // labelUserAction.setText(userAction);
         // labelUserParsedInput.setText(userFeedback);
+
+        if (undoOrRedo != null) {
+            if (undoOrRedo.equals("Undo")) {
+                labelSuggestedAction.setText("REDO (F3)");
+            } else if (undoOrRedo.equals("Redo")) {
+                labelSuggestedAction.setText("UNDO (F2)");
+            }
+
+        }
+
+        FadeTransition appearVisible = new FadeTransition(Duration.seconds(5), anchorPaneExecutionResult);
+        appearVisible.setFromValue(1);
+        appearVisible.setToValue(1);
+        appearVisible.setCycleCount(1);
+        FadeTransition fade = new FadeTransition(Duration.seconds(1), anchorPaneExecutionResult);
+        fade.setFromValue(1);
+        fade.setToValue(0);
+        fade.setCycleCount(1);
+
+        SequentialTransition st = new SequentialTransition();
+        st.getChildren().clear();
+        st.getChildren().addAll(appearVisible, fade);
+        st.play();
+
     }
 
     /**
