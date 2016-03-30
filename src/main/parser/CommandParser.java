@@ -140,9 +140,11 @@ public class CommandParser {
 			dates = parseDayOnly(inputString);
 		} else if (hasTime) {
 			dates = parseTimeOnly(inputString);
-		} else if (hasPreposition && hasTimeWithoutAmPm) {
+		} 
+		
+		if (hasPreposition && hasTimeWithoutAmPm) {
 			dates = parseDateTime(inputString);
-			dates = fixTimeForWithoutAmPm(dates, hasDate);
+			dates = fixTimeForWithoutAmPm(dates);
 		}
 		
 		numberOfDate = dates.size();
@@ -376,7 +378,8 @@ public class CommandParser {
 	}
 
 	private String getTimeRegexWithoutAmPm() {
-		return "\\b " + REGEX_TIME_TWELVE + "\\b" + REGEX_AM_PM + "?";
+		return REGEX_PREPOSITION_ALL + "\\b " + REGEX_TIME_TWELVE + "\\b$";
+		//return "\\b " + REGEX_TIME_TWELVE + "\\b" + REGEX_AM_PM + "?";
 	}
 	
 	/**
@@ -574,13 +577,13 @@ public class CommandParser {
 	 * 			{@code boolean} indicating if date is specified
 	 * @return {@code List<Date>} of dates
 	 */
-	private List<Date> fixTimeForWithoutAmPm(List<Date> dates, boolean hasDate) {
+	private List<Date> fixTimeForWithoutAmPm(List<Date> dates) {
 		Date now = new Date();
 		Calendar currentDate = Calendar.getInstance();
 		currentDate.setTime(now);
 		
 		Calendar date = Calendar.getInstance();
-		if (!hasDate) {
+		
 			for (int i = 0; i < dates.size(); i++) {
 				if (dates.get(i).before(now)) {
 					//time has past, need to check next nearest
