@@ -112,6 +112,7 @@ public class CommandParser {
 			throw new InvalidTitle("Invalid title detected.");
 		}
 		*/
+		
 		hasDay = checkForDay(inputString);
 		hasDate =  checkForDate(inputString)  || checkForDateText(inputString);
 		
@@ -141,7 +142,7 @@ public class CommandParser {
 			dates = parseTimeOnly(inputString);
 		} else if (hasPreposition && hasTimeWithoutAmPm) {
 			dates = parseDateTime(inputString);
-			dates = fixTimeToNearest(dates, hasDate);
+			dates = fixTimeForWithoutAmPm(dates, hasDate);
 		}
 		
 		numberOfDate = dates.size();
@@ -533,6 +534,7 @@ public class CommandParser {
 		if (!hasDate) {
 			for (int i = 0; i < dates.size(); i++) {
 				if (dates.get(i).before(now)) {
+					//date has past, need to check next nearest
 					//get nearest
 					currentDate.add(Calendar.HOUR_OF_DAY, 12);
 					
@@ -552,6 +554,52 @@ public class CommandParser {
 			}
 		}
 		
+		return dates;
+	}
+	
+	/**
+	 * This method sets the time for time specified without am/pm due to the presence of preposition.
+	 * It will take the next possible time since am/pm is not specified.
+	 * 
+	 * Eg:
+	 * If now is 1pm, and 10 is specified,
+	 * it will be parsed as 10pm today.
+	 * 
+	 * If now is 10 pm, and 1 is specified,
+	 * it will be parsed as 1am tomorrow.
+	 * 
+	 * @param dates
+	 * 			{@code List<Date>} dates to be parsed
+	 * @param hasDate
+	 * 			{@code boolean} indicating if date is specified
+	 * @return {@code List<Date>} of dates
+	 */
+	private List<Date> fixTimeForWithoutAmPm(List<Date> dates, boolean hasDate) {
+		Date now = new Date();
+		Calendar currentDate = Calendar.getInstance();
+		currentDate.setTime(now);
+		
+		Calendar date = Calendar.getInstance();
+		if (!hasDate) {
+			for (int i = 0; i < dates.size(); i++) {
+				if (dates.get(i).before(now)) {
+					//date has past, need to check next nearest
+					//get nearest
+					date.setTime(dates.get(i));
+					date.add(Calendar.HOUR_OF_DAY, 12);
+					
+					//if date is after current, still within the day
+					if (date.after(currentDate)) {
+						dates.set(i,date.getTime());
+					}
+				}
+				
+				if (dates.size() == 2) {
+					//update to start
+					now = dates.get(i);
+				}
+			}
+		}
 		return dates;
 	}
 	
@@ -1217,9 +1265,7 @@ public class CommandParser {
 			} 
 		}
 	
-		if (editedTask.hasDate()) {
-			System.out.println("3");
-			
+		if (editedTask.hasDate()) {			
 			if (hasDate && !hasTime) {
 				System.out.println("x");
 				//only date, reuse time
@@ -1269,7 +1315,6 @@ public class CommandParser {
 			
 			latest = setHourMin(reuse, latest, startDate);
 			oldStart = latest.getTime();
-			System.out.println("here" + oldStart);
 		} 
 
 		if (endDate != null) {
