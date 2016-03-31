@@ -1327,7 +1327,9 @@ public class CommandParser {
 				rangedIndexes.clear();
 			} else {
 				int indexToAdd = Integer.parseInt(indexes.get(i));
-				multipleIndexes.add(indexToAdd);
+				if (!multipleIndexes.contains(indexToAdd)) {
+					multipleIndexes.add(indexToAdd);
+				}
 			}
 		}
 
