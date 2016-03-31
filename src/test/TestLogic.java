@@ -409,12 +409,12 @@ public class TestLogic implements Observer {
     @Test
     public void timeCollisionTest() {
         try {
-            invoker.execute(new AddCommand(receiver, parser.parseAdd("a at 1am")));
-            invoker.execute(new AddCommand(receiver, parser.parseAdd("b at 1am")));
-            invoker.execute(new AddCommand(receiver, parser.parseAdd("c at 1-2am")));
-            invoker.execute(new AddCommand(receiver, parser.parseAdd("d at 1-3am")));
-            invoker.execute(new AddCommand(receiver, parser.parseAdd("e at 3am")));
-            invoker.execute(new AddCommand(receiver, parser.parseAdd("f by 3am")));
+            invoker.execute(new AddCommand(receiver, parser.parseAdd("Meet Tom for drinks at 1am")));
+            invoker.execute(new AddCommand(receiver, parser.parseAdd("Meet John for drinks at 1am")));
+            invoker.execute(new AddCommand(receiver, parser.parseAdd("Catch up with Jim at 1-2am")));
+            invoker.execute(new AddCommand(receiver, parser.parseAdd("Group discussion at 1-3am")));
+            invoker.execute(new AddCommand(receiver, parser.parseAdd("Call Jim at 3am")));
+            invoker.execute(new AddCommand(receiver, parser.parseAdd("Submit report by 3am")));
             assertFalse(todo.get(0).getCollideWithPrev());
             assertTrue(todo.get(0).getCollideWithNext());
             assertTrue(todo.get(1).getCollideWithPrev());
