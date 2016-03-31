@@ -48,6 +48,7 @@ import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.util.Callback;
 import javafx.util.Duration;
+import main.data.ParseIndexResult;
 import main.data.Task;
 import main.logic.AddCommand;
 import main.logic.Command;
@@ -741,7 +742,7 @@ public class RootLayoutController implements Observer {
             }
         }
 
-        if(isSearchMode){
+        if (isSearchMode) {
             invoker.execute(searchCommand);
         }
 
@@ -944,38 +945,40 @@ public class RootLayoutController implements Observer {
         }
 
         logger.log(Level.INFO, "Sending user input to commandParser: " + userInput);
-
+        ParseIndexResult parseIndexResult;
         try {
-            taskIndexesToBeDeleted = commandParser.parseIndexes(userInput);
+            parseIndexResult = commandParser.parseIndexes(userInput, getCurrentTaskList().size());
+            if (parseIndexResult.hasValidIndex()) {
+                taskIndexesToBeDeleted = parseIndexResult.getValidIndexes();
+            }
+            String parseResult = taskIndexesToBeDeleted.toString();
+            System.out.println("user arguments: " + userArguments);
+            System.out.println("parse result: " + parseResult);
+
+            if (taskIndexesToBeDeleted.size() == 1) {
+                int taskIndex = taskIndexesToBeDeleted.get(0) - 1;
+
+                // if selected index is out of bound
+                if (taskIndex < 0 || taskIndex > currentTaskList.size()) {
+                    showFeedback(true, MESSAGE_FEEDBACK_ACTION_DELETE,
+                            String.format(MESSAGE_ERROR_NOT_FOUND, userArguments));
+                    clearStoredUserInput();
+                } else {
+                    System.out.println("CurrentList size: " + getCurrentTaskList().size());
+                    inputFeedback = currentTaskList.get(taskIndex).toString();
+                    taskToBeExecuted = getCurrentTaskList().get(taskIndex);
+                    showFeedback(true, MESSAGE_FEEDBACK_ACTION_DELETE, inputFeedback);
+                }
+
+            } else {
+                showFeedback(true, MESSAGE_FEEDBACK_ACTION_DELETE, userArguments + WHITESPACE
+                        + String.format(MESSAGE_FEEDBACK_TOTAL_TASK, taskIndexesToBeDeleted.size()));
+            }
         } catch (InvalidTaskIndexFormat invalidTaskIndexFormat) {
             logger.log(Level.INFO, "DELETE command index(es) invalid: " + userArguments);
             showFeedback(true, MESSAGE_FEEDBACK_ACTION_DELETE, String.format(MESSAGE_ERROR_NOT_FOUND, userArguments));
             clearStoredUserInput();
             return;
-        }
-
-        String parseResult = taskIndexesToBeDeleted.toString();
-        System.out.println("user arguments: " + userArguments);
-        System.out.println("parse result: " + parseResult);
-
-        if (taskIndexesToBeDeleted.size() == 1) {
-            int taskIndex = taskIndexesToBeDeleted.get(0) - 1;
-
-            // if selected index is out of bound
-            if (taskIndex < 0 || taskIndex > currentTaskList.size()) {
-                showFeedback(true, MESSAGE_FEEDBACK_ACTION_DELETE,
-                        String.format(MESSAGE_ERROR_NOT_FOUND, userArguments));
-                clearStoredUserInput();
-            } else {
-                System.out.println("CurrentList size: " + getCurrentTaskList().size());
-                inputFeedback = currentTaskList.get(taskIndex).toString();
-                taskToBeExecuted = getCurrentTaskList().get(taskIndex);
-                showFeedback(true, MESSAGE_FEEDBACK_ACTION_DELETE, inputFeedback);
-            }
-
-        } else {
-            showFeedback(true, MESSAGE_FEEDBACK_ACTION_DELETE, userArguments + WHITESPACE
-                    + String.format(MESSAGE_FEEDBACK_TOTAL_TASK, taskIndexesToBeDeleted.size()));
         }
 
         commandToBeExecuted = new DeleteCommand(receiver, getTasksToBeDeleted(taskIndexesToBeDeleted));
