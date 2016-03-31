@@ -958,7 +958,6 @@ public class TestCommandParser {
 		assertEquals("Drink coffee from 1 Jun 9pm to 3 Jun 10pm #overdose", task2.toString());
 		
 		task2 = parser.parseEdit(task, "by 1 may 2pm");
-		System.out.println(task2.toString());
 		assertEquals("Drink coffee by 1 May 2pm #overdose", task2.toString());
 	}
 	
@@ -1004,6 +1003,9 @@ public class TestCommandParser {
 		assertEquals(expectedIndexes, indexes);
 
 		indexes = parser.parseIndexes("undone 1-3,4,5,6-9,10");
+		assertEquals(expectedIndexes, indexes);
+		
+		indexes = parser.parseIndexes("done 1-10,5,6,7,8,9,10");
 		assertEquals(expectedIndexes, indexes);
 	}
 
