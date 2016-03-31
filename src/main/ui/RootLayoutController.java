@@ -177,7 +177,6 @@ public class RootLayoutController implements Observer {
                         refreshListView();
                         listViewTodo.getSelectionModel().selectLast();
                         listViewTodo.scrollTo(todoTasks.size() - 1);
-                        // showResult(true, "Task added!");
                     }
                 });
 
@@ -190,10 +189,9 @@ public class RootLayoutController implements Observer {
                         saveSelectedTaskIndex();
                         refreshListView();
                         restoreListViewPreviousSelection();
-                        // showResult(true, "Task deleted!");
-
                     }
                 });
+
             } else if (commandToBeExecuted instanceof EditCommand) {
                 logger.log(Level.INFO, "(EDIT TASK) update() is called");
                 Platform.runLater(new Runnable() {
@@ -203,8 +201,6 @@ public class RootLayoutController implements Observer {
                         saveSelectedTaskIndex();
                         refreshListView();
                         restoreListViewPreviousSelection();
-                        // showResult(true, "Task deleted!");
-
                     }
                 });
             } else if (commandToBeExecuted instanceof SearchCommand) {
@@ -213,6 +209,7 @@ public class RootLayoutController implements Observer {
                 restoreListViewPreviousSelection();
                 showFeedback(true, MESSAGE_FEEDBACK_ACTION_SEARCH,
                         " Found " + currentTaskList.size() + " tasks for -" + userArguments + "-");
+
             } else if (commandToBeExecuted instanceof PriorityCommand) {
                 logger.log(Level.INFO, "(CHANGE TASK PRIORITY) update() is called");
                 Platform.runLater(new Runnable() {
@@ -228,6 +225,19 @@ public class RootLayoutController implements Observer {
                 });
             } else if (commandToBeExecuted instanceof DoneCommand) {
                 logger.log(Level.INFO, "(DONE TASK) update() is called");
+                Platform.runLater(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        saveSelectedTaskIndex();
+                        refreshListView();
+                        restoreListViewPreviousSelection();
+                        // showResult(true, "Task deleted!");
+
+                    }
+                });
+            } else if (commandToBeExecuted instanceof UndoneCommand) {
+                logger.log(Level.INFO, "(UNDONE TASK) update() is called");
                 Platform.runLater(new Runnable() {
 
                     @Override
@@ -804,7 +814,16 @@ public class RootLayoutController implements Observer {
             public void run() {
                 saveSelectedTaskIndex();
                 taskToBeExecuted = currentTaskList.get(getSelectedTaskIndex());
-                commandToBeExecuted = new DoneCommand(receiver, taskToBeExecuted);
+
+                if (getSelectedTabName().equals(tabTodo.getText())) {
+                    logger.log(Level.INFO, "Pressed CTRL+D key: Task " + (getSelectedTaskIndex() + 1) + " done");
+                    commandToBeExecuted = new DoneCommand(receiver, taskToBeExecuted);
+
+                } else if (getSelectedTabName().equals(tabCompleted.getText())) {
+                    logger.log(Level.INFO, "Pressed CTRL+D key: Task " + (getSelectedTaskIndex() + 1) + " undone");
+                    commandToBeExecuted = new UndoneCommand(receiver, taskToBeExecuted);
+                }
+
                 invoker.execute(commandToBeExecuted);
                 showExecutionResult(commandToBeExecuted, null);
                 logger.log(Level.INFO, "Pressed CTRL+D key: Task " + (getSelectedTaskIndex() + 1) + " done");
@@ -899,17 +918,15 @@ public class RootLayoutController implements Observer {
                         String.format(MESSAGE_ERROR_NOT_FOUND, userArguments));
                 clearStoredUserInput();
             } else {
-                System.out.println("CurrentList size: "+getCurrentTaskList().size());
+                System.out.println("CurrentList size: " + getCurrentTaskList().size());
                 inputFeedback = currentTaskList.get(taskIndex).toString();
                 taskToBeExecuted = getCurrentTaskList().get(taskIndex);
                 showFeedback(true, MESSAGE_FEEDBACK_ACTION_DELETE, inputFeedback);
             }
 
         } else {
-            
             showFeedback(true, MESSAGE_FEEDBACK_ACTION_DELETE, userArguments + WHITESPACE
                     + String.format(MESSAGE_FEEDBACK_TOTAL_TASK, taskIndexesToBeDeleted.size()));
-
         }
 
         commandToBeExecuted = new DeleteCommand(receiver, getTasksToBeDeleted(taskIndexesToBeDeleted));
@@ -1126,7 +1143,7 @@ public class RootLayoutController implements Observer {
 
         if (executedCommand instanceof DoneCommand) {
             if (undoOrRedo != null) {
-                labelExecutedCommand.setText(undoOrRedo + WHITESPACE + "task complete.");
+                labelExecutedCommand.setText(undoOrRedo + WHITESPACE + "task completed.");
                 labelExecutedCommand.setTextFill(Color.web(AppColor.PRIMARY_WHITE));
                 labelExecutionDetails.setTextFill(Color.web(AppColor.PRIMARY_WHITE, 0));
             } else {
@@ -1138,10 +1155,16 @@ public class RootLayoutController implements Observer {
         }
 
         if (executedCommand instanceof UndoneCommand) {
-            // textCommandExecuted.setText("Undo");
-            // textCommandExecuted.setFill(Color.web("303F9F", 0.7));
-            // textExecutionDetails.setText(userFeedback);
-            // textExecutionDetails.setFill(Color.web("#00111a", 0.7));
+            if (undoOrRedo != null) {
+                labelExecutedCommand.setText(undoOrRedo + WHITESPACE + "mark task as incomplete.");
+                labelExecutedCommand.setTextFill(Color.web(AppColor.PRIMARY_WHITE));
+                labelExecutionDetails.setTextFill(Color.web(AppColor.PRIMARY_WHITE, 0));
+            } else {
+                labelExecutedCommand.setText("Mark task as incomplete.");
+                labelExecutedCommand.setTextFill(Color.web(AppColor.PRIMARY_LIME_LIGHT, 0.7));
+                labelExecutionDetails.setTextFill(Color.web(AppColor.PRIMARY_WHITE, 0));
+            }
+
         }
 
         // textFlowFeedback.getChildren().clear();
@@ -1216,7 +1239,9 @@ public class RootLayoutController implements Observer {
         } else if (tabName.equals(tabCompleted.getText())) {
             currentListView = listViewCompleted;
             currentTaskList = completedTasks;
-        }else{System.out.println("wtf: "+tabName);}
+        } else {
+            System.out.println("wtf: " + tabName);
+        }
     }
 
     /**

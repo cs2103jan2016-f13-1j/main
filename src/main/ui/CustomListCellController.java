@@ -20,7 +20,6 @@ public class CustomListCellController extends JFXListCell<Task> {
     private static final String PRIORITY_LOW = "#FFC107";
     private static final String PRIORITY_MED = "#FF9800";
     private static final String PRIORITY_HIGH = "#FF5252";
-    private static final String PRIORITY_NONE = "#FF5252";
 
     @FXML // fx:id="horizontalBox"
     private HBox horizontalBox; // Value injected by FXMLLoader
@@ -146,17 +145,17 @@ public class CustomListCellController extends JFXListCell<Task> {
 
     public void showTaskPriority(Task task) {
         if (task.getPriority() == 1) {
-            rectangleTaskPriority.setFill(Color.web(PRIORITY_LOW));
+            rectangleTaskPriority.setFill(Color.web(AppColor.PRIORITY_LOW));
             return;
         }
 
         if (task.getPriority() == 2) {
-            rectangleTaskPriority.setFill(Color.web(PRIORITY_MED));
+            rectangleTaskPriority.setFill(Color.web(AppColor.PRIORITY_MED));
             return;
         }
 
         if (task.getPriority() == 3) {
-            rectangleTaskPriority.setFill(Color.web(PRIORITY_HIGH));
+            rectangleTaskPriority.setFill(Color.web(AppColor.PRIORITY_HIGH));
             return;
         }
 

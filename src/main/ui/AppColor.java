@@ -11,6 +11,10 @@ public class AppColor {
     public static final String PRIMARY_RED_LIGHT = "FFCDD2";
     public static final String PRIMARY_AMBER = "FFC107";
     public static final String PRIMARY_WHITE = "FFFFFF";
+    public static final String PRIORITY_LOW = "#FFC107";
+    public static final String PRIORITY_MED = "#FF9800";
+    public static final String PRIORITY_HIGH = "#FF5252";
+    public static final String PRIORITY_NONE = "#FF5252";
     
     
 
