@@ -39,7 +39,7 @@ public class SetFileLocationCommand implements Command {
      * @param  fileLocation
      *         The location to save the output file
      */
-    public void setFileLocation(String fileLocation) {
+    private void setFileLocation(String fileLocation) {
         ArrayList<Task> allTasks = receiver.getAllTasks();
         Storage storage = receiver.getStorage();
         

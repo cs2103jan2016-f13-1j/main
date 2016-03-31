@@ -49,7 +49,7 @@ public class SearchCommand implements Command {
      * @param   searchTerm
      *          The {@code String} of terms to search which are separated by spaces.
      */
-    public void search(String searchTerm) {
+    private void search(String searchTerm) {
         ArrayList<Task> allTasks = receiver.getAllTasks();
         String[] searchList = searchTerm.split(" ");
         ArrayList<Task> searchResults = new ArrayList<Task>();
@@ -81,7 +81,7 @@ public class SearchCommand implements Command {
      * @param   searchDate
      *          The {@code Date} search.
      */
-    public void search(Date searchDate) {
+    private void search(Date searchDate) {
         ArrayList<Task> allTasks = receiver.getAllTasks();
         ArrayList<Task> searchResults = new ArrayList<Task>();
         Calendar dateToSearch = removeTimeFromDate(searchDate);

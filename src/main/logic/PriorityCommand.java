@@ -37,7 +37,7 @@ public class PriorityCommand implements Command {
      * @param   increase
      *          The {@code boolean} to indicate an increase or decrease in priority.
      */
-    public void priority(Task task, boolean increase) {
+    private void priority(Task task, boolean increase) {
         ArrayList<Task> allTasks = receiver.getAllTasks();
         
         for (Task t : allTasks) {
