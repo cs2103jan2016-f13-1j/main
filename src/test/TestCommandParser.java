@@ -1012,6 +1012,35 @@ public class TestCommandParser {
 	}
 	
 	/**
+	 * Test parsing of invalid indexes.
+	 * 
+	 * @throws InvalidTaskIndexFormat
+	 */
+	@Test
+	public void testInvalidIndexes() throws InvalidTaskIndexFormat {
+		CommandParser parser = new CommandParser();
+		ArrayList<String> expectedIndexes = new ArrayList<String>();
+		ParseIndexResult indexes;
+		
+		indexes = parser.parseIndexes("del 11", 10);
+		expectedIndexes.add("11");
+		assertEquals(true, indexes.hasInvalidIndex());
+		assertEquals(expectedIndexes, indexes.getInvalidIndexes());
+		
+		indexes = parser.parseIndexes("del 11,12,13", 10);
+		expectedIndexes.clear();
+		expectedIndexes.add("11");
+		expectedIndexes.add("12");
+		expectedIndexes.add("13");
+		assertEquals(true, indexes.hasInvalidIndex());
+		assertEquals(expectedIndexes, indexes.getInvalidIndexes());
+		
+		indexes = parser.parseIndexes("del 11-13", 10);
+		assertEquals(true, indexes.hasInvalidIndex());
+		assertEquals(expectedIndexes, indexes.getInvalidIndexes());
+	}
+	
+	/**
 	 * Test parsing of indexes when user input does not follow the "usual" way.
 	 * 
 	 * @throws InvalidTaskIndexFormat
