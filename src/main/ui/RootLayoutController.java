@@ -26,6 +26,9 @@ import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.geometry.Bounds;
+import javafx.geometry.Dimension2D;
+import javafx.geometry.Insets;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.control.IndexedCell;
@@ -41,7 +44,6 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.util.Callback;
@@ -70,6 +72,7 @@ public class RootLayoutController implements Observer {
     private static final String COMMAND_SEARCH = "search";
     private static final String WHITESPACE = " ";
     private static final String EMPTY_STRING = "";
+    private static final String STRING_DOUBLE_QUOTATIONS_WITH_TEXT = "\"%1$s\"";
     private static final String STRING_TAB_TASK_SIZE = "(%1$s)";
     private static final String MESSAGE_LISTVIEW_TODO_EMPTY = "You have no task!";
     private static final String MESSAGE_LISTVIEW_COMPLETED_EMPTY = "You have no completed task!";
@@ -105,6 +108,9 @@ public class RootLayoutController implements Observer {
 
     @FXML // fx:id="commandBar"
     private JFXTextField commandBar; // Value injected by FXMLLoader
+
+    @FXML // fx:id="chipSearchMode"
+    private JFXButton chipSearchMode; // Value injected by FXMLLoader
 
     @FXML // fx:id="btnFeedback"
     private JFXButton btnFeedback; // Value injected by FXMLLoader
@@ -143,6 +149,7 @@ public class RootLayoutController implements Observer {
     private Receiver receiver;
     private CommandParser commandParser;
     private Command commandToBeExecuted;
+    private SearchCommand searchCommand;
     private Task taskToBeExecuted;
     private ArrayList<Integer> taskIndexesToBeDeleted;
 
@@ -158,6 +165,7 @@ public class RootLayoutController implements Observer {
     private String previousTextInCommandBar;
     private int previousSelectedTaskIndex;
     private int previousCaretPosition;
+    private boolean isSearchMode;
 
     private JFXListView<Task> currentListView;
     private ArrayList<Task> currentTaskList;
@@ -168,6 +176,7 @@ public class RootLayoutController implements Observer {
     public void update(Observable o, Object arg) {
 
         if (o instanceof Receiver) {
+
             if (commandToBeExecuted instanceof AddCommand) {
                 logger.log(Level.INFO, "(ADD TASK) update() is called");
                 Platform.runLater(new Runnable() {
@@ -279,6 +288,7 @@ public class RootLayoutController implements Observer {
         assert tabCompleted != null : "fx:id=\"tabCompleted\" was not injected: check your FXML file 'RootLayout.fxml'.";
         assert listViewCompleted != null : "fx:id=\"listViewCompleted\" was not injected: check your FXML file 'RootLayout.fxml'.";
         assert commandBar != null : "fx:id=\"commandBar\" was not injected: check your FXML file 'RootLayout.fxml'.";
+        assert chipSearchMode != null : "fx:id=\"chipSearchMode\" was not injected: check your FXML file 'RootLayout.fxml'.";
         assert btnFeedback != null : "fx:id=\"btnFeedback\" was not injected: check your FXML file 'RootLayout.fxml'.";
         assert groupFeedback != null : "fx:id=\"groupFeedback\" was not injected: check your FXML file 'RootLayout.fxml'.";
         assert textFlowFeedback != null : "fx:id=\"textFlowFeedback\" was not injected: check your FXML file 'RootLayout.fxml'.";
@@ -295,6 +305,23 @@ public class RootLayoutController implements Observer {
         initMouseListener();
         initKeyboardListener();
         initCommandBarListener();
+        chipSearchMode.widthProperty().addListener(new ChangeListener<Number>() {
+
+            @Override
+            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+                // TODO Auto-generated method stub
+                System.out.println("Changed getWidth: " + newValue.doubleValue());
+                System.out.println("isSearchMode: " + isSearchMode);
+                System.out.println("Commandbar:" + commandBar.getLength());
+                // inset : top right bottom left
+                if (chipSearchMode.getText().isEmpty()) {
+                    commandBar.setPadding(new Insets(8, 8, 8, 8));
+                } else {
+                    commandBar.setPadding(new Insets(8, 8, 8, newValue.doubleValue() + 20));
+                }
+
+            }
+        });
 
         logger.log(Level.INFO, "UI initialization complete");
     }
@@ -380,6 +407,14 @@ public class RootLayoutController implements Observer {
                 } else if (keyEvent.getCode() == KeyCode.DELETE) {
                     handleDeleteKey();
                     keyEvent.consume();
+                } else if (keyEvent.getCode() == KeyCode.BACK_SPACE) {
+                    System.out.println(commandBar.getLength());
+                    if (isSearchMode && commandBar.getLength() == 0) {
+                        invoker.undo();
+                        isSearchMode = false;
+                        showSearchChipInCommandBar(isSearchMode);
+                    }
+                    // keyEvent.consume();
                 } else if (HOTKEY_CTRL_TAB.match(keyEvent)) {
                     handleCtrlTab();
                     keyEvent.consume();
@@ -686,42 +721,57 @@ public class RootLayoutController implements Observer {
      * 
      */
     private void handleEnterKey() {
-        if (invoker == null) {
-            invoker = new Invoker();
-        }
-
         if (commandBar.getText().trim().length() > 0) {
 
-            // add operation
             if (commandToBeExecuted == null) {
                 return;
             }
 
-            if (commandToBeExecuted instanceof AddCommand) {
-                logger.log(Level.INFO, "(ADD TASK) Pressed ENTER key: " + commandBar.getText());
-                invoker.execute(commandToBeExecuted);
+            logger.log(Level.INFO, "(" + commandToBeExecuted.getClass().getSimpleName() + ") Pressed ENTER key: "
+                    + commandBar.getText());
 
-            } else if (commandToBeExecuted instanceof DeleteCommand) {
-                logger.log(Level.INFO, "(DELETE TASK) Pressed ENTER key: " + commandBar.getText());
+            boolean IsSearchCommand = commandToBeExecuted instanceof SearchCommand;
+
+            if (!IsSearchCommand) {
                 invoker.execute(commandToBeExecuted);
-            } else if (commandToBeExecuted instanceof EditCommand) {
-                logger.log(Level.INFO, "(EDIT TASK) Pressed ENTER key: " + commandBar.getText());
-                invoker.execute(commandToBeExecuted);
+                showExecutionResult(commandToBeExecuted, null);
+            } else {
+                isSearchMode = true;
+                showSearchChipInCommandBar(isSearchMode);
             }
+        }
 
-            // else if (commandToBeExecuted instanceof SearchCommand) {
-            // logger.log(Level.INFO, "(SEARCH TASK) Pressed ENTER key: " +
-            // commandBar.getText());
-            // invoker.execute(commandToBeExecuted);
-            // }
-
-            showExecutionResult(commandToBeExecuted, null);
+        if(isSearchMode){
+            invoker.execute(searchCommand);
         }
 
         btnFeedback.setVisible(false);
         clearStoredUserInput();
         commandBar.clear();
         // showUndo();
+
+    }
+
+    /**
+     * 
+     */
+    private void showSearchChipInCommandBar(boolean isVisible) {
+        System.out.println("showSearchChipInCommandBar");
+        if (isVisible) {
+            System.out.println("Show chips:true");
+            chipSearchMode.setVisible(isVisible);
+            chipSearchMode.setText(
+                    COMMAND_SEARCH + WHITESPACE + String.format(STRING_DOUBLE_QUOTATIONS_WITH_TEXT, userArguments));
+
+        } else {
+            System.out.println("Show chips:false");
+            System.out.println(isVisible);
+            chipSearchMode.setVisible(isVisible);
+
+            // must set it to a empty string so that the the chip will resize
+            // and the chip listener will resize the command bar
+            chipSearchMode.setText("");
+        }
 
     }
 
@@ -1000,20 +1050,25 @@ public class RootLayoutController implements Observer {
      * 
      */
     private void parseSearch() {
-        if (userInput.equals(COMMAND_SEARCH)) {
-            logger.log(Level.INFO, "SEARCH command has no arguments. Interpreting as ADD command instead");
-            // no arguments found. parse the input as an Add operation instead
-            parseAdd();
-            return;
-        }
+        // if (userInput.equals(COMMAND_SEARCH)) {
+        // logger.log(Level.INFO, "SEARCH command has no arguments. Interpreting
+        // as ADD command instead");
+        // // no arguments found. parse the input as an Add operation instead
+        // parseAdd();
+        // return;
+        // }
+        //
+        // // this allow a search without a search term
+        // if (userInput.equals(COMMAND_SEARCH + WHITESPACE)) {
+        // logger.log(Level.INFO, "Searching: " + userInput);
+        // commandToBeExecuted = new SearchCommand(receiver, WHITESPACE);
+        // userArguments = WHITESPACE;
+        // invoker.execute(commandToBeExecuted);
+        // return;
+        // }
 
-        // this allow a search without a search term
-        if (userInput.equals(COMMAND_SEARCH + WHITESPACE)) {
-            logger.log(Level.INFO, "Searching: " + userInput);
-            commandToBeExecuted = new SearchCommand(receiver, WHITESPACE);
+        if (userInput.equals(COMMAND_SEARCH)) {
             userArguments = WHITESPACE;
-            invoker.execute(commandToBeExecuted);
-            return;
         }
 
         logger.log(Level.INFO, "Searching: " + userArguments);
@@ -1024,11 +1079,12 @@ public class RootLayoutController implements Observer {
         if (dateFromUserInput == null) {
             logger.log(Level.INFO, "SEARCH command has no date: " + userArguments);
             commandToBeExecuted = new SearchCommand(receiver, userArguments);
+            searchCommand = new SearchCommand(receiver, userArguments.toString());
         } else {
             logger.log(Level.INFO, "SEARCH command has date: " + userArguments);
             commandToBeExecuted = new SearchCommand(receiver, dateFromUserInput);
+            searchCommand = new SearchCommand(receiver, dateFromUserInput);
         }
-
         invoker.execute(commandToBeExecuted);
     }
 
