@@ -466,7 +466,6 @@ public class RootLayoutController implements Observer {
         observableTodoTasks.clear();
         observableCompletedTasks.clear();
         populateListView();
-        updateTabAndLabelWithTotalTasks();
         setCurrentTaskListAndListView(getSelectedTabName());
         // toggleUndoRedo();
     }
@@ -900,11 +899,14 @@ public class RootLayoutController implements Observer {
                         String.format(MESSAGE_ERROR_NOT_FOUND, userArguments));
                 clearStoredUserInput();
             } else {
+                System.out.println("CurrentList size: "+getCurrentTaskList().size());
                 inputFeedback = currentTaskList.get(taskIndex).toString();
+                taskToBeExecuted = getCurrentTaskList().get(taskIndex);
                 showFeedback(true, MESSAGE_FEEDBACK_ACTION_DELETE, inputFeedback);
             }
 
         } else {
+            
             showFeedback(true, MESSAGE_FEEDBACK_ACTION_DELETE, userArguments + WHITESPACE
                     + String.format(MESSAGE_FEEDBACK_TOTAL_TASK, taskIndexesToBeDeleted.size()));
 
@@ -1106,7 +1108,7 @@ public class RootLayoutController implements Observer {
                 labelExecutedCommand.setTextFill(Color.web(AppColor.PRIMARY_RED_LIGHT, 0.7));
 
                 if (taskIndexesToBeDeleted.size() == 1) {
-                    labelExecutionDetails.setText(getCurrentTaskList().get(taskIndexesToBeDeleted.get(0)).toString());
+                    labelExecutionDetails.setText(taskToBeExecuted.toString());
                 } else if (taskIndexesToBeDeleted.size() > 1) {
                     labelExecutionDetails.setText(taskIndexesToBeDeleted.size() + " tasks");
                 }
@@ -1211,11 +1213,10 @@ public class RootLayoutController implements Observer {
         if (tabName.equals(tabTodo.getText())) {
             currentListView = listViewTodo;
             currentTaskList = todoTasks;
-        }
-        if (tabName.equals(tabCompleted.getText())) {
+        } else if (tabName.equals(tabCompleted.getText())) {
             currentListView = listViewCompleted;
             currentTaskList = completedTasks;
-        }
+        }else{System.out.println("wtf: "+tabName);}
     }
 
     /**
