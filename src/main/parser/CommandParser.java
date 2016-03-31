@@ -20,6 +20,7 @@ import java.util.regex.Pattern;
 
 import org.ocpsoft.prettytime.nlp.PrettyTimeParser;
 
+import main.data.ParseIndexResult;
 import main.data.Task;
 
 /**
@@ -1267,7 +1268,9 @@ public class CommandParser {
 	 * @return {@code ArrayList<Integer>} of index(es)
 	 * @throws InvalidTaskIndexFormat if format is invalid
 	 */
-	public ArrayList<Integer> parseIndexes(String inputString) throws InvalidTaskIndexFormat {
+	public ParseIndexResult parseIndexes(String inputString, int maxSize) throws InvalidTaskIndexFormat {
+		assert (maxSize > 0);
+		
 		try {
 			logger.log(Level.INFO, "Parsing indexes.");
 			
@@ -1275,9 +1278,9 @@ public class CommandParser {
 			indexString = removeExtraSpaces(indexString);
 			ArrayList<Integer> indexes = new ArrayList<Integer>();
 			indexes = getIndex(indexString);
-			
+			ParseIndexResult indexResult = validateIndexes(indexes, maxSize);
 			logger.log(Level.INFO, "Indexes retrieved.");
-			return indexes;
+			return indexResult;
 		} catch (Exception e) {
 			throw new InvalidTaskIndexFormat("Invalid indexes input detected.");
 		}
@@ -1393,6 +1396,34 @@ public class CommandParser {
 
 		return multiple;
 	}
+	
+	private ParseIndexResult validateIndexes(ArrayList<Integer> indexes, int maxSize) {
+		ArrayList<Integer> validIndexes = new ArrayList<Integer>();
+		ArrayList<String> invalidIndexes = new ArrayList<String>();
+		
+		for (int i = 0; i < indexes.size(); i++ ) {
+			int index = indexes.get(i);
+			if (index > maxSize) {
+				invalidIndexes.add(Integer.toString(index));
+			} else {
+				validIndexes.add(index);
+			}
+		}
+		
+		ParseIndexResult indexesResult = new ParseIndexResult();
+		if (invalidIndexes.size() > 0) {
+			indexesResult.setHasInvalid(true);
+			indexesResult.setInvalidIndexes(invalidIndexes);
+		}
+		
+		if (validIndexes.size() > 0) {
+			indexesResult.setHasValid(true);
+			indexesResult.setValidIndexes(validIndexes);
+		}
+		
+		return indexesResult;
+	}
+
 
 	// =============================
 	// Exceptions

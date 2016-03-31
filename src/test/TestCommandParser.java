@@ -12,6 +12,7 @@ import java.util.Date;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import main.data.ParseIndexResult;
 import main.data.Task;
 import main.parser.CommandParser;
 import main.parser.CommandParser.InvalidLabelFormat;
@@ -973,22 +974,23 @@ public class TestCommandParser {
 	@Test
 	public void testIndexes() throws InvalidTaskIndexFormat {
 		CommandParser parser = new CommandParser();
-		ArrayList<Integer> indexes = parser.parseIndexes("delete 1");
+		ParseIndexResult indexes;
+		indexes = parser.parseIndexes("delete 1", 2);
 
 		ArrayList<Integer> expectedIndexes = new ArrayList<Integer>();
 		expectedIndexes.add(1);
-		assertEquals(expectedIndexes, indexes);
+		assertEquals(expectedIndexes, indexes.getValidIndexes());
 
-		indexes = parser.parseIndexes("del 1,3,5,7,9");
+		indexes = parser.parseIndexes("del 1,3,5,7,9", 10);
 		expectedIndexes.clear();
 		expectedIndexes.add(1);
 		expectedIndexes.add(3);
 		expectedIndexes.add(5);
 		expectedIndexes.add(7);
 		expectedIndexes.add(9);
-		assertEquals(expectedIndexes, indexes);
+		assertEquals(expectedIndexes, indexes.getValidIndexes());
 
-		indexes = parser.parseIndexes("done 1-10");
+		indexes = parser.parseIndexes("done 1-10", 10);
 		expectedIndexes.clear();
 		expectedIndexes.add(1);
 		expectedIndexes.add(2);
@@ -1000,15 +1002,44 @@ public class TestCommandParser {
 		expectedIndexes.add(8);
 		expectedIndexes.add(9);
 		expectedIndexes.add(10);
-		assertEquals(expectedIndexes, indexes);
+		assertEquals(expectedIndexes, indexes.getValidIndexes());
 
-		indexes = parser.parseIndexes("undone 1-3,4,5,6-9,10");
-		assertEquals(expectedIndexes, indexes);
+		indexes = parser.parseIndexes("undone 1-3,4,5,6-9,10", 10);
+		assertEquals(expectedIndexes, indexes.getValidIndexes());
 		
-		indexes = parser.parseIndexes("done 1-10,5,6,7,8,9,10");
-		assertEquals(expectedIndexes, indexes);
+		indexes = parser.parseIndexes("done 1-10,5,6,7,8,9,10", 10);
+		assertEquals(expectedIndexes, indexes.getValidIndexes());
 	}
-
+	
+	/**
+	 * Test parsing of invalid indexes.
+	 * 
+	 * @throws InvalidTaskIndexFormat
+	 */
+	@Test
+	public void testInvalidIndexes() throws InvalidTaskIndexFormat {
+		CommandParser parser = new CommandParser();
+		ArrayList<String> expectedIndexes = new ArrayList<String>();
+		ParseIndexResult indexes;
+		
+		indexes = parser.parseIndexes("del 11", 10);
+		expectedIndexes.add("11");
+		assertEquals(true, indexes.hasInvalidIndex());
+		assertEquals(expectedIndexes, indexes.getInvalidIndexes());
+		
+		indexes = parser.parseIndexes("del 11,12,13", 10);
+		expectedIndexes.clear();
+		expectedIndexes.add("11");
+		expectedIndexes.add("12");
+		expectedIndexes.add("13");
+		assertEquals(true, indexes.hasInvalidIndex());
+		assertEquals(expectedIndexes, indexes.getInvalidIndexes());
+		
+		indexes = parser.parseIndexes("del 11-13", 10);
+		assertEquals(true, indexes.hasInvalidIndex());
+		assertEquals(expectedIndexes, indexes.getInvalidIndexes());
+	}
+	
 	/**
 	 * Test parsing of indexes when user input does not follow the "usual" way.
 	 * 
@@ -1017,7 +1048,6 @@ public class TestCommandParser {
 	@Test
 	public void testUnconventionalIndexes() throws InvalidTaskIndexFormat {
 		CommandParser parser = new CommandParser();
-		ArrayList<Integer> indexes = new ArrayList<Integer>();
 
 		ArrayList<Integer> expectedIndexes = new ArrayList<Integer>();
 		expectedIndexes.add(1);
@@ -1031,20 +1061,21 @@ public class TestCommandParser {
 		expectedIndexes.add(9);
 		expectedIndexes.add(10);
 
-		indexes = parser.parseIndexes("del 1--10");
-		assertEquals(expectedIndexes, indexes);
+		ParseIndexResult indexes;
+		indexes = parser.parseIndexes("del 1--10", 10);
+		assertEquals(expectedIndexes, indexes.getValidIndexes());
 
-		indexes = parser.parseIndexes("del 1-----10");
-		assertEquals(expectedIndexes, indexes);
+		indexes = parser.parseIndexes("del 1-----10", 10);
+		assertEquals(expectedIndexes, indexes.getValidIndexes());
 
-		indexes = parser.parseIndexes("del 1-3-5-7-9-10");
-		assertEquals(expectedIndexes, indexes);    	
+		indexes = parser.parseIndexes("del 1-3-5-7-9-10", 10);
+		assertEquals(expectedIndexes, indexes.getValidIndexes());    	
 
-		indexes = parser.parseIndexes("del 10-1");
-		assertEquals(expectedIndexes, indexes);
+		indexes = parser.parseIndexes("del 10-1", 10);
+		assertEquals(expectedIndexes, indexes.getValidIndexes());
 
-		indexes = parser.parseIndexes("del 10-9-7-5-3-1");
-		assertEquals(expectedIndexes, indexes);
+		indexes = parser.parseIndexes("del 10-9-7-5-3-1", 10);
+		assertEquals(expectedIndexes, indexes.getValidIndexes());
 	}
 
 	/**
@@ -1057,11 +1088,11 @@ public class TestCommandParser {
 	public void testInvalidDelete() throws InvalidTaskIndexFormat {
 		boolean thrown;
 		CommandParser parser = new CommandParser();
-		ArrayList<Integer> indexes = new ArrayList<Integer>();
+		ParseIndexResult indexes;
 
 		thrown = false;
 		try {
-			indexes = parser.parseIndexes("del -1,-2");
+			indexes = parser.parseIndexes("del -1,-2", 10);
 		} catch (InvalidTaskIndexFormat e) {
 			thrown = true;
 		}
@@ -1069,7 +1100,7 @@ public class TestCommandParser {
 
 		thrown = false;
 		try {
-			indexes = parser.parseIndexes("del 1-,10");
+			indexes = parser.parseIndexes("del 1-,10", 10);
 		} catch (InvalidTaskIndexFormat e) {
 			thrown = true;
 		}
@@ -1077,7 +1108,7 @@ public class TestCommandParser {
 
 		thrown = false;
 		try {
-			indexes = parser.parseIndexes("del abc,def");
+			indexes = parser.parseIndexes("del abc,def", 10);
 		} catch (InvalidTaskIndexFormat e) {
 			thrown = true;
 		}
