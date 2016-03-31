@@ -1,4 +1,7 @@
 package main.logic;
+
+import java.util.ArrayList;
+
 import main.data.Task;
 
 /**
@@ -21,10 +24,29 @@ public class EditCommand implements Command {
     }
     
     public void execute() {
-        receiver.edit(oldTask, newTask);
+        edit(oldTask, newTask);
     }
     
     public void undo() {
-        receiver.edit(newTask, oldTask);
+        edit(newTask, oldTask);
+    }
+    
+    /**
+     * This method allows you to edit a {@code Task} to a new {@code Task} 
+     * in the {@code ArrayList} of {@code Task} in memory.
+     * 
+     * @param   oldTask
+     *          {@code Task} to be replaced remove
+     * @param   newTask
+     *          {@code Task} new task to be added
+     */
+    private void edit(Task oldTask, Task newTask) {
+        ArrayList<Task> allTasks = receiver.getAllTasks();
+        
+        allTasks.remove(oldTask);
+        allTasks.add(newTask);
+        
+        receiver.setAllTasks(allTasks);
+        receiver.initiateSave();
     }
 }

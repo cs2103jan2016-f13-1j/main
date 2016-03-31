@@ -49,6 +49,7 @@ import java.util.EmptyStackException;
 import java.util.Observable;
 import java.util.Observer;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -66,8 +67,6 @@ import main.logic.SetFileLocationCommand;
 import main.logic.UndoneCommand;
 import main.parser.CommandParser;
 
-
-
 public class TestLogic implements Observer {
 	CommandParser parser;
 	Receiver receiver;
@@ -76,70 +75,40 @@ public class TestLogic implements Observer {
 	ArrayList<Task> todo = new ArrayList<Task>();
 	ArrayList<Task> completed = new ArrayList<Task>();
 	
-	/*
-     * Tests if getter methods are assigned 
-     * when constructor is called.
-     */
-	@Test
-	public void getMethodsTest() {
-	    assertNotNull(receiver.getAllTasks());
-	    assertNotNull(receiver.getTodoTasks());
-	    assertNotNull(receiver.getCompletedTasks());
-	}
+	ArrayList<Task> originalTasks = new ArrayList<Task>();
+	String originalFilePath;
+	
+	String test = "test.txt";
 	
 	/*
-     * Test if CloneNotSupportedException is thrown.
-     * Singleton classes do not support cloning.
-     */
-	@Test
-    public void receiverCloneTest() {
-        try {
-            receiver.clone();
-        } catch (CloneNotSupportedException e) {
-            assertNotNull(e);
-        }
-    }
-	
-	/*
-	 * This is a boundary case for the undo stack
-	 * Undo until stack is empty, then undo when stack is empty.
-	 * Tests if the EmptyStackException is thrown.
+	 * Creates a test.txt file to be used for all test cases
 	 */
-	@Test
-	public void emptyUndoStackTest() {
-	    invoker.execute(new AddCommand(receiver, new Task("test task")));
-	    try {
-	        while (invoker.isUndoAvailable()) {
-    	        invoker.undo();
-	        }
-	        assertFalse(invoker.isUndoAvailable());
-	        invoker.undo();
-	    } catch (EmptyStackException e) {
-	        assertNotNull(e);
+	@Before
+    public void initialize() {
+        parser = new CommandParser();
+        invoker = new Invoker();
+        receiver = Receiver.getInstance();
+        receiver.addObserver(this);
+        
+        if (originalFilePath == null) {
+            originalFilePath = receiver.getFilePath();
+            originalTasks.addAll(receiver.getAllTasks());
         }
-	}
-	
-	/*
-     * This is a boundary case for the redo stack
-     * Redo until stack is empty, then redo when stack is empty.
-     * Tests if the EmptyStackException is thrown.
-     */
-	@Test
-    public void emptyRedoStackTest() {
-	    Task task = new Task("test task");
-	    invoker.execute(new AddCommand(receiver, task));
-	    invoker.undo();
-	    try {
-            while (invoker.isRedoAvailable()) {
-                invoker.redo();
-            }
-            assertFalse(invoker.isRedoAvailable());
-            invoker.redo();
-        } catch (EmptyStackException e) {
-            assertNotNull(e);
-        }
-	    invoker.execute(new DeleteCommand(receiver, task));
+        
+        receiver.setAllTasks(new ArrayList<Task>());
+        invoker.execute(new SetFileLocationCommand(receiver, test));
     }
+	
+	@After
+	public void removeTestFile() {
+	    receiver.setAllTasks(originalTasks);
+	    invoker.execute(new SetFileLocationCommand(receiver, originalFilePath));
+	    
+	    File testFile = new File(test);
+	    if (testFile.exists()) {
+	        testFile.delete();
+	    }
+	}
 	
 	/*
 	 * Tests the basic commands that handles single tasks
@@ -272,9 +241,9 @@ public class TestLogic implements Observer {
             calendar.add(Calendar.DATE, 1);
             Date tomorrow = calendar.getTime();
             
-            Task task1 = parser.parseAdd("task1 by today");
+            Task task1 = parser.parseAdd("task1 by 11.59pm today");
             Task task2 = parser.parseAdd("task2 by 11.59pm");
-            Task task3 = parser.parseAdd("task3 by tomorrow");
+            Task task3 = parser.parseAdd("task3 by tomorrow 11.59pm");
             ArrayList<Task> tasks = new ArrayList<Task>();
             tasks.add(task1);
             tasks.add(task2);
@@ -283,10 +252,13 @@ public class TestLogic implements Observer {
             invoker.execute(new AddCommand(receiver, task1));
             invoker.execute(new AddCommand(receiver, task2));
             invoker.execute(new AddCommand(receiver, task3));
+            System.out.println(todo);
             assertTrue(todo.size() == 3);
             invoker.execute(new SearchCommand(receiver, today));
+            System.out.println(todo);
             assertTrue(todo.size() == 2);
             invoker.execute(new SearchCommand(receiver, tomorrow));
+            System.out.println(todo);
             assertTrue(todo.size() == 1);
             assertEquals(task3, todo.get(0));
             invoker.execute(new DeleteCommand(receiver,tasks));
@@ -396,7 +368,7 @@ public class TestLogic implements Observer {
 	@Test
 	public void setFilePathTest() {
 	    String originalPath = receiver.getFilePath();
-	    String test = "test.txt";
+	    String test = "test2.txt";
 	    File file = new File(test);
 	    
 	    Command setLocation = new SetFileLocationCommand(receiver, test);
@@ -408,21 +380,73 @@ public class TestLogic implements Observer {
 	    assertEquals(receiver.getFilePath(), test);
 	    invoker.undo();
 	    assertEquals(receiver.getFilePath(), originalPath);
-	    try {
-	        file.delete();
-	    } catch (Exception e) {
-	        System.out.println("Failed to delete test.txt file");
-	        e.printStackTrace();
-	    }
+	    file.delete();
 	}
 	
-	@Before
-	public void initialize() {
-	    parser = new CommandParser();
-	    invoker = new Invoker();
-        receiver = Receiver.getInstance();
-        receiver.addObserver(this);
-	}
+	/*
+     * Tests if getter methods are assigned 
+     * when constructor is called.
+     */
+    @Test
+    public void getMethodsTest() {
+        assertNotNull(receiver.getAllTasks());
+        assertNotNull(receiver.getTodoTasks());
+        assertNotNull(receiver.getCompletedTasks());
+    }
+    
+    /*
+     * Test if CloneNotSupportedException is thrown.
+     * Singleton classes do not support cloning.
+     */
+    @Test
+    public void receiverCloneTest() {
+        try {
+            receiver.clone();
+        } catch (CloneNotSupportedException e) {
+            assertNotNull(e);
+        }
+    }
+    
+    /*
+     * This is a boundary case for the undo stack
+     * Undo until stack is empty, then undo when stack is empty.
+     * Tests if the EmptyStackException is thrown.
+     */
+    @Test
+    public void emptyUndoStackTest() {
+        invoker.execute(new AddCommand(receiver, new Task("test task")));
+        try {
+            while (invoker.isUndoAvailable()) {
+                invoker.undo();
+            }
+            assertFalse(invoker.isUndoAvailable());
+            invoker.undo();
+        } catch (EmptyStackException e) {
+            assertNotNull(e);
+        }
+    }
+    
+    /*
+     * This is a boundary case for the redo stack
+     * Redo until stack is empty, then redo when stack is empty.
+     * Tests if the EmptyStackException is thrown.
+     */
+    @Test
+    public void emptyRedoStackTest() {
+        Task task = new Task("test task");
+        invoker.execute(new AddCommand(receiver, task));
+        invoker.undo();
+        try {
+            while (invoker.isRedoAvailable()) {
+                invoker.redo();
+            }
+            assertFalse(invoker.isRedoAvailable());
+            invoker.redo();
+        } catch (EmptyStackException e) {
+            assertNotNull(e);
+        }
+        invoker.execute(new DeleteCommand(receiver, task));
+    }
 	
 	/*
 	 * Tests observer pattern update method
