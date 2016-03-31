@@ -42,6 +42,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -66,6 +67,7 @@ import main.logic.SearchCommand;
 import main.logic.SetFileLocationCommand;
 import main.logic.UndoneCommand;
 import main.parser.CommandParser;
+import main.storage.Storage;
 
 public class TestLogic implements Observer {
 	CommandParser parser;
@@ -81,7 +83,7 @@ public class TestLogic implements Observer {
 	String test = "test.txt";
 	
 	/*
-	 * Creates a test.txt file to be used for all test cases
+	 * Creates a test.txt file to be used for each test case
 	 */
 	@Before
     public void initialize() {
@@ -99,6 +101,9 @@ public class TestLogic implements Observer {
         invoker.execute(new SetFileLocationCommand(receiver, test));
     }
 	
+	/*
+     * Deletes the test.txt file after each test case
+     */
 	@After
 	public void removeTestFile() {
 	    receiver.setAllTasks(originalTasks);
@@ -110,10 +115,10 @@ public class TestLogic implements Observer {
 	    }
 	}
 	
-	/*
+	/* 
+	 * This is a system test.
 	 * Tests the basic commands that handles single tasks
-	 * Initial state: empty storage file.
-	 * Post state: empty storage file.
+	 * with their respective undo/redo methods.
 	 */
 	@Test
 	public void singleTaskTest() {
@@ -122,40 +127,62 @@ public class TestLogic implements Observer {
         
         invoker.execute(new AddCommand(receiver, exampleTask));
         assertEquals(exampleTask, todo.get(0));
+        
         invoker.undo();
         assertTrue(todo.isEmpty());
+        
         invoker.redo();
         assertEquals(exampleTask, todo.get(0));
+        
         invoker.execute(new EditCommand(receiver, exampleTask, editedTask));
         assertEquals(editedTask, todo.get(0));
+        
         invoker.undo();
         assertEquals(exampleTask, todo.get(0));
+        
         invoker.redo();
         assertEquals(editedTask, todo.get(0));
+        
         invoker.execute(new DoneCommand(receiver, editedTask));
         assertEquals(editedTask, completed.get(0));
+        
         invoker.undo();
         assertEquals(editedTask, todo.get(0));
+        
         invoker.redo();
         assertEquals(editedTask, completed.get(0));
+        
         invoker.execute(new UndoneCommand(receiver, editedTask));
         assertEquals(editedTask, todo.get(0));
+        
         invoker.undo();
         assertEquals(editedTask, completed.get(0));
+        
         invoker.redo();
         assertEquals(editedTask, todo.get(0));
+        
         invoker.execute(new DeleteCommand(receiver, editedTask));
         assertTrue(todo.isEmpty());
+        
         invoker.undo();
         assertEquals(editedTask, todo.get(0));
+        
         invoker.redo();  
         assertTrue(todo.isEmpty());
+        
+        invoker.undo();
+        assertEquals(editedTask, todo.get(0));
+        
+        Storage storage = receiver.getStorage();
+        ArrayList<Task> outputTasks = storage.readTasks();
+        assertEquals(1, outputTasks.size());
+        assertEquals(editedTask.getTitle(), outputTasks.get(0).getTitle());
 	}
 	
-	/*
+	/* 
+	 * This is a system test.
      * Tests the basic commands that handles multiple tasks
-     * Initial state: empty storage file.
-     * Post state: empty storage file.
+     * with their respective undo/redo methods.
      */
 	@Test
 	public void multipleTasksTest() {
@@ -167,28 +194,58 @@ public class TestLogic implements Observer {
         
         invoker.execute(new AddCommand(receiver, exampleTask));
         invoker.execute(new AddCommand(receiver, editedTask));
-        assertTrue(todo.size() == 2);
+        assertEquals(2, todo.size());
+        assertEquals(0, completed.size());
+        
         invoker.execute(new DoneCommand(receiver, tasks));
-        assertTrue(completed.size() == 2);
+        assertEquals(0, todo.size());
+        assertEquals(2, completed.size());
+        
         invoker.undo();
-        assertTrue(todo.size() == 2);
+        assertEquals(2, todo.size());
+        assertEquals(0, completed.size());
+        
         invoker.redo();
-        assertTrue(completed.size() == 2);
+        assertEquals(0, todo.size());
+        assertEquals(2, completed.size());
+        
         invoker.execute(new UndoneCommand(receiver, tasks));
-        assertTrue(todo.size() == 2);
+        assertEquals(2, todo.size());
+        assertEquals(0, completed.size());
+        
         invoker.undo();
-        assertTrue(completed.size() == 2);
+        assertEquals(0, todo.size());
+        assertEquals(2, completed.size());
+        
         invoker.redo();
-        assertTrue(todo.size() == 2);
+        assertEquals(2, todo.size());
+        assertEquals(0, completed.size());
+        
         invoker.execute(new DeleteCommand(receiver, tasks));
         assertTrue(todo.isEmpty());
+        assertTrue(completed.isEmpty());
+        
         invoker.undo();
-        assertTrue(todo.size() == 2);
+        assertEquals(2, todo.size());
+        assertEquals(0, completed.size());
+        
         invoker.redo();
-        assertTrue(todo.isEmpty());
+        assertEquals(0, todo.size());
+        assertEquals(0, completed.size());
+        
+        invoker.undo();
+        assertEquals(2, todo.size());
+        assertEquals(0, completed.size());
+        
+        Storage storage = receiver.getStorage();
+        ArrayList<Task> outputTasks = storage.readTasks();
+        assertEquals(2, outputTasks.size());
+        assertEquals(exampleTask.getTitle(), outputTasks.get(0).getTitle());
+        assertEquals(editedTask.getTitle(), outputTasks.get(1).getTitle());
 	}
 	
 	/*
+	 * This is a system test.
 	 * Tests the search command with strings.
 	 * Search with one term, multiple terms, and with tag.
 	 */
@@ -198,32 +255,34 @@ public class TestLogic implements Observer {
     	    Task task1 = parser.parseAdd("a b c #f");
     	    Task task2 = parser.parseAdd("a b c d");
     	    Task task3 = parser.parseAdd("a b c d #e");
-    	    ArrayList<Task> tasks = new ArrayList<Task>();
-    	    tasks.add(task1);
-    	    tasks.add(task2);
-    	    tasks.add(task3);
     	    
     	    invoker.execute(new AddCommand(receiver, task1));
             invoker.execute(new AddCommand(receiver, task2));
             invoker.execute(new AddCommand(receiver, task3));
-            assertTrue(todo.size() == 3);
+            assertEquals(3, todo.size());
             invoker.execute(new SearchCommand(receiver, ""));
-            assertTrue(todo.size() == 3);
+            assertEquals(3, todo.size());
             invoker.execute(new SearchCommand(receiver, "a b c"));
-            assertTrue(todo.size() == 3);
+            assertEquals(3, todo.size());
             invoker.execute(new SearchCommand(receiver, "d"));
-            assertTrue(todo.size() == 2);
+            assertEquals(2, todo.size());
             invoker.execute(new SearchCommand(receiver, "d #e"));
-            assertTrue(todo.size() == 1);
+            assertEquals(1, todo.size());
             assertEquals(task3, todo.get(0));
             invoker.undo();
-            assertTrue(todo.size() == 3);
+            assertEquals(3, todo.size());
             invoker.redo();
-            assertTrue(todo.size() == 1);
+            assertEquals(1, todo.size());
             assertEquals(task3, todo.get(0));
             invoker.undo();
-            assertTrue(todo.size() == 3);
-            invoker.execute(new DeleteCommand(receiver,tasks));
+            assertEquals(3, todo.size());
+            
+            Storage storage = receiver.getStorage();
+            ArrayList<Task> outputTasks = storage.readTasks();
+            assertEquals(3, outputTasks.size());
+            assertEquals(task1.getTitle(), outputTasks.get(0).getTitle());
+            assertEquals(task2.getTitle(), outputTasks.get(1).getTitle());
+            assertEquals(task3.getTitle(), outputTasks.get(2).getTitle());
 	    } catch (Exception e) {
 	        e.printStackTrace();
 	    }
@@ -241,27 +300,30 @@ public class TestLogic implements Observer {
             calendar.add(Calendar.DATE, 1);
             Date tomorrow = calendar.getTime();
             
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+            Date fifthJune = sdf.parse("5/6/2016");
+            
             Task task1 = parser.parseAdd("task1 by 11.59pm today");
             Task task2 = parser.parseAdd("task2 by 11.59pm");
             Task task3 = parser.parseAdd("task3 by tomorrow 11.59pm");
-            ArrayList<Task> tasks = new ArrayList<Task>();
-            tasks.add(task1);
-            tasks.add(task2);
-            tasks.add(task3);
+            Task task4 = parser.parseAdd("task4 by 5 june 1pm");
             
             invoker.execute(new AddCommand(receiver, task1));
             invoker.execute(new AddCommand(receiver, task2));
             invoker.execute(new AddCommand(receiver, task3));
-            System.out.println(todo);
-            assertTrue(todo.size() == 3);
+            invoker.execute(new AddCommand(receiver, task4));
+            assertTrue(todo.size() == 4);
+            
             invoker.execute(new SearchCommand(receiver, today));
-            System.out.println(todo);
             assertTrue(todo.size() == 2);
+            
             invoker.execute(new SearchCommand(receiver, tomorrow));
-            System.out.println(todo);
             assertTrue(todo.size() == 1);
             assertEquals(task3, todo.get(0));
-            invoker.execute(new DeleteCommand(receiver,tasks));
+            
+            invoker.execute(new SearchCommand(receiver, fifthJune));
+            assertTrue(todo.size() == 1);
+            assertEquals(task4, todo.get(0));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -275,33 +337,45 @@ public class TestLogic implements Observer {
 	@Test
 	public void priorityTest() {
 	    Task task = new Task("test");
+	    
 	    invoker.execute(new AddCommand(receiver, task));
 	    assertEquals(0, task.getPriority());
+	    
 	    invoker.execute(new PriorityCommand(receiver, task));
 	    assertEquals(1, task.getPriority());
+	    
 	    invoker.execute(new PriorityCommand(receiver, task));
 	    assertEquals(2, task.getPriority());
-        invoker.execute(new PriorityCommand(receiver, task));
+        
+	    invoker.execute(new PriorityCommand(receiver, task));
         assertEquals(3, task.getPriority());
+        
         invoker.execute(new PriorityCommand(receiver, task));
         assertEquals(0, task.getPriority());
+        
         invoker.undo();
         assertEquals(3, task.getPriority());
+        
         invoker.undo();
         assertEquals(2, task.getPriority());
+        
         invoker.undo();
         assertEquals(1, task.getPriority());
+        
         invoker.undo();
         assertEquals(0, task.getPriority());
+        
         invoker.redo();
         assertEquals(1, task.getPriority());
+        
         invoker.redo();
         assertEquals(2, task.getPriority());
+        
         invoker.redo();
         assertEquals(3, task.getPriority());
+        
         invoker.redo();
         assertEquals(0, task.getPriority());
-        invoker.execute(new DeleteCommand(receiver, task));
 	}
 	
 	/*
@@ -445,7 +519,6 @@ public class TestLogic implements Observer {
         } catch (EmptyStackException e) {
             assertNotNull(e);
         }
-        invoker.execute(new DeleteCommand(receiver, task));
     }
 	
 	/*
