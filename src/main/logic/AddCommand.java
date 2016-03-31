@@ -1,5 +1,7 @@
 package main.logic;
 
+import java.util.ArrayList;
+
 import main.data.Task;
 
 /**
@@ -19,11 +21,25 @@ public class AddCommand implements Command {
         this.task = task;
     }
     
+    /**
+     * This method allows you to add a {@code Task} to the 
+     * {@code ArrayList} of {@code Task} in memory.
+     */   
     public void execute() {
-        receiver.add(task);
+        ArrayList<Task> allTasks = receiver.getAllTasks();
+        
+        allTasks.add(task);
+        
+        receiver.setAllTasks(allTasks);
+        receiver.initiateSave();
     }
     
     public void undo() {
-        receiver.delete(task);
+        ArrayList<Task> allTasks = receiver.getAllTasks();
+        
+        allTasks.remove(task);
+        
+        receiver.setAllTasks(allTasks);
+        receiver.initiateSave();
     }
 }

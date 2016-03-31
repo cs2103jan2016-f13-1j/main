@@ -26,21 +26,38 @@ public class DeleteCommand implements Command {
         this.tasks = tasks;
     }
     
+    /**
+     * This method allows you to delete a single or multiple {@code Task} from the 
+     * {@code ArrayList} of {@code Task}.
+     */
     public void execute() {
+        ArrayList<Task> allTasks = receiver.getAllTasks();
+        
         if (task != null) {
-            receiver.delete(task);
+            allTasks.remove(task);      
         } else if (tasks != null){
-            receiver.delete(tasks);
+            for (Task task : tasks) {
+                allTasks.remove(task);
+            }
         }
+        
+        receiver.setAllTasks(allTasks);
+        receiver.initiateSave();
     }
     
     public void undo() {
+        ArrayList<Task> allTasks = receiver.getAllTasks();
+        
         if (task != null) {
-            receiver.add(task);
+            allTasks.add(task);
         } else if (tasks != null){
-            for (Task t : tasks) {
-                receiver.add(t);
+            for (Task task : tasks) {
+                allTasks.add(task);
             }
+            
         }
+        
+        receiver.setAllTasks(allTasks);
+        receiver.initiateSave();
     }
 }

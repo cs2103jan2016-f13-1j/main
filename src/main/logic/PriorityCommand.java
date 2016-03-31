@@ -1,5 +1,7 @@
 package main.logic;
 
+import java.util.ArrayList;
+
 import main.data.Task;
 
 /**
@@ -20,10 +22,31 @@ public class PriorityCommand implements Command {
     }
     
     public void execute() {
-        receiver.priority(task, true);
+        priority(task, true);
     }
     
     public void undo() {
-        receiver.priority(task, false);
+        priority(task, false);
+    }
+    
+    /**
+     * This method cycles the priority of the task. The priority increases/decreases
+     * respectively according to the true/false boolean {@code increase}.
+     * @param   task
+     *          The {@code Task} to have its priority modified.
+     * @param   increase
+     *          The {@code boolean} to indicate an increase or decrease in priority.
+     */
+    private void priority(Task task, boolean increase) {
+        ArrayList<Task> allTasks = receiver.getAllTasks();
+        
+        for (Task t : allTasks) {
+            if (t.equals(task)) {
+                t.togglePriority(increase);
+            }
+        }
+        
+        receiver.setAllTasks(allTasks);
+        receiver.initiateSave();
     }
 }

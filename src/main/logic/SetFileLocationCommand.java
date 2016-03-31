@@ -1,5 +1,10 @@
 package main.logic;
 
+import java.util.ArrayList;
+
+import main.data.Task;
+import main.storage.Storage;
+
 /**
  * 
  */
@@ -20,10 +25,24 @@ public class SetFileLocationCommand implements Command {
     }
     
     public void execute() {
-        receiver.setFileLocation(newLocation);
+        setFileLocation(newLocation);
     }
     
     public void undo() {
-        receiver.setFileLocation(oldLocation);
+        setFileLocation(oldLocation);
+    }
+    
+    /**
+     * This methods sends an instruction to the {@code Storage} class
+     * to update its settings.txt file
+     * 
+     * @param  fileLocation
+     *         The location to save the output file
+     */
+    private void setFileLocation(String fileLocation) {
+        ArrayList<Task> allTasks = receiver.getAllTasks();
+        Storage storage = receiver.getStorage();
+        
+        storage.setFileLocation(fileLocation, allTasks);
     }
 }
