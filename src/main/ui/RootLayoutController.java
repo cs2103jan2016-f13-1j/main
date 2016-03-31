@@ -959,11 +959,10 @@ public class RootLayoutController implements Observer {
         System.out.println("parse result: " + parseResult);
 
         if (taskIndexesToBeDeleted.size() == 1) {
-            int taskIndex = taskIndexesToBeDeleted.get(0);
-            taskIndex--;
+            int taskIndex = taskIndexesToBeDeleted.get(0) - 1;
 
             // if selected index is out of bound
-            if (taskIndex <= 0 || taskIndex > currentTaskList.size()) {
+            if (taskIndex < 0 || taskIndex > currentTaskList.size()) {
                 showFeedback(true, MESSAGE_FEEDBACK_ACTION_DELETE,
                         String.format(MESSAGE_ERROR_NOT_FOUND, userArguments));
                 clearStoredUserInput();
