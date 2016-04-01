@@ -1136,10 +1136,17 @@ public class TestCommandParser {
 	public void testBuggyTheClown() throws InvalidLabelFormat, InvalidTitle {
 		CommandParser parser = new CommandParser();	
 		Task task;
-		task = parser.parseAdd("eat brownie 10pm to 3am");
-		System.out.println(task);
-		System.out.println(task.getStartDate());
-		System.out.println(task.getEndDate());
+		task = parser.parseAdd("eat brownie p1");
+		assertEquals(1, task.getPriority());
+		
+		task = parser.parseAdd("eat brownie p 2");
+		assertEquals(2, task.getPriority());
+		
+		task = parser.parseAdd("eat brownie priority3");
+		assertEquals(3, task.getPriority());
+		
+		task = parser.parseAdd("eat brownie priority 3");
+		assertEquals(3, task.getPriority());
 		
 	}
 }
