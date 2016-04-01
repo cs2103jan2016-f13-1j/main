@@ -532,6 +532,7 @@ public class CommandParser {
 	private List<Date> parseTimeOnly(String inputString) {
 		List<Date> dates = parseDateTime(inputString);
 		dates = fixTimeToNearest(dates, false);
+		dates = fixTimeForRange(dates);
 		return dates;
 	}
 	
@@ -576,6 +577,31 @@ public class CommandParser {
 					//update to start
 					now = dates.get(i);
 				}
+			}
+		}
+		return dates;
+	}
+	
+	/**
+	 * This method ensures that range are sequential.
+	 * Corrects date parsed by PrettyTime.
+	 * The end will come after the start.
+	 * 
+	 * Eg: If now is 11pm, 10pm - 2am will be today 10pm to the next day 2am.
+	 * 
+	 * @param dates
+	 * 			{@code List<Date>>} to be corrected
+	 * @return {@code List<Date>} corrected dates
+	 */
+	private List<Date> fixTimeForRange(List<Date> dates) {
+		if (dates.size() == DATE_MAX_SIZE) {
+			Date start = dates.get(DATE_START);
+			Date end = dates.get(DATE_END);
+			if (end.before(start)) {
+				Calendar cal = Calendar.getInstance();
+				cal.setTime(end);
+				cal.add(Calendar.DAY_OF_MONTH, 1);
+				dates.set(DATE_END, cal.getTime());
 			}
 		}
 		return dates;
