@@ -10,7 +10,7 @@ public class ParseIndexResult {
 	private boolean hasValid;
 	private boolean hasInvalid;
 	private ArrayList<Integer> validIndexes;
-	private ArrayList<String> invalidIndexes;
+	private ArrayList<Integer> invalidIndexes;
 	
 	public ParseIndexResult() {
 		hasValid = false;
@@ -43,12 +43,52 @@ public class ParseIndexResult {
 		this.validIndexes = validIndexes;
 	}
 	
-	public ArrayList<String> getInvalidIndexes() {
+	public ArrayList<Integer> getInvalidIndexes() {
 		return invalidIndexes;
 	}
 
-	public void setInvalidIndexes(ArrayList<String> invalidIndexes) {
+	public void setInvalidIndexes(ArrayList<Integer> invalidIndexes) {
 		this.invalidIndexes = invalidIndexes;
 	}
 	
+	public String getValidIndexesString() {
+		return convertIndexesToString(validIndexes);
+	}
+	
+	public String getInvalidIndexesString() {
+		return convertIndexesToString(invalidIndexes);
+	}
+	
+	private String convertIndexesToString(ArrayList<Integer> indexes) {
+		StringBuilder stringBuilder = new StringBuilder();
+    	boolean isRange = false;
+    	
+    	int start = indexes.get(0);
+    	stringBuilder.append(start);
+    	
+    	for (int i = 1; i < indexes.size(); i++) {
+    		int next = indexes.get(i);
+    		
+    		if ((next-1) == start) {
+    			isRange = true;
+    			start = next;
+    		} else {
+    			if (isRange) {
+    				stringBuilder.append("-" + start);
+    				isRange = false;
+    			} else {
+    				stringBuilder.append(","+start);
+    			}
+      			start = next;
+      			stringBuilder.append(","+start);
+    		}
+    	}
+    	
+    	if (isRange) {
+    		//in case last is range
+    		stringBuilder.append("-"+start);
+    	}
+    	
+    	return stringBuilder.toString();
+	}
 }
