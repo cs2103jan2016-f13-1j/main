@@ -1019,19 +1019,19 @@ public class TestCommandParser {
 	@Test
 	public void testInvalidIndexes() throws InvalidTaskIndexFormat {
 		CommandParser parser = new CommandParser();
-		ArrayList<String> expectedIndexes = new ArrayList<String>();
+		ArrayList<Integer> expectedIndexes = new ArrayList<Integer>();
 		ParseIndexResult indexes;
 		
 		indexes = parser.parseIndexes("del 11", 10);
-		expectedIndexes.add("11");
+		expectedIndexes.add(11);
 		assertEquals(true, indexes.hasInvalidIndex());
 		assertEquals(expectedIndexes, indexes.getInvalidIndexes());
 		
 		indexes = parser.parseIndexes("del 11,12,13", 10);
 		expectedIndexes.clear();
-		expectedIndexes.add("11");
-		expectedIndexes.add("12");
-		expectedIndexes.add("13");
+		expectedIndexes.add(11);
+		expectedIndexes.add(12);
+		expectedIndexes.add(13);
 		assertEquals(true, indexes.hasInvalidIndex());
 		assertEquals(expectedIndexes, indexes.getInvalidIndexes());
 		
@@ -1114,6 +1114,22 @@ public class TestCommandParser {
 		}
 		assertEquals(true, thrown);        
 	}
+	
+	@Test
+	public void testIndexesString() throws InvalidTaskIndexFormat {
+		CommandParser parser = new CommandParser();	
+		ParseIndexResult indexes;
+		
+		indexes = parser.parseIndexes("del 1-10,12,13,14,15", 10);
+		assertEquals("1-10", indexes.getValidIndexesString());
+		assertEquals("12-15", indexes.getInvalidIndexesString());
+		
+		indexes = parser.parseIndexes("del 1-5,10-20, 31, 32, 33, 35", 10);
+		assertEquals("1-5,10", indexes.getValidIndexesString());
+		assertEquals("11-20,31-33,35", indexes.getInvalidIndexesString());	
+	}
+	
+	
 
 	// =============================
 	// Latest stuff
