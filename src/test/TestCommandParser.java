@@ -656,7 +656,43 @@ public class TestCommandParser {
 		task = parser.parseAdd("Send 100 email before sunday 7pm");
 		assertEquals("Send 100 email", task.getTitle());
 	}
-
+	
+	/**
+	 * Test for specifying priority level in command for adding or editing.
+	 * 
+	 * @throws InvalidLabelFormat
+	 * @throws InvalidTitle
+	 */
+	@Test
+	public void testPriorityInCommand() throws InvalidLabelFormat, InvalidTitle {
+		CommandParser parser = new CommandParser();	
+		Task task,task2;
+		
+		task = parser.parseAdd("eat brownie p1");
+		assertEquals(1, task.getPriority());
+		assertEquals("eat brownie P:1", task.toString());
+		
+		task = parser.parseAdd("eat brownie p 2");
+		assertEquals(2, task.getPriority());
+		assertEquals("eat brownie P:2", task.toString());
+		
+		task = parser.parseAdd("eat brownie priority3");
+		assertEquals(3, task.getPriority());
+		assertEquals("eat brownie P:3", task.toString());
+		
+		task = parser.parseAdd("eat brownie priority 3");
+		assertEquals(3, task.getPriority());
+		assertEquals("eat brownie P:3", task.toString());
+		
+		task = parser.parseAdd("eat brownie from 1/5 10pm to 11pm priority 3");
+		assertEquals(3, task.getPriority());
+		assertEquals("eat brownie from 1 May 10pm to 11pm P:3", task.toString());	
+		
+		//for editing
+		task2 = parser.parseEdit(task, "priority 2");
+		assertEquals("eat brownie from 1 May 10pm to 11pm P:2", task2.toString());	
+	}
+	
 	/**
 	 * Test method for comparing task.
 	 * Tasks are compared by their creation date.
@@ -913,6 +949,7 @@ public class TestCommandParser {
 		task = parser.parseAdd("Buy milk by 30 april 7pm");
 		task.togglePriority(true);
 		task2 = parser.parseEdit(task, "from 1 to 3pm");
+		System.out.println(task2.toString());
 		assertEquals("Buy milk from 30 Apr 1pm to 3pm P:1", task2.toString());
 		assertEquals(1, task2.getPriority());
 		
@@ -1135,26 +1172,9 @@ public class TestCommandParser {
 	@Test
 	public void testBuggyTheClown() throws InvalidLabelFormat, InvalidTitle {
 		CommandParser parser = new CommandParser();	
-		Task task;
-		task = parser.parseAdd("eat brownie p1");
-		assertEquals(1, task.getPriority());
-		assertEquals("eat brownie P:1", task.toString());
-		
-		task = parser.parseAdd("eat brownie p 2");
-		assertEquals(2, task.getPriority());
-		assertEquals("eat brownie P:2", task.toString());
-		
-		task = parser.parseAdd("eat brownie priority3");
-		assertEquals(3, task.getPriority());
-		assertEquals("eat brownie P:3", task.toString());
-		
-		task = parser.parseAdd("eat brownie priority 3");
-		assertEquals(3, task.getPriority());
-		assertEquals("eat brownie P:3", task.toString());
-		
-		task = parser.parseAdd("eat brownie from 1/5 10pm to 11pm priority 3");
-		System.out.println(task.toString());
-		assertEquals(3, task.getPriority());
-		assertEquals("eat brownie from 1 May 10pm to 11pm P:3", task.toString());		
+		Task task,task2;
+		task = parser.parseAdd("");
+
 	}
+	
 }
