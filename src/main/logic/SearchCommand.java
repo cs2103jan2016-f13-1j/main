@@ -39,7 +39,6 @@ public class SearchCommand implements Command {
     }
     
     public void undo() {
-        search("");
     }
     
     /**

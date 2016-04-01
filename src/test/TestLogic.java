@@ -269,12 +269,7 @@ public class TestLogic implements Observer {
             invoker.execute(new SearchCommand(receiver, "d #e"));
             assertEquals(1, todo.size());
             assertEquals(task3, todo.get(0));
-            invoker.undo();
-            assertEquals(3, todo.size());
-            invoker.redo();
-            assertEquals(1, todo.size());
-            assertEquals(task3, todo.get(0));
-            invoker.undo();
+            invoker.execute(new SearchCommand(receiver, ""));
             assertEquals(3, todo.size());
             
             Storage storage = receiver.getStorage();
