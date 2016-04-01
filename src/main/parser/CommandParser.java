@@ -108,7 +108,6 @@ public class CommandParser {
 		hasDate =  checkForDate(inputString)  || checkForDateText(inputString);
 		
 		if (hasDate && checkForDateText(inputString)) {
-			title = correctDateText(inputString);
 			inputString = correctDateText(inputString);
 		}
 		
