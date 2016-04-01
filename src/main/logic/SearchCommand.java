@@ -31,11 +31,14 @@ public class SearchCommand implements Command {
     }
     
     public void execute() {
+        ArrayList<Task> searchResults = new ArrayList<Task>();
         if (searchTerm != null) {
-            search(searchTerm);
+            searchResults = search(searchTerm);
         } else if (searchDate != null) {
-            search(searchDate);
+            searchResults = search(searchDate);
         }
+        updateReceiverTasks(searchResults);
+        
     }
     
     public void undo() {
@@ -47,30 +50,48 @@ public class SearchCommand implements Command {
      * 
      * @param   searchTerm
      *          The {@code String} of terms to search which are separated by spaces.
+     * @return  The list of results
      */
-    private void search(String searchTerm) {
+    private ArrayList<Task> search(String searchTerm) {
         ArrayList<Task> allTasks = receiver.getAllTasks();
         String[] searchList = searchTerm.split(" ");
         ArrayList<Task> searchResults = new ArrayList<Task>();
         
         for (Task t : allTasks) {
+            String title = t.getTitle().toLowerCase();
             boolean found = true;
-            for (String term : searchList) {
+            int prevIndex = Integer.MIN_VALUE;
+            
+            for (String s : searchList) {
+                String term = s.toLowerCase();
+                
                 if (term.contains("#")) {
                     if (t.getLabel() == null) {
                         found = false;
-                    } else if (!("#" + t.getLabel()).toLowerCase().contains(term.toLowerCase())) {
+                    } else if (!("#" + t.getLabel()).toLowerCase().contains(term)) {
                         found = false;
                     }
-                } else if (!t.getTitle().toLowerCase().contains(term.toLowerCase())) {
+                } else if (term.length() == 1) {
+                    if (title.contains(term)) {
+                        int currIndex = title.indexOf(term);
+                        if (currIndex < prevIndex) {
+                            found = false;
+                        } else {
+                            prevIndex = currIndex;
+                        }
+                    } else {
+                        found = false;
+                    }
+                } else if (!title.contains(term)) {
                     found = false;
                 }
             }
+            
             if (found) {
                 searchResults.add(t);
             }
         }
-        categorizeTasks(searchResults);
+        return searchResults;
     }
     
     /**
@@ -79,8 +100,9 @@ public class SearchCommand implements Command {
      * 
      * @param   searchDate
      *          The {@code Date} search.
+     * @return  The list of results
      */
-    private void search(Date searchDate) {
+    private ArrayList<Task> search(Date searchDate) {
         ArrayList<Task> allTasks = receiver.getAllTasks();
         ArrayList<Task> searchResults = new ArrayList<Task>();
         Calendar dateToSearch = removeTimeFromDate(searchDate);
@@ -99,7 +121,7 @@ public class SearchCommand implements Command {
                 }
             }
         }
-        categorizeTasks(searchResults);
+        return searchResults;
     }
     
     //Removes all time details from the given Date
@@ -113,7 +135,7 @@ public class SearchCommand implements Command {
         return calendar;
     }
     
-    private void categorizeTasks(ArrayList<Task> searchResults) {
+    private void updateReceiverTasks(ArrayList<Task> searchResults) {
         ArrayList<Task> todoTasks = new ArrayList<Task>();
         ArrayList<Task> completedTasks = new ArrayList<Task>();
         
