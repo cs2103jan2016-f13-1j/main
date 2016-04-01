@@ -23,6 +23,7 @@ public class Task {
     private String title;
     private Date startDate;
     private Date endDate;
+    private boolean isDatedOnly;
     private String label;
     private boolean done;
     private int priority;
@@ -33,28 +34,38 @@ public class Task {
     
     public Task(String title) {
         this.title = title;
-        this.startDate = null;
-        this.endDate = null;
-        this.label = null;
-        this.done = false;
-        this.priority = 0;
-        this.createdDate = new Date();
-        this.completedDate = null;
-        this.collideWithPrev = false;
-        this.collideWithNext = false;
+        startDate = null;
+        endDate = null;
+        isDatedOnly = false;
+        label = null;
+        done = false;
+        priority = 0;
+        createdDate = new Date();
+        completedDate = null;
+        collideWithPrev = false;
+        collideWithNext = false;
     }
 
     public Task(String title, Date startDate, Date endDate, String label) {
     	this.title = title;
     	this.startDate = startDate;
     	this.endDate = endDate;
+    	isDatedOnly = false;
     	this.label = label;
-    	this.done = false;
-    	this.priority = 0;
-    	this.createdDate = new Date();
-    	this.completedDate = null;
-    	this.collideWithPrev = false;
-    	this.collideWithNext = false;
+    	done = false;
+    	priority = 0;
+    	createdDate = new Date();
+    	completedDate = null;
+    	collideWithPrev = false;
+    	collideWithNext = false;
+    }
+    
+    public void setIsDatedOnly(boolean isDatedOnly) {
+    	this.isDatedOnly = isDatedOnly;
+    }
+    
+    public boolean getIsDatedOnly() {
+    	return isDatedOnly;
     }
     
     public boolean getCollideWithPrev() {
@@ -62,7 +73,7 @@ public class Task {
     }
     
     public void setCollideWithPrev(boolean collide) {
-        this.collideWithPrev = collide;
+        collideWithPrev = collide;
     }
     
     public boolean getCollideWithNext() {
@@ -70,7 +81,7 @@ public class Task {
     }
     
     public void setCollideWithNext(boolean collide) {
-        this.collideWithNext = collide;
+        collideWithNext = collide;
     }
     
     public String getTitle() {
@@ -176,7 +187,7 @@ public class Task {
     }
     
     public Date getCompletedDate() {
-        return this.completedDate;
+        return completedDate;
     }
     
     public void setIsCompleted() {
@@ -216,6 +227,7 @@ public class Task {
     	int indexEndTime = 4;
     	int indexLabel = 5;
     	int indexPriority = 6;
+    	int indexIsDatedOnly = 7;
     	
     	ArrayList<String> fields = getTaskFields();
     	String title = fields.get(indexTitle);
@@ -225,26 +237,39 @@ public class Task {
     	String endTime = fields.get(indexEndTime);
     	String label = fields.get(indexLabel);
     	String priority = fields.get(indexPriority);
+    	String isDatedOnly = fields.get(indexIsDatedOnly);
     	
     	StringBuilder stringBuilder = new StringBuilder(title);
 
     	if (hasDate()) {
     		if (hasDateRange()) {
     			stringBuilder.append(" from " + startDate);
-    			stringBuilder.append(" " + startTime);
+    			
+    			if (!isDatedOnly.equals("true")) {
+    				stringBuilder.append(" " + startTime);
+    			}
    
     			if (!startDate.equals(endDate)) {
         			stringBuilder.append(" to " + endDate);
-        			stringBuilder.append(" " + endTime);
+        			
+        			if (!isDatedOnly.equals("true")) {
+        				stringBuilder.append(" " + endTime);
+        			}
         		} else {
         			stringBuilder.append(" to " + endTime);
         		}   	  
     		} else if (startDate != null) {
     				stringBuilder.append(" from " + startDate);
-    				stringBuilder.append(" " + startTime);
+    				
+    				if (!isDatedOnly.equals("true")) {
+        				stringBuilder.append(" " + startTime);
+        			}
     		} else if (endDate != null) {
     				stringBuilder.append(" by " + endDate);
-    				stringBuilder.append(" " + endTime);
+    				
+    				if (!isDatedOnly.equals("true")) {
+        				stringBuilder.append(" " + endTime);
+        			}
     		}
     	}
     
@@ -270,8 +295,9 @@ public class Task {
      * 4 - End Time
      * 5 - Label
      * 6 - Priority
+     * 7 - isDatedOnly
      * 
-     * @return ArrayList<String> of size 7
+     * @return ArrayList<String> of size 8
      */
     private ArrayList<String> getTaskFields() {
         ArrayList<String> fields = new ArrayList<String>();
@@ -308,7 +334,7 @@ public class Task {
         }
         
         fields.add(Integer.toString(getPriority()));
-        
+        fields.add(String.valueOf(isDatedOnly));
         return fields;
     }
     
