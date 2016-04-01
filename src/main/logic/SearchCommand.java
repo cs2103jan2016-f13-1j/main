@@ -134,12 +134,36 @@ public class SearchCommand implements Command {
         ArrayList<Task> allTasks = receiver.getAllTasks();
         ArrayList<Task> searchResults = new ArrayList<Task>();
         
+        LocalDate tmr = LocalDate.now().plusDays(1);
+        Date tomorrow = Date.from(tmr.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        
+        for (Task task : allTasks) {
+            if (task.hasDateRange()) {
+                Date startDate = removeTimeFromDate(task.getStartDate());
+                Date endDate = removeTimeFromDate(task.getEndDate());
+                if (startDate.after(tomorrow) || endDate.after(tomorrow)) {
+                    searchResults.add(task);
+                }
+            } else if (task.hasSingleDate()) {
+                Date singleDate = removeTimeFromDate(task.getSingleDate());
+                if (singleDate.after(tomorrow)) {
+                    searchResults.add(task);
+                }
+            }
+        }
+        
         return searchResults;
     }
     
     private ArrayList<Task> searchForSomeday() {
         ArrayList<Task> allTasks = receiver.getAllTasks();
         ArrayList<Task> searchResults = new ArrayList<Task>();
+        
+        for (Task task : allTasks) {
+            if (!task.hasDate()) {
+                searchResults.add(task);
+            }
+        }
         
         return searchResults;
     }
@@ -149,16 +173,16 @@ public class SearchCommand implements Command {
         ArrayList<Task> searchResults = new ArrayList<Task>();
         String[] searchList = searchTerm.split(" ");
         
-        for (Task t : allTasks) {
-            String title = t.getTitle().toLowerCase();
+        for (Task task : allTasks) {
+            String title = task.getTitle().toLowerCase();
             boolean found = true;
             int prevIndex = Integer.MIN_VALUE;
             
             for (String term : searchList) {         
                 if (term.contains("#")) {
-                    if (t.getLabel() == null) {
+                    if (task.getLabel() == null) {
                         found = false;
-                    } else if (!("#" + t.getLabel()).toLowerCase().contains(term)) {
+                    } else if (!("#" + task.getLabel()).toLowerCase().contains(term)) {
                         found = false;
                     }
                 } else {
@@ -192,7 +216,7 @@ public class SearchCommand implements Command {
             }
             
             if (found) {
-                searchResults.add(t);
+                searchResults.add(task);
             }
         }
         
