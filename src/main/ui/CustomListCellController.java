@@ -125,11 +125,15 @@ public class CustomListCellController extends JFXListCell<Task> {
             System.out.println(task.toString()+" Collide with PREV");
             topLine.setStroke(Color.web(AppColor.PRIMARY_RED));
             circleIndex.setStroke(Color.web(AppColor.PRIMARY_RED));
+        } else {
+            topLine.setStroke(Color.web(AppColor.LINE_STROKE, 0.12));
         }
         if (task.getCollideWithNext()) {
             System.out.println(task.toString()+" Collide with NEXT");
             bottomLine.setStroke(Color.web(AppColor.PRIMARY_RED));
             circleIndex.setStroke(Color.web(AppColor.PRIMARY_RED));
+        } else {
+            bottomLine.setStroke(Color.web(AppColor.LINE_STROKE, 0.12));
         }
     }
 

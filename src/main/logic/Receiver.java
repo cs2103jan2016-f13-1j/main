@@ -173,27 +173,8 @@ public class Receiver extends Observable {
     }
     
     private void updateCollision() {
-        Task previousTask;
-        Task currentTask;
-        Task nextTask;
-        
-        for (int i = 0; i < todoTasks.size(); i++) {
-            currentTask = todoTasks.get(i);
-            previousTask = null;
-            nextTask = null;
-            
-            if (todoTasks.size() > 1) {
-                if (i == 0) {
-                    nextTask = todoTasks.get(i + 1);
-                } else if (i == (todoTasks.size() - 1)) {
-                    previousTask = todoTasks.get(i - 1);
-                } else {
-                    previousTask = todoTasks.get(i - 1);
-                    nextTask = todoTasks.get(i + 1);
-                }
-            }
-            scheduler.updateCollision(previousTask, currentTask, nextTask);
-        }
+        scheduler.updateTodoCollision(todoTasks);
+        scheduler.updateCompletedCollision(completedTasks);
     }
     
     private void saveToStorage() {

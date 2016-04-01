@@ -1,13 +1,43 @@
 package main.logic;
 
+import java.util.ArrayList;
+
 import main.data.Task;
 
 public class ScheduleManager {
     
-    public ScheduleManager() {
+    public void updateTodoCollision(ArrayList<Task> todoTasks) {
+        Task previousTask;
+        Task currentTask;
+        Task nextTask;
+        
+        for (int i = 0; i < todoTasks.size(); i++) {
+            currentTask = todoTasks.get(i);
+            previousTask = null;
+            nextTask = null;
+            
+            if (todoTasks.size() > 1) {
+                if (i == 0) {
+                    nextTask = todoTasks.get(i + 1);
+                } else if (i == (todoTasks.size() - 1)) {
+                    previousTask = todoTasks.get(i - 1);
+                } else {
+                    previousTask = todoTasks.get(i - 1);
+                    nextTask = todoTasks.get(i + 1);
+                }
+            }
+            updateCollision(previousTask, currentTask, nextTask);
+        }
     }
     
-    public void updateCollision(Task prev, Task curr, Task next) {
+    public void updateCompletedCollision(ArrayList<Task> completedTasks) {
+        for (Task task : completedTasks) {
+            task.setCollideWithPrev(false);
+            task.setCollideWithNext(false);
+        }
+    }
+    
+    private void updateCollision(Task prev, Task curr, Task next) {
         if (curr.hasDate()) {
             if (curr.hasSingleDate() && curr.hasStartDate()) {
                 //current only have a start date
@@ -33,7 +63,7 @@ public class ScheduleManager {
                     } else {
                         curr.setCollideWithPrev(false);
                     }
-                } else if (prev != null && !prev.hasDate()) {
+                } else {
                     curr.setCollideWithPrev(false);
                 }
                 
@@ -59,7 +89,7 @@ public class ScheduleManager {
                     } else {
                         curr.setCollideWithNext(false);
                     }
-                } else if (next != null && !next.hasDate()) {
+                } else {
                     curr.setCollideWithNext(false);
                 }
             } else if (curr.hasDateRange()) { 
@@ -92,7 +122,7 @@ public class ScheduleManager {
                     } else {
                         curr.setCollideWithPrev(false);
                     }
-                } else if (prev != null && !prev.hasDate()) {
+                } else {
                     curr.setCollideWithPrev(false);
                 }
                 
@@ -124,7 +154,7 @@ public class ScheduleManager {
                     } else {
                         curr.setCollideWithNext(false);
                     }
-                } else if (next != null && !next.hasDate()) {
+                } else {
                     curr.setCollideWithNext(false);
                 }
             } else {

@@ -53,8 +53,7 @@ public class DeleteCommand implements Command {
         } else if (tasks != null){
             for (Task task : tasks) {
                 allTasks.add(task);
-            }
-            
+            } 
         }
         
         receiver.setAllTasks(allTasks);
