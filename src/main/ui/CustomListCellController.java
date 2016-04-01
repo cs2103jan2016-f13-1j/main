@@ -114,7 +114,6 @@ public class CustomListCellController extends JFXListCell<Task> {
      */
     private void showTaskCollisions(Task task) {
         if (!task.getCollideWithPrev() && !task.getCollideWithNext()) {
-            System.out.println(task.toString()+" NO COLLISION");
             topLine.setStroke(Color.web(AppColor.LINE_STROKE, 0.12));
             bottomLine.setStroke(Color.web(AppColor.LINE_STROKE, 0.12));
             circleIndex.setStroke(Color.web(AppColor.CIRCLE_STROKE));
@@ -122,14 +121,12 @@ public class CustomListCellController extends JFXListCell<Task> {
         }
 
         if (task.getCollideWithPrev()) {
-            System.out.println(task.toString()+" Collide with PREV");
             topLine.setStroke(Color.web(AppColor.PRIMARY_RED));
             circleIndex.setStroke(Color.web(AppColor.PRIMARY_RED));
         } else {
             topLine.setStroke(Color.web(AppColor.LINE_STROKE, 0.12));
         }
         if (task.getCollideWithNext()) {
-            System.out.println(task.toString()+" Collide with NEXT");
             bottomLine.setStroke(Color.web(AppColor.PRIMARY_RED));
             circleIndex.setStroke(Color.web(AppColor.PRIMARY_RED));
         } else {

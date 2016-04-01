@@ -71,19 +71,33 @@ public class SearchCommand implements Command {
                     } else if (!("#" + t.getLabel()).toLowerCase().contains(term)) {
                         found = false;
                     }
-                } else if (term.length() == 1) {
-                    if (title.contains(term)) {
-                        int currIndex = title.indexOf(term);
-                        if (currIndex < prevIndex) {
-                            found = false;
-                        } else {
-                            prevIndex = currIndex;
+                } else {
+                    String[] characters = term.split("");
+                    boolean titleContainAllChars = true;
+                    
+                    for (String c : characters) {
+                        if (!title.contains(c)) {
+                            titleContainAllChars = false;
+                        }
+                    }
+                    
+                    if (titleContainAllChars) {
+                        for (String character : characters) {
+                            int currIndex;
+                            if (prevIndex == Integer.MIN_VALUE) {
+                                currIndex = title.indexOf(character);
+                            } else {
+                                currIndex = title.indexOf(character, prevIndex + 1);
+                            }
+                            if (currIndex < prevIndex) {
+                                found = false;
+                            } else {
+                                prevIndex = currIndex;
+                            }
                         }
                     } else {
                         found = false;
                     }
-                } else if (!title.contains(term)) {
-                    found = false;
                 }
             }
             
