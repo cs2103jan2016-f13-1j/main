@@ -411,7 +411,7 @@ public class TestCommandParser {
 		
 		//if ending not specified, am
 		task = parser.parseAdd("Buy apple 1pm-3");
-		assertEquals("Buy apple from today 1pm to 3am", task.toString());	
+		assertEquals("Buy apple from today 1pm to this Sun 3am", task.toString());	
 	}
 	
 	/**
@@ -447,7 +447,7 @@ public class TestCommandParser {
 		Task task;
 
 		task = parser.parseAdd("Do homework by 2");
-		assertEquals("Do homework by today 2am", task.toString());
+		assertEquals("Do homework by today 2pm", task.toString());
 		
 		task = parser.parseAdd("Do homework by 10");
 		assertEquals("Do homework by today 10am", task.toString());
@@ -1136,8 +1136,10 @@ public class TestCommandParser {
 	public void testBuggyTheClown() throws InvalidLabelFormat, InvalidTitle {
 		CommandParser parser = new CommandParser();	
 		Task task;
-		task = parser.parseAdd("a 3apr 2pm");
+		task = parser.parseAdd("eat brownie 10pm to 3am");
 		System.out.println(task);
+		System.out.println(task.getStartDate());
+		System.out.println(task.getEndDate());
 		
 	}
 }
