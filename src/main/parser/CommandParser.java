@@ -91,6 +91,7 @@ public class CommandParser {
 		boolean hasStartDate = false;
 		boolean hasLabel = false;
 		boolean hasPriority = false;
+		boolean isDatedOnly = false;
 		int numberOfDate = 0;
 		List<Date> dates = new ArrayList<Date>();
 		
@@ -143,10 +144,12 @@ public class CommandParser {
 			dates = parseDateTime(inputString);
 		} else if (hasDate) {
 			dates = parseDateOnly(inputString);
+			isDatedOnly = true;
 		} else if (hasDay && hasTime) {
 			dates = parseDateTime(inputString);
 		} else if (hasDay) {
 			dates = parseDayOnly(inputString);
+			isDatedOnly = true;
 		} else if (hasTime) {
 			dates = parseTimeOnly(inputString);
 		} 
@@ -176,6 +179,7 @@ public class CommandParser {
 	
 		Task task = new Task (title, startDate, endDate, label);
 		task.setPriority(priority);
+		task.setIsDatedOnly(isDatedOnly);
 		logger.log(Level.INFO, "Task object built.");
 		
 		if (title.length() == 0) {
@@ -1169,6 +1173,7 @@ public class CommandParser {
 		Date newEnd = oldTask.getEndDate();
 		Date createdDate = oldTask.getCreatedDate();
 		int priority = oldTask.getPriority();
+		boolean isDatedOnly = oldTask.getIsDatedOnly();
 		
 		Task editedTask;
 		try {
@@ -1190,7 +1195,7 @@ public class CommandParser {
 		if (hasPriority) {
 			priority = editedTask.getPriority();
 		}
-		
+
 		boolean hasTime = false;
 		boolean hasDate = false;
 		boolean hasPreposition = false;
@@ -1217,11 +1222,13 @@ public class CommandParser {
 			} else if (!hasDate && hasTime) {
 				//only time, reuse date
 				dates = reuseDate(editedTask, oldTask);
+				isDatedOnly = false;
 			} else {
 				//have both
 				//update by overwriting
 				dates.add(editedTask.getStartDate());
 				dates.add(editedTask.getEndDate());
+				isDatedOnly = false;
 			}
 			
 			newStart = dates.get(DATE_START);
@@ -1231,6 +1238,7 @@ public class CommandParser {
 		Task newTask = new Task(newTitle, newStart, newEnd, newLabel);
 		newTask.setCreatedDate(createdDate);
 		newTask.setPriority(priority);
+		newTask.setIsDatedOnly(isDatedOnly);
 		return newTask;
 	}
 	
