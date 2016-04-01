@@ -918,11 +918,31 @@ public class CommandParser {
 	 * @return {@code Date} if date found, {@code null} if date is not found
 	 */
 	public Date getDateForSearch(String inputString) {
+		if (isSpecialCase(inputString)) {
+			return null;
+		}
+		
 		List<Date> dates = parseDateTime(inputString);
 		if (dates.size() == 0) {
 			return null;
 		} else {
 			return dates.get(0);
+		}
+	}
+	
+	/**
+	 * This method escapes date parsing if it is a special string.
+	 * 
+	 * @param inputString
+	 * 			{@code String} input string
+	 * @return {@code boolean} true if special case detected
+	 */
+	private boolean isSpecialCase(String inputString) {
+		if (inputString.equalsIgnoreCase("this week") ||
+				inputString.equalsIgnoreCase("next week")) {
+			return true;
+		} else {
+			return false;
 		}
 	}
 	
