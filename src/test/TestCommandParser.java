@@ -411,7 +411,7 @@ public class TestCommandParser {
 		
 		//if ending not specified, am
 		task = parser.parseAdd("Buy apple 1pm-3");
-		assertEquals("Buy apple from today 1pm to this Thu 3am", task.toString());	
+		assertEquals("Buy apple from today 1pm to 3am", task.toString());	
 	}
 	
 	/**
@@ -447,10 +447,10 @@ public class TestCommandParser {
 		Task task;
 
 		task = parser.parseAdd("Do homework by 2");
-		assertEquals("Do homework by this Thu 2am", task.toString());
+		assertEquals("Do homework by today 2am", task.toString());
 		
 		task = parser.parseAdd("Do homework by 10");
-		assertEquals("Do homework by today 10pm", task.toString());
+		assertEquals("Do homework by today 10am", task.toString());
 
 		task = parser.parseAdd("Do homework by 10am");
 		assertEquals("Do homework by today 10am", task.toString());
@@ -576,7 +576,7 @@ public class TestCommandParser {
 		CommandParser parser = new CommandParser();
 		//now is tues
 		Task task = parser.parseAdd("Attend meeting on thurs");
-		assertEquals("Attend meeting from this Thu 12am", task.toString());
+		assertEquals("Attend meeting from next Thu 12am", task.toString());
 		
 		//now is tues
 		task = parser.parseAdd("Attend meeting from mon to weds");
@@ -791,7 +791,7 @@ public class TestCommandParser {
     	
      	task = parser.parseAdd("Buy milk");
     	task2 = parser.parseEdit(task, "by 10");
-    	assertEquals("Buy milk by today 10pm", task2.toString());
+    	assertEquals("Buy milk by today 10am", task2.toString());
     	
     	task = parser.parseAdd("Buy milk");
     	task2 = parser.parseEdit(task, "10pm");
@@ -1128,10 +1128,16 @@ public class TestCommandParser {
 		assertEquals("1-5,10", indexes.getValidIndexesString());
 		assertEquals("11-20,31-33,35", indexes.getInvalidIndexesString());	
 	}
-	
-	
 
 	// =============================
 	// Latest stuff
 	// =============================
+	@Test
+	public void testBuggyTheClown() throws InvalidLabelFormat, InvalidTitle {
+		CommandParser parser = new CommandParser();	
+		Task task;
+		task = parser.parseAdd("a from 2pm to 3pm");
+		System.out.println(task);
+		
+	}
 }
