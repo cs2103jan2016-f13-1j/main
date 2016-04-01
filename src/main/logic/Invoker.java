@@ -21,6 +21,11 @@ public class Invoker {
 	 */
 	public void execute(Command command) {
 		command.execute();
+		
+		if (command instanceof SearchCommand) {
+		    return;
+		}
+		
 		undoHistory.push(command);
 		redoHistory.clear();
 	}
