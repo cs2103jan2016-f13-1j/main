@@ -100,6 +100,7 @@ public class CommandParser {
 		
 		hasTime = checkForTime(inputString);
 		if (hasTime) {
+			inputString = correctDotTime(inputString);
 			hasDateRange = checkForRangeTime(inputString);
 			if (hasDateRange) {
 				inputString = correctRangeTime(inputString);
@@ -321,6 +322,21 @@ public class CommandParser {
 	}
 	
 	/**
+	 * This method corrects time separated with a dot for date parsing.
+	 * PrettyTime doesn't parse a specified date with a dotted time.
+	 * Eg: 2 June 5.30pm 
+	 * 
+	 * @param inputString
+	 * 			{@code String} input to be corrected
+	 * @return {@code String} with time corrected
+	 */
+	private String correctDotTime(String inputString) {
+		String regex = "\\b((1[012]|0?[1-9])(([:|.])([0-5][0-9])?))(?i)(am|pm)";
+		inputString = inputString.replaceAll(regex, "$2:$5$6");
+		return inputString;
+	}
+	
+	/**
 	 * This method checks if a valid time range is specified.
 	 * 
 	 * @param inputString
@@ -349,7 +365,7 @@ public class CommandParser {
 	 * 
 	 * @param inputString
 	 * 			{@code String} input to be corrected
-	 * @return {@code  String} with time range corrected
+	 * @return {@code String} with time range corrected
 	 */
 	private String correctRangeTime(String inputString) {
 		inputString = inputString.replaceAll("()-()","$1 - $2");
