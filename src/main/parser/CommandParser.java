@@ -1181,9 +1181,14 @@ public class CommandParser {
 		if (editedTask.getTitle().length() != 0) {
 			newTitle = editedTask.getTitle();
 		}
-		
+	
 		if (editedTask.getLabel() != null) {
 			newLabel = editedTask.getLabel();
+		}
+		
+		boolean hasPriority = checkForPriority(inputString);
+		if (hasPriority) {
+			priority = editedTask.getPriority();
 		}
 		
 		boolean hasTime = false;
