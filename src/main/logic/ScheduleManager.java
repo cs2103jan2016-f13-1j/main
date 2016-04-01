@@ -30,7 +30,11 @@ public class ScheduleManager {
                         } else {
                             curr.setCollideWithPrev(false);
                         }
+                    } else {
+                        curr.setCollideWithPrev(false);
                     }
+                } else if (prev != null && !prev.hasDate()) {
+                    curr.setCollideWithPrev(false);
                 }
                 
                 if (next != null && next.hasDate()) {
@@ -52,7 +56,11 @@ public class ScheduleManager {
                         } else {
                             curr.setCollideWithNext(false);
                         }
+                    } else {
+                        curr.setCollideWithNext(false);
                     }
+                } else if (next != null && !next.hasDate()) {
+                    curr.setCollideWithNext(false);
                 }
             } else if (curr.hasDateRange()) { 
                 //current is event task
@@ -81,7 +89,11 @@ public class ScheduleManager {
                         } else {
                             curr.setCollideWithPrev(false);
                         }
+                    } else {
+                        curr.setCollideWithPrev(false);
                     }
+                } else if (prev != null && !prev.hasDate()) {
+                    curr.setCollideWithPrev(false);
                 }
                 
                 if (next != null && next.hasDate()) {
@@ -109,8 +121,15 @@ public class ScheduleManager {
                         } else {
                             curr.setCollideWithNext(false);
                         }
+                    } else {
+                        curr.setCollideWithNext(false);
                     }
+                } else if (next != null && !next.hasDate()) {
+                    curr.setCollideWithNext(false);
                 }
+            } else {
+                curr.setCollideWithPrev(false);
+                curr.setCollideWithNext(false);
             }
         } else {
             curr.setCollideWithPrev(false);
