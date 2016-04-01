@@ -1,5 +1,9 @@
 package main.logic;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -38,7 +42,6 @@ public class SearchCommand implements Command {
             searchResults = search(searchDate);
         }
         updateReceiverTasks(searchResults);
-        
     }
     
     public void undo() {
@@ -52,19 +55,83 @@ public class SearchCommand implements Command {
      *          The {@code String} of terms to search which are separated by spaces.
      * @return  The list of results
      */
-    private ArrayList<Task> search(String searchTerm) {
+    private ArrayList<Task> search(String searchString) {
+        String searchTerm = searchString.toLowerCase();
+        
+        if (searchTerm.equals("this week") || searchTerm.equals("week")) {
+            return searchForThisWeek();
+        } else if (searchTerm.equals("next week")) {
+            return searchForNextWeek();
+        } else if (searchTerm.equals("upcoming")) {
+            return searchForUpcoming();
+        } else if (searchTerm.equals("someday")) {
+            return searchForSomeday();
+        } else {
+            return searchForString(searchTerm);
+        }
+    }
+    
+    private ArrayList<Task> searchForThisWeek() {
         ArrayList<Task> allTasks = receiver.getAllTasks();
-        String[] searchList = searchTerm.split(" ");
         ArrayList<Task> searchResults = new ArrayList<Task>();
+        
+        LocalDate now = LocalDate.now();
+        LocalDate sundayLocalDate = now.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
+        Date today = removeTimeFromDate(Date.from(now.atStartOfDay(ZoneId.systemDefault()).toInstant()));
+        Date sunday = removeTimeFromDate(Date.from(sundayLocalDate.atStartOfDay(ZoneId.systemDefault()).toInstant()));
+        
+        for (Task task : allTasks) {
+            if (task.hasDateRange()) {
+                Date startDate = removeTimeFromDate(task.getStartDate());
+                Date endDate = removeTimeFromDate(task.getEndDate());
+                if (startDate.equals(today) || startDate.equals(sunday) || (startDate.after(today) && endDate.before(sunday))) {
+                    searchResults.add(task);
+                } else if (endDate.equals(today) || endDate.equals(sunday) || (endDate.after(today) && endDate.before(sunday))) {
+                    searchResults.add(task);
+                }
+            } else if (task.hasSingleDate()) {
+                Date singleDate = removeTimeFromDate(task.getSingleDate());
+                if (singleDate.equals(today) || singleDate.equals(sunday) || (singleDate.after(today) && singleDate.before(sunday))) {
+                    searchResults.add(task);
+                }
+            }
+        }
+        
+        return searchResults;
+    }
+    
+    private ArrayList<Task> searchForNextWeek() {
+        ArrayList<Task> allTasks = receiver.getAllTasks();
+        ArrayList<Task> searchResults = new ArrayList<Task>();
+        
+        return searchResults;
+    }
+    
+    private ArrayList<Task> searchForUpcoming() {
+        ArrayList<Task> allTasks = receiver.getAllTasks();
+        ArrayList<Task> searchResults = new ArrayList<Task>();
+        
+        return searchResults;
+    }
+    
+    private ArrayList<Task> searchForSomeday() {
+        ArrayList<Task> allTasks = receiver.getAllTasks();
+        ArrayList<Task> searchResults = new ArrayList<Task>();
+        
+        return searchResults;
+    }
+    
+    private ArrayList<Task> searchForString(String searchTerm) {
+        ArrayList<Task> allTasks = receiver.getAllTasks();
+        ArrayList<Task> searchResults = new ArrayList<Task>();
+        String[] searchList = searchTerm.split(" ");
         
         for (Task t : allTasks) {
             String title = t.getTitle().toLowerCase();
             boolean found = true;
             int prevIndex = Integer.MIN_VALUE;
             
-            for (String s : searchList) {
-                String term = s.toLowerCase();
-                
+            for (String term : searchList) {         
                 if (term.contains("#")) {
                     if (t.getLabel() == null) {
                         found = false;
@@ -105,6 +172,7 @@ public class SearchCommand implements Command {
                 searchResults.add(t);
             }
         }
+        
         return searchResults;
     }
     
@@ -119,19 +187,19 @@ public class SearchCommand implements Command {
     private ArrayList<Task> search(Date searchDate) {
         ArrayList<Task> allTasks = receiver.getAllTasks();
         ArrayList<Task> searchResults = new ArrayList<Task>();
-        Calendar dateToSearch = removeTimeFromDate(searchDate);
+        Date dateToSearch = removeTimeFromDate(searchDate);
         
-        for (Task t : allTasks) {
-            if (t.hasDateRange()) {
-                Calendar startDate = removeTimeFromDate(t.getStartDate());
-                Calendar endDate = removeTimeFromDate(t.getEndDate());
+        for (Task task : allTasks) {
+            if (task.hasDateRange()) {
+                Date startDate = removeTimeFromDate(task.getStartDate());
+                Date endDate = removeTimeFromDate(task.getEndDate());
                 if (startDate.equals(dateToSearch) || endDate.equals(dateToSearch)) {
-                    searchResults.add(t);
+                    searchResults.add(task);
                 }
-            } else if (t.hasSingleDate()) {
-                Calendar singleDate = removeTimeFromDate(t.getSingleDate());
+            } else if (task.hasSingleDate()) {
+                Date singleDate = removeTimeFromDate(task.getSingleDate());
                 if (singleDate.equals(dateToSearch)) {
-                    searchResults.add(t);
+                    searchResults.add(task);
                 }
             }
         }
@@ -139,14 +207,14 @@ public class SearchCommand implements Command {
     }
     
     //Removes all time details from the given Date
-    private Calendar removeTimeFromDate(Date date) {
+    private Date removeTimeFromDate(Date date) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
         calendar.set(Calendar.HOUR_OF_DAY, 0);
         calendar.set(Calendar.MINUTE, 0);
         calendar.set(Calendar.SECOND, 0);
         calendar.set(Calendar.MILLISECOND, 0);
-        return calendar;
+        return calendar.getTime();
     }
     
     private void updateReceiverTasks(ArrayList<Task> searchResults) {
