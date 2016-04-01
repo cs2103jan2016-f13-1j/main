@@ -12,6 +12,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
+import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
 import main.data.Task;
 
@@ -26,6 +27,12 @@ public class CustomListCellController extends JFXListCell<Task> {
 
     @FXML // fx:id="labelTaskTime"
     private JFXButton labelTaskTime; // Value injected by FXMLLoader
+
+    @FXML // fx:id="topLine"
+    private Line topLine; // Value injected by FXMLLoader
+
+    @FXML // fx:id="bottomLine"
+    private Line bottomLine; // Value injected by FXMLLoader
 
     @FXML // fx:id="circleIndex"
     private Circle circleIndex; // Value injected by FXMLLoader
@@ -53,6 +60,8 @@ public class CustomListCellController extends JFXListCell<Task> {
     void initialize() {
         assert horizontalBox != null : "fx:id=\"horizontalBox\" was not injected: check your FXML file 'CustomListCellLayout.fxml'.";
         assert labelTaskTime != null : "fx:id=\"labelTaskTime\" was not injected: check your FXML file 'CustomListCellLayout.fxml'.";
+        assert topLine != null : "fx:id=\"topLine\" was not injected: check your FXML file 'CustomListCellLayout.fxml'.";
+        assert bottomLine != null : "fx:id=\"bottomLine\" was not injected: check your FXML file 'CustomListCellLayout.fxml'.";
         assert circleIndex != null : "fx:id=\"circleIndex\" was not injected: check your FXML file 'CustomListCellLayout.fxml'.";
         assert labelTaskIndex != null : "fx:id=\"labelTaskIndex\" was not injected: check your FXML file 'CustomListCellLayout.fxml'.";
         assert verticalBox != null : "fx:id=\"verticalBox\" was not injected: check your FXML file 'CustomListCellLayout.fxml'.";
@@ -88,6 +97,8 @@ public class CustomListCellController extends JFXListCell<Task> {
             showTaskDate(task);
             showTaskLabel(task);
             showTaskPriority(task);
+            showTaskLine();
+            showTaskCollisions(task);
             // HBox is the parent layout of all
             // the other UI components here.
             // Returning an instance of this
@@ -96,6 +107,39 @@ public class CustomListCellController extends JFXListCell<Task> {
             setGraphic(getHorizontalBox());
         }
 
+    }
+
+    /**
+     * @param task
+     */
+    private void showTaskCollisions(Task task) {
+        if (!task.getCollideWithPrev() && !task.getCollideWithNext()) {
+            System.out.println(task.toString()+" NO COLLISION");
+            topLine.setStroke(Color.web(AppColor.LINE_STROKE, 0.12));
+            bottomLine.setStroke(Color.web(AppColor.LINE_STROKE, 0.12));
+            circleIndex.setStroke(Color.web(AppColor.CIRCLE_STROKE));
+            return;
+        }
+
+        if (task.getCollideWithPrev()) {
+            System.out.println(task.toString()+" Collide with PREV");
+            topLine.setStroke(Color.web(AppColor.PRIMARY_RED));
+            circleIndex.setStroke(Color.web(AppColor.PRIMARY_RED));
+        }
+        if (task.getCollideWithNext()) {
+            System.out.println(task.toString()+" Collide with NEXT");
+            bottomLine.setStroke(Color.web(AppColor.PRIMARY_RED));
+            circleIndex.setStroke(Color.web(AppColor.PRIMARY_RED));
+        }
+    }
+
+    /**
+     * 
+     */
+    private void showTaskLine() {
+//        if (getIndex() == 0) {
+//            topLine.setVisible(false);
+//        }
     }
 
     public HBox getHorizontalBox() {
