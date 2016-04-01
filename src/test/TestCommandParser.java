@@ -498,13 +498,13 @@ public class TestCommandParser {
 	@Test
 	public void testTaskWithTimeRange() throws InvalidLabelFormat, InvalidTitle {
 		CommandParser parser = new CommandParser();
-		Task task = parser.parseAdd("Do homework on 20 apr 2-4pm");
+		Task task = parser.parseAdd("Do homework on 20apr 2-4pm");
 		assertEquals("Do homework from 20 Apr 2pm to 4pm", task.toString());
 
-		task = parser.parseAdd("Do homework from 2pm-4 on 20 apr");
+		task = parser.parseAdd("Do homework from 2pm-4 on 20apr");
 		assertEquals("Do homework from 20 Apr 2pm to 4am", task.toString());
 
-		task = parser.parseAdd("Do homework on 20 apr 2pm-4pm");
+		task = parser.parseAdd("Do homework on 20apr 2pm-4pm");
 		assertEquals("Do homework from 20 Apr 2pm to 4pm", task.toString());
 
 		task = parser.parseAdd("Do homework on 21st apr 2pm-4pm");
@@ -1136,7 +1136,7 @@ public class TestCommandParser {
 	public void testBuggyTheClown() throws InvalidLabelFormat, InvalidTitle {
 		CommandParser parser = new CommandParser();	
 		Task task;
-		task = parser.parseAdd("a from 2pm to 3pm");
+		task = parser.parseAdd("a 3apr 2pm");
 		System.out.println(task);
 		
 	}
