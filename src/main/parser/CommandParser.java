@@ -39,7 +39,7 @@ public class CommandParser {
 	public final String REGEX_DAYS = "\\b((?i)((mon)(day)?|(tue)(sday|s)?|"
 			+ "(wed)(nesday|s)?|(thu)(rsday|rs|r)?|(fri)(day)?|(sat)(urday)?|(sun)(day)?))\\b";
 	private final String REGEX_DATE_NUM = "\\b((0?[1-9]|[12][0-9]|3[01])([/|-])(0?[1-9]|1[012]))\\b";	
-	private final String REGEX_DATE_TEXT = "\\b(0?[1-9]|[12][0-9]|3[01]) ";
+	private final String REGEX_DATE_TEXT = "\\b((0?[1-9]|[12][0-9]|3[01]) ?)";
 	private final String REGEX_MONTH_TEXT = "((?i)(jan)(uary)?|"
 			+ "(feb)(ruary)?|" + "(mar)(ch)?|" + "(apr)(il)?|" + "(may)|"
 			+ "(jun)(e)?|" + "(jul)(y)?|" + "(aug)(ust)?|" + "(sep)(tember)?|"
@@ -106,6 +106,11 @@ public class CommandParser {
 		
 		hasDay = checkForDay(inputString);
 		hasDate =  checkForDate(inputString)  || checkForDateText(inputString);
+		
+		if (hasDate && checkForDateText(inputString)) {
+			title = correctDateText(inputString);
+			inputString = correctDateText(inputString);
+		}
 		
 		hasTime = checkForTime(inputString);
 		if (hasTime) {
@@ -282,6 +287,19 @@ public class CommandParser {
 
 	private String getDateRegexText() {
 		return REGEX_PREPOSITION_ALL + "?" + REGEX_DATE_TEXT + REGEX_MONTH_TEXT;
+	}
+	
+	/**
+	 * This method corrects date text in user input without spaces for date parsing.
+	 * 
+	 * @param inputString
+	 * 			{@code String} input to be corrected
+	 * @return {@code  String} with date text corrected
+	 */
+	private String correctDateText(String inputString) {
+		String regex = REGEX_DATE_TEXT + REGEX_MONTH_TEXT;
+		inputString = inputString.replaceAll(regex, "$1 $3");
+		return inputString;
 	}
 	
 	/**
@@ -705,7 +723,7 @@ public class CommandParser {
 			ArrayList<String> months = getPossibleMonths(dateTime);
 			ArrayList<String> days = getPossibleDays(dateTime);
 			ArrayList<String> timings = getPossibleTimes(dateTime);
-
+			
 			title = checkAndRemove(title, dates);
 			title = checkAndRemove(title, months);
 			title = checkAndRemove(title, days);
