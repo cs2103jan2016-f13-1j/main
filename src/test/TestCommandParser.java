@@ -393,7 +393,7 @@ public class TestCommandParser {
 		
 		//date only = 12am
 		task = parser.parseAdd("Buy apple 1 may");
-		assertEquals("Buy apple from 1 May 12am", task.toString());
+		assertEquals("Buy apple from 1 May", task.toString());
 		
 		//1pm has past, nearest is 1am so take 1pm
 		task = parser.parseAdd("Buy apple 1pm");
@@ -576,14 +576,14 @@ public class TestCommandParser {
 		CommandParser parser = new CommandParser();
 		//now is tues
 		Task task = parser.parseAdd("Attend meeting on thurs");
-		assertEquals("Attend meeting from next Thu 12am", task.toString());
+		assertEquals("Attend meeting from next Thu", task.toString());
 		
 		//now is tues
 		task = parser.parseAdd("Attend meeting from mon to weds");
-		assertEquals("Attend meeting from next Mon 12am to next Wed 12am", task.toString());
+		assertEquals("Attend meeting from next Mon to next Wed", task.toString());
 		
 		task = parser.parseAdd("Do homework from 1/2 to 2/2");
-		assertEquals("Do homework from 1 Feb 12am to 2 Feb 12am", task.toString());
+		assertEquals("Do homework from 1 Feb to 2 Feb", task.toString());
 	}
 
 	/**
@@ -864,7 +864,7 @@ public class TestCommandParser {
 		assertEquals("Buy milk from 1 May 3pm #party", task2.toString());
 
 		task2 = parser.parseEdit(task, "at 4");
-		assertEquals("Buy milk from 1 May 4am #party", task2.toString());
+		assertEquals("Buy milk from 1 May 4pm #party", task2.toString());
 
 		task2 = parser.parseEdit(task, "at 4am");
 		assertEquals("Buy milk from 1 May 4am #party", task2.toString());
@@ -949,7 +949,6 @@ public class TestCommandParser {
 		task = parser.parseAdd("Buy milk by 30 april 7pm");
 		task.togglePriority(true);
 		task2 = parser.parseEdit(task, "from 1 to 3pm");
-		System.out.println(task2.toString());
 		assertEquals("Buy milk from 30 Apr 1pm to 3pm P:1", task2.toString());
 		assertEquals(1, task2.getPriority());
 		
@@ -1173,7 +1172,7 @@ public class TestCommandParser {
 	public void testBuggyTheClown() throws InvalidLabelFormat, InvalidTitle {
 		CommandParser parser = new CommandParser();	
 		Task task,task2;
-		task = parser.parseAdd("");
+		//task = parser.parseAdd("");
 
 	}
 	
