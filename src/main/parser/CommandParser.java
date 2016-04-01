@@ -73,7 +73,6 @@ public class CommandParser {
 		logger.setLevel(Level.OFF);
 
 		assert(inputString != null);
-		assert(!inputString.isEmpty());
 		logger.log(Level.INFO, "Parsing for ADD command.");
 
 		String title = null;
