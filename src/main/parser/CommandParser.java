@@ -93,7 +93,7 @@ public class CommandParser {
 		boolean hasPriority = false;
 		int numberOfDate = 0;
 		List<Date> dates = new ArrayList<Date>();
-
+		
 		hasDay = checkForDay(inputString);
 		hasDate =  checkForDate(inputString)  || checkForDateText(inputString);
 		
@@ -114,7 +114,30 @@ public class CommandParser {
 		if (hasPreposition) {
 			hasTimeWithoutAmPm = checkForTimeWithoutAmPm(inputString);
 			hasStartDate = checkForStartPreposition(inputString);
-		} 
+		}
+		
+		title = inputString;
+		
+		hasPriority = checkForPriority(inputString);
+		if (hasPriority) {
+			String priorityString = getPriorityString(inputString);
+			priority = getPriority(priorityString);
+			assert(priority > 0 && priority < 4);
+			title = removePriorityFromTitle(inputString, priorityString);
+		}
+		
+		hasLabel = checkForLabel(inputString);
+		if (hasLabel) {
+			try {
+				label = getLabel(inputString);
+			} catch (Exception e) {
+				throw new InvalidLabelFormat("Invalid label input detected.");
+			}
+			
+			title = removeLabelFromTitle(title, label);
+		}
+		
+		inputString = title;
 		
 		if (hasDate && hasTime) {
 			dates = parseDateTime(inputString);
@@ -133,8 +156,6 @@ public class CommandParser {
 			dates = fixTimeForWithoutAmPm(dates);
 		}
 		
-		title = inputString;
-		
 		numberOfDate = dates.size();
 		if (numberOfDate > 0) {
 			dates = assignDates(dates, hasPreposition, hasStartDate);
@@ -152,26 +173,7 @@ public class CommandParser {
 			
 			title = removeDateFromTitle(title, dates);
 		}
-		
-		hasLabel = checkForLabel(inputString);
-		if (hasLabel) {
-			try {
-				label = getLabel(inputString);
-			} catch (Exception e) {
-				throw new InvalidLabelFormat("Invalid label input detected.");
-			}
-			
-			title = removeLabelFromTitle(title, label);
-		}
-		
-		hasPriority = checkForPriority(inputString);
-		if (hasPriority) {
-			String priorityString = getPriorityString(inputString);
-			priority = getPriority(priorityString);
-			assert(priority > 0 && priority < 4);
-			title = removePriorityFromTitle(title, priorityString);
-		}
-		
+	
 		Task task = new Task (title, startDate, endDate, label);
 		task.setPriority(priority);
 		logger.log(Level.INFO, "Task object built.");
@@ -201,7 +203,8 @@ public class CommandParser {
 		String regex = REGEX_PRIORITY;
 		Pattern pattern = Pattern.compile(regex);
 		Matcher matcher = pattern.matcher(inputString);
-		if (matcher.find()) {
+		boolean found = matcher.find();
+		if (found) {
 			return matcher.group();
 		}
 		return null;
