@@ -46,6 +46,7 @@ public class CommandParser {
 			+ "(oct)(ober)?|" + "(nov)(ember)?|" + "(dec)(ember)?)\\b";
 	private final String REGEX_TIME_TWELVE = "((1[012]|0?[1-9])(([:|.][0-5][0-9])?))";
 	private final String REGEX_AM_PM = "(?i)(am|pm)";
+	private final String REGEX_PRIORITY = "\\b((priority|p) ?)(1|2|3)\\b";
 
 	private final String STRING_AM = "am";
 	private final String STRING_PM = "pm";
@@ -79,6 +80,7 @@ public class CommandParser {
 		String label = null;
 		Date startDate = null;
 		Date endDate = null;
+		int priority = 0;
 		
 		boolean hasDay = false;
 		boolean hasDate = false;
@@ -88,6 +90,7 @@ public class CommandParser {
 		boolean hasPreposition = false;
 		boolean hasStartDate = false;
 		boolean hasLabel = false;
+		boolean hasPriority = false;
 		int numberOfDate = 0;
 		List<Date> dates = new ArrayList<Date>();
 
@@ -161,7 +164,16 @@ public class CommandParser {
 			title = removeLabelFromTitle(title, label);
 		}
 		
+		hasPriority = checkForPriority(inputString);
+		if (hasPriority) {
+			String priorityString = getPriorityString(inputString);
+			priority = getPriority(priorityString);
+			assert(priority > 0 && priority < 4);
+			title = removePriorityFromTitle(title, priorityString);
+		}
+		
 		Task task = new Task (title, startDate, endDate, label);
+		task.setPriority(priority);
 		logger.log(Level.INFO, "Task object built.");
 		
 		if (title.length() == 0) {
@@ -170,7 +182,53 @@ public class CommandParser {
 		
 		return task;
 	}
+	
+	/**
+	 * This method checks for indication of priority level.
+	 * 
+	 * @param inputString
+	 * 			{@code String} input to be checked
+	 * @return {@code boolean} true if found
+	 */
+	private boolean checkForPriority(String inputString) {
+		String regex = REGEX_PRIORITY;
+		Pattern pattern = Pattern.compile(regex);
+		Matcher matcher = pattern.matcher(inputString);
+		return matcher.find();
+	}
 
+	private String getPriorityString(String inputString) {
+		String regex = REGEX_PRIORITY;
+		Pattern pattern = Pattern.compile(regex);
+		Matcher matcher = pattern.matcher(inputString);
+		if (matcher.find()) {
+			return matcher.group();
+		}
+		return null;
+	}
+	
+	private int getPriority(String inputString) {
+		assert(inputString != null);
+		String priority = inputString.substring(inputString.length()-1);
+		int level = Integer.parseInt(priority);
+		return level;
+	}
+	
+	/**
+	 * This method removes priority from the title.
+	 * 
+	 * @param title
+	 * 			{@code String} input for label to be removed from
+	 * @param label
+	 * 			{@code String} label to be removed
+	 * @return {@code String} label removed
+	 */
+	private String removePriorityFromTitle(String title, String priorityString) {
+		title = title.replace(priorityString, "");
+		title = removeExtraSpaces(title);
+		return title;
+	}
+	
 	/**
 	 * This method checks for indication of label through detection of '#'.
 	 * 
