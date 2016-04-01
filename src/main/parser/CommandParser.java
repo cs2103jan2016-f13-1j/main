@@ -1275,7 +1275,7 @@ public class CommandParser {
 			logger.log(Level.INFO, "Parsing indexes.");
 			
 			String indexString = getStringWithoutCommand(inputString);
-			indexString = removeExtraSpaces(indexString);
+			indexString = removeWhiteSpace(indexString);
 			ArrayList<Integer> indexes = new ArrayList<Integer>();
 			indexes = getIndex(indexString);
 			ParseIndexResult indexResult = validateIndexes(indexes, maxSize);
@@ -1284,6 +1284,13 @@ public class CommandParser {
 		} catch (Exception e) {
 			throw new InvalidTaskIndexFormat("Invalid indexes input detected.");
 		}
+	}
+	
+	//do not replace this with removeExtraSpaces
+	private String removeWhiteSpace(String string) {
+		string = string.replaceAll("\\s","");
+		assert(!string.isEmpty());
+		return string;
 	}
 
 	private String getStringWithoutCommand(String commandString) throws InvalidLabelFormat{
