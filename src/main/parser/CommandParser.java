@@ -90,20 +90,7 @@ public class CommandParser {
 		boolean hasLabel = false;
 		int numberOfDate = 0;
 		List<Date> dates = new ArrayList<Date>();
-		
-		title = inputString;
-		
-		hasLabel = checkForLabel(inputString);
-		if (hasLabel) {
-			try {
-				label = getLabel(inputString);
-			} catch (Exception e) {
-				throw new InvalidLabelFormat("Invalid label input detected.");
-			}
-			
-			title = removeLabelFromTitle(title, label);
-		}
-		
+
 		hasDay = checkForDay(inputString);
 		hasDate =  checkForDate(inputString)  || checkForDateText(inputString);
 		
@@ -142,6 +129,8 @@ public class CommandParser {
 			dates = fixTimeForWithoutAmPm(dates);
 		}
 		
+		title = inputString;
+		
 		numberOfDate = dates.size();
 		if (numberOfDate > 0) {
 			dates = assignDates(dates, hasPreposition, hasStartDate);
@@ -158,6 +147,17 @@ public class CommandParser {
 			}
 			
 			title = removeDateFromTitle(title, dates);
+		}
+		
+		hasLabel = checkForLabel(inputString);
+		if (hasLabel) {
+			try {
+				label = getLabel(inputString);
+			} catch (Exception e) {
+				throw new InvalidLabelFormat("Invalid label input detected.");
+			}
+			
+			title = removeLabelFromTitle(title, label);
 		}
 		
 		Task task = new Task (title, startDate, endDate, label);
