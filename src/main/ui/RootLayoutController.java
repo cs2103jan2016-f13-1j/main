@@ -411,7 +411,8 @@ public class RootLayoutController implements Observer {
                 } else if (keyEvent.getCode() == KeyCode.BACK_SPACE) {
                     System.out.println(commandBar.getLength());
                     if (isSearchMode && commandBar.getLength() == 0) {
-                        invoker.undo();
+                        //invoker.undo();
+                        invoker.execute(new SearchCommand(receiver, ""));
                         isSearchMode = false;
                         showSearchChipInCommandBar(isSearchMode);
                     }
