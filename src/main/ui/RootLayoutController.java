@@ -886,6 +886,9 @@ public class RootLayoutController implements Observer {
 
                 invoker.execute(commandToBeExecuted);
                 showExecutionResult(commandToBeExecuted, null);
+                if (!chipSearchMode.getText().equals("")) {
+                    invoker.execute(searchCommand);
+                }
                 logger.log(Level.INFO, "Pressed CTRL+D key: Task " + (getSelectedTaskIndex() + 1) + " done");
             }
         });
