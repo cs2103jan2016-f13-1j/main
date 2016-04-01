@@ -215,6 +215,7 @@ public class Task {
     	int indexEndDate = 3;
     	int indexEndTime = 4;
     	int indexLabel = 5;
+    	int indexPriority = 6;
     	
     	ArrayList<String> fields = getTaskFields();
     	String title = fields.get(indexTitle);
@@ -223,6 +224,7 @@ public class Task {
     	String endDate = fields.get(indexEndDate);
     	String endTime = fields.get(indexEndTime);
     	String label = fields.get(indexLabel);
+    	String priority = fields.get(indexPriority);
     	
     	StringBuilder stringBuilder = new StringBuilder(title);
 
@@ -249,6 +251,10 @@ public class Task {
     	if (label != null) {
     		stringBuilder.append(" #" + label);
     	}
+    	
+    	if (!priority.equals("0")) {
+    		stringBuilder.append(" P:" + priority);
+    	}
 
     	return stringBuilder.toString();
     }
@@ -263,8 +269,9 @@ public class Task {
      * 3 - End Date
      * 4 - End Time
      * 5 - Label
+     * 6 - Priority
      * 
-     * @return ArrayList<String> of size 6
+     * @return ArrayList<String> of size 7
      */
     private ArrayList<String> getTaskFields() {
         ArrayList<String> fields = new ArrayList<String>();
@@ -299,6 +306,8 @@ public class Task {
         } else {
         	fields.add(null);
         }
+        
+        fields.add(Integer.toString(getPriority()));
         
         return fields;
     }
