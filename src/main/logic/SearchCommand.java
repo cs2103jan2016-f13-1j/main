@@ -77,8 +77,8 @@ public class SearchCommand implements Command {
         
         LocalDate now = LocalDate.now();
         LocalDate sundayLocalDate = now.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
-        Date today = removeTimeFromDate(Date.from(now.atStartOfDay(ZoneId.systemDefault()).toInstant()));
-        Date sunday = removeTimeFromDate(Date.from(sundayLocalDate.atStartOfDay(ZoneId.systemDefault()).toInstant()));
+        Date today = Date.from(now.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        Date sunday = Date.from(sundayLocalDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
         
         for (Task task : allTasks) {
             if (task.hasDateRange()) {
@@ -103,6 +103,29 @@ public class SearchCommand implements Command {
     private ArrayList<Task> searchForNextWeek() {
         ArrayList<Task> allTasks = receiver.getAllTasks();
         ArrayList<Task> searchResults = new ArrayList<Task>();
+        
+        LocalDate now = LocalDate.now();
+        LocalDate sundayLocalDate = now.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
+        LocalDate nextSundayLocalDate = sundayLocalDate.with(TemporalAdjusters.next(DayOfWeek.SUNDAY));
+        Date sunday = Date.from(sundayLocalDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        Date nextSunday = Date.from(nextSundayLocalDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        
+        for (Task task : allTasks) {
+            if (task.hasDateRange()) {
+                Date startDate = removeTimeFromDate(task.getStartDate());
+                Date endDate = removeTimeFromDate(task.getEndDate());
+                if (startDate.equals(nextSunday) || (startDate.after(sunday) && endDate.before(nextSunday))) {
+                    searchResults.add(task);
+                } else if (endDate.equals(nextSunday) || (endDate.after(sunday) && endDate.before(nextSunday))) {
+                    searchResults.add(task);
+                }
+            } else if (task.hasSingleDate()) {
+                Date singleDate = removeTimeFromDate(task.getSingleDate());
+                if (singleDate.equals(nextSunday) || (singleDate.after(sunday) && singleDate.before(nextSunday))) {
+                    searchResults.add(task);
+                }
+            }
+        }
         
         return searchResults;
     }
