@@ -630,6 +630,10 @@ public class RootLayoutController implements Observer {
                     try {
                         Command previousCommand = invoker.undo();
                         logger.log(Level.INFO, "Pressed F2 key: UNDO operation");
+                        
+                        if (!chipSearchMode.getText().equals("")) {
+                            invoker.execute(searchCommand);
+                        }        
                         showExecutionResult(previousCommand, "Undo");
                     } catch (EmptyStackException emptyStackException) {
                         logger.log(Level.WARNING, emptyStackException.getMessage());
@@ -657,6 +661,10 @@ public class RootLayoutController implements Observer {
                     try {
                         Command previousCommand = invoker.redo();
                         logger.log(Level.INFO, "Pressed F3 key: REDO operation");
+                        
+                        if (!chipSearchMode.getText().equals("")) {
+                            invoker.execute(searchCommand);
+                        }    
                         showExecutionResult(previousCommand, "Redo");
                     } catch (EmptyStackException emptyStackException) {
                         logger.log(Level.WARNING, emptyStackException.getMessage());
@@ -742,7 +750,7 @@ public class RootLayoutController implements Observer {
                 showSearchChipInCommandBar(isSearchMode);
             }
         }
-
+        
         if (isSearchMode) {
             invoker.execute(searchCommand);
         }
