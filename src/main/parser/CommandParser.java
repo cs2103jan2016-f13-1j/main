@@ -1406,12 +1406,12 @@ public class CommandParser {
 	
 	private ParseIndexResult validateIndexes(ArrayList<Integer> indexes, int maxSize) {
 		ArrayList<Integer> validIndexes = new ArrayList<Integer>();
-		ArrayList<String> invalidIndexes = new ArrayList<String>();
+		ArrayList<Integer> invalidIndexes = new ArrayList<Integer>();
 		
 		for (int i = 0; i < indexes.size(); i++ ) {
 			int index = indexes.get(i);
 			if (index > maxSize) {
-				invalidIndexes.add(Integer.toString(index));
+				invalidIndexes.add(index);
 			} else {
 				validIndexes.add(index);
 			}
