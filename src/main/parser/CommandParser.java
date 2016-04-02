@@ -991,16 +991,25 @@ public class CommandParser {
 				toBeReplaced = toBeReplaced.concat(toBeRemoved.get(i));
 
 				index = words.indexOf(toBeRemoved.get(i));
+				String word = "";
 				if (index != 0) {
 					index = index - INDEX_OFFSET;
-					String word = getWord(title, index);
-					word = word.concat(" ");
-
-					isPreposition = checkForPrepositions(word);
-					if (isPreposition) {
-						toBeReplaced = word.concat(toBeReplaced);
+					word = getWord(title, index);
+				}
+				
+				if (word.equals("this") || word.equals("next")) {
+					toBeReplaced = word.concat(" ").concat(toBeReplaced);
+					if (index != 0) {
+						index = index - INDEX_OFFSET;
+						word = getWord(title, index);
 					}
 				}
+
+				isPreposition = checkForPrepositions(word);
+				if (isPreposition) {
+					toBeReplaced = word.concat(" ").concat(toBeReplaced);
+				}
+
 			}
 
 			toBeReplaced = "(?i)".concat(toBeReplaced); 
