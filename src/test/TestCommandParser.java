@@ -625,11 +625,10 @@ public class TestCommandParser {
 		task = parser.parseAdd("Cook dinner at 7");
 		assertEquals("Cook dinner", task.getTitle());
 
-		task = parser.parseAdd("Attend meeting on Wed");
-		
+		task = parser.parseAdd("Attend meeting on this Wed");
 		assertEquals("Attend meeting", task.getTitle());
 
-		task = parser.parseAdd("Do homework by Sunday");
+		task = parser.parseAdd("Do homework by next Sunday");
 		assertEquals("Do homework", task.getTitle());
 
 		task = parser.parseAdd("Send 100 email before 8pm");
