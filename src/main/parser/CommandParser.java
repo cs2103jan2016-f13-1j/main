@@ -225,10 +225,10 @@ public class CommandParser {
 	 * This method removes priority from the title.
 	 * 
 	 * @param title
-	 * 			{@code String} input for label to be removed from
+	 * 			{@code String} input for priority to be removed from
 	 * @param label
-	 * 			{@code String} label to be removed
-	 * @return {@code String} label removed
+	 * 			{@code String} priority to be removed
+	 * @return {@code String} priority removed
 	 */
 	private String removePriorityFromTitle(String title, String priorityString) {
 		title = title.replace(priorityString, "");
@@ -319,6 +319,7 @@ public class CommandParser {
 	
 	/**
 	 * This method checks if a valid date is specified in dd/mm format.
+	 * Eg: 20/12
 	 * 
 	 * @param inputString
 	 * 			{@code String} input to be checked
@@ -388,8 +389,7 @@ public class CommandParser {
 	
 	/**
 	 * This method corrects time separated with a dot for date parsing.
-	 * PrettyTime doesn't parse a specified date with a dotted time.
-	 * Eg: 2 June 5.30pm 
+	 * Eg: 5.30pm 
 	 * 
 	 * @param inputString
 	 * 			{@code String} input to be corrected
@@ -453,7 +453,7 @@ public class CommandParser {
 	
 	/**
 	 * This method checks if a valid time is specified.
-	 * Because this is used when preposition is detected,
+	 * Because this method is only used when preposition is detected,
 	 * am/pm is not needed
 	 * 
 	 * @param inputString
@@ -805,7 +805,7 @@ public class CommandParser {
 	 * This method removes date information from the {@code String} taken in.
 	 * 
 	 * @param title
-	 * 			{@code String} containing information
+	 * 			{@code String} containing date information
 	 * @param startDate
 	 * 			{@code Date} start date
 	 * @param endDate
@@ -1157,7 +1157,7 @@ public class CommandParser {
 	}
 
 	/**
-	 * This method allows for editing of exisitng tasks.
+	 * This method allows for editing of existing tasks.
 	 * 
 	 * @param oldTask
 	 * 			{@code Task} to be edited
@@ -1438,7 +1438,6 @@ public class CommandParser {
 		}
 	}
 	
-	//do not replace this with removeExtraSpaces
 	private String removeWhiteSpace(String string) {
 		string = string.replaceAll("\\s","");
 		assert(!string.isEmpty());
