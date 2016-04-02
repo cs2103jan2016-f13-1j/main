@@ -541,7 +541,10 @@ public class CommandParser {
 			dates.add(setTimeToZero(dates.get(i)));
 		}
 		
-		dates.remove(0);
+		if (size != 0) {
+			dates.remove(0);
+		}
+		
 		if (size == DATE_MAX_SIZE) {
 			dates.remove(0);	
 		}
