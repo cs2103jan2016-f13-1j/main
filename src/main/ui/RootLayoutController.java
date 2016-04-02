@@ -39,7 +39,6 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
@@ -161,7 +160,6 @@ public class RootLayoutController implements Observer {
     private String[] userInputArray;
     private String userCommand;
     private String userArguments;
-    private String previousTextInCommandBar;
     private int previousSelectedTaskIndex;
     private int previousCaretPosition;
     private boolean isSearchMode;
@@ -466,6 +464,16 @@ public class RootLayoutController implements Observer {
                 return new CustomListCellController();
             }
         });
+       listViewTodo.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Task>() {
+
+        @Override
+        public void changed(ObservableValue<? extends Task> observable, Task oldValue, Task newValue) {
+            System.out.println("HAHA"+oldValue.toString());
+            System.out.println(newValue.toString());
+            adjustViewportForListView();
+            
+        }
+    });
 
         listViewCompleted.setPlaceholder(new Label(MESSAGE_LISTVIEW_COMPLETED_EMPTY));
         listViewCompleted.setCellFactory(new Callback<ListView<Task>, ListCell<Task>>() {
@@ -475,6 +483,7 @@ public class RootLayoutController implements Observer {
                 return new CustomListCellController();
             }
         });
+        
 
         populateListView();
 
@@ -566,11 +575,9 @@ public class RootLayoutController implements Observer {
         System.out.println("last visible cell: " + lastVisibleIndexedCell.getIndex());
 
         if (getSelectedTaskIndex() < firstVisibleIndexedCell.getIndex()) {
-
             // viewport will scroll and show the current item at the top
             getCurrentListView().scrollTo(getSelectedTaskIndex());
         } else if (getSelectedTaskIndex() > lastVisibleIndexedCell.getIndex()) {
-
             // viewport will scroll and show the current item at the bottom
             getCurrentListView().scrollTo(firstVisibleIndexedCell.getIndex() + 1);
         }
@@ -707,10 +714,8 @@ public class RootLayoutController implements Observer {
 
         if (keyEvent.getCode() == KeyCode.UP) {
             getCurrentListView().getSelectionModel().selectPrevious();
-            adjustViewportForListView();
         } else if (keyEvent.getCode() == KeyCode.DOWN) {
             getCurrentListView().getSelectionModel().selectNext();
-            adjustViewportForListView();
         }
 
         logger.log(Level.INFO, "Pressed " + keyEvent.getCode() + " arrow key: currently selected index is "
