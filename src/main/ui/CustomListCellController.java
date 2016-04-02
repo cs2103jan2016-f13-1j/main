@@ -18,10 +18,6 @@ import main.data.Task;
 
 public class CustomListCellController extends JFXListCell<Task> {
 
-    private static final String PRIORITY_LOW = "#FFC107";
-    private static final String PRIORITY_MED = "#FF9800";
-    private static final String PRIORITY_HIGH = "#FF5252";
-
     @FXML // fx:id="horizontalBox"
     private HBox horizontalBox; // Value injected by FXMLLoader
 
@@ -73,7 +69,7 @@ public class CustomListCellController extends JFXListCell<Task> {
     }
 
     public CustomListCellController() {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/main/resources/layouts/CustomListCellLayout.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/main/resources/layouts/SmallerCustomListCellLayout.fxml"));
         loader.setController(this);
         try {
             loader.load();
