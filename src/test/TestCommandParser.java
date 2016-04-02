@@ -400,8 +400,8 @@ public class TestCommandParser {
 		assertEquals("Buy apple from today 1pm", task.toString());
 		
 		//1am has past, nearest is 1am so still matching
-		task = parser.parseAdd("Buy apple 5am");
-		assertEquals("Buy apple from today 5am", task.toString());
+		task = parser.parseAdd("Buy apple 5pm");
+		assertEquals("Buy apple from today 5pm", task.toString());
 		
 		task = parser.parseAdd("Buy apple 1-3pm");
 		assertEquals("Buy apple from today 1pm to 3pm", task.toString());
@@ -447,13 +447,13 @@ public class TestCommandParser {
 		Task task;
 
 		task = parser.parseAdd("Do homework by 2");
-		assertEquals("Do homework by today 2pm", task.toString());
+		assertEquals("Do homework by this Sun 2am", task.toString());
 		
 		task = parser.parseAdd("Do homework by 10");
-		assertEquals("Do homework by today 10am", task.toString());
+		assertEquals("Do homework by this Sun 10am", task.toString());
 
 		task = parser.parseAdd("Do homework by 10am");
-		assertEquals("Do homework by today 10am", task.toString());
+		assertEquals("Do homework by this Sun 10am", task.toString());
 
 		task = parser.parseAdd("Do homework by 10pm");
 		assertEquals("Do homework by today 10pm", task.toString());  
@@ -864,7 +864,7 @@ public class TestCommandParser {
 		assertEquals("Buy milk from 1 May 3pm #party", task2.toString());
 
 		task2 = parser.parseEdit(task, "at 4");
-		assertEquals("Buy milk from 1 May 4pm #party", task2.toString());
+		assertEquals("Buy milk from 1 May 4am #party", task2.toString());
 
 		task2 = parser.parseEdit(task, "at 4am");
 		assertEquals("Buy milk from 1 May 4am #party", task2.toString());
@@ -1132,6 +1132,7 @@ public class TestCommandParser {
 		} catch (InvalidTaskIndexFormat e) {
 			thrown = true;
 		}
+		
 		assertEquals(true, thrown);
 
 		thrown = false;
