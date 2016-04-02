@@ -1327,14 +1327,6 @@ public class RootLayoutController implements Observer {
         return tabPane.getSelectionModel().getSelectedItem().getText();
     }
 
-    private void saveCommandBarText() {
-        previousTextInCommandBar = commandBar.getText();
-    }
-
-    private void restoreCommandBarText() {
-        commandBar.setText(previousTextInCommandBar);
-    }
-
     /**
      * 
      */
@@ -1349,18 +1341,6 @@ public class RootLayoutController implements Observer {
     private void restoreCaretPosition() {
         logger.log(Level.INFO, "Restore caret position to " + previousCaretPosition);
         commandBar.positionCaret(previousCaretPosition);
-    }
-
-    /**
-     * 
-     */
-    private void moveCaretPositionToLast() {
-        logger.log(Level.INFO, "Move caret position to " + commandBar.getText().length());
-        commandBar.positionCaret(commandBar.getText().length());
-    }
-
-    private int getCaretCurrentPosition() {
-        return commandBar.getCaretPosition();
     }
 
 }
