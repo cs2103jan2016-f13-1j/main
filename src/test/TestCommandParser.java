@@ -411,7 +411,7 @@ public class TestCommandParser {
 		
 		//if ending not specified, am
 		task = parser.parseAdd("Buy apple 1pm-3");
-		assertEquals("Buy apple from today 1pm to this Sun 3am", task.toString());	
+		assertEquals("Buy apple from today 1pm to next Mon 3am", task.toString());	
 	}
 	
 	/**
@@ -447,13 +447,13 @@ public class TestCommandParser {
 		Task task;
 
 		task = parser.parseAdd("Do homework by 2");
-		assertEquals("Do homework by this Sun 2am", task.toString());
+		assertEquals("Do homework by today 2am", task.toString());
 		
 		task = parser.parseAdd("Do homework by 10");
-		assertEquals("Do homework by this Sun 10am", task.toString());
+		assertEquals("Do homework by today 10am", task.toString());
 
 		task = parser.parseAdd("Do homework by 10am");
-		assertEquals("Do homework by this Sun 10am", task.toString());
+		assertEquals("Do homework by today 10am", task.toString());
 
 		task = parser.parseAdd("Do homework by 10pm");
 		assertEquals("Do homework by today 10pm", task.toString());  
