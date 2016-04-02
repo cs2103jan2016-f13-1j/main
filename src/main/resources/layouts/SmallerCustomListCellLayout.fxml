@@ -26,9 +26,9 @@
             <Line fx:id="topLine" startY="40.0" stroke="#0000001f" StackPane.alignment="TOP_CENTER" />
             <Line fx:id="bottomLine" endY="39.0" startY="1.0" stroke="#0000001f" StackPane.alignment="BOTTOM_CENTER" />
             <Circle fx:id="circleIndex" fill="WHITE" radius="18.0" stroke="#979797" strokeType="INSIDE" />
-            <Label fx:id="labelTaskIndex" contentDisplay="CENTER" text="999" textAlignment="CENTER">
+            <Label fx:id="labelTaskIndex" contentDisplay="CENTER" text="999" textAlignment="CENTER" textOverrun="CENTER_ELLIPSIS">
                <font>
-                  <Font name="Noto Sans" size="16.0" />
+                  <Font name="Noto Sans" size="14.0" />
                </font>
             </Label>
          </children>
