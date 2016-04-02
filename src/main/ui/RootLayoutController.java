@@ -301,7 +301,6 @@ public class RootLayoutController implements Observer {
         initLogicAndParser();
         initTabSelectionListener();
         initListView();
-        initMouseListener();
         initKeyboardListener();
         initCommandBarListener();
         initSearchModeChipsLayoutListener();
@@ -325,6 +324,7 @@ public class RootLayoutController implements Observer {
                 }
             }
         });
+        logger.log(Level.INFO, "Adding listener to search mode chip");
     }
 
     /**
@@ -345,21 +345,19 @@ public class RootLayoutController implements Observer {
     /**
      * 
      */
-    private void initMouseListener() {
-        rootLayout.addEventFilter(MouseEvent.MOUSE_CLICKED, new EventHandler<Event>() {
+    private void initCommandBarListener() {
+        logger.log(Level.INFO, "Adding listener for command bar");
+        commandBar.focusedProperty().addListener(new ChangeListener<Boolean>() {
 
             @Override
-            public void handle(Event event) {
-                requestFocusForCommandBar();
-                restoreCaretPosition();
+            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+                logger.log(Level.INFO, "Command bar focus is: "+newValue);
+                if(!newValue){
+                    commandBar.requestFocus();
+                }
+                
             }
         });
-    }
-
-    /**
-     * 
-     */
-    private void initCommandBarListener() {
         commandBar.setOnKeyReleased(new EventHandler<Event>() {
 
             @Override
