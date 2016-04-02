@@ -26,8 +26,6 @@ import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.geometry.Bounds;
-import javafx.geometry.Dimension2D;
 import javafx.geometry.Insets;
 import javafx.scene.Group;
 import javafx.scene.Node;
@@ -306,25 +304,27 @@ public class RootLayoutController implements Observer {
         initMouseListener();
         initKeyboardListener();
         initCommandBarListener();
+        initSearchModeChipsLayoutListener();
+
+        logger.log(Level.INFO, "UI initialization complete");
+    }
+
+    /**
+     * 
+     */
+    private void initSearchModeChipsLayoutListener() {
         chipSearchMode.widthProperty().addListener(new ChangeListener<Number>() {
 
             @Override
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                // TODO Auto-generated method stub
-                System.out.println("Changed getWidth: " + newValue.doubleValue());
-                System.out.println("isSearchMode: " + isSearchMode);
-                System.out.println("Commandbar:" + commandBar.getLength());
                 // inset : top right bottom left
                 if (chipSearchMode.getText().isEmpty()) {
                     commandBar.setPadding(new Insets(8, 8, 8, 8));
                 } else {
                     commandBar.setPadding(new Insets(8, 8, 8, newValue.doubleValue() + 20));
                 }
-
             }
         });
-
-        logger.log(Level.INFO, "UI initialization complete");
     }
 
     /**
