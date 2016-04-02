@@ -55,7 +55,7 @@
                   <Font name="Noto Sans" size="14.0" />
                </font>
                <StackPane.margin>
-                  <Insets bottom="12.0" right="42.0" />
+                  <Insets bottom="12.0" right="28.0" />
                </StackPane.margin>
             </Label>
          </children>
