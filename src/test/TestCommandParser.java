@@ -613,7 +613,7 @@ public class TestCommandParser {
 	 * @throws InvalidLabelFormat 
 	 * @throws InvalidTitle 
 	 */
-	@Test //left quoted //pending
+	@Test
 	public void testDatedTaskTitle() throws InvalidLabelFormat, InvalidTitle{
 		CommandParser parser = new CommandParser();
 		Task task = parser.parseAdd("Attend meeting from Monday to Wednesday");
@@ -636,7 +636,7 @@ public class TestCommandParser {
 		assertEquals("Send 100 email", task.getTitle());
 
 		task = parser.parseAdd("Meet at \"Taco Tuesday\" on Wednesday 5pm");
-		//assertEquals("Meet at \"Taco Tuesday\"", task.getTitle());
+		assertEquals("Meet at \"Taco Tuesday\"", task.getTitle());
 
 		task =  parser.parseAdd("Chase \"2pm\" Korean band on Saturday 7pm");
 		assertEquals("Chase \"2pm\" Korean band", task.getTitle());
