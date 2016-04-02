@@ -433,6 +433,21 @@ public class TestCommandParser {
 
 		task = parser.parseAdd("Homework 5.15pm");
 		assertEquals("Homework from today 5:15pm", task.toString());
+		
+		task = parser.parseAdd("Do tutorial by this morning");
+		assertEquals("Do tutorial by today 8am", task.toString());
+		
+		task = parser.parseAdd("Do tutorial by this afternoon");
+		assertEquals("Do tutorial by today 12pm", task.toString());
+		
+		task = parser.parseAdd("Do tutorial by this evening");
+		assertEquals("Do tutorial by today 7pm", task.toString());
+		
+		task = parser.parseAdd("Do tutorial by midnight");
+		assertEquals("Do tutorial by today 12am", task.toString());
+		
+		task = parser.parseAdd("Do tutorial by afternoon 5pm");
+		assertEquals("Do tutorial by today 5pm", task.toString());
 	}
 	
 	/**
@@ -447,7 +462,7 @@ public class TestCommandParser {
 		Task task;
 
 		task = parser.parseAdd("Do homework by 2");
-		assertEquals("Do homework by today 2am", task.toString());
+		assertEquals("Do homework by today 2pm", task.toString());
 		
 		task = parser.parseAdd("Do homework by 10");
 		assertEquals("Do homework by today 10am", task.toString());
@@ -1172,8 +1187,8 @@ public class TestCommandParser {
 	public void testBuggyTheClown() throws InvalidLabelFormat, InvalidTitle {
 		CommandParser parser = new CommandParser();	
 		Task task,task2;
-		//task = parser.parseAdd("");
-
+		
+		
 	}
 	
 }
