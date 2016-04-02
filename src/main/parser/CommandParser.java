@@ -169,11 +169,6 @@ public class CommandParser {
 				title = removeRangeFromTitle(title);
 			}
 			
-			if (hasDay) {
-				//quotes not escaped
-				title = removeDayFromTitle(title);
-			}
-			
 			title = removeDateFromTitle(title, dates);
 		}
 	
@@ -567,7 +562,6 @@ public class CommandParser {
 	private List<Date> parseDayOnly(String inputString) {
 		List<Date> dates = parseDateOnly(inputString);
 		dates = fixDayRange(dates);
-
 		return dates;
 	}
 	
@@ -784,24 +778,6 @@ public class CommandParser {
 	}
 	
 	/**
-	 * This method removes day detected in {@code String} taken in.
-	 * 
-	 * @param title
-	 * 			{@code String} input that has day to be removed
-	 * @return {@code String} with day removed
-	 */
-	private String removeDayFromTitle(String title) {
-		String regex = getDayRegex();
-		Pattern pattern = Pattern.compile(regex);
-		Matcher matcher = pattern.matcher(title);
-		while (matcher.find()) {
-			title = title.replaceAll(matcher.group(), "");
-		}
-		title = removeExtraSpaces(title);
-		return title;
-	}
-	
-	/**
 	 * This method removes date information from the {@code String} taken in.
 	 * 
 	 * @param title
@@ -899,7 +875,8 @@ public class CommandParser {
 		ArrayList<String> days = new ArrayList<String>();
 		days.add(day.toString().toLowerCase());
 		days.add(day.getDisplayName(TextStyle.SHORT, locale).toLowerCase());
-
+		days = getDaysShorthand(days, day.toString().toLowerCase());
+		
 		int date = dateTime.getDayOfMonth();
 		int month = dateTime.getMonthValue();
 		LocalDateTime today = LocalDateTime.now();
@@ -912,6 +889,25 @@ public class CommandParser {
 		}
 		return days;
 	}
+	
+	private ArrayList<String> getDaysShorthand(ArrayList<String> days, String day) {
+		switch (day) {
+			case "tuesday" :
+				days.add("tues");
+				break;
+			case "wednesday" :
+				days.add("weds");
+				break;
+			case "thursday" :
+				days.add("thur");
+				days.add("thurs");
+				break;
+			default :
+				break;
+		}
+		return days;
+	}
+	
 	
 	/**
 	 * This method generates an {@code ArrayList<String} of possible time formats from {@code LocalDateTime}.
