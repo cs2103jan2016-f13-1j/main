@@ -45,8 +45,10 @@ public class CommandParser {
 			+ "(jun)(e)?|" + "(jul)(y)?|" + "(aug)(ust)?|" + "(sep)(tember)?|"
 			+ "(oct)(ober)?|" + "(nov)(ember)?|" + "(dec)(ember)?)\\b";
 	private final String REGEX_TIME_TWELVE = "((1[012]|0?[1-9])(([:|.][0-5][0-9])?))";
+	private final String REGEX_TIME = "\\b((this )?(morning|afternoon|evening)|tonight|midnight)\\b";
 	private final String REGEX_AM_PM = "(?i)(am|pm)";
 	private final String REGEX_PRIORITY = "\\b((priority|p) ?)(1|2|3)\\b";
+	
 
 	private final String STRING_AM = "am";
 	private final String STRING_PM = "pm";
@@ -102,7 +104,7 @@ public class CommandParser {
 			inputString = correctDateText(inputString);
 		}
 		
-		hasTime = checkForTime(inputString);
+		hasTime = checkForTimeTwelve(inputString) || checkForTime(inputString);
 		if (hasTime) {
 			inputString = correctDotTime(inputString);
 			hasDateRange = checkForRangeTime(inputString);
@@ -165,8 +167,12 @@ public class CommandParser {
 			startDate = dates.get(DATE_START);
 			endDate = dates.get(DATE_END);
 
-			if (hasDateRange) {
-				title = removeRangeFromTitle(title);
+			if (hasTime) {
+				title = removeTimeFromTitle(title);
+				
+				if (hasDateRange) {
+					title = removeRangeFromTitle(title);
+				}
 			}
 			
 			title = removeDateFromTitle(title, dates);
@@ -371,7 +377,7 @@ public class CommandParser {
 	 * 			{@code String} input to be check
 	 * @return {@code boolean} true if time found
 	 */
-	public boolean checkForTime(String inputString) {
+	private boolean checkForTimeTwelve(String inputString) {
 		String regex = getTimeRegex();
 		Pattern pattern = Pattern.compile(regex);
 		Matcher matcher = pattern.matcher(inputString);
@@ -380,6 +386,13 @@ public class CommandParser {
 
 	private String getTimeRegex() {
 		return "\\b" + REGEX_TIME_TWELVE + REGEX_AM_PM;
+	}
+	
+	private boolean checkForTime(String inputString) {
+		String regex = REGEX_TIME;
+		Pattern pattern = Pattern.compile(regex);
+		Matcher matcher = pattern.matcher(inputString);
+		return matcher.find();
 	}
 	
 	/**
@@ -596,6 +609,7 @@ public class CommandParser {
 		dates = fixTimeToNearest(dates, false);
 		dates = fixTimeForRange(dates);
 		return dates;
+		
 	}
 	
 	/**
@@ -758,6 +772,26 @@ public class CommandParser {
 	
 	private Date getDate(List<Date> dates, int index) {
 		return dates.get(index);
+	}
+	
+	/**
+	 * This method removes the word indicated time specified in {@code String} taken in.
+	 * The regular expression used includes an optional preposition in front of the time range.
+	 * If preposition exist, it will be removed.
+	 * 
+	 * @param title
+	 * 			{@code String} input that has time word to be removed
+	 * @return {@code String} with time word removed
+	 */
+	private String removeTimeFromTitle(String title) {
+		String regex = REGEX_PREPOSITION_ALL + REGEX_TIME;
+		Pattern pattern = Pattern.compile(regex);
+		Matcher matcher = pattern.matcher(title);
+		while (matcher.find()) {
+			title = title.replaceAll(matcher.group(), "");
+		}
+		title = removeExtraSpaces(title);
+		return title;
 	}
 	
 	/**
@@ -1114,7 +1148,7 @@ public class CommandParser {
 		boolean hasDate = false;
 		String regex = "";
 
-		hasTime = checkForTime(inputString);
+		hasTime = checkForTimeTwelve(inputString);
 		if (hasTime) {
 			hasDateRange = checkForRangeTime(inputString);
 
@@ -1211,7 +1245,7 @@ public class CommandParser {
 		List<Date> dates = new ArrayList<Date>();
 		
 		hasDate =  checkForDate(inputString)  || checkForDateText(inputString);
-		hasTime = checkForTime(inputString) || checkForRangeTime(inputString);
+		hasTime = checkForTimeTwelve(inputString) || checkForRangeTime(inputString);
 		
 		if (!hasTime) {
 			hasPreposition = checkForPrepositions(inputString);
