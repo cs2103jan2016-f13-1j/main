@@ -17,7 +17,6 @@ import com.sun.javafx.scene.control.skin.VirtualFlow;
 
 import javafx.animation.FadeTransition;
 import javafx.animation.SequentialTransition;
-import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -128,7 +127,6 @@ public class RootLayoutController implements Observer {
     @FXML // fx:id="anchorPaneExecutionResult"
     private AnchorPane anchorPaneExecutionResult; // Value injected by
                                                   // FXMLLoader
-
     @FXML // fx:id="labelExecutedCommand"
     private Label labelExecutedCommand; // Value injected by FXMLLoader
 
@@ -140,8 +138,6 @@ public class RootLayoutController implements Observer {
 
     private VirtualFlow<IndexedCell<String>> virtualFlowTodo;
     private VirtualFlow<IndexedCell<String>> virtualFlowCompleted;
-    private IndexedCell<String> firstVisibleIndexedCell;
-    private IndexedCell<String> lastVisibleIndexedCell;
 
     private Invoker invoker;
     private Receiver receiver;
@@ -171,90 +167,19 @@ public class RootLayoutController implements Observer {
 
     @Override
     public void update(Observable o, Object arg) {
-
         if (o instanceof Receiver) {
+            logger.log(Level.INFO, "(" + commandToBeExecuted.getClass().getSimpleName() + ") update() is called");
 
-            if (commandToBeExecuted instanceof AddCommand) {
-                logger.log(Level.INFO, "(ADD TASK) update() is called");
-                Platform.runLater(new Runnable() {
+            boolean isAddCommand = commandToBeExecuted instanceof AddCommand;
+            boolean isSearchCommand = commandToBeExecuted instanceof SearchCommand;
 
-                    @Override
-                    public void run() {
-                        refreshListView();
-                        listViewTodo.getSelectionModel().selectLast();
-                        listViewTodo.scrollTo(todoTasks.size() - 1);
-                    }
-                });
+            refreshListView();
 
-            } else if (commandToBeExecuted instanceof DeleteCommand) {
-                logger.log(Level.INFO, "(DELETE TASK) update() is called");
-                Platform.runLater(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        saveSelectedTaskIndex();
-                        refreshListView();
-                        restoreListViewPreviousSelection();
-                    }
-                });
-
-            } else if (commandToBeExecuted instanceof EditCommand) {
-                logger.log(Level.INFO, "(EDIT TASK) update() is called");
-                Platform.runLater(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        saveSelectedTaskIndex();
-                        refreshListView();
-                        restoreListViewPreviousSelection();
-                    }
-                });
-            } else if (commandToBeExecuted instanceof SearchCommand) {
-                saveSelectedTaskIndex();
-                refreshListView();
-                restoreListViewPreviousSelection();
+            if (isAddCommand) {
+                // TODO
+            } else if (isSearchCommand) {
                 showFeedback(true, MESSAGE_FEEDBACK_ACTION_SEARCH,
                         " Found " + currentTaskList.size() + " tasks for -" + userArguments + "-");
-
-            } else if (commandToBeExecuted instanceof PriorityCommand) {
-                logger.log(Level.INFO, "(CHANGE TASK PRIORITY) update() is called");
-                Platform.runLater(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        saveSelectedTaskIndex();
-                        refreshListView();
-                        restoreListViewPreviousSelection();
-                        // showResult(true, "Task deleted!");
-
-                    }
-                });
-            } else if (commandToBeExecuted instanceof DoneCommand) {
-                logger.log(Level.INFO, "(DONE TASK) update() is called");
-                Platform.runLater(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        saveSelectedTaskIndex();
-                        refreshListView();
-                        restoreListViewPreviousSelection();
-                        // showResult(true, "Task deleted!");
-
-                    }
-                });
-            } else if (commandToBeExecuted instanceof UndoneCommand) {
-                logger.log(Level.INFO, "(UNDONE TASK) update() is called");
-                Platform.runLater(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        saveSelectedTaskIndex();
-                        refreshListView();
-                        restoreListViewPreviousSelection();
-                        // showResult(true, "Task deleted!");
-
-                    }
-                });
             }
         }
 
@@ -329,7 +254,6 @@ public class RootLayoutController implements Observer {
     *
     */
     private void initTabSelectionListener() {
-
         tabPane.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Tab>() {
 
             @Override
@@ -337,7 +261,6 @@ public class RootLayoutController implements Observer {
                 setCurrentTaskListAndListView(newValue.getText());
             }
         });
-
     }
 
     /**
@@ -349,11 +272,11 @@ public class RootLayoutController implements Observer {
 
             @Override
             public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-                logger.log(Level.INFO, "Command bar focus is: "+newValue);
-                if(!newValue){
+                logger.log(Level.INFO, "Command bar focus is: " + newValue);
+                if (!newValue) {
                     commandBar.requestFocus();
                 }
-                
+
             }
         });
         commandBar.setOnKeyReleased(new EventHandler<Event>() {
@@ -364,7 +287,6 @@ public class RootLayoutController implements Observer {
 
             }
         });
-
         commandBar.setOnAction(new EventHandler<ActionEvent>() {
 
             @Override
@@ -405,14 +327,8 @@ public class RootLayoutController implements Observer {
                     handleDeleteKey();
                     keyEvent.consume();
                 } else if (keyEvent.getCode() == KeyCode.BACK_SPACE) {
-                    System.out.println(commandBar.getLength());
-                    if (isSearchMode && commandBar.getLength() == 0) {
-                        //invoker.undo();
-                        invoker.execute(new SearchCommand(receiver, ""));
-                        isSearchMode = false;
-                        showSearchChipInCommandBar(isSearchMode);
-                    }
-                    // keyEvent.consume();
+                    // Do not consume the event here (i.e. event.consume())
+                    handleBackspaceKey();
                 } else if (HOTKEY_CTRL_TAB.match(keyEvent)) {
                     handleCtrlTab();
                     keyEvent.consume();
@@ -464,16 +380,15 @@ public class RootLayoutController implements Observer {
                 return new CustomListCellController();
             }
         });
-       listViewTodo.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Task>() {
+        listViewTodo.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Task>() {
 
-        @Override
-        public void changed(ObservableValue<? extends Task> observable, Task oldValue, Task newValue) {
-            System.out.println("HAHA"+oldValue.toString());
-            System.out.println(newValue.toString());
-            adjustViewportForListView();
-            
-        }
-    });
+            @Override
+            public void changed(ObservableValue<? extends Task> observable, Task oldValue, Task newValue) {
+                // TODO will encounter nullpointer on first run
+                adjustViewportForListView();
+
+            }
+        });
 
         listViewCompleted.setPlaceholder(new Label(MESSAGE_LISTVIEW_COMPLETED_EMPTY));
         listViewCompleted.setCellFactory(new Callback<ListView<Task>, ListCell<Task>>() {
@@ -483,7 +398,6 @@ public class RootLayoutController implements Observer {
                 return new CustomListCellController();
             }
         });
-        
 
         populateListView();
 
@@ -517,10 +431,12 @@ public class RootLayoutController implements Observer {
      * 
      */
     private void refreshListView() {
+        saveSelectedTaskIndex();
         observableTodoTasks.clear();
         observableCompletedTasks.clear();
         populateListView();
         setCurrentTaskListAndListView(getSelectedTabName());
+        restoreListViewPreviousSelection();
         // toggleUndoRedo();
     }
 
@@ -568,18 +484,22 @@ public class RootLayoutController implements Observer {
      */
     private void adjustViewportForListView() {
 
-        firstVisibleIndexedCell = getCurrentVirtualFlow().getFirstVisibleCellWithinViewPort();
-        lastVisibleIndexedCell = getCurrentVirtualFlow().getLastVisibleCellWithinViewPort();
+        // firstVisibleIndexedCell =
+        // getCurrentVirtualFlow().getFirstVisibleCellWithinViewPort();
+        // lastVisibleIndexedCell =
+        // getCurrentVirtualFlow().getLastVisibleCellWithinViewPort();
 
-        System.out.println("first visible cell: " + firstVisibleIndexedCell.getIndex());
-        System.out.println("last visible cell: " + lastVisibleIndexedCell.getIndex());
+        int firstVisibleIndex = getCurrentVirtualFlow().getFirstVisibleCellWithinViewPort().getIndex();
+        int lastVisibleIndex = getCurrentVirtualFlow().getLastVisibleCellWithinViewPort().getIndex();
+        System.out.println("first visible cell: " + firstVisibleIndex);
+        System.out.println("last visible cell: " + lastVisibleIndex);
 
-        if (getSelectedTaskIndex() < firstVisibleIndexedCell.getIndex()) {
+        if (getSelectedTaskIndex() < firstVisibleIndex) {
             // viewport will scroll and show the current item at the top
             getCurrentListView().scrollTo(getSelectedTaskIndex());
-        } else if (getSelectedTaskIndex() > lastVisibleIndexedCell.getIndex()) {
+        } else if (getSelectedTaskIndex() > lastVisibleIndex) {
             // viewport will scroll and show the current item at the bottom
-            getCurrentListView().scrollTo(firstVisibleIndexedCell.getIndex() + 1);
+            getCurrentListView().scrollTo(firstVisibleIndex + 1);
         }
     }
 
@@ -625,61 +545,38 @@ public class RootLayoutController implements Observer {
      * 
      */
     private void handleFTwoKey() {
-        Platform.runLater(new Runnable() {
+        if (invoker.isUndoAvailable()) {
+            try {
+                Command previousCommand = invoker.undo();
+                logger.log(Level.INFO, "Pressed F2 key: UNDO operation");
 
-            @Override
-            public void run() {
-
-                if (invoker.isUndoAvailable()) {
-                    saveSelectedTaskIndex();
-                    try {
-                        Command previousCommand = invoker.undo();
-                        logger.log(Level.INFO, "Pressed F2 key: UNDO operation");
-                        
-                        if (!chipSearchMode.getText().equals("")) {
-                            invoker.execute(searchCommand);
-                        }        
-                        showExecutionResult(previousCommand, "Undo");
-                    } catch (EmptyStackException emptyStackException) {
-                        logger.log(Level.WARNING, emptyStackException.getMessage());
-                    }
-
-                    // showResult(true, "Undo!");
-
+                if (!chipSearchMode.getText().equals("")) {
+                    invoker.execute(searchCommand);
                 }
+                showExecutionResult(previousCommand, "Undo");
+            } catch (EmptyStackException emptyStackException) {
+                logger.log(Level.WARNING, emptyStackException.getMessage());
             }
-        });
-
+        }
     }
 
     /**
      * 
      */
     private void handleFThreeKey() {
-        Platform.runLater(new Runnable() {
+        if (invoker.isRedoAvailable()) {
+            try {
+                Command previousCommand = invoker.redo();
+                logger.log(Level.INFO, "Pressed F3 key: REDO operation");
 
-            @Override
-            public void run() {
-
-                if (invoker.isRedoAvailable()) {
-                    saveSelectedTaskIndex();
-                    try {
-                        Command previousCommand = invoker.redo();
-                        logger.log(Level.INFO, "Pressed F3 key: REDO operation");
-                        
-                        if (!chipSearchMode.getText().equals("")) {
-                            invoker.execute(searchCommand);
-                        }    
-                        showExecutionResult(previousCommand, "Redo");
-                    } catch (EmptyStackException emptyStackException) {
-                        logger.log(Level.WARNING, emptyStackException.getMessage());
-                    }
-
-                    // showResult(true, "Redo!");
+                if (!chipSearchMode.getText().equals("")) {
+                    invoker.execute(searchCommand);
                 }
+                showExecutionResult(previousCommand, "Redo");
+            } catch (EmptyStackException emptyStackException) {
+                logger.log(Level.WARNING, emptyStackException.getMessage());
             }
-        });
-
+        }
     }
 
     /**
@@ -711,7 +608,6 @@ public class RootLayoutController implements Observer {
      * 
      */
     private void handleArrowKeys(KeyEvent keyEvent) {
-
         if (keyEvent.getCode() == KeyCode.UP) {
             getCurrentListView().getSelectionModel().selectPrevious();
         } else if (keyEvent.getCode() == KeyCode.DOWN) {
@@ -720,14 +616,6 @@ public class RootLayoutController implements Observer {
 
         logger.log(Level.INFO, "Pressed " + keyEvent.getCode() + " arrow key: currently selected index is "
                 + getSelectedTaskIndex() + " current listview: " + currentListView.getId());
-        Platform.runLater(new Runnable() {
-
-            @Override
-            public void run() {
-
-            }
-        });
-
     }
 
     /**
@@ -753,7 +641,7 @@ public class RootLayoutController implements Observer {
                 showSearchChipInCommandBar(isSearchMode);
             }
         }
-        
+
         if (isSearchMode) {
             invoker.execute(searchCommand);
         }
@@ -763,6 +651,18 @@ public class RootLayoutController implements Observer {
         commandBar.clear();
         // showUndo();
 
+    }
+
+    /**
+     * 
+     */
+    private void handleBackspaceKey() {
+        if (isSearchMode && commandBar.getLength() == 0) {
+            // invoker.undo();
+            invoker.execute(new SearchCommand(receiver, ""));
+            isSearchMode = false;
+            showSearchChipInCommandBar(isSearchMode);
+        }
     }
 
     /**
@@ -796,47 +696,26 @@ public class RootLayoutController implements Observer {
             invoker = new Invoker();
         }
 
-        Platform.runLater(new Runnable() {
-
-            @Override
-            public void run() {
-                logger.log(Level.INFO, "Pressed DELETE key: task index  " + getSelectedTaskIndex());
-                saveSelectedTaskIndex();
-                taskIndexesToBeDeleted = new ArrayList<>(1);
-                taskIndexesToBeDeleted.add(getSelectedTaskIndex());
-                commandToBeExecuted = new DeleteCommand(receiver, getTasksToBeDeleted(getSelectedTaskIndex()));
-                invoker.execute(commandToBeExecuted);
-                showExecutionResult(commandToBeExecuted, null);
-                // refreshListView();
-                // restoreListViewPreviousSelection();
-                // showUndo();
-                // showResult(true, "Task deleted!");
-            }
-        });
+        logger.log(Level.INFO, "Pressed DELETE key: task index  " + getSelectedTaskIndex());
+        taskIndexesToBeDeleted = new ArrayList<>(1);
+        taskIndexesToBeDeleted.add(getSelectedTaskIndex());
+        commandToBeExecuted = new DeleteCommand(receiver, getTasksToBeDeleted(getSelectedTaskIndex()));
+        invoker.execute(commandToBeExecuted);
+        showExecutionResult(commandToBeExecuted, null);
     }
 
     /**
      * 
      */
     private void handleCtrlTab() {
-        Platform.runLater(new Runnable() {
+        SingleSelectionModel<Tab> selectionModel = tabPane.getSelectionModel();
 
-            @Override
-            public void run() {
-                SingleSelectionModel<Tab> selectionModel = tabPane.getSelectionModel();
-
-                // already at the last tab, lets bounce back to first tab
-                if (selectionModel.getSelectedIndex() == tabPane.getTabs().size() - 1) {
-                    selectionModel.selectFirst();
-                } else {
-                    selectionModel.selectNext();
-                }
-
-                requestFocusForCommandBar();
-                restoreCaretPosition();
-            }
-
-        });
+        // already at the last tab, lets bounce back to first tab
+        if (selectionModel.getSelectedIndex() == tabPane.getTabs().size() - 1) {
+            selectionModel.selectFirst();
+        } else {
+            selectionModel.selectNext();
+        }
 
         if (getSelectedTabName().equals("To-do")) {
             currentListView = listViewTodo;
@@ -853,48 +732,34 @@ public class RootLayoutController implements Observer {
      * 
      */
     private void handleCtrlP() {
-        Platform.runLater(new Runnable() {
-
-            @Override
-            public void run() {
-                saveSelectedTaskIndex();
-                Task oldTask = currentTaskList.get(getSelectedTaskIndex());
-                commandToBeExecuted = new PriorityCommand(receiver, oldTask);
-                invoker.execute(commandToBeExecuted);
-
-                logger.log(Level.INFO, "Pressed CTRL+P key: Task " + getSelectedTaskIndex() + 1 + " Priority");
-            }
-        });
+        Task oldTask = currentTaskList.get(getSelectedTaskIndex());
+        commandToBeExecuted = new PriorityCommand(receiver, oldTask);
+        invoker.execute(commandToBeExecuted);
+        logger.log(Level.INFO, "Pressed CTRL+P key: Task " + getSelectedTaskIndex() + 1 + " Priority");
     }
 
     /**
      * 
      */
     private void handleCtrlD() {
-        Platform.runLater(new Runnable() {
+        taskToBeExecuted = currentTaskList.get(getSelectedTaskIndex());
 
-            @Override
-            public void run() {
-                saveSelectedTaskIndex();
-                taskToBeExecuted = currentTaskList.get(getSelectedTaskIndex());
+        if (getSelectedTabName().equals(tabTodo.getText())) {
+            logger.log(Level.INFO, "Pressed CTRL+D key: Task " + (getSelectedTaskIndex() + 1) + " done");
+            commandToBeExecuted = new DoneCommand(receiver, taskToBeExecuted);
 
-                if (getSelectedTabName().equals(tabTodo.getText())) {
-                    logger.log(Level.INFO, "Pressed CTRL+D key: Task " + (getSelectedTaskIndex() + 1) + " done");
-                    commandToBeExecuted = new DoneCommand(receiver, taskToBeExecuted);
+        } else if (getSelectedTabName().equals(tabCompleted.getText())) {
+            logger.log(Level.INFO, "Pressed CTRL+D key: Task " + (getSelectedTaskIndex() + 1) + " undone");
+            commandToBeExecuted = new UndoneCommand(receiver, taskToBeExecuted);
+        }
 
-                } else if (getSelectedTabName().equals(tabCompleted.getText())) {
-                    logger.log(Level.INFO, "Pressed CTRL+D key: Task " + (getSelectedTaskIndex() + 1) + " undone");
-                    commandToBeExecuted = new UndoneCommand(receiver, taskToBeExecuted);
-                }
+        invoker.execute(commandToBeExecuted);
+        showExecutionResult(commandToBeExecuted, null);
+        if (!chipSearchMode.getText().equals("")) {
+            invoker.execute(searchCommand);
+        }
+        logger.log(Level.INFO, "Pressed CTRL+D key: Task " + (getSelectedTaskIndex() + 1) + " done");
 
-                invoker.execute(commandToBeExecuted);
-                showExecutionResult(commandToBeExecuted, null);
-                if (!chipSearchMode.getText().equals("")) {
-                    invoker.execute(searchCommand);
-                }
-                logger.log(Level.INFO, "Pressed CTRL+D key: Task " + (getSelectedTaskIndex() + 1) + " done");
-            }
-        });
     }
 
     /**
@@ -1158,7 +1023,6 @@ public class RootLayoutController implements Observer {
      * 
      */
     private void showExecutionResult(Command executedCommand, String undoOrRedo) {
-
         logger.log(Level.INFO, "Showing user execution result: ");
 
         if (executedCommand instanceof AddCommand) {
@@ -1187,7 +1051,7 @@ public class RootLayoutController implements Observer {
             }
 
         }
-
+        //TODO deleting something will not show the deleted item toString()
         if (executedCommand instanceof DeleteCommand) {
             if (undoOrRedo != null) {
                 labelExecutedCommand.setText(undoOrRedo + WHITESPACE + "delete.");
@@ -1288,11 +1152,13 @@ public class RootLayoutController implements Observer {
         // if previous selected index was the last index in the previous list
         if (previousSelectedTaskIndex == getCurrentTaskList().size()) {
             getCurrentListView().getSelectionModel().selectLast();
-            getCurrentListView().scrollTo(getCurrentTaskList().size() - 1);
+            // getCurrentListView().scrollTo(getCurrentTaskList().size() - 1);
             logger.log(Level.INFO, "Restore ListView selection to last item");
         } else {
+            System.out.println(getCurrentListView().getId());
+            System.out.println(previousSelectedTaskIndex);
             getCurrentListView().getSelectionModel().select(previousSelectedTaskIndex);
-            getCurrentListView().scrollTo(previousSelectedTaskIndex);
+            // getCurrentListView().scrollTo(previousSelectedTaskIndex);
             logger.log(Level.INFO, "Restore ListView selection to previous to previous item");
         }
     }
@@ -1339,13 +1205,4 @@ public class RootLayoutController implements Observer {
         previousCaretPosition = commandBar.getCaretPosition();
         logger.log(Level.INFO, "Save caret position to " + previousCaretPosition);
     }
-
-    /**
-     * 
-     */
-    private void restoreCaretPosition() {
-        logger.log(Level.INFO, "Restore caret position to " + previousCaretPosition);
-        commandBar.positionCaret(previousCaretPosition);
-    }
-
 }
