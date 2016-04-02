@@ -11,7 +11,7 @@
 <?import javafx.scene.shape.Rectangle?>
 <?import javafx.scene.text.Font?>
 
-<HBox fx:id="horizontalBox" alignment="CENTER_LEFT" cacheHint="SPEED" minHeight="60.0" nodeOrientation="LEFT_TO_RIGHT" prefHeight="60.0" spacing="20.0" stylesheets="@../styles/CustomListCellLayout.css" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1">
+<HBox fx:id="horizontalBox" alignment="CENTER_LEFT" cacheHint="SPEED" minHeight="60.0" nodeOrientation="LEFT_TO_RIGHT" prefHeight="60.0" prefWidth="700.0" spacing="20.0" stylesheets="@../styles/CustomListCellLayout.css" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1">
    <children>
       <JFXButton fx:id="labelTaskTime" buttonType="RAISED" cacheHint="SPEED" minWidth="160.0" prefHeight="40.0" text="00:00 - 00:00" textAlignment="CENTER">
          <font>
@@ -26,9 +26,9 @@
             <Line fx:id="topLine" startY="40.0" stroke="#0000001f" StackPane.alignment="TOP_CENTER" />
             <Line fx:id="bottomLine" endY="39.0" startY="1.0" stroke="#0000001f" StackPane.alignment="BOTTOM_CENTER" />
             <Circle fx:id="circleIndex" fill="WHITE" radius="18.0" stroke="#979797" strokeType="INSIDE" />
-            <Label fx:id="labelTaskIndex" contentDisplay="CENTER" text="999" textAlignment="CENTER" textOverrun="CENTER_ELLIPSIS">
+            <Label fx:id="labelTaskIndex" contentDisplay="CENTER" text="999" textAlignment="CENTER">
                <font>
-                  <Font name="Noto Sans" size="14.0" />
+                  <Font name="Noto Sans" size="16.0" />
                </font>
             </Label>
          </children>
@@ -47,7 +47,7 @@
             </Label>
          </children>
       </VBox>
-      <StackPane alignment="BOTTOM_RIGHT" cacheHint="SPEED" HBox.hgrow="ALWAYS">
+      <StackPane alignment="BOTTOM_RIGHT" cacheHint="SPEED" prefWidth="155.0" HBox.hgrow="ALWAYS">
          <children>
             <Rectangle fx:id="rectangleTaskPriority" fill="#ff6f1f" height="60.0" stroke="TRANSPARENT" strokeType="INSIDE" width="14.0" />
             <Label fx:id="labelTaskLabel" alignment="CENTER" minWidth="86.0" prefHeight="24.0" style="-fx-background-color: TRANSPARENT; -fx-border-radius: 4 4 4 4; -fx-background-radius: 4 4 4 4; -fx-border-color: #303F9F; -fx-border-width: 1.5;" text="Work" textFill="#303f9f">
@@ -55,7 +55,7 @@
                   <Font name="Noto Sans" size="14.0" />
                </font>
                <StackPane.margin>
-                  <Insets bottom="12.0" right="28.0" />
+                  <Insets bottom="12.0" right="42.0" />
                </StackPane.margin>
             </Label>
          </children>

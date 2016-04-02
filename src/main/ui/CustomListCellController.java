@@ -162,7 +162,6 @@ public class CustomListCellController extends JFXListCell<Task> {
 
     public void showTaskDate(Task task) {
         if (!task.hasDate()) {
-            System.out.println("Task has no date");
             verticalBox.getChildren().remove(this.labelTaskDate);
             return;
         }
