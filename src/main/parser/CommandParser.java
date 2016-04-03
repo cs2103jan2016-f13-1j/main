@@ -1077,15 +1077,19 @@ public class CommandParser {
 	 * 			{@code String} input to be parsed
 	 * @return {@code Date} if date found, {@code null} if date is not found
 	 */
-	public Date getDateForSearch(String inputString) {
+	public Date getDateForSearch(String inputString) {		
 		if (isSpecialCase(inputString)) {
 			return null;
 		}
 		
 		List<Date> dates = parseDateTime(inputString);
+		
 		if (dates.size() == 0) {
 			return null;
 		} else {
+			if (inputString.length() == 1) {
+				dates = setDate(dates, inputString);
+			}
 			return dates.get(0);
 		}
 	}
@@ -1104,6 +1108,15 @@ public class CommandParser {
 		} else {
 			return false;
 		}
+	}
+	
+	private List<Date> setDate(List<Date> dates, String inputString) {
+		int date = Integer.parseInt(inputString);
+		Calendar cal = Calendar.getInstance();
+        cal.setTime(dates.get(DATE_INDEX));
+        cal.set(Calendar.DATE, date);
+        dates.add(DATE_INDEX, cal.getTime());
+		return dates;
 	}
 	
 	/**
