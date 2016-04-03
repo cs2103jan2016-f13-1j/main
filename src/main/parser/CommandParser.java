@@ -966,7 +966,6 @@ public class CommandParser {
 		timings.add(Integer.toString(hour));
 		timings.add(Integer.toString(hour).concat(colon));
 		timings.add(Integer.toString(hour).concat(dot));
-
 		if (hour < 12) {
 			if (hour == 0) {
 				String temp = STRING_TWELVE;
@@ -975,6 +974,8 @@ public class CommandParser {
 				timings.add(temp.concat(dot).concat(STRING_AM));
 			} else {
 				timings.add(Integer.toString(hour).concat(STRING_AM));
+				timings.add(colon.concat(STRING_AM));
+				timings.add(dot.concat(STRING_AM));
 				timings.add(Integer.toString(hour).concat(colon).concat(STRING_AM));
 				timings.add(Integer.toString(hour).concat(dot).concat(STRING_AM));
 			}
@@ -988,6 +989,8 @@ public class CommandParser {
 			} else {
 				timings.add(Integer.toString(hour));
 				timings.add(Integer.toString(hour).concat(STRING_PM));
+				timings.add(colon.concat(STRING_PM));
+				timings.add(dot.concat(STRING_PM));
 				timings.add(Integer.toString(hour).concat(colon).concat(STRING_PM));
 				timings.add(Integer.toString(hour).concat(dot).concat(STRING_PM));
 			}
