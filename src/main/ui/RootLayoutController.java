@@ -67,6 +67,8 @@ public class RootLayoutController implements Observer {
     private static final String STRING_COMMAND_DELETE = "delete";
     private static final String STRING_COMMAND_DELETE_SHORTHAND = "del";
     private static final String STRING_COMMAND_SEARCH = "search";
+    private static final String STRING_COMMAND_DONE = "done";
+    private static final String STRING_COMMAND_UNDONE = "undone";
     private static final String STRING_DOUBLE_QUOTATIONS_WITH_TEXT = "\"%1$s\"";
     private static final String STRING_TAB_TASK_SIZE = "(%1$s)";
     private static final String STRING_LISTVIEW_TODO_EMPTY = "You have no task!";
@@ -76,6 +78,8 @@ public class RootLayoutController implements Observer {
     private static final String STRING_FEEDBACK_ACTION_DELETE = "Deleting: ";
     private static final String STRING_FEEDBACK_TOTAL_TASK = "(%1$s tasks)";
     private static final String STRING_FEEDBACK_ACTION_SEARCH = "Searching:";
+    private static final String STRING_FEEDBACK_ACTION_DONE = "Mark as done: ";
+    private static final String STRING_FEEDBACK_ACTION_UNDONE = "Mark as undone: ";
     private static final String STRING_ERROR_NOT_FOUND = "Task -%1$s- not found.";
     private static final String STRING_EMPTY = "";
     private static final String STRING_WHITESPACE = " ";
@@ -145,7 +149,7 @@ public class RootLayoutController implements Observer {
     private Command commandToBeExecuted;
     private SearchCommand searchCommand;
     private Task taskToBeExecuted;
-    private ArrayList<Integer> taskIndexesToBeDeleted;
+    private ArrayList<Integer> taskIndexesToBeExecuted;
 
     private ArrayList<Task> todoTasks;
     private ArrayList<Task> completedTasks;
@@ -196,7 +200,8 @@ public class RootLayoutController implements Observer {
         listViewCompleted.getSelectionModel().selectFirst();
         initCustomViewportBehaviorForListView();
         setCurrentTaskListAndListView(tabTodo.getText());
-        
+
+        // TODO Refactor this.
         listViewTodo.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Task>() {
 
             @Override
@@ -217,8 +222,6 @@ public class RootLayoutController implements Observer {
         });
 
     }
-    
-    
 
     @FXML
     private void initialize() {
@@ -677,8 +680,8 @@ public class RootLayoutController implements Observer {
         }
 
         logger.log(Level.INFO, "Pressed DELETE key: task index  " + getSelectedTaskIndex());
-        taskIndexesToBeDeleted = new ArrayList<>(1);
-        taskIndexesToBeDeleted.add(getSelectedTaskIndex());
+        taskIndexesToBeExecuted = new ArrayList<>(1);
+        taskIndexesToBeExecuted.add(getSelectedTaskIndex());
         commandToBeExecuted = new DeleteCommand(receiver, getTasksToBeDeleted(getSelectedTaskIndex()));
         invoker.execute(commandToBeExecuted);
         showExecutionResult(commandToBeExecuted, null);
@@ -770,6 +773,12 @@ public class RootLayoutController implements Observer {
             case STRING_COMMAND_SEARCH :
                 parseSearch();
                 break;
+            case STRING_COMMAND_DONE :
+                parseDone();
+                break;
+            case STRING_COMMAND_UNDONE :
+                parseUndone();
+                break;
 
             default :
                 parseAdd();
@@ -809,14 +818,14 @@ public class RootLayoutController implements Observer {
         try {
             parseIndexResult = commandParser.parseIndexes(userInput, getCurrentTaskList().size());
             if (parseIndexResult.hasValidIndex()) {
-                taskIndexesToBeDeleted = parseIndexResult.getValidIndexes();
+                taskIndexesToBeExecuted = parseIndexResult.getValidIndexes();
             }
-            String parseResult = taskIndexesToBeDeleted.toString();
+            String parseResult = taskIndexesToBeExecuted.toString();
             System.out.println("user arguments: " + userArguments);
             System.out.println("parse result: " + parseResult);
 
-            if (taskIndexesToBeDeleted.size() == 1) {
-                int taskIndex = taskIndexesToBeDeleted.get(0) - 1;
+            if (taskIndexesToBeExecuted.size() == 1) {
+                int taskIndex = taskIndexesToBeExecuted.get(0) - 1;
 
                 // if selected index is out of bound
                 if (taskIndex < 0 || taskIndex > currentTaskList.size()) {
@@ -832,7 +841,7 @@ public class RootLayoutController implements Observer {
 
             } else {
                 showFeedback(true, STRING_FEEDBACK_ACTION_DELETE, userArguments + STRING_WHITESPACE
-                        + String.format(STRING_FEEDBACK_TOTAL_TASK, taskIndexesToBeDeleted.size()));
+                        + String.format(STRING_FEEDBACK_TOTAL_TASK, taskIndexesToBeExecuted.size()));
             }
         } catch (InvalidTaskIndexFormat invalidTaskIndexFormat) {
             logger.log(Level.INFO, "DELETE command index(es) invalid: " + userArguments);
@@ -841,7 +850,7 @@ public class RootLayoutController implements Observer {
             return;
         }
 
-        commandToBeExecuted = new DeleteCommand(receiver, getTasksToBeDeleted(taskIndexesToBeDeleted));
+        commandToBeExecuted = new DeleteCommand(receiver, getTasksToBeDeleted(taskIndexesToBeExecuted));
 
     }
 
@@ -912,23 +921,6 @@ public class RootLayoutController implements Observer {
      * 
      */
     private void parseSearch() {
-        // if (userInput.equals(STRING_COMMAND_SEARCH)) {
-        // logger.log(Level.INFO, "SEARCH command has no arguments. Interpreting
-        // as ADD command instead");
-        // // no arguments found. parse the input as an Add operation instead
-        // parseAdd();
-        // return;
-        // }
-        //
-        // // this allow a search without a search term
-        // if (userInput.equals(STRING_COMMAND_SEARCH + STRING_WHITESPACE)) {
-        // logger.log(Level.INFO, "Searching: " + userInput);
-        // commandToBeExecuted = new SearchCommand(receiver, STRING_WHITESPACE);
-        // userArguments = STRING_WHITESPACE;
-        // invoker.execute(commandToBeExecuted);
-        // return;
-        // }
-
         if (userInput.equals(STRING_COMMAND_SEARCH)) {
             userArguments = STRING_WHITESPACE;
         }
@@ -948,6 +940,106 @@ public class RootLayoutController implements Observer {
             searchCommand = new SearchCommand(receiver, dateFromUserInput);
         }
         invoker.execute(commandToBeExecuted);
+    }
+
+    private void parseDone() {
+        // TODO Refactor this
+        if (userInputArray.length <= 1) {
+            logger.log(Level.INFO, "DONE command has no index. Interpreting as ADD command instead");
+            parseAdd(); // no index found. parse the input as an Add operation
+                        // instead
+            return;
+        }
+
+        logger.log(Level.INFO, "Sending user input to commandParser: " + userInput);
+        ParseIndexResult parseIndexResult;
+        try {
+            parseIndexResult = commandParser.parseIndexes(userInput, getCurrentTaskList().size());
+            if (parseIndexResult.hasValidIndex()) {
+                taskIndexesToBeExecuted = parseIndexResult.getValidIndexes();
+            }
+            String parseResult = taskIndexesToBeExecuted.toString();
+            System.out.println("user arguments: " + userArguments);
+            System.out.println("parse result: " + parseResult);
+
+            if (taskIndexesToBeExecuted.size() == 1) {
+                int taskIndex = taskIndexesToBeExecuted.get(0) - 1;
+
+                // if selected index is out of bound
+                if (taskIndex < 0 || taskIndex > currentTaskList.size()) {
+                    showFeedback(true, STRING_FEEDBACK_ACTION_DONE,
+                            String.format(STRING_ERROR_NOT_FOUND, userArguments));
+                    clearStoredUserInput();
+                } else {
+                    System.out.println("CurrentList size: " + getCurrentTaskList().size());
+                    inputFeedback = currentTaskList.get(taskIndex).toString();
+                    taskToBeExecuted = getCurrentTaskList().get(taskIndex);
+                    showFeedback(true, STRING_FEEDBACK_ACTION_DONE, inputFeedback);
+                }
+
+            } else {
+                showFeedback(true, STRING_FEEDBACK_ACTION_DONE, userArguments + STRING_WHITESPACE
+                        + String.format(STRING_FEEDBACK_TOTAL_TASK, taskIndexesToBeExecuted.size()));
+            }
+        } catch (InvalidTaskIndexFormat invalidTaskIndexFormat) {
+            logger.log(Level.INFO, "DONE command index(es) invalid: " + userArguments);
+            showFeedback(true, STRING_FEEDBACK_ACTION_DONE, String.format(STRING_ERROR_NOT_FOUND, userArguments));
+            clearStoredUserInput();
+            return;
+        }
+
+        commandToBeExecuted = new DoneCommand(receiver, getTasksToBeDeleted(taskIndexesToBeExecuted));
+
+    }
+
+    private void parseUndone() {
+        // TODO Refactor this
+        if (userInputArray.length <= 1) {
+            logger.log(Level.INFO, "DONE command has no index. Interpreting as ADD command instead");
+            parseAdd(); // no index found. parse the input as an Add operation
+                        // instead
+            return;
+        }
+
+        logger.log(Level.INFO, "Sending user input to commandParser: " + userInput);
+        ParseIndexResult parseIndexResult;
+        try {
+            parseIndexResult = commandParser.parseIndexes(userInput, getCurrentTaskList().size());
+            if (parseIndexResult.hasValidIndex()) {
+                taskIndexesToBeExecuted = parseIndexResult.getValidIndexes();
+            }
+            String parseResult = taskIndexesToBeExecuted.toString();
+            System.out.println("user arguments: " + userArguments);
+            System.out.println("parse result: " + parseResult);
+
+            if (taskIndexesToBeExecuted.size() == 1) {
+                int taskIndex = taskIndexesToBeExecuted.get(0) - 1;
+
+                // if selected index is out of bound
+                if (taskIndex < 0 || taskIndex > currentTaskList.size()) {
+                    showFeedback(true, STRING_FEEDBACK_ACTION_UNDONE,
+                            String.format(STRING_ERROR_NOT_FOUND, userArguments));
+                    clearStoredUserInput();
+                } else {
+                    System.out.println("CurrentList size: " + getCurrentTaskList().size());
+                    inputFeedback = currentTaskList.get(taskIndex).toString();
+                    taskToBeExecuted = getCurrentTaskList().get(taskIndex);
+                    showFeedback(true, STRING_FEEDBACK_ACTION_UNDONE, inputFeedback);
+                }
+
+            } else {
+                showFeedback(true, STRING_FEEDBACK_ACTION_UNDONE, userArguments + STRING_WHITESPACE
+                        + String.format(STRING_FEEDBACK_TOTAL_TASK, taskIndexesToBeExecuted.size()));
+            }
+        } catch (InvalidTaskIndexFormat invalidTaskIndexFormat) {
+            logger.log(Level.INFO, "UNDONE command index(es) invalid: " + userArguments);
+            showFeedback(true, STRING_FEEDBACK_ACTION_UNDONE, String.format(STRING_ERROR_NOT_FOUND, userArguments));
+            clearStoredUserInput();
+            return;
+        }
+
+        commandToBeExecuted = new UndoneCommand(receiver, getTasksToBeDeleted(taskIndexesToBeExecuted));
+
     }
 
     private ArrayList<Task> getTasksToBeDeleted(int taskIndex) {
@@ -1041,10 +1133,10 @@ public class RootLayoutController implements Observer {
                 labelExecutedCommand.setText("Deleted:");
                 labelExecutedCommand.setTextFill(Color.web(AppColor.PRIMARY_RED_LIGHT, 0.7));
 
-                if (taskIndexesToBeDeleted.size() == 1) {
+                if (taskIndexesToBeExecuted.size() == 1) {
                     labelExecutionDetails.setText(taskToBeExecuted.toString());
-                } else if (taskIndexesToBeDeleted.size() > 1) {
-                    labelExecutionDetails.setText(taskIndexesToBeDeleted.size() + " tasks");
+                } else if (taskIndexesToBeExecuted.size() > 1) {
+                    labelExecutionDetails.setText(taskIndexesToBeExecuted.size() + " tasks");
                 }
 
             }
@@ -1064,7 +1156,7 @@ public class RootLayoutController implements Observer {
                 labelExecutedCommand.setTextFill(Color.web(AppColor.PRIMARY_WHITE));
                 labelExecutionDetails.setTextFill(Color.web(AppColor.PRIMARY_WHITE, 0));
             } else {
-                labelExecutedCommand.setText("Task complete.");
+                labelExecutedCommand.setText(taskIndexesToBeExecuted.size() + STRING_WHITESPACE + "task completed.");
                 labelExecutedCommand.setTextFill(Color.web(AppColor.PRIMARY_LIME_LIGHT, 0.7));
                 labelExecutionDetails.setTextFill(Color.web(AppColor.PRIMARY_WHITE, 0));
             }
@@ -1077,7 +1169,7 @@ public class RootLayoutController implements Observer {
                 labelExecutedCommand.setTextFill(Color.web(AppColor.PRIMARY_WHITE));
                 labelExecutionDetails.setTextFill(Color.web(AppColor.PRIMARY_WHITE, 0));
             } else {
-                labelExecutedCommand.setText("Mark task as incomplete.");
+                labelExecutedCommand.setText("Mark "+taskIndexesToBeExecuted.size() + STRING_WHITESPACE + "task as incomplete.");
                 labelExecutedCommand.setTextFill(Color.web(AppColor.PRIMARY_LIME_LIGHT, 0.7));
                 labelExecutionDetails.setTextFill(Color.web(AppColor.PRIMARY_WHITE, 0));
             }
