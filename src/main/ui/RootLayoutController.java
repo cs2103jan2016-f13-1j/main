@@ -630,6 +630,9 @@ public class RootLayoutController implements Observer {
             if (isSetFileLocationCommand) {
                 if (userInputArray.length <= 1) {
                     File selectedFile = showFileChooserDialog();
+                    if(selectedFile == null){
+                        return;
+                    }
                     String selectedFilePath = getFilePath(selectedFile);
                     commandToBeExecuted = new SetFileLocationCommand(receiver, selectedFilePath);
                 }
@@ -1085,6 +1088,7 @@ public class RootLayoutController implements Observer {
         fileChooser.setTitle("Set file location");
         fileChooser.getExtensionFilters().addAll(new ExtensionFilter("Text Files", "*.txt"));
         fileChooser.setInitialFileName("tasks");
+        
         System.out.println(receiver.getFileDir());
         fileChooser.setInitialDirectory(new File(receiver.getFileDir()));
         File selectedFile = fileChooser.showSaveDialog(mainApp.getPrimaryStage());
