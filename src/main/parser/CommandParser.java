@@ -44,7 +44,7 @@ public class CommandParser {
 			+ "(feb)(ruary)?|" + "(mar)(ch)?|" + "(apr)(il)?|" + "(may)|"
 			+ "(jun)(e)?|" + "(jul)(y)?|" + "(aug)(ust)?|" + "(sep)(tember)?|"
 			+ "(oct)(ober)?|" + "(nov)(ember)?|" + "(dec)(ember)?)\\b";
-	private final String REGEX_DATE_WORD = "\\b(today|tonight|tomorrow|tmr|tml|tmrw)\\b";
+	private final String REGEX_DATE_WORD = "\\b(today|tdy|tonight|tomorrow|tmr|tml|tmrw)\\b";
 	private final String REGEX_TIME_TWELVE = "((1[012]|0?[1-9])(([:|.][0-5][0-9])?))";
 	private final String REGEX_TIME = "\\b(morning|afternoon|evening|midnight)\\b";
 	private final String REGEX_AM_PM = "(?i)(am|pm)";
@@ -200,6 +200,9 @@ public class CommandParser {
 	private String correctShorthand(String inputString) {
 		String regex = "\\b(tmr|tml|tmrw)\\b";
 		inputString = inputString.replaceAll(regex, "tomorrow");
+		
+		regex = "\\b(tdy)\\b";
+		inputString = inputString.replaceAll(regex, "today");
 		return inputString;
 	}
 	
@@ -933,10 +936,13 @@ public class CommandParser {
 		if (month == today.getMonthValue()) {
 			if (date == today.getDayOfMonth()) {
 				days.add("today");
+				days.add("tdy");
 				days.add("tonight");
 			} else if (date == (today.getDayOfMonth()+1)) {
 				days.add("tomorrow");
 				days.add("tmr");
+				days.add("tml");
+				days.add("tmrw");
 			}
 		}
 		return days;
