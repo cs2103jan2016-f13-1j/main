@@ -44,12 +44,11 @@ public class CommandParser {
 			+ "(feb)(ruary)?|" + "(mar)(ch)?|" + "(apr)(il)?|" + "(may)|"
 			+ "(jun)(e)?|" + "(jul)(y)?|" + "(aug)(ust)?|" + "(sep)(tember)?|"
 			+ "(oct)(ober)?|" + "(nov)(ember)?|" + "(dec)(ember)?)\\b";
-	private final String REGEX_DATE_WORD = "\\b(today|tonight)\\b";
+	private final String REGEX_DATE_WORD = "\\b(today|tonight|tomorrow|tmr|tml|tmrw)\\b";
 	private final String REGEX_TIME_TWELVE = "((1[012]|0?[1-9])(([:|.][0-5][0-9])?))";
 	private final String REGEX_TIME = "\\b(morning|afternoon|evening|midnight)\\b";
 	private final String REGEX_AM_PM = "(?i)(am|pm)";
 	private final String REGEX_PRIORITY = "\\b((priority|p) ?)(1|2|3)\\b";
-	
 
 	private final String STRING_AM = "am";
 	private final String STRING_PM = "pm";
@@ -191,9 +190,16 @@ public class CommandParser {
 		boolean hasDateRange = checkForRangeTime(inputString);
 		inputString = correctDateText(inputString);
 		inputString = correctDotTime(inputString);
+		inputString = correctShorthand(inputString);
 		if (hasDateRange) {
 			inputString = correctRangeTime(inputString);
 		}
+		return inputString;
+	}
+	
+	private String correctShorthand(String inputString) {
+		String regex = "\\b(tmr|tml|tmrw)\\b";
+		inputString = inputString.replaceAll(regex, "tomorrow");
 		return inputString;
 	}
 	
@@ -1249,7 +1255,7 @@ public class CommandParser {
 			//exception doesn't matter if edit is using parseAdd
 			editedTask = exception.getTask();
 		}
-		
+	
 		if (editedTask.getTitle().length() != 0) {
 			newTitle = editedTask.getTitle();
 		}
@@ -1282,6 +1288,11 @@ public class CommandParser {
 			} 
 		}
 		
+		if (checkForDateWord(inputString)) {
+			hasDate = true;
+			hasTime = true;
+		}
+
 		if (editedTask.hasDate()) {			
 			if (hasDate && !hasTime) {
 				//only date, reuse time
