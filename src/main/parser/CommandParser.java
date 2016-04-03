@@ -44,8 +44,9 @@ public class CommandParser {
 			+ "(feb)(ruary)?|" + "(mar)(ch)?|" + "(apr)(il)?|" + "(may)|"
 			+ "(jun)(e)?|" + "(jul)(y)?|" + "(aug)(ust)?|" + "(sep)(tember)?|"
 			+ "(oct)(ober)?|" + "(nov)(ember)?|" + "(dec)(ember)?)\\b";
+	private final String REGEX_DATE_WORD = "\\b(today|tonight)\\b";
 	private final String REGEX_TIME_TWELVE = "((1[012]|0?[1-9])(([:|.][0-5][0-9])?))";
-	private final String REGEX_TIME = "\\b(morning|afternoon|evening|tonight|midnight)\\b";
+	private final String REGEX_TIME = "\\b(morning|afternoon|evening|midnight)\\b";
 	private final String REGEX_AM_PM = "(?i)(am|pm)";
 	private final String REGEX_PRIORITY = "\\b((priority|p) ?)(1|2|3)\\b";
 	
@@ -113,6 +114,11 @@ public class CommandParser {
 			}
 		}
 
+		if (checkForDateWord(inputString)) {
+			hasDate = true;
+			hasTime = true;
+		}
+		
 		hasPreposition = checkForPrepositions(inputString);
 		if (hasPreposition) {
 			hasTimeWithoutAmPm = checkForTimeWithoutAmPm(inputString);
@@ -354,6 +360,13 @@ public class CommandParser {
 
 	private String getDateRegexText() {
 		return REGEX_PREPOSITION_ALL + "?" + REGEX_DATE_TEXT + REGEX_MONTH_TEXT;
+	}
+	
+	private boolean checkForDateWord(String inputString) {
+		String regex = REGEX_DATE_WORD;
+		Pattern pattern = Pattern.compile(regex);
+		Matcher matcher = pattern.matcher(inputString);
+		return matcher.find();
 	}
 	
 	/**
@@ -912,8 +925,10 @@ public class CommandParser {
 		if (month == today.getMonthValue()) {
 			if (date == today.getDayOfMonth()) {
 				days.add("today");
+				days.add("tonight");
 			} else if (date == (today.getDayOfMonth()+1)) {
 				days.add("tomorrow");
+				days.add("tmr");
 			}
 		}
 		return days;
