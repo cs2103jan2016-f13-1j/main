@@ -426,7 +426,6 @@ public class TestCommandParser {
 		assertEquals("Dinner from next Mon 7pm", task.toString());
 
 		task = parser.parseAdd("Dinner 7PM today");
-		System.out.println(task.toString());
 		assertEquals("Dinner from today 7pm", task.toString());
 
 		task = parser.parseAdd("Homework 5.15pm");
@@ -462,14 +461,14 @@ public class TestCommandParser {
 		task = parser.parseAdd("Do homework by 2");
 		assertEquals("Do homework by next Mon 2am", task.toString());
 		
-		task = parser.parseAdd("Do homework by 10");
-		assertEquals("Do homework by today 10pm", task.toString());
+		task = parser.parseAdd("Do homework by 11");
+		assertEquals("Do homework by today 11pm", task.toString());
 
 		task = parser.parseAdd("Do homework by 10am");
 		assertEquals("Do homework by next Mon 10am", task.toString());
 
-		task = parser.parseAdd("Do homework by 10pm");
-		assertEquals("Do homework by today 10pm", task.toString());  
+		task = parser.parseAdd("Do homework by 11pm");
+		assertEquals("Do homework by today 11pm", task.toString());  
 
 		task = parser.parseAdd("Do homework by 10 mar 2pm");
 		assertEquals("Do homework by 10 Mar 2pm", task.toString());
@@ -838,12 +837,12 @@ public class TestCommandParser {
 		Task task, task2;
     	
      	task = parser.parseAdd("Buy milk");
-    	task2 = parser.parseEdit(task, "by 10");
-    	assertEquals("Buy milk by today 10pm", task2.toString());
+    	task2 = parser.parseEdit(task, "by 11");
+    	assertEquals("Buy milk by today 11pm", task2.toString());
     	
     	task = parser.parseAdd("Buy milk");
-    	task2 = parser.parseEdit(task, "10pm");
-    	assertEquals("Buy milk from today 10pm", task2.toString());
+    	task2 = parser.parseEdit(task, "11pm");
+    	assertEquals("Buy milk from today 11pm", task2.toString());
 
     	task = parser.parseAdd("Buy milk");
     	task2 = parser.parseEdit(task, "10pm to 11pm");
@@ -1010,6 +1009,41 @@ public class TestCommandParser {
 		assertEquals("Drink coffee by 1 May 2pm #overdose", task2.toString());
 	}
 	
+	/**
+	 * Tests for usage of common abbrevations of words.
+	 * 
+	 * @throws InvalidLabelFormat
+	 * @throws InvalidTitle
+	 */
+	@Test
+	public void testShortcut() throws InvalidLabelFormat, InvalidTitle {
+		CommandParser parser = new CommandParser();	
+		Task task,task2;
+		
+		task = parser.parseAdd("Supper tmr 11pm");
+		assertEquals("Supper from next Mon 11pm", task.toString());
+		
+		task = parser.parseAdd("Supper tml 11pm");
+		assertEquals("Supper from next Mon 11pm", task.toString());
+		
+		task = parser.parseAdd("Supper tmrw 11pm");
+		assertEquals("Supper from next Mon 11pm", task.toString());
+		
+		task = parser.parseAdd("Donate books");
+		task2 = parser.parseEdit(task, "tmr 11pm");
+		assertEquals("Donate books from next Mon 11pm", task2.toString());
+		
+		task = parser.parseAdd("Supper today 8pm");
+		assertEquals("Supper from today 8pm", task.toString());
+		
+		task = parser.parseAdd("Supper tdy 8pm");
+		assertEquals("Supper from today 8pm", task.toString());
+		
+		task = parser.parseAdd("Donate books");
+		task2 = parser.parseEdit(task, "tdy 11pm");
+		assertEquals("Donate books from today 11pm", task2.toString());
+	}
+		
 	// =============================
 	// Test parsing indexes
 	// =============================
@@ -1185,8 +1219,9 @@ public class TestCommandParser {
 	public void testBuggyTheClown() throws InvalidLabelFormat, InvalidTitle {
 		CommandParser parser = new CommandParser();	
 		Task task,task2;
-		task = parser.parseAdd("Dinner tonight");
-
+		
+		
+		
 		
 		//assertEquals("Buy apple from today 1pm to next Mon 3am", task.toString());	
 	}
