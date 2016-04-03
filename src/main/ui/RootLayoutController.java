@@ -196,8 +196,29 @@ public class RootLayoutController implements Observer {
         listViewCompleted.getSelectionModel().selectFirst();
         initCustomViewportBehaviorForListView();
         setCurrentTaskListAndListView(tabTodo.getText());
+        
+        listViewTodo.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Task>() {
+
+            @Override
+            public void changed(ObservableValue<? extends Task> observable, Task oldValue, Task newValue) {
+                // TODO will encounter nullpointer on first run
+                adjustViewportForListView();
+
+            }
+        });
+        listViewCompleted.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Task>() {
+
+            @Override
+            public void changed(ObservableValue<? extends Task> observable, Task oldValue, Task newValue) {
+                // TODO will encounter nullpointer on first run
+                adjustViewportForListView();
+
+            }
+        });
 
     }
+    
+    
 
     @FXML
     private void initialize() {
@@ -284,7 +305,7 @@ public class RootLayoutController implements Observer {
             @Override
             public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
                 // TODO Auto-generated method stub
-                handleKeyStrokes();
+                handleKeyStrokes(newValue);
 
             }
         });
@@ -376,15 +397,6 @@ public class RootLayoutController implements Observer {
             @Override
             public JFXListCell<Task> call(ListView<Task> param) {
                 return new CustomListCellController();
-            }
-        });
-        listViewTodo.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Task>() {
-
-            @Override
-            public void changed(ObservableValue<? extends Task> observable, Task oldValue, Task newValue) {
-                // TODO will encounter nullpointer on first run
-                adjustViewportForListView();
-
             }
         });
 
@@ -550,12 +562,12 @@ public class RootLayoutController implements Observer {
     /**
      * 
      */
-    private void handleKeyStrokes() {
+    private void handleKeyStrokes(String input) {
         if (commandParser == null) {
             commandParser = new CommandParser();
         }
-
-        userInput = commandBar.getText().trim();
+        userInput = input;
+        userInput = userInput.trim();
         assert userInput != null;
 
         if (userInput.isEmpty()) {
