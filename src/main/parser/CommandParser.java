@@ -1302,8 +1302,16 @@ public class CommandParser {
 
 		if (editedTask.hasDate()) {		
 			if (hasDate && !hasTime) {
+				/*
 				//only date, reuse time
 				dates = reuseTime(editedTask, oldTask);
+				*/
+				
+				//new
+				//if date only, dont reuse time
+				dates.add(editedTask.getStartDate());
+				dates.add(editedTask.getEndDate());
+				isDatedOnly = true;
 			} else if (!hasDate && hasTime) {
 				//only time, reuse date
 				dates = reuseDate(editedTask, oldTask);
@@ -1390,7 +1398,7 @@ public class CommandParser {
 				oldEnd = latest.getTime();
 			}
 		//}
-		
+			
 		if (!oldTask.hasDate()) {
 			//floating task
 			//reset time here else it will take current
@@ -1497,7 +1505,7 @@ public class CommandParser {
 			if (endDate == null) {
 				oldEnd = null;
 			}
-	//	}
+		//}
 		
 		dates.add(oldStart);
 		dates.add(oldEnd);
