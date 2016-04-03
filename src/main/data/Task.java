@@ -507,6 +507,10 @@ public class Task {
     		stringBuilder.append("-");
     	}
     	
+    	if (getIsDatedOnly()) {
+    		stringBuilder = new StringBuilder("-");
+    	}
+    	
     	return stringBuilder.toString();
     }
     
