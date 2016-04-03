@@ -158,6 +158,7 @@ public class RootLayoutController implements Observer {
     private SearchCommand searchCommand;
     private Command executedCommand;
     private Task taskToBeExecuted;
+    private ArrayList<Task> listOfTaskToBeExecuted;
     private ArrayList<Integer> taskIndexesToBeExecuted;
 
     private ArrayList<Task> todoTasks;
@@ -216,7 +217,10 @@ public class RootLayoutController implements Observer {
                 } else {
                     // select back the previous first index that was in the
                     // range
-                    getCurrentListView().getSelectionModel().select(taskIndexesToBeExecuted.get(0) - 1);
+                    if (getCurrentTaskList().size() > 0) {
+                        getCurrentListView().getSelectionModel().select(taskIndexesToBeExecuted.get(0) - 1);
+                    }
+
                 }
                 executedCommand = null;
 
@@ -932,6 +936,18 @@ public class RootLayoutController implements Observer {
             return;
         }
 
+        if (userArguments.toLowerCase().equals("all")) {
+            previousSelectedTaskIndex = 0;
+            listOfTaskToBeExecuted = getCurrentTaskList();
+            commandToBeExecuted = new DeleteCommand(receiver, listOfTaskToBeExecuted);
+            getCurrentListView().getSelectionModel().clearSelection();
+            getCurrentListView().getSelectionModel().selectAll();
+            showFeedback(true, STRING_FEEDBACK_ACTION_DELETE, userArguments + STRING_WHITESPACE
+                    + String.format(STRING_FEEDBACK_TOTAL_TASK, getCurrentTaskList().size()));
+            return;
+
+        }
+
         logger.log(Level.INFO, "Sending user input to commandParser: " + userInput);
         ParseIndexResult parseIndexResult;
         try {
@@ -949,19 +965,21 @@ public class RootLayoutController implements Observer {
                 System.out.println("CurrentList size: " + getCurrentTaskList().size());
                 inputFeedback = currentTaskList.get(taskIndex).toString();
                 taskToBeExecuted = getCurrentTaskList().get(taskIndex);
-                commandToBeExecuted = new DeleteCommand(receiver, getTasksToBeDeleted(taskIndexesToBeExecuted));
+                listOfTaskToBeExecuted = getTasksToBeDeleted(taskIndexesToBeExecuted);
+                commandToBeExecuted = new DeleteCommand(receiver, listOfTaskToBeExecuted);
                 getCurrentListView().getSelectionModel().clearSelection();
                 getCurrentListView().getSelectionModel().select(taskIndex);
                 showFeedback(true, STRING_FEEDBACK_ACTION_DELETE, inputFeedback);
 
             } else if (taskIndexesToBeExecuted.size() > 1) {
-                commandToBeExecuted = new DeleteCommand(receiver, getTasksToBeDeleted(taskIndexesToBeExecuted));
+                listOfTaskToBeExecuted = getTasksToBeDeleted(taskIndexesToBeExecuted);
+                commandToBeExecuted = new DeleteCommand(receiver, listOfTaskToBeExecuted);
                 getCurrentListView().getSelectionModel().clearSelection();
                 for (int i : taskIndexesToBeExecuted) {
                     getCurrentListView().getSelectionModel().select(i - 1);
                 }
                 showFeedback(true, STRING_FEEDBACK_ACTION_DELETE, userArguments + STRING_WHITESPACE
-                        + String.format(STRING_FEEDBACK_TOTAL_TASK, taskIndexesToBeExecuted.size()));
+                        + String.format(STRING_FEEDBACK_TOTAL_TASK, listOfTaskToBeExecuted.size()));
             }
 
         } catch (InvalidTaskIndexFormat invalidTaskIndexFormat) {
@@ -1316,10 +1334,13 @@ public class RootLayoutController implements Observer {
                 labelExecutedCommand.setText("Deleted:");
                 labelExecutedCommand.setTextFill(Color.web(AppColor.PRIMARY_RED_LIGHT, 0.7));
 
-                if (taskIndexesToBeExecuted.size() == 1) {
+                if (listOfTaskToBeExecuted.size() == 1) {
                     labelExecutionDetails.setText(taskToBeExecuted.toString());
-                } else if (taskIndexesToBeExecuted.size() > 1) {
-                    labelExecutionDetails.setText(taskIndexesToBeExecuted.size() + " tasks");
+                } else if (listOfTaskToBeExecuted.size() > 1) {
+                    labelExecutionDetails.setText(listOfTaskToBeExecuted.size() + " tasks");
+                } else if (userArguments.toLowerCase().equals("all")) {
+                    // TODO very dirty. refactor for better checking
+                    labelExecutionDetails.setText("all");
                 }
 
             }
