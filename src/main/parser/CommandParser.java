@@ -44,11 +44,11 @@ public class CommandParser {
 			+ "(feb)(ruary)?|" + "(mar)(ch)?|" + "(apr)(il)?|" + "(may)|"
 			+ "(jun)(e)?|" + "(jul)(y)?|" + "(aug)(ust)?|" + "(sep)(tember)?|"
 			+ "(oct)(ober)?|" + "(nov)(ember)?|" + "(dec)(ember)?)\\b";
+	private final String REGEX_DATE_WORD = "\\b(today|tdy|tonight|tomorrow|tmr|tml|tmrw)\\b";
 	private final String REGEX_TIME_TWELVE = "((1[012]|0?[1-9])(([:|.][0-5][0-9])?))";
-	private final String REGEX_TIME = "\\b(morning|afternoon|evening|tonight|midnight)\\b";
+	private final String REGEX_TIME = "\\b(morning|afternoon|evening|midnight)\\b";
 	private final String REGEX_AM_PM = "(?i)(am|pm)";
 	private final String REGEX_PRIORITY = "\\b((priority|p) ?)(1|2|3)\\b";
-	
 
 	private final String STRING_AM = "am";
 	private final String STRING_PM = "pm";
@@ -100,25 +100,21 @@ public class CommandParser {
 		hasDay = checkForDay(inputString);
 		hasDate =  checkForDate(inputString)  || checkForDateText(inputString);
 		
-		if (hasDate && checkForDateText(inputString)) {
-			inputString = correctDateText(inputString);
+		hasTime = checkForTimeTwelve(inputString) || checkForTime(inputString);
+		hasDateRange = checkForRangeTime(inputString);
+
+		if (checkForDateWord(inputString)) {
+			hasDate = true;
+			hasTime = true;
 		}
 		
-		hasTime = checkForTimeTwelve(inputString) || checkForTime(inputString);
-		if (hasTime) {
-			inputString = correctDotTime(inputString);
-			hasDateRange = checkForRangeTime(inputString);
-			if (hasDateRange) {
-				inputString = correctRangeTime(inputString);
-			}
-		}
-
 		hasPreposition = checkForPrepositions(inputString);
 		if (hasPreposition) {
 			hasTimeWithoutAmPm = checkForTimeWithoutAmPm(inputString);
 			hasStartDate = checkForStartPreposition(inputString);
 		}
 		
+		inputString = correctUserInput(inputString);
 		title = inputString;
 		
 		hasPriority = checkForPriority(inputString);
@@ -189,6 +185,27 @@ public class CommandParser {
 		
 		return task;
 	}
+	
+	private String correctUserInput(String inputString) {
+		boolean hasDateRange = checkForRangeTime(inputString);
+		inputString = correctDateText(inputString);
+		inputString = correctDotTime(inputString);
+		inputString = correctShorthand(inputString);
+		if (hasDateRange) {
+			inputString = correctRangeTime(inputString);
+		}
+		return inputString;
+	}
+	
+	private String correctShorthand(String inputString) {
+		String regex = "\\b(tmr|tml|tmrw)\\b";
+		inputString = inputString.replaceAll(regex, "tomorrow");
+		
+		regex = "\\b(tdy)\\b";
+		inputString = inputString.replaceAll(regex, "today");
+		return inputString;
+	}
+	
 	
 	/**
 	 * This method checks for indication of priority level.
@@ -354,6 +371,13 @@ public class CommandParser {
 
 	private String getDateRegexText() {
 		return REGEX_PREPOSITION_ALL + "?" + REGEX_DATE_TEXT + REGEX_MONTH_TEXT;
+	}
+	
+	private boolean checkForDateWord(String inputString) {
+		String regex = REGEX_DATE_WORD;
+		Pattern pattern = Pattern.compile(regex);
+		Matcher matcher = pattern.matcher(inputString);
+		return matcher.find();
 	}
 	
 	/**
@@ -912,8 +936,13 @@ public class CommandParser {
 		if (month == today.getMonthValue()) {
 			if (date == today.getDayOfMonth()) {
 				days.add("today");
+				days.add("tdy");
+				days.add("tonight");
 			} else if (date == (today.getDayOfMonth()+1)) {
 				days.add("tomorrow");
+				days.add("tmr");
+				days.add("tml");
+				days.add("tmrw");
 			}
 		}
 		return days;
@@ -1082,6 +1111,7 @@ public class CommandParser {
 			return null;
 		}
 		
+		inputString = correctShorthand(inputString);
 		List<Date> dates = parseDateTime(inputString);
 		
 		if (dates.size() == 0) {
@@ -1232,7 +1262,7 @@ public class CommandParser {
 			//exception doesn't matter if edit is using parseAdd
 			editedTask = exception.getTask();
 		}
-		
+	
 		if (editedTask.getTitle().length() != 0) {
 			newTitle = editedTask.getTitle();
 		}
@@ -1265,6 +1295,11 @@ public class CommandParser {
 			} 
 		}
 		
+		if (checkForDateWord(inputString)) {
+			hasDate = true;
+			hasTime = true;
+		}
+
 		if (editedTask.hasDate()) {			
 			if (hasDate && !hasTime) {
 				//only date, reuse time
