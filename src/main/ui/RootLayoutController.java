@@ -63,22 +63,22 @@ import main.parser.CommandParser.InvalidTitle;
 
 @SuppressWarnings("restriction")
 public class RootLayoutController implements Observer {
-    private static final String COMMAND_EDIT = "edit";
-    private static final String COMMAND_DELETE = "delete";
-    private static final String COMMAND_DELETE_SHORTHAND = "del";
-    private static final String COMMAND_SEARCH = "search";
-    private static final String WHITESPACE = " ";
-    private static final String EMPTY_STRING = "";
+    private static final String STRING_COMMAND_EDIT = "edit";
+    private static final String STRING_COMMAND_DELETE = "delete";
+    private static final String STRING_COMMAND_DELETE_SHORTHAND = "del";
+    private static final String STRING_COMMAND_SEARCH = "search";
     private static final String STRING_DOUBLE_QUOTATIONS_WITH_TEXT = "\"%1$s\"";
     private static final String STRING_TAB_TASK_SIZE = "(%1$s)";
-    private static final String MESSAGE_LISTVIEW_TODO_EMPTY = "You have no task!";
-    private static final String MESSAGE_LISTVIEW_COMPLETED_EMPTY = "You have no completed task!";
-    private static final String MESSAGE_FEEDBACK_ACTION_ADD = "Adding: ";
-    private static final String MESSAGE_FEEDBACK_ACTION_EDIT = "Editing: ";
-    private static final String MESSAGE_FEEDBACK_ACTION_DELETE = "Deleting: ";
-    private static final String MESSAGE_FEEDBACK_TOTAL_TASK = "(%1$s tasks)";
-    private static final String MESSAGE_FEEDBACK_ACTION_SEARCH = "Searching:";
-    private static final String MESSAGE_ERROR_NOT_FOUND = "Task -%1$s- not found.";
+    private static final String STRING_LISTVIEW_TODO_EMPTY = "You have no task!";
+    private static final String STRING_LISTVIEW_COMPLETED_EMPTY = "You have no completed task!";
+    private static final String STRING_FEEDBACK_ACTION_ADD = "Adding: ";
+    private static final String STRING_FEEDBACK_ACTION_EDIT = "Editing: ";
+    private static final String STRING_FEEDBACK_ACTION_DELETE = "Deleting: ";
+    private static final String STRING_FEEDBACK_TOTAL_TASK = "(%1$s tasks)";
+    private static final String STRING_FEEDBACK_ACTION_SEARCH = "Searching:";
+    private static final String STRING_ERROR_NOT_FOUND = "Task -%1$s- not found.";
+    private static final String STRING_EMPTY = "";
+    private static final String STRING_WHITESPACE = " ";
 
     private static final KeyCombination HOTKEY_CTRL_TAB = new KeyCodeCombination(KeyCode.TAB,
             KeyCombination.CONTROL_DOWN);
@@ -178,7 +178,7 @@ public class RootLayoutController implements Observer {
             if (isAddCommand) {
                 // TODO
             } else if (isSearchCommand) {
-                showFeedback(true, MESSAGE_FEEDBACK_ACTION_SEARCH,
+                showFeedback(true, STRING_FEEDBACK_ACTION_SEARCH,
                         " Found " + currentTaskList.size() + " tasks for -" + userArguments + "-");
             }
         }
@@ -279,12 +279,13 @@ public class RootLayoutController implements Observer {
 
             }
         });
-        commandBar.setOnKeyReleased(new EventHandler<Event>() {
+        commandBar.textProperty().addListener(new ChangeListener<String>() {
 
             @Override
-            public void handle(Event event) {
+            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+                // TODO Auto-generated method stub
                 handleKeyStrokes();
-
+                
             }
         });
         commandBar.setOnAction(new EventHandler<ActionEvent>() {
@@ -372,7 +373,7 @@ public class RootLayoutController implements Observer {
             receiver = Receiver.getInstance();
         }
 
-        listViewTodo.setPlaceholder(new Label(MESSAGE_LISTVIEW_TODO_EMPTY));
+        listViewTodo.setPlaceholder(new Label(STRING_LISTVIEW_TODO_EMPTY));
         listViewTodo.setCellFactory(new Callback<ListView<Task>, ListCell<Task>>() {
 
             @Override
@@ -390,7 +391,7 @@ public class RootLayoutController implements Observer {
             }
         });
 
-        listViewCompleted.setPlaceholder(new Label(MESSAGE_LISTVIEW_COMPLETED_EMPTY));
+        listViewCompleted.setPlaceholder(new Label(STRING_LISTVIEW_COMPLETED_EMPTY));
         listViewCompleted.setCellFactory(new Callback<ListView<Task>, ListCell<Task>>() {
 
             @Override
@@ -444,8 +445,8 @@ public class RootLayoutController implements Observer {
         // if(!isEditMode){
         // labelCurrentMode.setText(getSelectedTabName());
         // }
-        tabTodo.setText("To-do" + WHITESPACE + String.format(STRING_TAB_TASK_SIZE, todoTasks.size()));
-        tabCompleted.setText("Completed" + WHITESPACE + String.format(STRING_TAB_TASK_SIZE, completedTasks.size()));
+        tabTodo.setText("To-do" + STRING_WHITESPACE + String.format(STRING_TAB_TASK_SIZE, todoTasks.size()));
+        tabCompleted.setText("Completed" + STRING_WHITESPACE + String.format(STRING_TAB_TASK_SIZE, completedTasks.size()));
 
     }
 
@@ -674,7 +675,7 @@ public class RootLayoutController implements Observer {
             System.out.println("Show chips:true");
             chipSearchMode.setVisible(isVisible);
             chipSearchMode.setText(
-                    COMMAND_SEARCH + WHITESPACE + String.format(STRING_DOUBLE_QUOTATIONS_WITH_TEXT, userArguments));
+                    STRING_COMMAND_SEARCH + STRING_WHITESPACE + String.format(STRING_DOUBLE_QUOTATIONS_WITH_TEXT, userArguments));
 
         } else {
             System.out.println("Show chips:false");
@@ -780,14 +781,14 @@ public class RootLayoutController implements Observer {
     private void parseUserInput() {
         commandToBeExecuted = null;
         switch (userCommand) {
-            case COMMAND_EDIT :
+            case STRING_COMMAND_EDIT :
                 parseEdit();
                 break;
-            case COMMAND_DELETE :
-            case COMMAND_DELETE_SHORTHAND :
+            case STRING_COMMAND_DELETE :
+            case STRING_COMMAND_DELETE_SHORTHAND :
                 parseDelete();
                 break;
-            case COMMAND_SEARCH :
+            case STRING_COMMAND_SEARCH :
                 parseSearch();
                 break;
 
@@ -813,7 +814,7 @@ public class RootLayoutController implements Observer {
         }
         commandToBeExecuted = new AddCommand(receiver, taskToBeExecuted);
         inputFeedback = taskToBeExecuted.toString();
-        showFeedback(true, MESSAGE_FEEDBACK_ACTION_ADD, inputFeedback);
+        showFeedback(true, STRING_FEEDBACK_ACTION_ADD, inputFeedback);
     }
 
     private void parseDelete() {
@@ -840,23 +841,23 @@ public class RootLayoutController implements Observer {
 
                 // if selected index is out of bound
                 if (taskIndex < 0 || taskIndex > currentTaskList.size()) {
-                    showFeedback(true, MESSAGE_FEEDBACK_ACTION_DELETE,
-                            String.format(MESSAGE_ERROR_NOT_FOUND, userArguments));
+                    showFeedback(true, STRING_FEEDBACK_ACTION_DELETE,
+                            String.format(STRING_ERROR_NOT_FOUND, userArguments));
                     clearStoredUserInput();
                 } else {
                     System.out.println("CurrentList size: " + getCurrentTaskList().size());
                     inputFeedback = currentTaskList.get(taskIndex).toString();
                     taskToBeExecuted = getCurrentTaskList().get(taskIndex);
-                    showFeedback(true, MESSAGE_FEEDBACK_ACTION_DELETE, inputFeedback);
+                    showFeedback(true, STRING_FEEDBACK_ACTION_DELETE, inputFeedback);
                 }
 
             } else {
-                showFeedback(true, MESSAGE_FEEDBACK_ACTION_DELETE, userArguments + WHITESPACE
-                        + String.format(MESSAGE_FEEDBACK_TOTAL_TASK, taskIndexesToBeDeleted.size()));
+                showFeedback(true, STRING_FEEDBACK_ACTION_DELETE, userArguments + STRING_WHITESPACE
+                        + String.format(STRING_FEEDBACK_TOTAL_TASK, taskIndexesToBeDeleted.size()));
             }
         } catch (InvalidTaskIndexFormat invalidTaskIndexFormat) {
             logger.log(Level.INFO, "DELETE command index(es) invalid: " + userArguments);
-            showFeedback(true, MESSAGE_FEEDBACK_ACTION_DELETE, String.format(MESSAGE_ERROR_NOT_FOUND, userArguments));
+            showFeedback(true, STRING_FEEDBACK_ACTION_DELETE, String.format(STRING_ERROR_NOT_FOUND, userArguments));
             clearStoredUserInput();
             return;
         }
@@ -889,7 +890,7 @@ public class RootLayoutController implements Observer {
             taskIndex--; // decrement user input index to match array natural
                          // ordering
             Task taskToBeEdited = currentTaskList.get(taskIndex);
-            showFeedback(true, MESSAGE_FEEDBACK_ACTION_EDIT, taskToBeEdited.toString());
+            showFeedback(true, STRING_FEEDBACK_ACTION_EDIT, taskToBeEdited.toString());
             userArguments = userInput.substring(userInputArray[0].length() + userInputArray[1].length() + 1).trim();
             logger.log(Level.INFO, "EDIT command arguments is: " + userArguments);
             taskToBeExecuted = commandParser.parseEdit(taskToBeEdited, userArguments);
@@ -899,7 +900,7 @@ public class RootLayoutController implements Observer {
             ioobe.printStackTrace();
             logger.log(Level.INFO, "EDIT command index is out of range. index = " + taskIndex + " ArrayList size = "
                     + currentTaskList.size());
-            showFeedback(true, MESSAGE_FEEDBACK_ACTION_EDIT, String.format(MESSAGE_ERROR_NOT_FOUND, userInputArray[1]));
+            showFeedback(true, STRING_FEEDBACK_ACTION_EDIT, String.format(STRING_ERROR_NOT_FOUND, userInputArray[1]));
             clearStoredUserInput();
             return;
         } catch (InvalidLabelFormat e) {
@@ -915,7 +916,7 @@ public class RootLayoutController implements Observer {
      */
     private void parseEditForSelectedTask() {
         Task taskToBeEdited = currentTaskList.get(getSelectedTaskIndex());
-        showFeedback(true, MESSAGE_FEEDBACK_ACTION_EDIT, taskToBeEdited.toString());
+        showFeedback(true, STRING_FEEDBACK_ACTION_EDIT, taskToBeEdited.toString());
         try {
             logger.log(Level.INFO, "EDIT command arguments is: " + userArguments);
             taskToBeExecuted = commandParser.parseEdit(taskToBeEdited, userArguments);
@@ -932,7 +933,7 @@ public class RootLayoutController implements Observer {
      * 
      */
     private void parseSearch() {
-        // if (userInput.equals(COMMAND_SEARCH)) {
+        // if (userInput.equals(STRING_COMMAND_SEARCH)) {
         // logger.log(Level.INFO, "SEARCH command has no arguments. Interpreting
         // as ADD command instead");
         // // no arguments found. parse the input as an Add operation instead
@@ -941,16 +942,16 @@ public class RootLayoutController implements Observer {
         // }
         //
         // // this allow a search without a search term
-        // if (userInput.equals(COMMAND_SEARCH + WHITESPACE)) {
+        // if (userInput.equals(STRING_COMMAND_SEARCH + STRING_WHITESPACE)) {
         // logger.log(Level.INFO, "Searching: " + userInput);
-        // commandToBeExecuted = new SearchCommand(receiver, WHITESPACE);
-        // userArguments = WHITESPACE;
+        // commandToBeExecuted = new SearchCommand(receiver, STRING_WHITESPACE);
+        // userArguments = STRING_WHITESPACE;
         // invoker.execute(commandToBeExecuted);
         // return;
         // }
 
-        if (userInput.equals(COMMAND_SEARCH)) {
-            userArguments = WHITESPACE;
+        if (userInput.equals(STRING_COMMAND_SEARCH)) {
+            userArguments = STRING_WHITESPACE;
         }
 
         logger.log(Level.INFO, "Searching: " + userArguments);
@@ -988,10 +989,10 @@ public class RootLayoutController implements Observer {
      * 
      */
     private void clearStoredUserInput() {
-        userInput = EMPTY_STRING;
+        userInput = STRING_EMPTY;
         userInputArray = null;
-        userCommand = EMPTY_STRING;
-        userArguments = EMPTY_STRING;
+        userCommand = STRING_EMPTY;
+        userArguments = STRING_EMPTY;
     }
 
     /**
@@ -1027,7 +1028,7 @@ public class RootLayoutController implements Observer {
 
         if (executedCommand instanceof AddCommand) {
             if (undoOrRedo != null) {
-                labelExecutedCommand.setText(undoOrRedo + WHITESPACE + "add.");
+                labelExecutedCommand.setText(undoOrRedo + STRING_WHITESPACE + "add.");
                 labelExecutedCommand.setTextFill(Color.web(AppColor.PRIMARY_WHITE));
                 labelExecutionDetails.setTextFill(Color.web(AppColor.PRIMARY_WHITE, 0));
 
@@ -1041,7 +1042,7 @@ public class RootLayoutController implements Observer {
 
         if (executedCommand instanceof EditCommand) {
             if (undoOrRedo != null) {
-                labelExecutedCommand.setText(undoOrRedo + WHITESPACE + "edit.");
+                labelExecutedCommand.setText(undoOrRedo + STRING_WHITESPACE + "edit.");
                 labelExecutedCommand.setTextFill(Color.web(AppColor.PRIMARY_WHITE));
                 labelExecutionDetails.setTextFill(Color.web(AppColor.PRIMARY_WHITE, 0));
             } else {
@@ -1054,7 +1055,7 @@ public class RootLayoutController implements Observer {
         //TODO deleting something will not show the deleted item toString()
         if (executedCommand instanceof DeleteCommand) {
             if (undoOrRedo != null) {
-                labelExecutedCommand.setText(undoOrRedo + WHITESPACE + "delete.");
+                labelExecutedCommand.setText(undoOrRedo + STRING_WHITESPACE + "delete.");
                 labelExecutedCommand.setTextFill(Color.web(AppColor.PRIMARY_WHITE));
                 labelExecutionDetails.setTextFill(Color.web(AppColor.PRIMARY_WHITE, 0));
             } else {
@@ -1080,7 +1081,7 @@ public class RootLayoutController implements Observer {
 
         if (executedCommand instanceof DoneCommand) {
             if (undoOrRedo != null) {
-                labelExecutedCommand.setText(undoOrRedo + WHITESPACE + "task completed.");
+                labelExecutedCommand.setText(undoOrRedo + STRING_WHITESPACE + "task completed.");
                 labelExecutedCommand.setTextFill(Color.web(AppColor.PRIMARY_WHITE));
                 labelExecutionDetails.setTextFill(Color.web(AppColor.PRIMARY_WHITE, 0));
             } else {
@@ -1093,7 +1094,7 @@ public class RootLayoutController implements Observer {
 
         if (executedCommand instanceof UndoneCommand) {
             if (undoOrRedo != null) {
-                labelExecutedCommand.setText(undoOrRedo + WHITESPACE + "mark task as incomplete.");
+                labelExecutedCommand.setText(undoOrRedo + STRING_WHITESPACE + "mark task as incomplete.");
                 labelExecutedCommand.setTextFill(Color.web(AppColor.PRIMARY_WHITE));
                 labelExecutionDetails.setTextFill(Color.web(AppColor.PRIMARY_WHITE, 0));
             } else {
