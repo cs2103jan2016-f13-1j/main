@@ -158,8 +158,8 @@ public class RootLayoutController implements Observer {
     private SearchCommand searchCommand;
     private Command executedCommand;
     private Task taskToBeExecuted;
-    private ArrayList<Task> listOfTaskToBeExecuted;
-    private ArrayList<Integer> taskIndexesToBeExecuted;
+    private ArrayList<Task> listOfTaskToBeExecuted = new ArrayList<>();
+    private ArrayList<Integer> taskIndexesToBeExecuted = new ArrayList<>();
 
     private ArrayList<Task> todoTasks;
     private ArrayList<Task> completedTasks;
@@ -568,10 +568,10 @@ public class RootLayoutController implements Observer {
         System.out.println("number of cells in a viewport:" + numberOfCellsInViewPort);
 
         boolean isAddCommand = executedCommand instanceof AddCommand;
-        boolean isEditCommand = executedCommand instanceof EditCommand;
-        boolean isDeleteCommand = executedCommand instanceof DeleteCommand;
-        boolean isDoneCommand = executedCommand instanceof DoneCommand;
-        boolean isUndoneCommand = executedCommand instanceof UndoneCommand;
+        boolean isEditCommand = commandToBeExecuted instanceof EditCommand;
+        boolean isDeleteCommand = commandToBeExecuted instanceof DeleteCommand;
+        boolean isDoneCommand = commandToBeExecuted instanceof DoneCommand;
+        boolean isUndoneCommand = commandToBeExecuted instanceof UndoneCommand;
 
         if (isAddCommand || isEditCommand || isDeleteCommand || isDoneCommand || isUndoneCommand) {
             logger.log(Level.INFO, "Adjusting viewport for: " + commandToBeExecuted.getClass().getSimpleName());
@@ -849,11 +849,21 @@ public class RootLayoutController implements Observer {
 
         if (getSelectedTabName().equals(tabTodo.getText())) {
             logger.log(Level.INFO, "Pressed CTRL+D key: Task " + (getSelectedTaskIndex() + 1) + " done");
-            commandToBeExecuted = new DoneCommand(receiver, taskToBeExecuted);
+            taskIndexesToBeExecuted.clear();
+            taskIndexesToBeExecuted.add(getSelectedTaskIndex());
+            taskToBeExecuted = getCurrentTaskList().get(previousSelectedTaskIndex);
+            listOfTaskToBeExecuted.clear();
+            listOfTaskToBeExecuted.add(taskToBeExecuted);
+            commandToBeExecuted = new DoneCommand(receiver, listOfTaskToBeExecuted);
 
         } else if (getSelectedTabName().equals(tabCompleted.getText())) {
             logger.log(Level.INFO, "Pressed CTRL+D key: Task " + (getSelectedTaskIndex() + 1) + " undone");
-            commandToBeExecuted = new UndoneCommand(receiver, taskToBeExecuted);
+            taskIndexesToBeExecuted.clear();
+            taskIndexesToBeExecuted.add(getSelectedTaskIndex());
+            taskToBeExecuted = getCurrentTaskList().get(previousSelectedTaskIndex);
+            listOfTaskToBeExecuted.clear();
+            listOfTaskToBeExecuted.add(taskToBeExecuted);
+            commandToBeExecuted = new DoneCommand(receiver, listOfTaskToBeExecuted);
         }
 
         invoker.execute(commandToBeExecuted);
@@ -1305,8 +1315,11 @@ public class RootLayoutController implements Observer {
                 labelExecutionDetails.setTextFill(Color.web(AppColor.PRIMARY_WHITE, 0));
 
             } else {
+                System.out.println("not undo");
+                System.out.println(taskToBeExecuted.toString());
                 labelExecutedCommand.setText("Added:");
                 labelExecutedCommand.setTextFill(Color.web(AppColor.PRIMARY_BLUE_LIGHT, 0.7));
+                labelExecutionDetails.setTextFill(Color.web(AppColor.PRIMARY_WHITE, 0.9));
                 labelExecutionDetails.setText(taskToBeExecuted.toString());
             }
 
@@ -1320,6 +1333,7 @@ public class RootLayoutController implements Observer {
             } else {
                 labelExecutedCommand.setText("Edited:");
                 labelExecutedCommand.setTextFill(Color.web(AppColor.PRIMARY_GREEN_LIGHT, 0.7));
+                labelExecutionDetails.setTextFill(Color.web(AppColor.PRIMARY_WHITE, 0.9));
                 labelExecutionDetails.setText(taskToBeExecuted.toString());
             }
 
@@ -1333,6 +1347,7 @@ public class RootLayoutController implements Observer {
             } else {
                 labelExecutedCommand.setText("Deleted:");
                 labelExecutedCommand.setTextFill(Color.web(AppColor.PRIMARY_RED_LIGHT, 0.7));
+                labelExecutionDetails.setTextFill(Color.web(AppColor.PRIMARY_WHITE, 0.9));
 
                 if (listOfTaskToBeExecuted.size() == 1) {
                     labelExecutionDetails.setText(taskToBeExecuted.toString());
@@ -1387,9 +1402,8 @@ public class RootLayoutController implements Observer {
                 labelExecutedCommand.setTextFill(Color.web(AppColor.PRIMARY_WHITE));
                 labelExecutionDetails.setTextFill(Color.web(AppColor.PRIMARY_WHITE, 0));
             } else {
-                labelExecutedCommand.setText("Set new file location.");
-                labelExecutedCommand.setTextFill(Color.web(AppColor.PRIMARY_LIME_LIGHT, 0.7));
-                labelExecutionDetails.setTextFill(Color.web(AppColor.PRIMARY_WHITE, 0));
+                labelExecutedCommand.setText("New file location has been set.");
+                labelExecutedCommand.setTextFill(Color.web(AppColor.PRIMARY_WHITE, 0.7));
             }
 
         }
