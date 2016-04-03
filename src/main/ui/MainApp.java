@@ -40,6 +40,7 @@ public class MainApp extends Application {
             RootLayoutController rootLayoutController = (RootLayoutController) loader.getController();
             rootLayoutController.requestFocusForCommandBar();
             rootLayoutController.selectFirstItemFromListView();
+            rootLayoutController.setMainApp(this);
 
         } catch (IOException e) {
             e.printStackTrace();

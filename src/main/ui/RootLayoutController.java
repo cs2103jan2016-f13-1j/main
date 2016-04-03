@@ -1,5 +1,7 @@
 package main.ui;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.EmptyStackException;
@@ -22,7 +24,6 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
-import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
@@ -42,6 +43,8 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
+import javafx.stage.FileChooser;
+import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.util.Callback;
 import javafx.util.Duration;
 import main.data.ParseIndexResult;
@@ -55,6 +58,7 @@ import main.logic.Invoker;
 import main.logic.PriorityCommand;
 import main.logic.Receiver;
 import main.logic.SearchCommand;
+import main.logic.SetFileLocationCommand;
 import main.logic.UndoneCommand;
 import main.parser.CommandParser;
 import main.parser.CommandParser.InvalidLabelFormat;
@@ -69,6 +73,7 @@ public class RootLayoutController implements Observer {
     private static final String STRING_COMMAND_SEARCH = "search";
     private static final String STRING_COMMAND_DONE = "done";
     private static final String STRING_COMMAND_UNDONE = "undone";
+    private static final String STRING_COMMAND_SET_FILE_LOCATION = "set";
     private static final String STRING_DOUBLE_QUOTATIONS_WITH_TEXT = "\"%1$s\"";
     private static final String STRING_TAB_TASK_SIZE = "(%1$s)";
     private static final String STRING_LISTVIEW_TODO_EMPTY = "You have no task!";
@@ -80,6 +85,7 @@ public class RootLayoutController implements Observer {
     private static final String STRING_FEEDBACK_ACTION_SEARCH = "Searching:";
     private static final String STRING_FEEDBACK_ACTION_DONE = "Mark as done: ";
     private static final String STRING_FEEDBACK_ACTION_UNDONE = "Mark as undone: ";
+    private static final String STRING_FEEDBACK_ACTION_SET_FILE_LOCATION = "Setting file location: ";
     private static final String STRING_ERROR_NOT_FOUND = "Task -%1$s- not found.";
     private static final String STRING_EMPTY = "";
     private static final String STRING_WHITESPACE = " ";
@@ -140,6 +146,7 @@ public class RootLayoutController implements Observer {
     @FXML // fx:id="labelSuggestedAction"
     private Label labelSuggestedAction; // Value injected by FXMLLoader
 
+    private MainApp mainApp;
     private VirtualFlow<IndexedCell<String>> virtualFlowTodo;
     private VirtualFlow<IndexedCell<String>> virtualFlowCompleted;
 
@@ -220,7 +227,10 @@ public class RootLayoutController implements Observer {
 
             }
         });
+    }
 
+    public void setMainApp(MainApp mainApp) {
+        this.mainApp = mainApp;
     }
 
     @FXML
@@ -614,9 +624,19 @@ public class RootLayoutController implements Observer {
             logger.log(Level.INFO, "(" + commandToBeExecuted.getClass().getSimpleName() + ") Pressed ENTER key: "
                     + commandBar.getText());
 
-            boolean IsSearchCommand = commandToBeExecuted instanceof SearchCommand;
+            boolean isSearchCommand = commandToBeExecuted instanceof SearchCommand;
+            boolean isSetFileLocationCommand = commandToBeExecuted instanceof SetFileLocationCommand;
 
-            if (!IsSearchCommand) {
+            if (isSetFileLocationCommand) {
+                if (userInputArray.length <= 1) {
+                    File selectedFile = showFileChooserDialog();
+                    String selectedFilePath = getFilePath(selectedFile);
+                    commandToBeExecuted = new SetFileLocationCommand(receiver, selectedFilePath);
+                }
+                invoker.execute(commandToBeExecuted);
+            }
+
+            if (!isSearchCommand) {
                 invoker.execute(commandToBeExecuted);
                 showExecutionResult(commandToBeExecuted, null);
             } else {
@@ -778,6 +798,9 @@ public class RootLayoutController implements Observer {
                 break;
             case STRING_COMMAND_UNDONE :
                 parseUndone();
+                break;
+            case STRING_COMMAND_SET_FILE_LOCATION :
+                parseSetFileLocation();
                 break;
 
             default :
@@ -952,6 +975,7 @@ public class RootLayoutController implements Observer {
         }
 
         logger.log(Level.INFO, "Sending user input to commandParser: " + userInput);
+        // TODO consider refactoring this into a reusable method
         ParseIndexResult parseIndexResult;
         try {
             parseIndexResult = commandParser.parseIndexes(userInput, getCurrentTaskList().size());
@@ -1002,6 +1026,7 @@ public class RootLayoutController implements Observer {
         }
 
         logger.log(Level.INFO, "Sending user input to commandParser: " + userInput);
+        // TODO consider refactoring this into a reusable method
         ParseIndexResult parseIndexResult;
         try {
             parseIndexResult = commandParser.parseIndexes(userInput, getCurrentTaskList().size());
@@ -1040,6 +1065,46 @@ public class RootLayoutController implements Observer {
 
         commandToBeExecuted = new UndoneCommand(receiver, getTasksToBeDeleted(taskIndexesToBeExecuted));
 
+    }
+
+    private void parseSetFileLocation() {
+        showFeedback(true, STRING_FEEDBACK_ACTION_SET_FILE_LOCATION, userArguments);
+        if (userInputArray.length <= 1) {
+            logger.log(Level.INFO, "SET command has no arguments.");
+            // no arguments found. parse the input as an Add operation instead
+            commandToBeExecuted = new SetFileLocationCommand(receiver, "");
+        } else {
+            logger.log(Level.INFO, "SET command arguments: " + userArguments);
+            commandToBeExecuted = new SetFileLocationCommand(receiver, userArguments);
+        }
+
+    }
+
+    private File showFileChooserDialog() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Set file location");
+        fileChooser.getExtensionFilters().addAll(new ExtensionFilter("Text Files", "*.txt"));
+        fileChooser.setInitialFileName("tasks");
+        System.out.println(receiver.getFilePath());
+        fileChooser.setInitialDirectory(new File(receiver.getFilePath()));
+        File selectedFile = fileChooser.showSaveDialog(mainApp.getPrimaryStage());
+
+        return selectedFile;
+    }
+
+    private String getFilePath(File selectedFile) {
+        String selectedFilePath = "";
+        try {
+            selectedFilePath = selectedFile.getCanonicalPath();
+            System.out.println("File path: " + selectedFilePath);
+            return selectedFilePath;
+        } catch (IOException e) {
+            // TODO show some feedback about invalid filepath
+            e.printStackTrace();
+        }
+
+        System.out.println("File path: " + selectedFilePath);
+        return selectedFilePath;
     }
 
     private ArrayList<Task> getTasksToBeDeleted(int taskIndex) {
@@ -1169,7 +1234,8 @@ public class RootLayoutController implements Observer {
                 labelExecutedCommand.setTextFill(Color.web(AppColor.PRIMARY_WHITE));
                 labelExecutionDetails.setTextFill(Color.web(AppColor.PRIMARY_WHITE, 0));
             } else {
-                labelExecutedCommand.setText("Mark "+taskIndexesToBeExecuted.size() + STRING_WHITESPACE + "task as incomplete.");
+                labelExecutedCommand
+                        .setText("Mark " + taskIndexesToBeExecuted.size() + STRING_WHITESPACE + "task as incomplete.");
                 labelExecutedCommand.setTextFill(Color.web(AppColor.PRIMARY_LIME_LIGHT, 0.7));
                 labelExecutionDetails.setTextFill(Color.web(AppColor.PRIMARY_WHITE, 0));
             }
