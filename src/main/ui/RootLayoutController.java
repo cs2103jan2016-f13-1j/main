@@ -155,6 +155,7 @@ public class RootLayoutController implements Observer {
     private CommandParser commandParser;
     private Command commandToBeExecuted;
     private SearchCommand searchCommand;
+    private Command executedCommand;
     private Task taskToBeExecuted;
     private ArrayList<Integer> taskIndexesToBeExecuted;
 
@@ -180,20 +181,29 @@ public class RootLayoutController implements Observer {
     public void update(Observable o, Object arg) {
         if (o instanceof Receiver) {
             logger.log(Level.INFO, "(" + commandToBeExecuted.getClass().getSimpleName() + ") update() is called");
+            refreshListView();
 
             boolean isAddCommand = commandToBeExecuted instanceof AddCommand;
             boolean isSearchCommand = commandToBeExecuted instanceof SearchCommand;
 
-            refreshListView();
-
             if (isAddCommand) {
                 // TODO
+                executedCommand = commandToBeExecuted;
+                getCurrentListView().getSelectionModel().select(getIndexFromLastExecutedTask());
+                executedCommand = null;
+                System.out.println(getIndexFromLastExecutedTask());
             } else if (isSearchCommand) {
                 showFeedback(true, STRING_FEEDBACK_ACTION_SEARCH,
                         " Found " + currentTaskList.size() + " tasks for -" + userArguments + "-");
             }
         }
+    }
 
+    /**
+     * @return
+     */
+    private int getIndexFromLastExecutedTask() {
+        return getCurrentTaskList().indexOf(taskToBeExecuted);
     }
 
     public void requestFocusForCommandBar() {
@@ -205,8 +215,8 @@ public class RootLayoutController implements Observer {
         logger.log(Level.INFO, "Set Select the first item on the ListView");
         listViewTodo.getSelectionModel().selectFirst();
         listViewCompleted.getSelectionModel().selectFirst();
-        initCustomViewportBehaviorForListView();
         setCurrentTaskListAndListView(tabTodo.getText());
+        initCustomViewportBehaviorForListView();
 
         // TODO Refactor this.
         listViewTodo.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Task>() {
@@ -214,19 +224,22 @@ public class RootLayoutController implements Observer {
             @Override
             public void changed(ObservableValue<? extends Task> observable, Task oldValue, Task newValue) {
                 // TODO will encounter nullpointer on first run
+                System.out.println("Listview selection changed");
                 adjustViewportForListView();
 
             }
         });
-        listViewCompleted.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Task>() {
-
-            @Override
-            public void changed(ObservableValue<? extends Task> observable, Task oldValue, Task newValue) {
-                // TODO will encounter nullpointer on first run
-                adjustViewportForListView();
-
-            }
-        });
+        // listViewCompleted.getSelectionModel().selectedItemProperty().addListener(new
+        // ChangeListener<Task>() {
+        //
+        // @Override
+        // public void changed(ObservableValue<? extends Task> observable, Task
+        // oldValue, Task newValue) {
+        // // TODO will encounter nullpointer on first run
+        // adjustViewportForListView();
+        //
+        // }
+        // });
     }
 
     public void setMainApp(MainApp mainApp) {
@@ -515,15 +528,45 @@ public class RootLayoutController implements Observer {
 
         int firstVisibleIndex = getCurrentVirtualFlow().getFirstVisibleCellWithinViewPort().getIndex();
         int lastVisibleIndex = getCurrentVirtualFlow().getLastVisibleCellWithinViewPort().getIndex();
+        int numberOfCellsInViewPort = lastVisibleIndex - firstVisibleIndex;
+
         System.out.println("first visible cell: " + firstVisibleIndex);
         System.out.println("last visible cell: " + lastVisibleIndex);
+        System.out.println("number of cells in a viewport:" + numberOfCellsInViewPort);
+
+        boolean isAddCommand = executedCommand instanceof AddCommand;
+
+        if (isAddCommand) {
+            int lastExecutedTaskIndex = getIndexFromLastExecutedTask();
+
+            if (lastExecutedTaskIndex < firstVisibleIndex) {
+                int numberOfCellsDifference = firstVisibleIndex - lastExecutedTaskIndex;
+                getCurrentListView().scrollTo(numberOfCellsDifference);
+                logger.log(Level.INFO, "Added item index (lastExecutedTaskIndex): " + lastExecutedTaskIndex);
+                logger.log(Level.INFO, "Added item index is less than viewport first visible index");
+                logger.log(Level.INFO, "Adjusting viewport for: " + executedCommand.getClass().getSimpleName());
+                logger.log(Level.INFO, "Cell differences: " + numberOfCellsDifference);
+            } else if (lastExecutedTaskIndex > lastVisibleIndex) {
+                int numberOfCellsDifference = lastExecutedTaskIndex - lastVisibleIndex;
+                getCurrentListView().scrollTo(numberOfCellsDifference);
+                logger.log(Level.INFO, "Added item index (lastExecutedTaskIndex): " + lastExecutedTaskIndex);
+                logger.log(Level.INFO, "Added item index is more than viewport last visible index");
+                logger.log(Level.INFO, "Adjusting viewport for: " + executedCommand.getClass().getSimpleName());
+                logger.log(Level.INFO, "Cell differences: " + numberOfCellsDifference);
+            }
+            return;
+        }
 
         if (getSelectedTaskIndex() < firstVisibleIndex) {
+            System.out.println("Scrolling up");
             // viewport will scroll and show the current item at the top
             getCurrentListView().scrollTo(getSelectedTaskIndex());
+
         } else if (getSelectedTaskIndex() > lastVisibleIndex) {
+            System.out.println("Scrolling down");
             // viewport will scroll and show the current item at the bottom
             getCurrentListView().scrollTo(firstVisibleIndex + 1);
+
         }
     }
 
@@ -630,7 +673,7 @@ public class RootLayoutController implements Observer {
             if (isSetFileLocationCommand) {
                 if (userInputArray.length <= 1) {
                     File selectedFile = showFileChooserDialog();
-                    if(selectedFile == null){
+                    if (selectedFile == null) {
                         return;
                     }
                     String selectedFilePath = getFilePath(selectedFile);
@@ -655,7 +698,6 @@ public class RootLayoutController implements Observer {
         btnFeedback.setVisible(false);
         clearStoredUserInput();
         commandBar.clear();
-        // showUndo();
 
     }
 
@@ -1088,7 +1130,7 @@ public class RootLayoutController implements Observer {
         fileChooser.setTitle("Set file location");
         fileChooser.getExtensionFilters().addAll(new ExtensionFilter("Text Files", "*.txt"));
         fileChooser.setInitialFileName("tasks");
-        
+
         System.out.println(receiver.getFileDir());
         fileChooser.setInitialDirectory(new File(receiver.getFileDir()));
         File selectedFile = fileChooser.showSaveDialog(mainApp.getPrimaryStage());
