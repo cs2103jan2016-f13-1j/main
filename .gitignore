@@ -1,6 +1,5 @@
-?
 settings.txt
-storage.txt
+tasks.txt
 .DS_Store
 .metadata
 bin/

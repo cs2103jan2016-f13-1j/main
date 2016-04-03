@@ -1085,8 +1085,8 @@ public class RootLayoutController implements Observer {
         fileChooser.setTitle("Set file location");
         fileChooser.getExtensionFilters().addAll(new ExtensionFilter("Text Files", "*.txt"));
         fileChooser.setInitialFileName("tasks");
-        System.out.println(receiver.getFilePath());
-        fileChooser.setInitialDirectory(new File(receiver.getFilePath()));
+        System.out.println(receiver.getFileDir());
+        fileChooser.setInitialDirectory(new File(receiver.getFileDir()));
         File selectedFile = fileChooser.showSaveDialog(mainApp.getPrimaryStage());
 
         return selectedFile;

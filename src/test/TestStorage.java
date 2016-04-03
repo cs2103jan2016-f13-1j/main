@@ -25,7 +25,7 @@ public class TestStorage {
      */
     @Test
     public void readUserSettingsTest() {
-        storage.setFileLocation("<><>///\\:?||", new ArrayList<Task>());
+        storage.setFileLocation("<><>///\\:?||");
         assertNotNull(storage.readTasks());
     }
     
@@ -64,7 +64,7 @@ public class TestStorage {
      */
     @Test
     public void readFilePath() {
-        assertNotNull(storage.getFilePath());
+        assertNotNull(storage.getFileDir());
     }
     
     /*

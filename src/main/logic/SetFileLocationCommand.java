@@ -1,10 +1,5 @@
 package main.logic;
 
-import java.util.ArrayList;
-
-import main.data.Task;
-import main.storage.Storage;
-
 /**
  * 
  */
@@ -40,9 +35,6 @@ public class SetFileLocationCommand implements Command {
      *         The location to save the output file
      */
     private void setFileLocation(String fileLocation) {
-        ArrayList<Task> allTasks = receiver.getAllTasks();
-        Storage storage = receiver.getStorage();
-        
-        storage.setFileLocation(fileLocation, allTasks);
+        receiver.setFilePath(fileLocation);
     }
 }
