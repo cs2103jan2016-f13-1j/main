@@ -101,18 +101,8 @@ public class CommandParser {
 		hasDay = checkForDay(inputString);
 		hasDate =  checkForDate(inputString)  || checkForDateText(inputString);
 		
-		if (hasDate && checkForDateText(inputString)) {
-			inputString = correctDateText(inputString);
-		}
-		
 		hasTime = checkForTimeTwelve(inputString) || checkForTime(inputString);
-		if (hasTime) {
-			inputString = correctDotTime(inputString);
-			hasDateRange = checkForRangeTime(inputString);
-			if (hasDateRange) {
-				inputString = correctRangeTime(inputString);
-			}
-		}
+		hasDateRange = checkForRangeTime(inputString);
 
 		if (checkForDateWord(inputString)) {
 			hasDate = true;
@@ -125,6 +115,7 @@ public class CommandParser {
 			hasStartDate = checkForStartPreposition(inputString);
 		}
 		
+		inputString = correctUserInput(inputString);
 		title = inputString;
 		
 		hasPriority = checkForPriority(inputString);
@@ -195,6 +186,17 @@ public class CommandParser {
 		
 		return task;
 	}
+	
+	private String correctUserInput(String inputString) {
+		boolean hasDateRange = checkForRangeTime(inputString);
+		inputString = correctDateText(inputString);
+		inputString = correctDotTime(inputString);
+		if (hasDateRange) {
+			inputString = correctRangeTime(inputString);
+		}
+		return inputString;
+	}
+	
 	
 	/**
 	 * This method checks for indication of priority level.
