@@ -45,11 +45,11 @@ class TodoTaskComparator implements Comparator<Task> {
                 return t1.getSingleDate().compareTo(t2.getSingleDate());
             } else if (t1.hasSingleDate() && t2.hasDateRange()) {
                 //If one has single date and the other is ranged
-                if (t2.hasStarted()) {
-                    //t2 have stared
-                    return t2.getEndDate().compareTo(t1.getSingleDate());
+                if (t1.hasStarted()) {
+                    //t1 have stared
+                    return t1.getSingleDate().compareTo(t2.getEndDate());
                 } else {
-                    //t2 have not started
+                    //t1 have not started
                     if (t1.getSingleDate().compareTo(t2.getStartDate()) == 0) {
                         return -1;
                     } else {
