@@ -285,7 +285,7 @@ public class RootLayoutController implements Observer {
             public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
                 // TODO Auto-generated method stub
                 handleKeyStrokes();
-                
+
             }
         });
         commandBar.setOnAction(new EventHandler<ActionEvent>() {
@@ -320,9 +320,6 @@ public class RootLayoutController implements Observer {
                     keyEvent.consume();
                 } else if (keyEvent.getCode() == KeyCode.F2) {
                     handleFTwoKey();
-                    keyEvent.consume();
-                } else if (keyEvent.getCode() == KeyCode.F3) {
-                    handleFThreeKey();
                     keyEvent.consume();
                 } else if (keyEvent.getCode() == KeyCode.DELETE) {
                     handleDeleteKey();
@@ -446,7 +443,8 @@ public class RootLayoutController implements Observer {
         // labelCurrentMode.setText(getSelectedTabName());
         // }
         tabTodo.setText("To-do" + STRING_WHITESPACE + String.format(STRING_TAB_TASK_SIZE, todoTasks.size()));
-        tabCompleted.setText("Completed" + STRING_WHITESPACE + String.format(STRING_TAB_TASK_SIZE, completedTasks.size()));
+        tabCompleted
+                .setText("Completed" + STRING_WHITESPACE + String.format(STRING_TAB_TASK_SIZE, completedTasks.size()));
 
     }
 
@@ -515,37 +513,6 @@ public class RootLayoutController implements Observer {
      * 
      */
     private void handleFOneKey() {
-        // Platform.runLater(new Runnable() {
-        //
-        // @Override
-        // public void run() {
-        // if (isEditMode) { //edit mode is true. exit edit mode
-        // isEditMode = false;
-        // labelCurrentMode.setText(getSelectedTabName());
-        // restoreCommandBarText();
-        // restoreCaretPosition();
-        // logger.log(Level.INFO, "Pressed F1 key: Exit EDIT MODE");
-        //
-        // } else { //edit mode is false. enter edit mode
-        // isEditMode = true;
-        // saveCommandBarText();
-        // saveCaretPosition();
-        // showFeedback(false);
-        // labelCurrentMode.setText(MESSAGE_LABEL_MODE_EDIT);
-        // commandBar.setText(todoTasks.get(getSelectedTaskIndex()).toString());
-        // moveCaretPositionToLast();
-        // logger.log(Level.INFO, "Pressed F1 key: Enter EDIT MODE");
-        // }
-        //
-        // }
-        // });
-
-    }
-
-    /**
-     * 
-     */
-    private void handleFTwoKey() {
         if (invoker.isUndoAvailable()) {
             try {
                 Command previousCommand = invoker.undo();
@@ -564,7 +531,7 @@ public class RootLayoutController implements Observer {
     /**
      * 
      */
-    private void handleFThreeKey() {
+    private void handleFTwoKey() {
         if (invoker.isRedoAvailable()) {
             try {
                 Command previousCommand = invoker.redo();
@@ -674,8 +641,8 @@ public class RootLayoutController implements Observer {
         if (isVisible) {
             System.out.println("Show chips:true");
             chipSearchMode.setVisible(isVisible);
-            chipSearchMode.setText(
-                    STRING_COMMAND_SEARCH + STRING_WHITESPACE + String.format(STRING_DOUBLE_QUOTATIONS_WITH_TEXT, userArguments));
+            chipSearchMode.setText(STRING_COMMAND_SEARCH + STRING_WHITESPACE
+                    + String.format(STRING_DOUBLE_QUOTATIONS_WITH_TEXT, userArguments));
 
         } else {
             System.out.println("Show chips:false");
@@ -1052,7 +1019,7 @@ public class RootLayoutController implements Observer {
             }
 
         }
-        //TODO deleting something will not show the deleted item toString()
+        // TODO deleting something will not show the deleted item toString()
         if (executedCommand instanceof DeleteCommand) {
             if (undoOrRedo != null) {
                 labelExecutedCommand.setText(undoOrRedo + STRING_WHITESPACE + "delete.");
