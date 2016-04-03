@@ -45,7 +45,7 @@ public class CommandParser {
 			+ "(jun)(e)?|" + "(jul)(y)?|" + "(aug)(ust)?|" + "(sep)(tember)?|"
 			+ "(oct)(ober)?|" + "(nov)(ember)?|" + "(dec)(ember)?)\\b";
 	private final String REGEX_TIME_TWELVE = "((1[012]|0?[1-9])(([:|.][0-5][0-9])?))";
-	private final String REGEX_TIME = "\\b((this )?(morning|afternoon|evening)|tonight|midnight)\\b";
+	private final String REGEX_TIME = "\\b(morning|afternoon|evening|tonight|midnight)\\b";
 	private final String REGEX_AM_PM = "(?i)(am|pm)";
 	private final String REGEX_PRIORITY = "\\b((priority|p) ?)(1|2|3)\\b";
 	
@@ -614,13 +614,11 @@ public class CommandParser {
 	
 	/**
 	 * This method sets the time if it has past and if no date is specified.
-	 * It takes the next nearest time if possible.
-	 * Else, it will be considered as past.
+	 * It will always take the next nearest time.
 	 * 
 	 * Eg:
-	 * If now is 1pm, and 12pm is specified,
-	 * it will be past because the next nearest 12 is 12am.
-	 * However, if 12am is specified, it will be 12am of the next day.
+	 * If now is 1pm, and if either 12am or 12pm is specified,
+	 * it will be 12am or 12pm of the next day.
 	 * 
 	 * @param dates
 	 * 			{@code List<Date>} dates to be parsed
@@ -637,16 +635,10 @@ public class CommandParser {
 		if (!hasDate) {
 			for (int i = 0; i < dates.size(); i++) {
 				if (dates.get(i).before(now)) {
-				    //date has past, need to check next nearest
-					currentDate.add(Calendar.HOUR_OF_DAY, 12);
-					
+					//date has past, get the next nearest
 					date.setTime(dates.get(i));
 					date.add(Calendar.DATE, 1);
-					
-					//if date is before, nearest have not past
-					if (date.before(currentDate)) {
-						dates.set(i,date.getTime());
-					}
+					dates.set(i, date.getTime());
 				}
 				
 				if (dates.size() == 2) {
@@ -974,7 +966,6 @@ public class CommandParser {
 		timings.add(Integer.toString(hour));
 		timings.add(Integer.toString(hour).concat(colon));
 		timings.add(Integer.toString(hour).concat(dot));
-
 		if (hour < 12) {
 			if (hour == 0) {
 				String temp = STRING_TWELVE;
@@ -983,6 +974,8 @@ public class CommandParser {
 				timings.add(temp.concat(dot).concat(STRING_AM));
 			} else {
 				timings.add(Integer.toString(hour).concat(STRING_AM));
+				timings.add(colon.concat(STRING_AM));
+				timings.add(dot.concat(STRING_AM));
 				timings.add(Integer.toString(hour).concat(colon).concat(STRING_AM));
 				timings.add(Integer.toString(hour).concat(dot).concat(STRING_AM));
 			}
@@ -996,6 +989,8 @@ public class CommandParser {
 			} else {
 				timings.add(Integer.toString(hour));
 				timings.add(Integer.toString(hour).concat(STRING_PM));
+				timings.add(colon.concat(STRING_PM));
+				timings.add(dot.concat(STRING_PM));
 				timings.add(Integer.toString(hour).concat(colon).concat(STRING_PM));
 				timings.add(Integer.toString(hour).concat(dot).concat(STRING_PM));
 			}
