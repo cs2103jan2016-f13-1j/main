@@ -1111,6 +1111,7 @@ public class CommandParser {
 			return null;
 		}
 		
+		inputString = correctShorthand(inputString);
 		List<Date> dates = parseDateTime(inputString);
 		
 		if (dates.size() == 0) {
