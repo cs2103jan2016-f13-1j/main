@@ -784,7 +784,7 @@ public class CommandParser {
 	 * @return {@code String} with time word removed
 	 */
 	private String removeTimeFromTitle(String title) {
-		String regex = REGEX_PREPOSITION_ALL + REGEX_TIME;
+		String regex = REGEX_PREPOSITION_ALL + "?" + REGEX_TIME;
 		Pattern pattern = Pattern.compile(regex);
 		Matcher matcher = pattern.matcher(title);
 		while (matcher.find()) {
