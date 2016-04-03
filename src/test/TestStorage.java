@@ -5,7 +5,7 @@
 
 package test;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -25,8 +25,18 @@ public class TestStorage {
      */
     @Test
     public void readUserSettingsTest() {
-        storage.setFileLocation("<><>///\\:?||");
-        assertNotNull(storage.readTasks());
+        String testPath = "storageTest.txt";
+        String originalPath = storage.getFilePath();
+        ArrayList<Task> originalTasks = storage.readTasks();
+        
+        storage.setFileLocation(testPath);
+        File file = new File(testPath);
+        assertTrue(file.exists());
+        file.delete();
+        
+        storage.setFileLocation(originalPath);
+        ArrayList<Task> newTasks = storage.readTasks();
+        assertEquals(newTasks.size(), originalTasks.size());
     }
     
     /*
