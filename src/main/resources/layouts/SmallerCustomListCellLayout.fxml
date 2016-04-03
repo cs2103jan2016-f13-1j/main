@@ -13,7 +13,7 @@
 
 <HBox fx:id="horizontalBox" alignment="CENTER_LEFT" cacheHint="SPEED" minHeight="60.0" nodeOrientation="LEFT_TO_RIGHT" prefHeight="60.0" prefWidth="700.0" spacing="20.0" stylesheets="@../styles/CustomListCellLayout.css" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1">
    <children>
-      <JFXButton fx:id="labelTaskTime" buttonType="RAISED" cacheHint="SPEED" minWidth="160.0" prefHeight="40.0" text="00:00 - 00:00" textAlignment="CENTER">
+      <JFXButton fx:id="labelTaskTime" buttonType="RAISED" cacheHint="SPEED" maxWidth="160.0" minWidth="160.0" prefHeight="40.0" prefWidth="160.0" text="12pm - 12pm" textAlignment="CENTER">
          <font>
             <Font name="Noto Sans" size="18.0" />
          </font>
