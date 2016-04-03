@@ -1262,7 +1262,7 @@ public class CommandParser {
 			//exception doesn't matter if edit is using parseAdd
 			editedTask = exception.getTask();
 		}
-	
+		
 		if (editedTask.getTitle().length() != 0) {
 			newTitle = editedTask.getTitle();
 		}
@@ -1300,7 +1300,7 @@ public class CommandParser {
 			hasTime = true;
 		}
 
-		if (editedTask.hasDate()) {			
+		if (editedTask.hasDate()) {		
 			if (hasDate && !hasTime) {
 				//only date, reuse time
 				dates = reuseTime(editedTask, oldTask);
@@ -1346,28 +1346,51 @@ public class CommandParser {
 		Date oldStart = oldTask.getStartDate();
 		Date oldEnd = oldTask.getEndDate();
 	
-		if (startDate != null) {
-			if (oldStart != null) {  
+		/*
+		System.out.println(startDate);
+		System.out.println(endDate);
+		System.out.println(oldStart);
+		System.out.println(oldEnd);
+		*/
+		
+		//if previous is range
+		/*
+		if (oldTask.hasDateRange()) {
+			if (editedTask.hasSingleDate()) {
+				Date date = editedTask.getSingleDate();
 				reuse.setTime(oldStart);
-			} else if (oldEnd != null) {
+				latest = setHourMin(reuse, latest, date);
+				oldStart = latest.getTime();
+				
 				reuse.setTime(oldEnd);
+				latest = setHourMin(reuse, latest, date);
+				oldEnd = latest.getTime();
+			}
+		} else {
+		*/
+			if (startDate != null) {
+				if (oldStart != null) {  
+					reuse.setTime(oldStart);
+				} else if (oldEnd != null) {
+					reuse.setTime(oldEnd);
+				}
+				
+				latest = setHourMin(reuse, latest, startDate);
+				oldStart = latest.getTime();
 			}
 			
-			latest = setHourMin(reuse, latest, startDate);
-			oldStart = latest.getTime();
-		} 
+			if (endDate != null) {
+				if (oldEnd != null) {  
+					reuse.setTime(oldEnd);
+				} else if (oldStart != null) {
+					reuse.setTime(oldStart);
+				}
 
-		if (endDate != null) {
-			if (oldEnd != null) {  
-				reuse.setTime(oldEnd);
-			} else if (oldStart != null) {
-				reuse.setTime(oldStart);
+				latest = setHourMin(reuse, latest, endDate);
+				oldEnd = latest.getTime();
 			}
-
-			latest = setHourMin(reuse, latest, endDate);
-			oldEnd = latest.getTime();
-		}
-
+		//}
+		
 		if (!oldTask.hasDate()) {
 			//floating task
 			//reset time here else it will take current
@@ -1379,15 +1402,17 @@ public class CommandParser {
 			}
 		}
 		
-		//if edited is null, overwrite
-		if (startDate == null) {
-			oldStart = null;
-		}
+		//if oldtask is not range, and edited is null, overwrite
+		//if (!oldTask.hasDateRange()) {
+			if (startDate == null) {
+				oldStart = null;
+			}
+			
+			if (endDate == null) {
+				oldEnd = null;
+			}
+		//}
 		
-		if (endDate == null) {
-			oldEnd = null;
-		}
-	
 		dates.add(oldStart);
 		dates.add(oldEnd);
 		return dates;		
@@ -1442,7 +1467,7 @@ public class CommandParser {
 			} else if (oldEnd != null) {
 				reuse.setTime(oldEnd);
 			}
-			
+
 			latest = setDayMonth(reuse, latest, startDate);
 			oldStart = latest.getTime();
 		}
@@ -1458,13 +1483,21 @@ public class CommandParser {
 			oldEnd = latest.getTime();
 		}
 		
-		if (startDate == null) {
-			oldStart = null;
+		if (!oldTask.hasDate()) {
+			//floating task
+			oldStart = startDate;
+			oldEnd = endDate;
 		}
 		
-		if (endDate == null) {
-			oldEnd = null;
-		}
+		//if (!oldTask.hasDateRange()) {
+			if (startDate == null) {
+				oldStart = null;
+			}
+			
+			if (endDate == null) {
+				oldEnd = null;
+			}
+	//	}
 		
 		dates.add(oldStart);
 		dates.add(oldEnd);
