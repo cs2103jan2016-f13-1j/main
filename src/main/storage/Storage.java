@@ -5,8 +5,8 @@ package main.storage;
  * an output file. 
  * 
  * You can expect to see two files upon initializing this class:
- * 1. settings.txt (Stores the path of the output file - Default: storage.txt)
- * 2. storage.txt (Default file name)
+ * 1. settings.txt (Stores the path of the output file - Default: tasks.txt)
+ * 2. tasks.txt (Default file name)
  */
 
 /**
@@ -15,9 +15,9 @@ package main.storage;
  */
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Writer;
@@ -42,7 +42,7 @@ public class Storage {
 	
 	private final String USER_SETTINGS = "settings.txt";
 	private final String USER_DIR = System.getProperty("user.dir");
-	private final String DEFAULT_FILE_NAME = "storage.txt";
+	private final String DEFAULT_FILE_NAME = "tasks.txt";
 	
 	private final String WINDOWS_DIR_SYMBOL = "\\";
 	private final String MAC_DIR_SYMBOL = "/";
@@ -51,6 +51,7 @@ public class Storage {
 	
 	private final String FILE_PATH_FORMAT = "%s%s%s";
 	
+	private String fileDir = null;
 	private String fileName = null;
 	private String filePath = null;
 
@@ -121,7 +122,8 @@ public class Storage {
             logger.log(Level.INFO,"Saved tasks to: " + fileName);
         } catch (Exception e) {
             logger.log(Level.INFO,"Corrupted file location: " + filePath);
-            setFileLocation(DEFAULT_FILE_NAME, tasks);
+            setFileLocation(DEFAULT_FILE_NAME);
+            writeTasks(tasks);
         }
         assert((new File(filePath)).exists());
     }
@@ -153,9 +155,8 @@ public class Storage {
 	 * @param  tasks
 	 *         The {@code ArrayList} of {@code Task} to write to the new path
 	 */
-	public void setFileLocation(String path, ArrayList<Task> tasks) {
-	    filePath = path;
-	    updateFileName(path);
+	public void setFileLocation(String path) {
+	    updateFileDetails(path);
 	    try(PrintWriter out = new PrintWriter(USER_SETTINGS)){
             out.print(path);
             out.close();
@@ -164,21 +165,37 @@ public class Storage {
         	logger.log(Level.WARNING,"Failed to write " + path + " to settings.txt.");
         }
 	    assert((new File(USER_SETTINGS)).exists());
-	    writeTasks(tasks);
+	    
+	    File file = new File(path);
+	    if (!file.exists()) {
+	        try {
+                file.createNewFile();
+            } catch (IOException e) {
+                logger.log(Level.WARNING,"Failed to create file " + path);
+            }
+	    }
 	}
 	
-	private void updateFileName(String path) {
+	private void updateFileDetails(String path) {
+	    filePath = path;
 	    if (isWindows()) {
+	        fileDir = path.substring(0, path.lastIndexOf(WINDOWS_DIR_SYMBOL) + 1);
 	        fileName = path.substring(path.lastIndexOf(WINDOWS_DIR_SYMBOL) + 1);
 	    } else if (isMac()) {
+	        fileDir = path.substring(0, path.lastIndexOf(MAC_DIR_SYMBOL) + 1);
 	        fileName = path.substring(path.lastIndexOf(MAC_DIR_SYMBOL) + 1);
         } else if (isUnix()) {
+            fileDir = path.substring(0, path.lastIndexOf(UNIX_DIR_SYMBOL) + 1);
             fileName = path.substring(path.lastIndexOf(UNIX_DIR_SYMBOL) + 1);
         } else if (isSolaris()) {
+            fileDir = path.substring(0, path.lastIndexOf(SOLARIS_DIR_SYMBOL) + 1);
             fileName = path.substring(path.lastIndexOf(SOLARIS_DIR_SYMBOL) + 1);
         } else {
+            fileDir = USER_DIR;
             fileName = DEFAULT_FILE_NAME;
         }
+	    assert(filePath != null);
+	    assert(fileDir != null);
 	    assert(fileName != null);
 	}
 	
@@ -187,6 +204,10 @@ public class Storage {
 	 * 
 	 * @return   A {@code String} indicating the file path
 	 */
+	public String getFileDir() {
+	    return fileDir;
+	}
+	
 	public String getFilePath() {
 	    return filePath;
 	}
@@ -198,17 +219,16 @@ public class Storage {
             sc.close();
             logger.log(Level.INFO,"Read file location from settings.txt: " + path);
             if (validFilePath(path)) {
-                filePath = path;
-                updateFileName(path);
+                updateFileDetails(path);
                 logger.log(Level.INFO,"Valid file location: " + path);
             } else {
                 logger.log(Level.INFO,"Invalid file location: " + path);
                 throw new InvalidPathException(path, "Invalid file location");
             }
-        } catch (FileNotFoundException e) {
+        } catch (Exception e) {
             fileName = DEFAULT_FILE_NAME;
             logger.log(Level.INFO,USER_SETTINGS + " not found.");
-            setFileLocation(getDefaultFilePath(), new ArrayList<Task>());
+            setFileLocation(getDefaultFilePath());
             readUserSettings();
         }
 	    assert(fileName != null);

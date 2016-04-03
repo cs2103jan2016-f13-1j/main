@@ -34,16 +34,7 @@ public class Receiver extends Observable {
         scheduler = new ScheduleManager();
         assert(storage != null);
         
-        allTasks = storage.readTasks();
-        assert(allTasks != null);
-        
-        initializeLists();
-        assert(todoTasks != null);
-        assert(completedTasks != null);
-        
-        categorizeTasks(allTasks);
-        sortTasks();
-        updateCollision();
+        loadFromStorage();
     }
     
     /**
@@ -134,6 +125,16 @@ public class Receiver extends Observable {
         return storage.getFilePath();
     }
     
+    public String getFileDir() {
+        return storage.getFileDir();
+    }
+    
+    public void setFilePath(String path) {
+        storage.setFileLocation(path);
+        loadFromStorage();
+        updateObservers();
+    }
+    
     private void initializeLists() {
         todoTasks = new ArrayList<Task>();
         completedTasks = new ArrayList<Task>();
@@ -150,6 +151,19 @@ public class Receiver extends Observable {
     public void updateObservers() {
         setChanged();
         notifyObservers();
+    }
+    
+    private void loadFromStorage() {
+        allTasks = storage.readTasks();
+        assert(allTasks != null);
+        
+        initializeLists();
+        assert(todoTasks != null);
+        assert(completedTasks != null);
+        
+        categorizeTasks(allTasks);
+        sortTasks();
+        updateCollision();
     }
     
     private void categorizeTasks(ArrayList<Task> tasks) {
