@@ -46,7 +46,7 @@ public class CommandParser {
 			+ "(oct)(ober)?|" + "(nov)(ember)?|" + "(dec)(ember)?)\\b";
 	private final String REGEX_DATE_WORD = "\\b(today|tdy|tonight|tomorrow|tmr|tml|tmrw)\\b";
 	private final String REGEX_TIME_TWELVE = "((1[012]|0?[1-9])(([:|.][0-5][0-9])?))";
-	private final String REGEX_TIME = "\\b(morning|afternoon|evening|midnight)\\b";
+	private final String REGEX_TIME_WORD = "\\b(morning|afternoon|evening|midnight)\\b";
 	private final String REGEX_AM_PM = "(?i)(am|pm)";
 	private final String REGEX_PRIORITY = "\\b((priority|p) ?)(1|2|3)\\b";
 
@@ -88,41 +88,52 @@ public class CommandParser {
 		boolean hasDate = false;
 		boolean hasTime = false;
 		boolean hasTimeWithoutAmPm = false;
-		boolean hasDateRange = false;
+		boolean hasTimeRange = false;
 		boolean hasPreposition = false;
 		boolean hasStartDate = false;
 		boolean hasLabel = false;
 		boolean hasPriority = false;
 		boolean isDatedOnly = false;
+		
 		int numberOfDate = 0;
 		List<Date> dates = new ArrayList<Date>();
+		String regex = null;
 		
-		hasDay = checkForDay(inputString);
-		hasDate =  checkForDate(inputString)  || checkForDateText(inputString);
+		//check for day
+		hasDay = checkForRegexMatch(getDayRegex(), inputString);
 		
-		hasTime = checkForTimeTwelve(inputString) || checkForTime(inputString);
-		hasDateRange = checkForRangeTime(inputString);
+		//check for date in number format, or text format
+		hasDate = checkForRegexMatch(getDateRegex(), inputString)  || checkForRegexMatch(getDateRegexText(), inputString);
+		
+		//check for time with am/pm or check for word indicating time
+		hasTime = checkForRegexMatch(getTimeRegex(), inputString) || checkForRegexMatch(REGEX_TIME_WORD, inputString);
+		hasTimeRange = checkForRegexMatch(getTimeRangeRegex(), inputString);
 
-		if (checkForDateWord(inputString)) {
+		//check for word indicating date
+		if (checkForRegexMatch(REGEX_DATE_WORD, inputString)) {
 			hasDate = true;
 			hasTime = true;
 		}
 		
-		hasPreposition = checkForPrepositions(inputString);
+		//check for preposition
+		hasPreposition = checkForRegexMatch(REGEX_PREPOSITION_ALL, inputString);
 		if (hasPreposition) {
-			hasTimeWithoutAmPm = checkForTimeWithoutAmPm(inputString);
-			hasStartDate = checkForStartPreposition(inputString);
+			//check for time without am/pm
+			hasTimeWithoutAmPm = checkForRegexMatch(getTimeRegexWithoutAmPm(), inputString);
+			//check for start preposition only
+			hasStartDate = checkForRegexMatch(REGEX_PREPOSITION_STARTING, inputString);
 		}
 		
 		inputString = correctUserInput(inputString);
 		title = inputString;
 		
-		hasPriority = checkForPriority(inputString);
+		//check for priority
+		hasPriority = checkForRegexMatch(REGEX_PRIORITY, inputString);
 		if (hasPriority) {
 			String priorityString = getPriorityString(inputString);
 			priority = getPriority(priorityString);
 			assert(priority > 0 && priority < 4);
-			title = removePriorityFromTitle(inputString, priorityString);
+			title = removeStringFromTitle(inputString, priorityString);
 		}
 		
 		hasLabel = checkForLabel(inputString);
@@ -139,11 +150,12 @@ public class CommandParser {
 			}
 			
 			if (hasLabel) {
-				title = removeLabelFromTitle(title, label);
+				String labelString = "#".concat(label);
+				title = removeStringFromTitle(title, labelString);
 			}
 		}
 		
-	inputString = title;
+		inputString = title;
 		
 		if (hasDate && hasTime) {
 			dates = parseDateTime(inputString);
@@ -171,11 +183,21 @@ public class CommandParser {
 			endDate = dates.get(DATE_END);
 
 			if (hasTime) {
-				title = removeTimeFromTitle(title);
+				//remove time from title
+				regex = REGEX_PREPOSITION_ALL + "?" + REGEX_TIME_WORD;
+				title = removeRegex(regex, title);
 				
-				if (hasDateRange) {
-					title = removeRangeFromTitle(title);
+				if (hasTimeRange) {
+					//remove range from title
+					regex = "(" + REGEX_PREPOSITION_ALL + "?)(" + getTimeRangeRegex()+ ")";
+					title = removeRegex(regex, title);
 				}
+			}
+			
+			if (hasDate) {
+				//remove date in text form from title
+				regex = getDateRegexText();
+				title = removeRegex(regex, title);
 			}
 			
 			title = removeDateFromTitle(title, dates);
@@ -184,6 +206,7 @@ public class CommandParser {
 		Task task = new Task (title, startDate, endDate, label);
 		task.setPriority(priority);
 		task.setIsDatedOnly(isDatedOnly);
+		
 		logger.log(Level.INFO, "Task object built.");
 		
 		if (title.length() == 0) {
@@ -212,7 +235,6 @@ public class CommandParser {
 		inputString = inputString.replaceAll(regex, "today");
 		return inputString;
 	}
-	
 	
 	/**
 	 * This method checks for indication of priority level.
@@ -246,17 +268,8 @@ public class CommandParser {
 		return level;
 	}
 	
-	/**
-	 * This method removes priority from the title.
-	 * 
-	 * @param title
-	 * 			{@code String} input for priority to be removed from
-	 * @param label
-	 * 			{@code String} priority to be removed
-	 * @return {@code String} priority removed
-	 */
-	private String removePriorityFromTitle(String title, String priorityString) {
-		title = title.replace(priorityString, "");
+	private String removeStringFromTitle(String title, String string) {
+		title = title.replace(string, "");
 		title = removeExtraSpaces(title);
 		return title;
 	}
@@ -308,39 +321,11 @@ public class CommandParser {
 		}
 	}
 	
-	/**
-	 * This method removes label from the title.
-	 * 
-	 * @param title
-	 * 			{@code String} input for label to be removed from
-	 * @param label
-	 * 			{@code String} label to be removed
-	 * @return {@code String} label removed
-	 */
-	private String removeLabelFromTitle(String title, String label) {
-		String tag = "#".concat(label);
-
-		int index = title.indexOf(tag);
-		index = index + label.length() + LENGTH_OFFSET;
-
-		title = title.replace(tag, "");
-		title = removeExtraSpaces(title);
-		return title;
-	}
-	
 	private String removeExtraSpaces(String inputString) {
 		return inputString.replaceAll("\\s+", " ").trim();
 	}
 	
-	/**
-	 * This method checks if a valid day is specified.
-	 * 
-	 * @param inputString
-	 * 			{@code String} input to be check
-	 * @return {@code boolean} true if day found
-	 */
-	private boolean checkForDay(String inputString) {
-		String regex = getDayRegex();
+	private boolean checkForRegexMatch(String regex, String inputString) {
 		Pattern pattern = Pattern.compile(regex);
 		Matcher matcher = pattern.matcher(inputString);
 		return matcher.find();
@@ -350,49 +335,12 @@ public class CommandParser {
 		return REGEX_PREPOSITION_ALL + "?" + REGEX_DAYS;
 	}
 	
-	/**
-	 * This method checks if a valid date is specified in dd/mm format.
-	 * Eg: 20/12
-	 * 
-	 * @param inputString
-	 * 			{@code String} input to be checked
-	 * @return {@code boolean} true if date detected
-	 */
-	private boolean checkForDate(String inputString) {
-		String regex = getDateRegex();
-		Pattern pattern = Pattern.compile(regex);
-		Matcher matcher = pattern.matcher(inputString);        
-		return matcher.find();
-	}
-
 	private String getDateRegex() {
 		return REGEX_PREPOSITION_ALL + "?" + REGEX_DATE_NUM;
 	}
 
-	/**
-	 * This method checks if a valid date is specified in textual format.
-	 * Eg: 26 March
-	 * 
-	 * @param inputString
-	 * 			{@code String} input to be checked
-	 * @return {@code boolean} true if date detected
-	 */
-	private boolean checkForDateText(String inputString) {
-		String regex = getDateRegexText();
-		Pattern pattern = Pattern.compile(regex);
-		Matcher matcher = pattern.matcher(inputString);
-		return matcher.find();
-	}
-
 	private String getDateRegexText() {
 		return REGEX_PREPOSITION_ALL + "?" + REGEX_DATE_TEXT + REGEX_MONTH_TEXT;
-	}
-	
-	private boolean checkForDateWord(String inputString) {
-		String regex = REGEX_DATE_WORD;
-		Pattern pattern = Pattern.compile(regex);
-		Matcher matcher = pattern.matcher(inputString);
-		return matcher.find();
 	}
 	
 	/**
@@ -408,32 +356,12 @@ public class CommandParser {
 		return inputString;
 	}
 	
-	/**
-	 * This method checks if a valid time is specified.
-	 * 24format not supported because can be confused with normal numbers.
-	 * 
-	 * @param inputString
-	 * 			{@code String} input to be check
-	 * @return {@code boolean} true if time found
-	 */
-	private boolean checkForTimeTwelve(String inputString) {
-		String regex = getTimeRegex();
-		Pattern pattern = Pattern.compile(regex);
-		Matcher matcher = pattern.matcher(inputString);
-		return matcher.find();
-	}
+
 
 	private String getTimeRegex() {
 		return "\\b" + REGEX_TIME_TWELVE + REGEX_AM_PM;
 	}
-	
-	private boolean checkForTime(String inputString) {
-		String regex = REGEX_TIME;
-		Pattern pattern = Pattern.compile(regex);
-		Matcher matcher = pattern.matcher(inputString);
-		return matcher.find();
-	}
-	
+
 	/**
 	 * This method corrects time separated with a dot for date parsing.
 	 * Eg: 5.30pm 
@@ -498,39 +426,9 @@ public class CommandParser {
 		return matcher.find();
 	}
 	
-	/**
-	 * This method checks if a valid time is specified.
-	 * Because this method is only used when preposition is detected,
-	 * am/pm is not needed
-	 * 
-	 * @param inputString
-	 * 			{@code String} input to be check
-	 * @return {@code boolean} true if time found
-	 */
-	private boolean checkForTimeWithoutAmPm(String inputString) {
-		String regex = getTimeRegexWithoutAmPm();
-		Pattern pattern = Pattern.compile(regex);
-		Matcher matcher = pattern.matcher(inputString);
-		return matcher.find();
-	}
 
 	private String getTimeRegexWithoutAmPm() {
 		return REGEX_PREPOSITION_ALL + "\\b " + REGEX_TIME_TWELVE + "\\b$";
-	}
-	
-	/**
-	 * This method checks the {@code String} taken in for prepositions.
-	 * More specifically, it checks if there is preposition that indicates a starting time.
-	 * 
-	 * @param inputString
-	 * 			{@code String} input to be checked
-	 * @return {@code boolean} true if preposition found
-	 */
-	private boolean checkForStartPreposition(String inputString) {
-		String regex = REGEX_PREPOSITION_STARTING;
-		Pattern pattern = Pattern.compile(regex);
-		Matcher matcher = pattern.matcher(inputString);
-		return matcher.find();
 	}
 	
 	/**
@@ -805,45 +703,8 @@ public class CommandParser {
 		return dates.get(index);
 	}
 	
-	/**
-	 * This method removes the word indicated time specified in {@code String} taken in.
-	 * The regular expression used includes an optional preposition in front of the time range.
-	 * If preposition exist, it will be removed.
-	 * 
-	 * @param title
-	 * 			{@code String} input that has time word to be removed
-	 * @return {@code String} with time word removed
-	 */
-	private String removeTimeFromTitle(String title) {
-		String regex = REGEX_PREPOSITION_ALL + "?" + REGEX_TIME;
-		Pattern pattern = Pattern.compile(regex);
-		Matcher matcher = pattern.matcher(title);
-		while (matcher.find()) {
-			title = title.replaceAll(matcher.group(), "");
-		}
-		title = removeExtraSpaces(title);
-		return title;
-	}
 	
-	/**
-	 * This method removes the time range specified in {@code String} taken in.
-	 * The regular expression used includes an optional preposition in front of the time range.
-	 * If preposition exist, it will be removed.
-	 * 
-	 * @param title
-	 * 			{@code String} input that has range to be removed
-	 * @return {@code String} with time range removed
-	 */
-	private String removeRangeFromTitle(String title) {
-		String regex = "(" + REGEX_PREPOSITION_ALL + "?)(" + getTimeRangeRegex()+ ")";
-		Pattern pattern = Pattern.compile(regex);
-		Matcher matcher = pattern.matcher(title);
-		while (matcher.find()) {
-			title = title.replaceAll(matcher.group(), "");
-		}
-		title = removeExtraSpaces(title);
-		return title;
-	}
+	
 	
 	/**
 	 * This method removes date information from the {@code String} taken in.
@@ -1018,8 +879,6 @@ public class CommandParser {
 				timings.add(temp.concat(dot).concat(STRING_AM));
 			} else {
 				timings.add(Integer.toString(hour).concat(STRING_AM));
-				timings.add(colon.concat(STRING_AM));
-				timings.add(dot.concat(STRING_AM));
 				timings.add(Integer.toString(hour).concat(colon).concat(STRING_AM));
 				timings.add(Integer.toString(hour).concat(dot).concat(STRING_AM));
 			}
@@ -1033,8 +892,6 @@ public class CommandParser {
 			} else {
 				timings.add(Integer.toString(hour));
 				timings.add(Integer.toString(hour).concat(STRING_PM));
-				timings.add(colon.concat(STRING_PM));
-				timings.add(dot.concat(STRING_PM));
 				timings.add(Integer.toString(hour).concat(colon).concat(STRING_PM));
 				timings.add(Integer.toString(hour).concat(dot).concat(STRING_PM));
 			}
@@ -1197,30 +1054,32 @@ public class CommandParser {
 	 */
 	private String removeDateTime(String inputString) {
 		boolean hasTime = false;
-		boolean hasDateRange = false;
+		boolean hasTimeRange = false;
 		boolean hasDate = false;
 		String regex = "";
 
-		hasTime = checkForTimeTwelve(inputString);
+		hasTime = checkForRegexMatch(getTimeRegex(), inputString);
+		
 		if (hasTime) {
-			hasDateRange = checkForRangeTime(inputString);
+			hasTimeRange = checkForRegexMatch(getTimeRangeRegex(), inputString);
 
-			if (hasDateRange) {
-				inputString = removeRangeFromTitle(inputString);
+			if (hasTimeRange) {
+				regex = "(" + REGEX_PREPOSITION_ALL + "?)(" + getTimeRangeRegex()+ ")";
+				inputString = removeRegex(regex, inputString);
 			}
 
 			regex = getTimeRegex();
 			inputString = removeRegex(regex, inputString);
 		}
 
-		hasDate = checkForDate(inputString);
+		hasDate = checkForRegexMatch(getDateRegex(), inputString);
 		if (hasDate) {
 			regex = getDateRegex();
 			inputString = removeRegex(regex, inputString);
 			hasDate = false;
 		}
 
-		hasDate = checkForDateText(inputString);
+		hasDate = checkForRegexMatch(getDateRegexText(), inputString);
 		if (hasDate) {
 			regex = getDateRegexText();
 			inputString = removeRegex(regex, inputString);
@@ -1297,20 +1156,20 @@ public class CommandParser {
 		boolean hasTimeWithoutAmPm = false;
 		List<Date> dates = new ArrayList<Date>();
 		
-		hasDate =  checkForDate(inputString)  || checkForDateText(inputString);
-		hasTime = checkForTimeTwelve(inputString) || checkForRangeTime(inputString);
+		hasDate = checkForRegexMatch(getDateRegex(), inputString)  || checkForRegexMatch(getDateRegexText(), inputString);
+		hasTime = checkForRegexMatch(getTimeRegex(), inputString) || checkForRegexMatch(REGEX_TIME_WORD, inputString);
 		
 		if (!hasTime) {
-			hasPreposition = checkForPrepositions(inputString);
+			hasPreposition = checkForRegexMatch(REGEX_PREPOSITION_ALL, inputString);
 			if (hasPreposition) {
-				hasTimeWithoutAmPm = checkForTimeWithoutAmPm(inputString);
+				hasTimeWithoutAmPm = checkForRegexMatch(getTimeRegexWithoutAmPm(), inputString);
 				if (hasTimeWithoutAmPm) {
 					hasTime = true;
 				}
 			} 
 		}
 		
-		if (checkForDateWord(inputString)) {
+		if (checkForRegexMatch(REGEX_DATE_WORD, inputString)) {
 			hasDate = true;
 			hasTime = true;
 		}
