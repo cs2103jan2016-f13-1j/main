@@ -133,10 +133,17 @@ public class CommandParser {
 				throw new InvalidLabelFormat("Invalid label input detected.");
 			}
 			
-			title = removeLabelFromTitle(title, label);
+			if (!checkValidLabel(label)) {
+				label = null;
+				hasLabel = false;
+			}
+			
+			if (hasLabel) {
+				title = removeLabelFromTitle(title, label);
+			}
 		}
 		
-		inputString = title;
+	inputString = title;
 		
 		if (hasDate && hasTime) {
 			dates = parseDateTime(inputString);
@@ -293,6 +300,14 @@ public class CommandParser {
 		return word;
 	}
 
+	private boolean checkValidLabel(String inputString) {
+		if (inputString.contains("-")) {
+			return false;
+		} else {
+			return true;
+		}
+	}
+	
 	/**
 	 * This method removes label from the title.
 	 * 
