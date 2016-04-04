@@ -400,11 +400,11 @@ public class TestCommandParser {
 		task = parser.parseAdd("Buy apple 10pm");
 		assertEquals("Buy apple from today 10pm", task.toString());
 		
-		task = parser.parseAdd("Buy apple 6-10pm");
-		assertEquals("Buy apple from today 6pm to 10pm", task.toString());
+		task = parser.parseAdd("Buy apple 9-10pm");
+		assertEquals("Buy apple from today 9pm to 10pm", task.toString());
 		
-		task = parser.parseAdd("Buy apple 6pm-10pm");
-		assertEquals("Buy apple from today 6pm to 10pm", task.toString());
+		task = parser.parseAdd("Buy apple 9pm-10pm");
+		assertEquals("Buy apple from today 9pm to 10pm", task.toString());
 	
 		//if ending not specified, am
 		task = parser.parseAdd("Buy apple 10pm-3");
@@ -852,13 +852,13 @@ public class TestCommandParser {
     	task2 = parser.parseEdit(task, "10pm to 11pm");
     	assertEquals("Buy milk from today 10pm to 11pm", task2.toString());
     	
-    	task = parser.parseAdd("Buy milk from 6 to 7pm");
+    	task = parser.parseAdd("Buy milk from 9 to 10pm");
     	task2 = parser.parseEdit(task, "by 11:51pm");
     	assertEquals("Buy milk by today 11:51pm", task2.toString());
     	
-    	task = parser.parseAdd("Buy milk from 6 to 7pm");
+    	task = parser.parseAdd("Buy milk from 7 to 8pm");
     	task2 = parser.parseEdit(task, "from 9 to 10pm");
-    	assertEquals("Buy milk from today 9pm to 10pm", task2.toString());
+    	assertEquals("Buy milk from this Tue 9pm to 10pm", task2.toString());
 	}
 	
 	@Test
@@ -1222,18 +1222,29 @@ public class TestCommandParser {
 	public void testBuggyTheClown() throws InvalidLabelFormat, InvalidTitle {
 		CommandParser parser = new CommandParser();	
 		Task task,task2;
-		
-		task = parser.parseAdd("A on 11apr by 11.59pm");
+		/*
+		task = parser.parseAdd("A on 11 apr 2017");
+		task = parser.parseAdd("A on 11 apr 17");
 		System.out.println(task.toString());
+		System.out.println(task.getStartDate());
+		System.out.println(task.getEndDate());
+		*/
 		
-		task = parser.parseAdd("A by 11 apr 11:59pm");
+		task = parser.parseAdd("Buy fountain pen on 30/4/2017");
 		System.out.println(task.toString());
+		System.out.println(task.getStartDate());
+		System.out.println(task.getEndDate());
 		
-		task = parser.parseAdd("A by 11.59pm on 11 apr");
+		task = parser.parseAdd("Buy fountain pen on 30/4/17");
 		System.out.println(task.toString());
+		System.out.println(task.getStartDate());
+		System.out.println(task.getEndDate());
 		
-		task = parser.parseAdd("A 12am 12apr");
+		task = parser.parseAdd("Go Japan from 1/5/17 8am to 30/5/17 10pm");
 		System.out.println(task.toString());
+		System.out.println(task.getStartDate());
+		System.out.println(task.getEndDate());
+
 		
 		
     	

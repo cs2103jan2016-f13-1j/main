@@ -39,6 +39,7 @@ public class CommandParser {
 	public final String REGEX_DAYS = "\\b((?i)((mon)(day)?|(tue)(sday|s)?|"
 			+ "(wed)(nesday|s)?|(thu)(rsday|rs|r)?|(fri)(day)?|(sat)(urday)?|(sun)(day)?))\\b";
 	private final String REGEX_DATE_NUM = "\\b((0?[1-9]|[12][0-9]|3[01])([/|-])(0?[1-9]|1[012]))\\b";	
+	private final String REGEX_DATE_NUM_YEAR = "\\b((0?[1-9]|[12][0-9]|3[01])([/|-])(0?[1-9]|1[012])([/|-])((19|20)?\\d\\d))\\b";
 	private final String REGEX_DATE_TEXT = "\\b((0?[1-9]|[12][0-9]|3[01]) ?)";
 	private final String REGEX_MONTH_TEXT = "((?i)(jan)(uary)?|"
 			+ "(feb)(ruary)?|" + "(mar)(ch)?|" + "(apr)(il)?|" + "(may)|"
@@ -86,6 +87,7 @@ public class CommandParser {
 		
 		boolean hasDay = false;
 		boolean hasDate = false;
+		boolean hasYear = false;
 		boolean hasTime = false;
 		boolean hasTimeWithoutAmPm = false;
 		boolean hasTimeRange = false;
@@ -102,9 +104,15 @@ public class CommandParser {
 		//check for day
 		hasDay = checkForRegexMatch(getDayRegex(), inputString);
 		
-		//check for date in number format, or text format
-		hasDate = checkForRegexMatch(getDateRegex(), inputString)  || checkForRegexMatch(getDateRegexText(), inputString);
-		
+		//check for date with year in both num (or text format)
+		hasDate = checkForRegexMatch(getDateWithYearRegex(), inputString);
+		if (hasDate) {
+			hasYear = true;
+		} else {
+			//check for date in number format, or text format
+			hasDate = checkForRegexMatch(getDateRegex(), inputString)  || checkForRegexMatch(getDateRegexText(), inputString);			
+		}
+	
 		//check for time with am/pm or check for word indicating time
 		hasTime = checkForRegexMatch(getTimeRegex(), inputString) || checkForRegexMatch(REGEX_TIME_WORD, inputString);
 		hasTimeRange = checkForRegexMatch(getTimeRangeRegex(), inputString);
@@ -158,21 +166,21 @@ public class CommandParser {
 		inputString = title;
 		
 		if (hasDate && hasTime) {
-			dates = parseDateTime(inputString);
+			dates = parseDateTime(inputString, hasYear);
 		} else if (hasDate) {
-			dates = parseDateOnly(inputString);
+			dates = parseDateOnly(inputString, hasYear);
 			isDatedOnly = true;
 		} else if (hasDay && hasTime) {
-			dates = parseDateTime(inputString);
+			dates = parseDateTime(inputString, hasYear);
 		} else if (hasDay) {
-			dates = parseDayOnly(inputString);
+			dates = parseDayOnly(inputString, hasYear);
 			isDatedOnly = true;
 		} else if (hasTime) {
-			dates = parseTimeOnly(inputString);
+			dates = parseTimeOnly(inputString, hasYear);
 		} 
 		
 		if (hasPreposition && hasTimeWithoutAmPm) {
-			dates = parseDateTime(inputString);
+			dates = parseDateTime(inputString, hasYear);
 			dates = fixTimeForWithoutAmPm(dates);
 		}
 		
@@ -195,6 +203,12 @@ public class CommandParser {
 			}
 			
 			if (hasDate) {
+				if (hasYear) {
+					//remove date in num form with year from title
+					regex = getDateWithYearRegex();
+					title = removeRegex(regex, title);
+				}
+				
 				//remove date in text form from title
 				regex = getDateRegexText();
 				title = removeRegex(regex, title);
@@ -325,13 +339,17 @@ public class CommandParser {
 		return REGEX_PREPOSITION_ALL + "?" + REGEX_DATE_NUM;
 	}
 
+	private String getDateWithYearRegex() {
+		return REGEX_PREPOSITION_ALL + "?" + REGEX_DATE_NUM_YEAR;
+	}
+	
 	private String getDateRegexText() {
 		return REGEX_PREPOSITION_ALL + "?" + REGEX_DATE_TEXT + REGEX_MONTH_TEXT;
 	}
 	
 	/**
 	 * This method corrects date text in user input without spaces for date parsing.
-	 * 
+	 * Eg: 1apr -> 1 apr
 	 * @param inputString
 	 * 			{@code String} input to be corrected
 	 * @return {@code  String} with date text corrected
@@ -392,9 +410,9 @@ public class CommandParser {
 	 * 			{@code String} input to be parsed
 	 * @return {@code List<Date>} of dates generated if possible
 	 */
-	private List<Date> parseDateTime(String inputString) {
+	private List<Date> parseDateTime(String inputString, boolean hasYear) {
 		PrettyTimeParser parser = new PrettyTimeParser();
-		inputString = correctDateNumFormat(inputString);
+		inputString = correctDateNumFormat(inputString, hasYear);
 		List<Date> dates = parser.parse(inputString);
 		return dates;
 	}
@@ -406,24 +424,34 @@ public class CommandParser {
 	 * 			{@code String} input to be corrected
 	 * @return {@code String} with the date corrected
 	 */
-	private String correctDateNumFormat(String inputString) {
+	private String correctDateNumFormat(String inputString, boolean hasYear) {
 		boolean match = false;
 		String swapped = "";
 
 		//Preserve capitalization by not using toLowerCase
 		List<String> words = new ArrayList<String>(Arrays.asList(inputString.split(" ")));
-
+		
 		for (int i = 0; i< words.size(); i++) {
-			match = Pattern.matches(REGEX_DATE_NUM, words.get(i));
+			if (hasYear) {
+				match = Pattern.matches(REGEX_DATE_NUM_YEAR, words.get(i));
+			} else {
+				match = Pattern.matches(REGEX_DATE_NUM, words.get(i));
+			}
+			
 			if (match) {
 				if (words.get(i).contains("/")) {
 					List<String> date = new ArrayList<String>(Arrays.asList(words.get(i).split("/")));
 					swapped = date.get(1).concat("/").concat(date.get(0));
+					if (date.size() == 3) {
+						swapped = swapped.concat("/").concat(date.get(2));
+					}
 				} else if (words.get(i).contains("-")) {
 					List<String> date = new ArrayList<String>(Arrays.asList(words.get(i).split("-")));
 					swapped = date.get(1).concat("-").concat(date.get(0));
+					if (date.size() == 3) {
+						swapped = swapped.concat("-").concat(date.get(2));
+					}
 				}
-
 				words.set(i, swapped);
 			}
 		}
@@ -439,8 +467,8 @@ public class CommandParser {
 	 * 			{@code String} input to be parsed
 	 * @return {@code List<Date>} of dates
 	 */
-	private List<Date> parseDateOnly(String inputString) {
-		List<Date> dates = parseDateTime(inputString);
+	private List<Date> parseDateOnly(String inputString, boolean hasYear) {
+		List<Date> dates = parseDateTime(inputString, hasYear);
 		int size = dates.size();
 		for (int i = 0; i < size; i++) {
 			dates.add(setTimeToZero(dates.get(i)));
@@ -467,8 +495,8 @@ public class CommandParser {
         return cal.getTime();
     }
 	
-	private List<Date> parseDayOnly(String inputString) {
-		List<Date> dates = parseDateOnly(inputString);
+	private List<Date> parseDayOnly(String inputString, boolean hasYear) {
+		List<Date> dates = parseDateOnly(inputString, hasYear);
 		dates = fixDayRange(dates);
 		return dates;
 	}
@@ -496,8 +524,8 @@ public class CommandParser {
 		return dates;
 	}
 	
-	private List<Date> parseTimeOnly(String inputString) {
-		List<Date> dates = parseDateTime(inputString);
+	private List<Date> parseTimeOnly(String inputString, boolean hasYear) {
+		List<Date> dates = parseDateTime(inputString, hasYear);
 		dates = fixTimeToNearest(dates, false);
 		dates = fixTimeForRange(dates);
 		return dates;
@@ -932,13 +960,14 @@ public class CommandParser {
 	 * 			{@code String} input to be parsed
 	 * @return {@code Date} if date found, {@code null} if date is not found
 	 */
-	public Date getDateForSearch(String inputString) {		
+	public Date getDateForSearch(String inputString) {
+		boolean hasYear =  false;
 		if (isSpecialCase(inputString)) {
 			return null;
 		}
 		
 		inputString = correctShorthand(inputString);
-		List<Date> dates = parseDateTime(inputString);
+		List<Date> dates = parseDateTime(inputString, hasYear);
 		
 		if (dates.size() == 0) {
 			return null;

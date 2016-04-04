@@ -223,18 +223,22 @@ public class Task {
     	int indexTitle = 0;
     	int indexStartDate = 1;
     	int indexStartTime = 2;
-    	int indexEndDate = 3;
-    	int indexEndTime = 4;
-    	int indexLabel = 5;
-    	int indexPriority = 6;
-    	int indexIsDatedOnly = 7;
+    	int indexStartYear = 3;
+    	int indexEndDate = 4;
+    	int indexEndTime = 5;
+    	int indexEndYear = 6;
+    	int indexLabel = 7;
+    	int indexPriority = 8;
+    	int indexIsDatedOnly = 9;
     	
     	ArrayList<String> fields = getTaskFields();
     	String title = fields.get(indexTitle);
     	String startDate = fields.get(indexStartDate);
     	String startTime = fields.get(indexStartTime);
+    	String startYear = fields.get(indexStartYear);
     	String endDate = fields.get(indexEndDate);
     	String endTime = fields.get(indexEndTime);
+    	String endYear = fields.get(indexEndYear);
     	String label = fields.get(indexLabel);
     	String priority = fields.get(indexPriority);
     	String isDatedOnly = fields.get(indexIsDatedOnly);
@@ -245,27 +249,61 @@ public class Task {
     		if (hasDateRange()) {
     			stringBuilder.append(" from " + startDate);
     			
+    			if (startYear != null) {
+    				stringBuilder.append(" " + startYear);
+    			}
+    			
     			if (!isDatedOnly.equals("true")) {
     				stringBuilder.append(" " + startTime);
     			}
    
+    			if (startDate.equals(endDate) && startYear == null && endYear == null) {
+    				//same day
+    				stringBuilder.append(" to " + endTime);
+    			} else {
+    				stringBuilder.append(" to " + endDate);
+        			
+        			if (endYear != null) {
+        				stringBuilder.append(" " + endYear);
+        			}
+        			
+        			if (!isDatedOnly.equals("true")) {
+        				stringBuilder.append(" " + endTime);
+        			}
+    			}
+    			
+    			
+    			/*
     			if (!startDate.equals(endDate)) {
         			stringBuilder.append(" to " + endDate);
+        			
+        			if (endYear != null) {
+        				stringBuilder.append(" " + endYear);
+        			}
         			
         			if (!isDatedOnly.equals("true")) {
         				stringBuilder.append(" " + endTime);
         			}
         		} else {
         			stringBuilder.append(" to " + endTime);
-        		}   	  
+        		}   	
+        		*/  
     		} else if (startDate != null) {
     				stringBuilder.append(" from " + startDate);
     				
+        			if (startYear != null) {
+        				stringBuilder.append(" " + startYear);
+        			}
+        			
     				if (!isDatedOnly.equals("true")) {
         				stringBuilder.append(" " + startTime);
         			}
     		} else if (endDate != null) {
     				stringBuilder.append(" by " + endDate);
+    				
+    				if (endYear != null) {
+        				stringBuilder.append(" " + endYear);
+        			}
     				
     				if (!isDatedOnly.equals("true")) {
         				stringBuilder.append(" " + endTime);
@@ -291,13 +329,15 @@ public class Task {
      * 0 - Title
      * 1 - Start Date
      * 2 - Start Time
-     * 3 - End Date
-     * 4 - End Time
-     * 5 - Label
-     * 6 - Priority
-     * 7 - isDatedOnly
+     * 3 - Start Year
+     * 4 - End Date
+     * 5 - End Time
+     * 6 - End Year
+     * 7 - Label
+     * 8 - Priority
+     * 9 - isDatedOnly
      * 
-     * @return ArrayList<String> of size 8
+     * @return ArrayList<String> of size 10
      */
     private ArrayList<String> getTaskFields() {
         ArrayList<String> fields = new ArrayList<String>();
@@ -308,19 +348,25 @@ public class Task {
         	if (hasStartDate()){
         		fields.add(convertDate(startDate));
             	fields.add(convertTime(startDate));
+            	fields.add(convertYear(startDate));
         	} else {
         		fields.add(null);
+            	fields.add(null);
             	fields.add(null);
         	}
         	
         	if (hasEndDate()) {
 	        	fields.add(convertDate(endDate));
 	        	fields.add(convertTime(endDate));
+	        	fields.add(convertYear(endDate));
         	} else {
         		fields.add(null);
             	fields.add(null);
+            	fields.add(null);
         	}
         } else {
+        	fields.add(null);
+        	fields.add(null);
         	fields.add(null);
         	fields.add(null);
         	fields.add(null);
@@ -437,7 +483,7 @@ public class Task {
 		 int value = month.getValue() - 1;
 		 return months[value];
 	}
-	
+
     private String convertTime(Date date) {
     	SimpleDateFormat timeFormat = new SimpleDateFormat("mm");
     	String minute = timeFormat.format(date);
@@ -454,22 +500,50 @@ public class Task {
 	    return timeFormat.format(date);
     }
     
+    private String convertYear(Date date) {
+    	LocalDateTime now = LocalDateTime.now();
+    	String thisYear = Integer.toString(now.getYear());
+    	String year = getYear(date);
+    	
+    	if (thisYear.equals(year)) {
+    		return null;
+    	} else {
+    		return year;
+    	}
+    }
+    
+    private String getYear(Date date) {
+		LocalDateTime dateTime = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+		return Integer.toString(dateTime.getYear());
+	}
+	
     public String getSimpleDate() {
     	Locale locale = Locale.getDefault();
     	StringBuilder stringBuilder = new StringBuilder("");    	
     	String start, end, startMonthString, endMonthString;
     	start = end = startMonthString = endMonthString = "";
     	
+    	LocalDateTime now = LocalDateTime.now();
+    	String thisYear = Integer.toString(now.getYear());
+    	
     	if (startDate != null) {
 	    	Month startMonth = getMonth(startDate);
 			startMonthString = startMonth.getDisplayName(TextStyle.FULL, locale);
 			start = getDate(startDate).concat(" ").concat(startMonthString);
+			
+			if (!getYear(startDate).equals(thisYear)) {
+	    		start = start.concat(" ").concat(getYear(startDate));
+	    	}
     	}
     	
     	if (endDate != null) {
 			Month endMonth = getMonth(endDate);
 			endMonthString = endMonth.getDisplayName(TextStyle.FULL, locale);
 			end = getDate(endDate).concat(" ").concat(endMonthString);
+			
+			if (!getYear(endDate).equals(thisYear)) {
+	    		end = end.concat(" ").concat(getYear(endDate));
+	    	}
     	}
     	
     	if (hasDateRange()) {
@@ -490,7 +564,7 @@ public class Task {
     public String getSimpleTime() {
     	StringBuilder stringBuilder = new StringBuilder("");
     	int indexStartTime = 2;
-    	int indexEndTime = 4;
+    	int indexEndTime = 5;
     	
     	ArrayList<String> fields = getTaskFields();
     	String startTime = fields.get(indexStartTime);
