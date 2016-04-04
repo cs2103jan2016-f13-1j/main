@@ -217,11 +217,11 @@ public class CommandParser {
 	}
 	
 	private String correctUserInput(String inputString) {
-		boolean hasDateRange = checkForRangeTime(inputString);
+		boolean hasTimeRange = checkForRegexMatch(getTimeRangeRegex(), inputString);
 		inputString = correctDateText(inputString);
 		inputString = correctDotTime(inputString);
 		inputString = correctShorthand(inputString);
-		if (hasDateRange) {
+		if (hasTimeRange) {
 			inputString = correctRangeTime(inputString);
 		}
 		return inputString;
@@ -234,20 +234,6 @@ public class CommandParser {
 		regex = "\\b(tdy)\\b";
 		inputString = inputString.replaceAll(regex, "today");
 		return inputString;
-	}
-	
-	/**
-	 * This method checks for indication of priority level.
-	 * 
-	 * @param inputString
-	 * 			{@code String} input to be checked
-	 * @return {@code boolean} true if found
-	 */
-	private boolean checkForPriority(String inputString) {
-		String regex = REGEX_PRIORITY;
-		Pattern pattern = Pattern.compile(regex);
-		Matcher matcher = pattern.matcher(inputString);
-		return matcher.find();
 	}
 
 	private String getPriorityString(String inputString) {
@@ -355,8 +341,6 @@ public class CommandParser {
 		inputString = inputString.replaceAll(regex, "$1 $3");
 		return inputString;
 	}
-	
-
 
 	private String getTimeRegex() {
 		return "\\b" + REGEX_TIME_TWELVE + REGEX_AM_PM;
@@ -374,20 +358,6 @@ public class CommandParser {
 		String regex = "\\b((1[012]|0?[1-9])(([:|.])([0-5][0-9])?))(?i)(am|pm)";
 		inputString = inputString.replaceAll(regex, "$2:$5$6");
 		return inputString;
-	}
-	
-	/**
-	 * This method checks if a valid time range is specified.
-	 * 
-	 * @param inputString
-	 * 			{@code String} input to be check
-	 * @return {@code boolean} true if time range found
-	 */
-	private boolean checkForRangeTime(String inputString) {
-		String regex = getTimeRangeRegex();
-		Pattern pattern = Pattern.compile(regex);
-		Matcher matcher = pattern.matcher(inputString);
-		return matcher.find();
 	}
 
 	private String getTimeRangeRegex() {
@@ -411,21 +381,6 @@ public class CommandParser {
 		inputString = inputString.replaceAll("()-()","$1 - $2");
 		return inputString;
 	}
-	
-	/**
-	 * This method checks the {@code String} taken in for prepositions.
-	 * 
-	 * @param inputString
-	 * 			{@code String} input to be checked
-	 * @return {@code boolean} true if prepositions are detected
-	 */
-	private boolean checkForPrepositions(String inputString) {
-		String regex = REGEX_PREPOSITION_ALL;
-		Pattern pattern = Pattern.compile(regex);
-		Matcher matcher = pattern.matcher(inputString);
-		return matcher.find();
-	}
-	
 
 	private String getTimeRegexWithoutAmPm() {
 		return REGEX_PREPOSITION_ALL + "\\b " + REGEX_TIME_TWELVE + "\\b$";
@@ -938,11 +893,10 @@ public class CommandParser {
 					}
 				}
 
-				isPreposition = checkForPrepositions(word);
+				isPreposition = checkForRegexMatch(REGEX_PREPOSITION_ALL, word);
 				if (isPreposition) {
 					toBeReplaced = word.concat(" ").concat(toBeReplaced);
 				}
-
 			}
 
 			toBeReplaced = "(?i)".concat(toBeReplaced); 
@@ -1145,7 +1099,7 @@ public class CommandParser {
 			newLabel = editedTask.getLabel();
 		}
 		
-		boolean hasPriority = checkForPriority(inputString);
+		boolean hasPriority = checkForRegexMatch(REGEX_PRIORITY, inputString);
 		if (hasPriority) {
 			priority = editedTask.getPriority();
 		}
