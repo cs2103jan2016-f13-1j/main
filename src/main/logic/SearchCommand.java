@@ -58,7 +58,7 @@ public class SearchCommand implements Command {
     private ArrayList<Task> search(String searchString) {
         String searchTerm = searchString.toLowerCase();
         
-        if (searchTerm.equals("this week") || searchTerm.equals("week")) {
+        if (searchTerm.equals("this week")) {
             return searchForThisWeek();
         } else if (searchTerm.equals("next week")) {
             return searchForNextWeek();
