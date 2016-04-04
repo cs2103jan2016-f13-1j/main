@@ -45,6 +45,7 @@ public class CommandParser {
 			+ "(feb)(ruary)?|" + "(mar)(ch)?|" + "(apr)(il)?|" + "(may)|"
 			+ "(jun)(e)?|" + "(jul)(y)?|" + "(aug)(ust)?|" + "(sep)(tember)?|"
 			+ "(oct)(ober)?|" + "(nov)(ember)?|" + "(dec)(ember)?)\\b";
+	private final String REGEX_YEAR = "\\b ?((19|20)?\\d\\d)\\b";
 	private final String REGEX_DATE_WORD = "\\b(today|tdy|tonight|tomorrow|tmr|tml|tmrw)\\b";
 	private final String REGEX_TIME_TWELVE = "((1[012]|0?[1-9])(([:|.][0-5][0-9])?))";
 	private final String REGEX_TIME_WORD = "\\b(morning|afternoon|evening|midnight)\\b";
@@ -134,7 +135,7 @@ public class CommandParser {
 		
 		inputString = correctUserInput(inputString);
 		title = inputString;
-		
+
 		//check for priority
 		hasPriority = checkForRegexMatch(REGEX_PRIORITY, inputString);
 		if (hasPriority) {
@@ -209,6 +210,13 @@ public class CommandParser {
 					title = removeRegex(regex, title);
 				}
 				
+				//remove date in text form with year from title
+				regex = getDateRegexTextWithYear();
+				title = removeRegex(regex, title);
+			
+				regex = "\\b ?'(\\d\\d)\\b";
+				title = removeRegex(regex, title);
+				
 				//remove date in text form from title
 				regex = getDateRegexText();
 				title = removeRegex(regex, title);
@@ -233,11 +241,19 @@ public class CommandParser {
 	private String correctUserInput(String inputString) {
 		boolean hasTimeRange = checkForRegexMatch(getTimeRangeRegex(), inputString);
 		inputString = correctDateText(inputString);
+		inputString = correctDateTextYear(inputString);
 		inputString = correctDotTime(inputString);
 		inputString = correctShorthand(inputString);
 		if (hasTimeRange) {
 			inputString = correctRangeTime(inputString);
 		}
+		inputString = removeExtraSpaces(inputString);
+		return inputString;
+	}
+	
+	private String correctDateTextYear(String inputString) {
+		String regex = getDateRegexText() + "\\b ?(\\d\\d)\\b";
+		inputString = inputString.replaceAll(regex,"$2 $4 $5 '$29") ;
 		return inputString;
 	}
 	
@@ -338,13 +354,17 @@ public class CommandParser {
 	private String getDateRegex() {
 		return REGEX_PREPOSITION_ALL + "?" + REGEX_DATE_NUM;
 	}
-
+	
 	private String getDateWithYearRegex() {
 		return REGEX_PREPOSITION_ALL + "?" + REGEX_DATE_NUM_YEAR;
 	}
 	
 	private String getDateRegexText() {
 		return REGEX_PREPOSITION_ALL + "?" + REGEX_DATE_TEXT + REGEX_MONTH_TEXT;
+	}
+	
+	public String getDateRegexTextWithYear() {
+		return REGEX_PREPOSITION_ALL + "?" + REGEX_DATE_TEXT + REGEX_MONTH_TEXT + REGEX_YEAR;
 	}
 	
 	/**
@@ -357,6 +377,7 @@ public class CommandParser {
 	private String correctDateText(String inputString) {
 		String regex = REGEX_DATE_TEXT + REGEX_MONTH_TEXT;
 		inputString = inputString.replaceAll(regex, "$1 $3");
+		inputString = removeExtraSpaces(inputString);
 		return inputString;
 	}
 
