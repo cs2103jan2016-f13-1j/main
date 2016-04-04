@@ -1423,7 +1423,8 @@ public class RootLayoutController implements Observer {
             } else if (undoOrRedo.equals("Redo")) {
                 labelSuggestedAction.setText("UNDO (F1)");
             }
-
+        } else {
+            labelSuggestedAction.setText("UNDO (F1)");
         }
 
         FadeTransition appearVisible = new FadeTransition(Duration.seconds(5), anchorPaneExecutionResult);
