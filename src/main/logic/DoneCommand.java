@@ -23,7 +23,8 @@ public class DoneCommand implements Command {
     
     public DoneCommand(Receiver receiver, ArrayList<Task> tasks) {
         this.receiver = receiver;
-        this.tasks = tasks;
+        this.tasks = new ArrayList<Task>();
+        this.tasks.addAll(tasks);
     }
     
     /**
