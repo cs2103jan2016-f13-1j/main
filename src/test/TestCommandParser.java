@@ -1222,32 +1222,27 @@ public class TestCommandParser {
 	public void testBuggyTheClown() throws InvalidLabelFormat, InvalidTitle {
 		CommandParser parser = new CommandParser();	
 		Task task,task2;
-		/*
-		task = parser.parseAdd("A on 11 apr 2017");
-		task = parser.parseAdd("A on 11 apr 17");
-		System.out.println(task.toString());
-		System.out.println(task.getStartDate());
-		System.out.println(task.getEndDate());
-		*/
 		
 		task = parser.parseAdd("Buy fountain pen on 30/4/2017");
-		System.out.println(task.toString());
-		System.out.println(task.getStartDate());
-		System.out.println(task.getEndDate());
+		assertEquals("Buy fountain pen from 30 Apr 2017", task.toString());
 		
 		task = parser.parseAdd("Buy fountain pen on 30/4/17");
-		System.out.println(task.toString());
-		System.out.println(task.getStartDate());
-		System.out.println(task.getEndDate());
+		assertEquals("Buy fountain pen from 30 Apr 2017", task.toString());
 		
 		task = parser.parseAdd("Go Japan from 1/5/17 8am to 30/5/17 10pm");
-		System.out.println(task.toString());
-		System.out.println(task.getStartDate());
-		System.out.println(task.getEndDate());
-
+		assertEquals("Go Japan from 1 May 2017 8am to 30 May 2017 10pm", task.toString());
 		
+		task = parser.parseAdd("Go Japan from 1/5/17 8am to 30/5/17 10pm");
+		task2 = parser.parseEdit(task, "9-11pm");
+		assertEquals("Go Japan from 1 May 2017 9pm to 30 May 2017 11pm", task2.toString());
 		
-    	
+		task = parser.parseAdd("Go Japan from 1/5/17 8am to 30/5/17 10pm");
+		task2 = parser.parseEdit(task, "1/6");
+		assertEquals("Go Japan from 1 Jun", task2.toString());
+		
+		task = parser.parseAdd("Go Japan from 1/5/17 8am to 30/5/17 10pm");
+		task2 = parser.parseEdit(task, "1/6/17");
+		assertEquals("Go Japan from 1 Jun 2017", task2.toString());
 	}
 	
 }

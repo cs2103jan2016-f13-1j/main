@@ -1152,6 +1152,7 @@ public class CommandParser {
 			} 
 		}
 		
+		//check for word indicating date
 		if (checkForRegexMatch(REGEX_DATE_WORD, inputString)) {
 			hasDate = true;
 			hasTime = true;
@@ -1333,7 +1334,7 @@ public class CommandParser {
 				reuse.setTime(oldEnd);
 			}
 
-			latest = setDayMonth(reuse, latest, startDate);
+			latest = setDayMonthYear(reuse, latest, startDate);
 			oldStart = latest.getTime();
 		}
 		
@@ -1344,7 +1345,7 @@ public class CommandParser {
 				reuse.setTime(oldStart);
 			}
 			
-			latest = setDayMonth(reuse, latest, endDate);
+			latest = setDayMonthYear(reuse, latest, endDate);
 			oldEnd = latest.getTime();
 		}
 		
@@ -1380,13 +1381,15 @@ public class CommandParser {
 	 * 			{@code Date} date to be set for {@code Calendar} latest
 	 * @return {@code Calendar} with updated day and month
 	 */
-	private Calendar setDayMonth(Calendar reuse, Calendar latest, Date date) {
+	private Calendar setDayMonthYear(Calendar reuse, Calendar latest, Date date) {
 		int day = reuse.get(Calendar.DAY_OF_MONTH);
 		int month = reuse.get(Calendar.MONTH);
-
+		int year = reuse.get(Calendar.YEAR);
+		
 		latest.setTime(date);
 		latest.set(Calendar.DAY_OF_MONTH, day);
 		latest.set(Calendar.MONTH, month);
+		latest.set(Calendar.YEAR, year);
 
 		return latest;
 	}	
