@@ -185,7 +185,7 @@ public class CommandParser {
 			if (hasTime) {
 				//remove time from title
 				regex = REGEX_PREPOSITION_ALL + "?" + REGEX_TIME_WORD;
-				title = removeRegex(regex, title);
+				title = removeRegex(regex, title);			
 				
 				if (hasTimeRange) {
 					//remove range from title
@@ -1058,9 +1058,9 @@ public class CommandParser {
 		while (matcher.find()) {
 			String match = matcher.group();
 			inputString = inputString.replaceAll(match,"");
-			inputString = removeExtraSpaces(inputString); 		
 		}
 		
+		inputString = removeExtraSpaces(inputString); 		
 		return inputString;
 	}
 

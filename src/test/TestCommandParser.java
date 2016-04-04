@@ -397,8 +397,8 @@ public class TestCommandParser {
 		task = parser.parseAdd("Buy apple 10pm");
 		assertEquals("Buy apple from today 10pm", task.toString());
 		
-		task = parser.parseAdd("Buy apple 5pm");
-		assertEquals("Buy apple from today 5pm", task.toString());
+		task = parser.parseAdd("Buy apple 10pm");
+		assertEquals("Buy apple from today 10pm", task.toString());
 		
 		task = parser.parseAdd("Buy apple 6-10pm");
 		assertEquals("Buy apple from today 6pm to 10pm", task.toString());
@@ -417,7 +417,7 @@ public class TestCommandParser {
 	 * @throws InvalidLabelFormat
 	 * @throws InvalidTitle 
 	 */
-	@Ignore
+	//dont test this first
 	public void testHasTime() throws InvalidLabelFormat, InvalidTitle {
 		CommandParser parser = new CommandParser();
 		Task task;
@@ -453,7 +453,7 @@ public class TestCommandParser {
 	 * @throws InvalidLabelFormat
 	 * @throws InvalidTitle 
 	 */
-	@Ignore
+	@Test
 	public void testSmartDetectionOfTime() throws InvalidLabelFormat, InvalidTitle {
 		CommandParser parser = new CommandParser();
 		Task task;
@@ -464,8 +464,8 @@ public class TestCommandParser {
 		task = parser.parseAdd("Do homework by 11");
 		assertEquals("Do homework by today 11pm", task.toString());
 
-		task = parser.parseAdd("Do homework by 10am");
-		assertEquals("Do homework by today 10am", task.toString());
+		task = parser.parseAdd("Do homework by 10pm");
+		assertEquals("Do homework by today 10pm", task.toString());
 
 		task = parser.parseAdd("Do homework by 11pm");
 		assertEquals("Do homework by today 11pm", task.toString());  
@@ -1223,10 +1223,19 @@ public class TestCommandParser {
 		CommandParser parser = new CommandParser();	
 		Task task,task2;
 		
-		task = parser.parseAdd("blk 341 #07-23");
-		System.out.println(task.getLabel());
+		task = parser.parseAdd("A on 11apr by 11.59pm");
+		System.out.println(task.toString());
 		
-	
+		task = parser.parseAdd("A by 11 apr 11:59pm");
+		System.out.println(task.toString());
+		
+		task = parser.parseAdd("A by 11.59pm on 11 apr");
+		System.out.println(task.toString());
+		
+		task = parser.parseAdd("A 12am 12apr");
+		System.out.println(task.toString());
+		
+		
     	
 	}
 	
