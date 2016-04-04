@@ -87,7 +87,7 @@ class TodoTaskComparator implements Comparator<Task> {
                     return 1;
                 } else {
                     //If both have not started yet
-                    return t1.getEndDate().compareTo(t2.getEndDate());
+                    return t1.getStartDate().compareTo(t2.getStartDate());
                 }
             }
         }
