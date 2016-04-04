@@ -58,7 +58,7 @@ public class SearchCommand implements Command {
     private ArrayList<Task> search(String searchString) {
         String searchTerm = searchString.toLowerCase();
         
-        if (searchTerm.equals("this week") || searchTerm.equals("week")) {
+        if (searchTerm.equals("this week")) {
             return searchForThisWeek();
         } else if (searchTerm.equals("next week")) {
             return searchForNextWeek();
@@ -66,6 +66,8 @@ public class SearchCommand implements Command {
             return searchForUpcoming();
         } else if (searchTerm.equals("someday")) {
             return searchForSomeday();
+        } else if (searchTerm.equals("deadline")) {
+            return searchForDeadline();
         } else {
             return searchForString(searchTerm);
         }
@@ -161,6 +163,19 @@ public class SearchCommand implements Command {
         
         for (Task task : allTasks) {
             if (!task.hasDate()) {
+                searchResults.add(task);
+            }
+        }
+        
+        return searchResults;
+    }
+    
+    private ArrayList<Task> searchForDeadline() {
+        ArrayList<Task> allTasks = receiver.getAllTasks();
+        ArrayList<Task> searchResults = new ArrayList<Task>();
+        
+        for (Task task : allTasks) {
+            if (task.hasSingleDate() && task.hasEndDate()) {
                 searchResults.add(task);
             }
         }

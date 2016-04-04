@@ -110,11 +110,17 @@ public class ScheduleManager {
                         //previous is event task
                         if (curr.getStartDate().equals(prev.getStartDate()) || curr.getEndDate().equals(prev.getEndDate())) {
                             curr.setCollideWithPrev(true);
-                        } else if (curr.getStartDate().after(prev.getStartDate()) && curr.getStartDate().before(prev.getEndDate())) {
+                        } else if (prev.getStartDate().after(curr.getStartDate()) && prev.getStartDate().before(curr.getEndDate())) {
                             //previous's start date falls between current's date range
                             curr.setCollideWithPrev(true);
-                        } else if (curr.getEndDate().after(prev.getStartDate()) && curr.getEndDate().before(prev.getEndDate())) {
+                        } else if (prev.getEndDate().after(curr.getStartDate()) && prev.getEndDate().before(curr.getEndDate())) {
                             //previous's end date falls between current's date range
+                            curr.setCollideWithPrev(true);
+                        } else if (curr.getStartDate().after(prev.getStartDate()) && curr.getStartDate().before(prev.getEndDate())) {
+                            //current's start date falls between previous's date range
+                            curr.setCollideWithPrev(true);
+                        } else if (curr.getEndDate().after(prev.getStartDate()) && curr.getEndDate().before(prev.getEndDate())) {
+                            //current's end date falls between previous's date range
                             curr.setCollideWithPrev(true);
                         } else {
                             curr.setCollideWithPrev(false);
@@ -142,11 +148,17 @@ public class ScheduleManager {
                         //next is event task
                         if (curr.getStartDate().equals(next.getStartDate()) || curr.getEndDate().equals(next.getEndDate())) {
                             curr.setCollideWithNext(true);
-                        } else if (curr.getStartDate().after(next.getStartDate()) && curr.getStartDate().before(next.getEndDate())) {
+                        } else if (next.getStartDate().after(curr.getStartDate()) && next.getStartDate().before(curr.getEndDate())) {
                             //next's start date falls between current's date range
                             curr.setCollideWithNext(true);
-                        } else if (curr.getEndDate().after(next.getStartDate()) && curr.getEndDate().before(next.getEndDate())) {
+                        } else if (next.getEndDate().after(curr.getStartDate()) && next.getEndDate().before(curr.getEndDate())) {
                             //next's end date falls between current's date range
+                            curr.setCollideWithNext(true);
+                        } else if (curr.getStartDate().after(next.getStartDate()) && curr.getStartDate().before(next.getEndDate())) {
+                            //current's start date falls between next's date range
+                            curr.setCollideWithNext(true);
+                        } else if (curr.getEndDate().after(next.getStartDate()) && curr.getEndDate().before(next.getEndDate())) {
+                            //current's end date falls between next's date range
                             curr.setCollideWithNext(true);
                         } else {
                             curr.setCollideWithNext(false);
