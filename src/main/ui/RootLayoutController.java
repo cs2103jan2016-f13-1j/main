@@ -50,6 +50,7 @@ import javafx.util.Callback;
 import javafx.util.Duration;
 import main.data.ParseIndexResult;
 import main.data.Task;
+import main.data.TaskHeader;
 import main.logic.AddCommand;
 import main.logic.Command;
 import main.logic.DeleteCommand;
@@ -163,6 +164,8 @@ public class RootLayoutController implements Observer {
 
     private ArrayList<Task> todoTasks;
     private ArrayList<Task> completedTasks;
+    private ArrayList<Task> todoTasksWithHeaders;
+    private ArrayList<Task> completedTasksWithHeaders;
     private ObservableList<Task> observableTodoTasks = FXCollections.observableArrayList();
     private ObservableList<Task> observableCompletedTasks = FXCollections.observableArrayList();
     private String inputFeedback;
@@ -311,7 +314,7 @@ public class RootLayoutController implements Observer {
     }
 
     /**
-     * 
+     *
      */
     private void initSearchModeChipsLayoutListener() {
         chipSearchMode.widthProperty().addListener(new ChangeListener<Number>() {
@@ -343,7 +346,7 @@ public class RootLayoutController implements Observer {
     }
 
     /**
-     * 
+     *
      */
     private void initCommandBarListener() {
         logger.log(Level.INFO, "Adding listener for command bar");
@@ -384,7 +387,7 @@ public class RootLayoutController implements Observer {
     }
 
     /**
-     * 
+     *
      */
     private void initKeyboardListener() {
         rootLayout.addEventFilter(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
@@ -442,7 +445,7 @@ public class RootLayoutController implements Observer {
     }
 
     /**
-     * 
+     *
      */
     private void initListView() {
         if (receiver == null) {
@@ -469,20 +472,20 @@ public class RootLayoutController implements Observer {
         });
 
         populateListView();
-
-        logger.log(Level.INFO, "Populated Todo List: " + todoTasks.size() + " task");
-        logger.log(Level.INFO, "Populated Completed List: " + completedTasks.size() + " task");
     }
 
     /**
-     * 
+     *
      */
     private void populateListView() {
         // retrieve all task and add into an ObservableList
         todoTasks = receiver.getTodoTasks();
         assert todoTasks != null;
 
-        observableTodoTasks.setAll(todoTasks);
+        todoTasksWithHeaders = createListWithHeaders(todoTasks);
+
+        observableTodoTasks.setAll(todoTasksWithHeaders);
+
         // listViewTodo.setDepthProperty(1);
         listViewTodo.setItems(observableTodoTasks);
 
@@ -494,10 +497,76 @@ public class RootLayoutController implements Observer {
         listViewCompleted.setItems(observableCompletedTasks);
 
         updateTabAndLabelWithTotalTasks();
+
+        logger.log(Level.INFO, "Populated Todo List: " + todoTasks.size() + " task");
+        logger.log(Level.INFO, "Populated Completed List: " + completedTasks.size() + " task");
+    }
+
+    private ArrayList<Task> createListWithHeaders(ArrayList<Task> taskList) {
+        // +4 to the size due to the additional header task objects
+        ArrayList<Task> taskListWithHeaders = new ArrayList<>(taskList.size() + 4);
+        taskListWithHeaders.addAll(taskList);
+
+        boolean isOverdueHeaderAdded = false;
+        boolean isTodayHeaderAdded = false;
+        boolean isTomorrowHeaderAdded = false;
+        boolean isUpcomingHeaderAdded = false;
+        boolean isSomedayHeaderAdded = false;
+
+        for (int i = 0; i < taskListWithHeaders.size(); i++) {
+            Task task = taskListWithHeaders.get(i);
+
+            if (!task.isToday() && !task.isTomorrow() && !task.isUpcoming() && !task.isSomeday()) {
+                if (!isOverdueHeaderAdded) {
+                    taskListWithHeaders.add(i, new TaskHeader("Overdue"));
+                    isOverdueHeaderAdded = true;
+                    System.out.println("Overdue header is added");
+                }
+            }
+
+            if (task.isToday()) {
+                if (!isTodayHeaderAdded) {
+                    taskListWithHeaders.add(i, new TaskHeader("Today"));
+                    isTodayHeaderAdded = true;
+                    System.out.println("Today header is added");
+                }
+            }
+
+            if (task.isTomorrow()) {
+                if (!isTomorrowHeaderAdded) {
+                    taskListWithHeaders.add(i, new TaskHeader("Tomorrow"));
+                    isTomorrowHeaderAdded = true;
+                    System.out.println("Tomorrow header is added");
+                }
+            }
+            if (task.isUpcoming()) {
+                if (!isUpcomingHeaderAdded) {
+                    taskListWithHeaders.add(i, new TaskHeader("Upcoming"));
+                    isUpcomingHeaderAdded = true;
+                    System.out.println("Upcoming header is added");
+                }
+            }
+            if (task.isSomeday()) {
+                if (!isSomedayHeaderAdded) {
+                    taskListWithHeaders.add(i, new TaskHeader("Someday"));
+                    isSomedayHeaderAdded = true;
+                    System.out.println("Someday header is added");
+                }
+            }
+
+        }
+
+        CustomListCellController.hasOverdueHeader = isOverdueHeaderAdded;
+        CustomListCellController.hasTodayHeader = isTodayHeaderAdded;
+        CustomListCellController.hasTomorrowHeader = isTomorrowHeaderAdded;
+        CustomListCellController.hasUpcomingHeader = isUpcomingHeaderAdded;
+        CustomListCellController.hasSomedayHeader = isSomedayHeaderAdded;
+
+        return taskListWithHeaders;
     }
 
     /**
-     * 
+     *
      */
     private void refreshListView() {
         saveSelectedTaskIndex();
@@ -621,7 +690,7 @@ public class RootLayoutController implements Observer {
     }
 
     /**
-     * 
+     *
      */
     private void handleFOneKey() {
         if (invoker.isUndoAvailable()) {
@@ -641,7 +710,7 @@ public class RootLayoutController implements Observer {
     }
 
     /**
-     * 
+     *
      */
     private void handleFTwoKey() {
         if (invoker.isRedoAvailable()) {
@@ -661,7 +730,7 @@ public class RootLayoutController implements Observer {
     }
 
     /**
-     * 
+     *
      */
     private void handleKeyStrokes(String input) {
         if (commandParser == null) {
@@ -686,7 +755,7 @@ public class RootLayoutController implements Observer {
     }
 
     /**
-     * 
+     *
      */
     private void handleArrowKeys(KeyEvent keyEvent) {
         saveSelectedTaskIndex();
@@ -713,7 +782,7 @@ public class RootLayoutController implements Observer {
     }
 
     /**
-     * 
+     *
      */
     private void handleEnterKey() {
         if (commandBar.getText().trim().length() > 0) {
@@ -760,7 +829,7 @@ public class RootLayoutController implements Observer {
     }
 
     /**
-     * 
+     *
      */
     private void handleBackspaceKey() {
         if (isSearchMode && commandBar.getLength() == 0) {
@@ -772,7 +841,7 @@ public class RootLayoutController implements Observer {
     }
 
     /**
-     * 
+     *
      */
     private void showSearchChipInCommandBar(boolean isVisible) {
         System.out.println("showSearchChipInCommandBar");
@@ -795,7 +864,7 @@ public class RootLayoutController implements Observer {
     }
 
     /**
-     * 
+     *
      */
     private void handleDeleteKey() {
         logger.log(Level.INFO, "Pressed DELETE key: task index  " + getSelectedTaskIndex());
@@ -808,7 +877,7 @@ public class RootLayoutController implements Observer {
     }
 
     /**
-     * 
+     *
      */
     private void handleCtrlTab() {
         SingleSelectionModel<Tab> selectionModel = tabPane.getSelectionModel();
@@ -832,7 +901,7 @@ public class RootLayoutController implements Observer {
     }
 
     /**
-     * 
+     *
      */
     private void handleCtrlP() {
         Task oldTask = currentTaskList.get(getSelectedTaskIndex());
@@ -842,7 +911,7 @@ public class RootLayoutController implements Observer {
     }
 
     /**
-     * 
+     *
      */
     private void handleCtrlD() {
         taskToBeExecuted = currentTaskList.get(getSelectedTaskIndex());
@@ -876,7 +945,7 @@ public class RootLayoutController implements Observer {
     }
 
     /**
-     * 
+     *
      */
     private void extractUserInput() {
         userInputArray = userInput.split(" ");
@@ -888,7 +957,7 @@ public class RootLayoutController implements Observer {
     }
 
     /**
-     * 
+     *
      */
     private void parseUserInput() {
         commandToBeExecuted = null;
@@ -913,13 +982,13 @@ public class RootLayoutController implements Observer {
                 parseSetFileLocation();
                 break;
 
-            default :
+            default:
                 parseAdd();
         }
     }
 
     /**
-     * 
+     *
      */
     private void parseAdd() {
         logger.log(Level.INFO, "Sending user input to commandParser: " + userInput);
@@ -1055,7 +1124,7 @@ public class RootLayoutController implements Observer {
 
     /**
      * Parse the Edit command for the currently selected task item on the List
-     * 
+     *
      * @param @throws
      */
     private void parseEditForSelectedTask() {
@@ -1074,7 +1143,7 @@ public class RootLayoutController implements Observer {
     }
 
     /**
-     * 
+     *
      */
     private void parseSearch() {
         if (userInput.equals(STRING_COMMAND_SEARCH)) {
@@ -1268,7 +1337,7 @@ public class RootLayoutController implements Observer {
     }
 
     /**
-     * 
+     *
      */
     private void clearStoredUserInput() {
         userInput = STRING_EMPTY;
@@ -1278,7 +1347,7 @@ public class RootLayoutController implements Observer {
     }
 
     /**
-     * 
+     *
      */
     private void showFeedback(boolean isVisible, String userAction, String userFeedback) {
         if (isVisible) {
@@ -1303,7 +1372,7 @@ public class RootLayoutController implements Observer {
     }
 
     /**
-     * 
+     *
      */
     private void showExecutionResult(Command executedCommand, String undoOrRedo) {
         logger.log(Level.INFO, "Showing user execution result: ");
@@ -1444,14 +1513,14 @@ public class RootLayoutController implements Observer {
     }
 
     /**
-     * 
+     *
      */
     private void saveSelectedTaskIndex() {
         previousSelectedTaskIndex = getSelectedTaskIndex();
     }
 
     /**
-     * 
+     *
      */
     private void restoreListViewPreviousSelection() {
         // if previous selected index was the last index in the previous list
@@ -1491,7 +1560,7 @@ public class RootLayoutController implements Observer {
     }
 
     /**
-     * 
+     *
      */
     private int getSelectedTaskIndex() {
         return getCurrentListView().getSelectionModel().getSelectedIndex();
@@ -1506,7 +1575,7 @@ public class RootLayoutController implements Observer {
     }
 
     /**
-     * 
+     *
      */
     private void saveCaretPosition() {
         previousCaretPosition = commandBar.getCaretPosition();

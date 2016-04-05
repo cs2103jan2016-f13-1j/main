@@ -15,6 +15,7 @@ import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
 import main.data.Task;
+import main.data.TaskHeader;
 
 public class CustomListCellController extends JFXListCell<Task> {
 
@@ -51,6 +52,12 @@ public class CustomListCellController extends JFXListCell<Task> {
     @FXML // fx:id="rectangleTaskPriority"
     private Rectangle rectangleTaskPriority; // Value injected by FXMLLoader
 
+    public static boolean hasOverdueHeader;
+    public static boolean hasTodayHeader;
+    public static boolean hasTomorrowHeader;
+    public static boolean hasUpcomingHeader;
+    public static boolean hasSomedayHeader;
+
     @FXML // This method is called by the FXMLLoader when initialization is
           // complete
     void initialize() {
@@ -69,7 +76,8 @@ public class CustomListCellController extends JFXListCell<Task> {
     }
 
     public CustomListCellController() {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/main/resources/layouts/SmallerCustomListCellLayout.fxml"));
+        FXMLLoader loader = new FXMLLoader(
+                getClass().getResource("/main/resources/layouts/SmallerCustomListCellLayout.fxml"));
         loader.setController(this);
         try {
             loader.load();
@@ -81,26 +89,30 @@ public class CustomListCellController extends JFXListCell<Task> {
     @Override
     public void updateItem(Task task, boolean empty) {
         super.updateItem(task, empty);
-
         if (empty) {
             setGraphic(null);
         } else if (task == null) {
             setGraphic(null);
         } else {
-            showTaskIndex(getIndex() + 1);
-            setLabelTaskTitle(task);
-            showTaskTime(task);
-            showTaskDate(task);
-            showTaskLabel(task);
-            showTaskPriority(task);
-            showTaskLine();
-            showTaskCollisions(task);
-            // HBox is the parent layout of all
-            // the other UI components here.
-            // Returning an instance of this
-            // will include the other UI
-            // components here as well
-            setGraphic(getHorizontalBox());
+            if (task instanceof TaskHeader) {
+                setGraphic(new Label(task.toString()));
+            } else {
+                showTaskIndex(task);
+                setLabelTaskTitle(task);
+                showTaskTime(task);
+                showTaskDate(task);
+                showTaskLabel(task);
+                showTaskPriority(task);
+                showTaskLine();
+                showTaskCollisions(task);
+                // HBox is the parent layout of all
+                // the other UI components here.
+                // Returning an instance of this
+                // will include the other UI
+                // components here as well
+                setGraphic(getHorizontalBox());
+            }
+
         }
 
     }
@@ -131,20 +143,61 @@ public class CustomListCellController extends JFXListCell<Task> {
     }
 
     /**
-     * 
+     *
      */
     private void showTaskLine() {
-//        if (getIndex() == 0) {
-//            topLine.setVisible(false);
-//        }
+        // if (getIndex() == 0) {
+        // topLine.setVisible(false);
+        // }
     }
 
     public HBox getHorizontalBox() {
         return horizontalBox;
     }
 
-    public void showTaskIndex(int index) {
-        this.labelTaskIndex.setText(index + "");
+    public void showTaskIndex(Task task) {
+        this.labelTaskIndex.setText(getActualIndexWithOffset(task, getIndex()) + "");
+    }
+
+    private int getActualIndexWithOffset(Task task, int taskIndex) {
+        int actualIndex = taskIndex;
+        if (task.isToday()) {
+            if (hasOverdueHeader) {
+                actualIndex--;
+            }
+        } else if (task.isTomorrow()) {
+            if (hasOverdueHeader) {
+                actualIndex--;
+            }
+            if (hasTodayHeader) {
+                actualIndex--;
+            }
+        } else if (task.isUpcoming()) {
+            if (hasOverdueHeader) {
+                actualIndex--;
+            }
+            if (hasTodayHeader) {
+                actualIndex--;
+            }
+            if (hasTomorrowHeader) {
+                actualIndex--;
+            }
+        } else if (task.isSomeday()) {
+            if (hasOverdueHeader) {
+                actualIndex--;
+            }
+            if (hasTodayHeader) {
+                actualIndex--;
+            }
+            if (hasTomorrowHeader) {
+                actualIndex--;
+            }
+            if (hasUpcomingHeader) {
+                actualIndex--;
+            }
+        }
+
+        return actualIndex;
     }
 
     public void showTaskTime(Task task) {
@@ -201,5 +254,4 @@ public class CustomListCellController extends JFXListCell<Task> {
 
         rectangleTaskPriority.setFill(Color.TRANSPARENT);
     }
-
 }
