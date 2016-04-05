@@ -1,11 +1,8 @@
+//@@author A0126297X
 package main.data;
 
 import java.util.ArrayList;
 
-/**
- * @author Joleeen
- *
- */
 public class ParseIndexResult {
 	private boolean hasValid;
 	private boolean hasInvalid;
@@ -59,6 +56,14 @@ public class ParseIndexResult {
 		return convertIndexesToString(invalidIndexes);
 	}
 	
+	/**
+	 * This method converts an {@code ArrayList<Integer>} of indexes to {@code String}.
+	 * This method is used by the UI.
+	 * 
+	 * @param indexes
+	 * 			{@code ArrayList<Integer>} to be converted
+	 * @return {@code String} of converted indexes
+	 */
 	private String convertIndexesToString(ArrayList<Integer> indexes) {
 		StringBuilder stringBuilder = new StringBuilder();
     	boolean isRange = false;
