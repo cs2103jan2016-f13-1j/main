@@ -1,3 +1,4 @@
+//@@author A0126297X
 package main.data;
 
 import java.text.DateFormatSymbols;
@@ -13,11 +14,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-
-/**
- * @author Joleen
- *
- */
 
 public class Task {	   
     private String title;
@@ -59,31 +55,7 @@ public class Task {
     	collideWithPrev = false;
     	collideWithNext = false;
     }
-    
-    public void setIsDatedOnly(boolean isDatedOnly) {
-    	this.isDatedOnly = isDatedOnly;
-    }
-    
-    public boolean getIsDatedOnly() {
-    	return isDatedOnly;
-    }
-    
-    public boolean getCollideWithPrev() {
-        return collideWithPrev;
-    }
-    
-    public void setCollideWithPrev(boolean collide) {
-        collideWithPrev = collide;
-    }
-    
-    public boolean getCollideWithNext() {
-        return collideWithNext;
-    }
-    
-    public void setCollideWithNext(boolean collide) {
-        collideWithNext = collide;
-    }
-    
+        
     public String getTitle() {
         return title;
     }
@@ -95,47 +67,12 @@ public class Task {
     public Date getEndDate() {
         return endDate;
     }
-    
-    public boolean hasDate() {
-        return (startDate != null || endDate != null);
+    public boolean getIsDatedOnly() {
+    	return isDatedOnly;
     }
     
-    public boolean hasDateRange() {
-        return (startDate != null && endDate != null);
-    }
-    
-    public boolean hasStartDate() {
-        if (startDate == null) {
-            return false;
-        } else {
-            return true;
-        }
-    }
-    
-    public boolean hasEndDate() {
-        if (endDate == null) {
-            return false;
-        } else {
-            return true;
-        }
-    }
-    
-    public boolean hasSingleDate() {
-        if (startDate == null && endDate != null) {
-            return true;
-        } else if (startDate != null & endDate == null) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-    
-    public Date getSingleDate() {
-        if (startDate == null && endDate != null) {
-            return endDate;
-        } else {
-            return startDate;
-        }
+    public void setIsDatedOnly(boolean isDatedOnly) {
+    	this.isDatedOnly = isDatedOnly;
     }
     
     public String getLabel() {
@@ -186,6 +123,14 @@ public class Task {
     	return priority;
     }
     
+    public Date getCreatedDate() {
+        return createdDate;
+    }
+    
+    public void setCreatedDate(Date createdDate) {
+    	this.createdDate = createdDate;
+    }
+    
     public Date getCompletedDate() {
         return completedDate;
     }
@@ -200,14 +145,64 @@ public class Task {
         completedDate = null;
     }
     
-    public Date getCreatedDate() {
-        return createdDate;
+    public boolean getCollideWithPrev() {
+        return collideWithPrev;
     }
     
-    public void setCreatedDate(Date createdDate) {
-    	this.createdDate = createdDate;
+    public void setCollideWithPrev(boolean collide) {
+        collideWithPrev = collide;
     }
     
+    public boolean getCollideWithNext() {
+        return collideWithNext;
+    }
+    
+    public void setCollideWithNext(boolean collide) {
+        collideWithNext = collide;
+    }
+    
+    public boolean hasDate() {
+        return (startDate != null || endDate != null);
+    }
+    
+    public boolean hasDateRange() {
+        return (startDate != null && endDate != null);
+    }
+    
+    public boolean hasStartDate() {
+        if (startDate == null) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+    
+    public boolean hasEndDate() {
+        if (endDate == null) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+    
+    public boolean hasSingleDate() {
+        if (startDate == null && endDate != null) {
+            return true;
+        } else if (startDate != null & endDate == null) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
+    public Date getSingleDate() {
+        if (startDate == null && endDate != null) {
+            return endDate;
+        } else {
+            return startDate;
+        }
+    }
+
     public int compareTo(Task task) {
         if (!createdDate.equals(task.getCreatedDate())) {
             return -1;
@@ -220,6 +215,19 @@ public class Task {
      * This method generates the task feedback for UI to display to user.
      */
     public String toString() {
+    	if (hasDate()) {
+    		if (hasDateRange()) {
+    			return getFeedbackForRange();
+    		} else if (hasStartDate()) {
+    			return getFeedbackForStart();
+    		} else if (hasEndDate()) {
+    			return getFeedbackForEnd();
+    		}
+    	}
+    	return getFeedbackForFloating();
+    }
+    
+    private String getFeedbackForRange() {
     	int indexTitle = 0;
     	int indexStartDate = 1;
     	int indexStartTime = 2;
@@ -227,8 +235,6 @@ public class Task {
     	int indexEndDate = 4;
     	int indexEndTime = 5;
     	int indexEndYear = 6;
-    	int indexLabel = 7;
-    	int indexPriority = 8;
     	int indexIsDatedOnly = 9;
     	
     	ArrayList<String> fields = getTaskFields();
@@ -239,87 +245,122 @@ public class Task {
     	String endDate = fields.get(indexEndDate);
     	String endTime = fields.get(indexEndTime);
     	String endYear = fields.get(indexEndYear);
-    	String label = fields.get(indexLabel);
-    	String priority = fields.get(indexPriority);
+    	String isDatedOnly = fields.get(indexIsDatedOnly);
+    	
+       	StringBuilder stringBuilder = new StringBuilder(title);
+    	stringBuilder.append(" from " + startDate);
+
+    	if (startYear != null) {
+    		stringBuilder.append(" " + startYear);
+    	}
+
+    	if (!isDatedOnly.equals("true")) {
+    		stringBuilder.append(" " + startTime);
+    	}
+
+    	if (startDate.equals(endDate) && startYear == null && endYear == null) {
+    		//same day
+    		stringBuilder.append(" to " + endTime);
+    	} else {
+    		stringBuilder.append(" to " + endDate);
+
+    		if (endYear != null) {
+    			stringBuilder.append(" " + endYear);
+    		}
+
+    		if (!isDatedOnly.equals("true")) {
+    			stringBuilder.append(" " + endTime);
+    		}
+    	}
+    	String feedback = getFeedbackForLabelAndPriority(stringBuilder.toString());
+    	return feedback;
+    }
+    
+    private String getFeedbackForStart() {
+    	int indexTitle = 0;
+    	int indexStartDate = 1;
+    	int indexStartTime = 2;
+    	int indexStartYear = 3;
+    	int indexIsDatedOnly = 9;
+    	
+    	ArrayList<String> fields = getTaskFields();
+    	String title = fields.get(indexTitle);
+    	String startDate = fields.get(indexStartDate);
+    	String startTime = fields.get(indexStartTime);
+    	String startYear = fields.get(indexStartYear);
     	String isDatedOnly = fields.get(indexIsDatedOnly);
     	
     	StringBuilder stringBuilder = new StringBuilder(title);
-
-    	if (hasDate()) {
-    		if (hasDateRange()) {
-    			stringBuilder.append(" from " + startDate);
-    			
-    			if (startYear != null) {
-    				stringBuilder.append(" " + startYear);
-    			}
-    			
-    			if (!isDatedOnly.equals("true")) {
-    				stringBuilder.append(" " + startTime);
-    			}
-   
-    			if (startDate.equals(endDate) && startYear == null && endYear == null) {
-    				//same day
-    				stringBuilder.append(" to " + endTime);
-    			} else {
-    				stringBuilder.append(" to " + endDate);
-        			
-        			if (endYear != null) {
-        				stringBuilder.append(" " + endYear);
-        			}
-        			
-        			if (!isDatedOnly.equals("true")) {
-        				stringBuilder.append(" " + endTime);
-        			}
-    			}
-    			
-    			
-    			/*
-    			if (!startDate.equals(endDate)) {
-        			stringBuilder.append(" to " + endDate);
-        			
-        			if (endYear != null) {
-        				stringBuilder.append(" " + endYear);
-        			}
-        			
-        			if (!isDatedOnly.equals("true")) {
-        				stringBuilder.append(" " + endTime);
-        			}
-        		} else {
-        			stringBuilder.append(" to " + endTime);
-        		}   	
-        		*/  
-    		} else if (startDate != null) {
-    				stringBuilder.append(" from " + startDate);
-    				
-        			if (startYear != null) {
-        				stringBuilder.append(" " + startYear);
-        			}
-        			
-    				if (!isDatedOnly.equals("true")) {
-        				stringBuilder.append(" " + startTime);
-        			}
-    		} else if (endDate != null) {
-    				stringBuilder.append(" by " + endDate);
-    				
-    				if (endYear != null) {
-        				stringBuilder.append(" " + endYear);
-        			}
-    				
-    				if (!isDatedOnly.equals("true")) {
-        				stringBuilder.append(" " + endTime);
-        			}
-    		}
-    	}
+    	stringBuilder.append(" from " + startDate);
+		
+		if (startYear != null) {
+			stringBuilder.append(" " + startYear);
+		}
+		
+		if (!isDatedOnly.equals("true")) {
+			stringBuilder.append(" " + startTime);
+		}
+		
+    	String feedback = getFeedbackForLabelAndPriority(stringBuilder.toString());
+    	return feedback;
+    }
     
+    private String getFeedbackForEnd() {
+    	int indexTitle = 0;
+    	int indexEndDate = 4;
+    	int indexEndTime = 5;
+    	int indexEndYear = 6;
+    	int indexIsDatedOnly = 9;
+    	
+    	ArrayList<String> fields = getTaskFields();
+    	String title = fields.get(indexTitle);
+    	String endDate = fields.get(indexEndDate);
+    	String endTime = fields.get(indexEndTime);
+    	String endYear = fields.get(indexEndYear);
+    	String isDatedOnly = fields.get(indexIsDatedOnly);
+    	
+    	StringBuilder stringBuilder = new StringBuilder(title);
+    	
+    	stringBuilder.append(" by " + endDate);
+		
+		if (endYear != null) {
+			stringBuilder.append(" " + endYear);
+		}
+		
+		if (!isDatedOnly.equals("true")) {
+			stringBuilder.append(" " + endTime);
+		}
+		
+		String feedback = getFeedbackForLabelAndPriority(stringBuilder.toString());
+    	return feedback;
+    }
+    
+    private String getFeedbackForFloating() {
+    	int indexTitle = 0;    	
+    	ArrayList<String> fields = getTaskFields();
+    	String title = fields.get(indexTitle);
+    	
+    	StringBuilder stringBuilder = new StringBuilder(title);
+    	String feedback = getFeedbackForLabelAndPriority(stringBuilder.toString());
+    	return feedback;
+    }
+    
+    private String getFeedbackForLabelAndPriority(String feedback){
+    	int indexLabel = 7;
+    	int indexPriority = 8;
+    	ArrayList<String> fields = getTaskFields();
+    	String label = fields.get(indexLabel);
+    	String priority = fields.get(indexPriority);
+    	
     	if (label != null) {
-    		stringBuilder.append(" #" + label);
+    		feedback = feedback.concat(" #" + label);
     	}
     	
     	if (!priority.equals("0")) {
-    		stringBuilder.append(" P:" + priority);
+    		feedback = feedback.concat(" P:" + priority);
     	}
-
-    	return stringBuilder.toString();
+    	
+    	return feedback;
     }
     
     /**
@@ -415,6 +456,23 @@ public class Task {
         }
     }
     
+    private DayOfWeek getDay(Date date) {
+    	LocalDateTime dateTime = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+    	DayOfWeek day = dateTime.getDayOfWeek();
+	    return day;
+    }
+    
+    private static String getShortDay(DayOfWeek day) {
+		 DateFormatSymbols symbols = new DateFormatSymbols();
+		 String[] days = symbols.getShortWeekdays();
+		 List<String> correctedDays = new ArrayList<String>(Arrays.asList(days)); 
+		 correctedDays.remove(0);
+		 correctedDays.remove(0);
+		 correctedDays.add("Sun");
+		 int value = day.getValue() - 1;
+		 return correctedDays.get(value);
+	}
+    
     private boolean dateIsThisWeek(Date date) {
     	Calendar calendar = Calendar.getInstance();
 		calendar.setFirstDayOfWeek(Calendar.MONDAY);
@@ -449,28 +507,6 @@ public class Task {
 		}
     }
     
-    private DayOfWeek getDay(Date date) {
-    	LocalDateTime dateTime = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-    	DayOfWeek day = dateTime.getDayOfWeek();
-	    return day;
-    }
-    
-    private static String getShortDay(DayOfWeek day) {
-		 DateFormatSymbols symbols = new DateFormatSymbols();
-		 String[] days = symbols.getShortWeekdays();
-		 List<String> correctedDays = new ArrayList<String>(Arrays.asList(days)); 
-		 correctedDays.remove(0);
-		 correctedDays.remove(0);
-		 correctedDays.add("Sun");
-		 int value = day.getValue() - 1;
-		 return correctedDays.get(value);
-	}
-    
-    private String getDate(Date date) {
-    	LocalDateTime dateTime = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-		return Integer.toString(dateTime.getDayOfMonth());
-    }
-    
     private Month getMonth(Date date) {
     	LocalDateTime dateTime = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
     	Month month = dateTime.getMonth();
@@ -483,6 +519,11 @@ public class Task {
 		 int value = month.getValue() - 1;
 		 return months[value];
 	}
+    
+    private String getDate(Date date) {
+    	LocalDateTime dateTime = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+		return Integer.toString(dateTime.getDayOfMonth());
+    }
 
     private String convertTime(Date date) {
     	SimpleDateFormat timeFormat = new SimpleDateFormat("mm");
@@ -517,6 +558,11 @@ public class Task {
 		return Integer.toString(dateTime.getYear());
 	}
 	
+    /**
+     * This method formats the task's date for display purposes by the UI.
+     * 
+     * @return {@code String} of nicely formatted date
+     */
     public String getSimpleDate() {
     	Locale locale = Locale.getDefault();
     	StringBuilder stringBuilder = new StringBuilder("");    	
@@ -561,6 +607,11 @@ public class Task {
     	return stringBuilder.toString();
     }
     
+    /**
+     * This method formats the task's time for display purposes by the UI.
+     * 
+     * @return {@code String} nicely formatted time
+     */
     public String getSimpleTime() {
     	StringBuilder stringBuilder = new StringBuilder("");
     	int indexStartTime = 2;
@@ -588,19 +639,11 @@ public class Task {
     	return stringBuilder.toString();
     }
     
-    public boolean hasStarted() {
-    	if (startDate == null) {
-    		return false;
-    	} else {
-    		return (startDate.compareTo(new Date()) < 0);
-    	}
-    }
-    
     /**
      * This method checks if a task is today.
      * If the task has a ranged time, it will always be today until it ends.
      * 
-     * @return {@code Boolean} true if is today
+     * @return {@code boolean} true if is today
      */
     public boolean isToday() {
     	if (hasDateRange()) {
@@ -616,6 +659,14 @@ public class Task {
     	return false;
     }
     
+    public boolean hasStarted() {
+    	if (startDate == null) {
+    		return false;
+    	} else {
+    		return (startDate.compareTo(new Date()) < 0);
+    	}
+    }
+    
     /**
      * This method checks if a task is tomorrow.
      * 
@@ -624,7 +675,7 @@ public class Task {
      * If the task has a ranged time and it has not started, check the start time.
      * If the start time is tomorrow, then the task is tomorrow.
      * 
-     * @return {@code Boolean} true if is tomorrow
+     * @return {@code boolean} true if is tomorrow
      */
     public boolean isTomorrow() {   	
     	Calendar cal = Calendar.getInstance();
@@ -690,7 +741,7 @@ public class Task {
      * This methods check if a task is upcoming.
      * An upcoming task must be after today and tomorrow.
      * 
-     * @return {@code Boolean} true if upcoming
+     * @return {@code boolean} true if upcoming
      */
     public boolean isUpcoming() {
     	if (!isToday() && !isTomorrow()) {
@@ -709,6 +760,12 @@ public class Task {
     	return false;
     }
     
+    /**
+     * This method checks if a task is without date.
+     * Since tasks have no date, it it start/due someday.
+     * 
+     * @return {@code boolean} true if not dated
+     */
     public boolean isSomeday() {
     	if (hasDate()) {
     		return false;
