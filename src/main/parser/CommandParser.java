@@ -23,11 +23,7 @@ import org.ocpsoft.prettytime.nlp.PrettyTimeParser;
 import main.data.ParseIndexResult;
 import main.data.Task;
 
-/**
- * @author Joleen
- *
- */
-
+//@@author A0126297
 public class CommandParser {
 	private final int DATE_INDEX = 0;
 	private final int DATE_START = 0;
@@ -252,8 +248,8 @@ public class CommandParser {
 	}
 	
 	private String correctDateTextYear(String inputString) {
-		String regex = getDateRegexText() + "\\b ?(\\d\\d)\\b";
-		inputString = inputString.replaceAll(regex,"$2 $4 $5 '$29") ;
+		String regex = getDateRegexText() + "\\b ?(\\d\\d)(?:$|\\s)";
+		inputString = inputString.replaceAll(regex,"$2 $4 $5 '$29 ") ;
 		return inputString;
 	}
 	
