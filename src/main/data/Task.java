@@ -247,18 +247,32 @@ public class Task {
     	String endYear = fields.get(indexEndYear);
     	String isDatedOnly = fields.get(indexIsDatedOnly);
     	
+    	boolean isSameDay = startDate.equals(endDate) && startYear == null && endYear == null;
+    	boolean isToday = startDate.equals(endDate) && startDate.equals("today");
+    	
        	StringBuilder stringBuilder = new StringBuilder(title);
-    	stringBuilder.append(" from " + startDate);
-
+       	
+       	if (isSameDay) {
+       		stringBuilder.append(" " + startDate);
+       	} else {
+       		stringBuilder.append(" from " + startDate);
+       	}
+    	
     	if (startYear != null) {
     		stringBuilder.append(" " + startYear);
     	}
 
+    	if (isToday) {
+    		stringBuilder.append(" at");
+    	} else if (isSameDay) {
+    		stringBuilder.append(" from");
+    	}
+    	
     	if (!isDatedOnly.equals("true")) {
     		stringBuilder.append(" " + startTime);
     	}
 
-    	if (startDate.equals(endDate) && startYear == null && endYear == null) {
+    	if (isSameDay) {
     		//same day
     		stringBuilder.append(" - " + endTime);
     	} else {
