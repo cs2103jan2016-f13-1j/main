@@ -260,9 +260,9 @@ public class Task {
 
     	if (startDate.equals(endDate) && startYear == null && endYear == null) {
     		//same day
-    		stringBuilder.append(" to " + endTime);
+    		stringBuilder.append(" - " + endTime);
     	} else {
-    		stringBuilder.append(" to " + endDate);
+    		stringBuilder.append(" - " + endDate);
 
     		if (endYear != null) {
     			stringBuilder.append(" " + endYear);
