@@ -1,3 +1,5 @@
+//@@author A0134234R
+
 /** 
  * This class acts as a container to store custom comparators
  * used to sort tasks by different conditions

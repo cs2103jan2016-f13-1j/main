@@ -1,3 +1,5 @@
+//@@author A0134234R
+
 /** 
  * How to use the logic component:
  * 1. get an instance of invoker and receiver
