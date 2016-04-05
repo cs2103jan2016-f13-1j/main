@@ -1,3 +1,4 @@
+//@@author A0126297X
 package main.parser;
 
 import java.time.DayOfWeek;
@@ -23,7 +24,6 @@ import org.ocpsoft.prettytime.nlp.PrettyTimeParser;
 import main.data.ParseIndexResult;
 import main.data.Task;
 
-//@@author A0126297
 public class CommandParser {
 	private final int DATE_INDEX = 0;
 	private final int DATE_START = 0;
@@ -61,6 +61,7 @@ public class CommandParser {
 	 * This method builds a {@code Task} object.
 	 * 
 	 * Tasks without date do not have any date/time specified.
+	 * If a task has only the date specified, the time is default set to 12am.
 	 * Words with prepositions might not be dated.
 	 * Words without prepositions is dated if time is explicitly specified.
 	 * 
