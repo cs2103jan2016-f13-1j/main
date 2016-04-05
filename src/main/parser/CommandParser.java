@@ -161,23 +161,24 @@ public class CommandParser {
 		}
 		
 		inputString = title;
+		inputString = correctDateNumFormat(inputString, hasYear);
 		
 		if (hasDate && hasTime) {
-			dates = parseDateTime(inputString, hasYear);
+			dates = parseDateTime(inputString);
 		} else if (hasDate) {
-			dates = parseDateOnly(inputString, hasYear);
+			dates = parseDateOnly(inputString);
 			isDatedOnly = true;
 		} else if (hasDay && hasTime) {
-			dates = parseDateTime(inputString, hasYear);
+			dates = parseDateTime(inputString);
 		} else if (hasDay) {
-			dates = parseDayOnly(inputString, hasYear);
+			dates = parseDayOnly(inputString);
 			isDatedOnly = true;
 		} else if (hasTime) {
-			dates = parseTimeOnly(inputString, hasYear);
+			dates = parseTimeOnly(inputString);
 		} 
 		
 		if (hasPreposition && hasTimeWithoutAmPm) {
-			dates = parseDateTime(inputString, hasYear);
+			dates = parseDateTime(inputString);
 			dates = fixTimeForWithoutAmPm(dates);
 		}
 		
@@ -427,9 +428,8 @@ public class CommandParser {
 	 * 			{@code String} input to be parsed
 	 * @return {@code List<Date>} of dates generated if possible
 	 */
-	private List<Date> parseDateTime(String inputString, boolean hasYear) {
+	private List<Date> parseDateTime(String inputString) {
 		PrettyTimeParser parser = new PrettyTimeParser();
-		inputString = correctDateNumFormat(inputString, hasYear);
 		List<Date> dates = parser.parse(inputString);
 		return dates;
 	}
@@ -484,8 +484,8 @@ public class CommandParser {
 	 * 			{@code String} input to be parsed
 	 * @return {@code List<Date>} of dates
 	 */
-	private List<Date> parseDateOnly(String inputString, boolean hasYear) {
-		List<Date> dates = parseDateTime(inputString, hasYear);
+	private List<Date> parseDateOnly(String inputString) {
+		List<Date> dates = parseDateTime(inputString);
 		int size = dates.size();
 		for (int i = 0; i < size; i++) {
 			dates.add(setTimeToZero(dates.get(i)));
@@ -512,8 +512,8 @@ public class CommandParser {
         return cal.getTime();
     }
 	
-	private List<Date> parseDayOnly(String inputString, boolean hasYear) {
-		List<Date> dates = parseDateOnly(inputString, hasYear);
+	private List<Date> parseDayOnly(String inputString) {
+		List<Date> dates = parseDateOnly(inputString);
 		dates = fixDayRange(dates);
 		return dates;
 	}
@@ -541,8 +541,8 @@ public class CommandParser {
 		return dates;
 	}
 	
-	private List<Date> parseTimeOnly(String inputString, boolean hasYear) {
-		List<Date> dates = parseDateTime(inputString, hasYear);
+	private List<Date> parseTimeOnly(String inputString) {
+		List<Date> dates = parseDateTime(inputString);
 		dates = fixTimeToNearest(dates, false);
 		dates = fixTimeForRange(dates);
 		return dates;
@@ -978,13 +978,12 @@ public class CommandParser {
 	 * @return {@code Date} if date found, {@code null} if date is not found
 	 */
 	public Date getDateForSearch(String inputString) {
-		boolean hasYear =  false;
 		if (isSpecialCase(inputString)) {
 			return null;
 		}
 		
 		inputString = correctShorthand(inputString);
-		List<Date> dates = parseDateTime(inputString, hasYear);
+		List<Date> dates = parseDateTime(inputString);
 		
 		if (dates.size() == 0) {
 			return null;
