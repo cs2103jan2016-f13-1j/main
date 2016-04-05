@@ -304,15 +304,22 @@ public class Task {
     	String startYear = fields.get(indexStartYear);
     	String isDatedOnly = fields.get(indexIsDatedOnly);
     	
+    	boolean isToday = startDate.equals("today");
+    	
     	StringBuilder stringBuilder = new StringBuilder(title);
-    	stringBuilder.append(" from " + startDate);
-		
+    	
+    	if (isToday) {
+    		stringBuilder.append(" " + startDate);
+    	} else {
+    		stringBuilder.append(" on " + startDate);
+    	}
+    	
 		if (startYear != null) {
 			stringBuilder.append(" " + startYear);
 		}
 		
 		if (!isDatedOnly.equals("true")) {
-			stringBuilder.append(" " + startTime);
+			stringBuilder.append(" at " + startTime);
 		}
 		
     	String feedback = getFeedbackForLabelAndPriority(stringBuilder.toString());
