@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.String?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import com.jfoenix.controls.JFXListView?>
+<?import javafx.geometry.Insets?>
+
+<fx:root type="javafx.scene.layout.AnchorPane" cacheHint="SPEED" stylesheets="@../styles/RootLayout.css" xmlns="http://javafx.com/javafx/8.0.65"
+	xmlns:fx="http://javafx.com/fxml/1" >
+	<children>
+		<JFXListView fx:id="listView" cacheHint="SPEED"
+			layoutY="89.0" stylesheets="@../styles/RootLayout.css"
+			AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+			AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+			<styleClass>
+				<String fx:value="decrement-arrow" />
+				<String fx:value="increment-arrow" />
+				<String fx:value="decrement-button" />
+				<String fx:value="increment-button" />
+				<String fx:value="jfx-list-view" />
+				<String fx:value="scroll-bar" />
+				<String fx:value="thumb" />
+				<String fx:value="track" />
+			</styleClass>
+		</JFXListView>
+	</children>
+	<padding>
+		<Insets bottom="130.0" left="40.0" right="40.0" top="40.0" />
+	</padding>
+</fx:root>
