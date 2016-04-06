@@ -14,6 +14,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -431,7 +432,7 @@ public class CommandParser {
 	 * @return {@code List<Date>} of dates generated if possible
 	 */
 	private List<Date> parseDateTime(String inputString) {
-		PrettyTimeParser parser = new PrettyTimeParser();
+		PrettyTimeParser parser = new PrettyTimeParser(TimeZone.getDefault());
 		List<Date> dates = parser.parse(inputString);
 		return dates;
 	}
