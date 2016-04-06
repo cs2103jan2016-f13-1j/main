@@ -212,6 +212,7 @@ public class CommandParser {
 				regex = getDateRegexTextWithYear();
 				title = removeRegex(regex, title);
 			
+				//remove date in text form with corrected year due to shortform
 				regex = "\\b ?'(\\d\\d)\\b";
 				title = removeRegex(regex, title);
 				
@@ -703,10 +704,7 @@ public class CommandParser {
 	private Date getDate(List<Date> dates, int index) {
 		return dates.get(index);
 	}
-	
-	
-	
-	
+
 	/**
 	 * This method removes date information from the {@code String} taken in.
 	 * 
@@ -1177,10 +1175,6 @@ public class CommandParser {
 
 		if (editedTask.hasDate()) {		
 			if (hasDate && !hasTime) {
-				/*
-				//only date, reuse time
-				dates = reuseTime(editedTask, oldTask);
-				*/
 				
 				//new
 				//if date only, dont reuse time
@@ -1211,121 +1205,6 @@ public class CommandParser {
 	}
 	
 	/**
-	 * This method duplicates the time information in {@code Task} oldTask to {@code Task} editedTask.
-	 * 
-	 * @param editedTask
-	 * 			{@code Task} edited task that needs the old time information
-	 * @param oldTask
-	 * 			{@code Task} with the old time information
-	 * @return {@code List<Date>} of updated dates
-	 */
-	private List<Date> reuseTime(Task editedTask, Task oldTask) {
-		List<Date> dates = new ArrayList<Date>();
-		Calendar reuse = Calendar.getInstance();
-		Calendar latest = Calendar.getInstance();
-		
-		Date startDate = editedTask.getStartDate();
-		Date endDate = editedTask.getEndDate();
-		Date oldStart = oldTask.getStartDate();
-		Date oldEnd = oldTask.getEndDate();
-	
-		/*
-		System.out.println(startDate);
-		System.out.println(endDate);
-		System.out.println(oldStart);
-		System.out.println(oldEnd);
-		*/
-		
-		//if previous is range
-		/*
-		if (oldTask.hasDateRange()) {
-			if (editedTask.hasSingleDate()) {
-				Date date = editedTask.getSingleDate();
-				reuse.setTime(oldStart);
-				latest = setHourMin(reuse, latest, date);
-				oldStart = latest.getTime();
-				
-				reuse.setTime(oldEnd);
-				latest = setHourMin(reuse, latest, date);
-				oldEnd = latest.getTime();
-			}
-		} else {
-		*/
-			if (startDate != null) {
-				if (oldStart != null) {  
-					reuse.setTime(oldStart);
-				} else if (oldEnd != null) {
-					reuse.setTime(oldEnd);
-				}
-				
-				latest = setHourMin(reuse, latest, startDate);
-				oldStart = latest.getTime();
-			}
-			
-			if (endDate != null) {
-				if (oldEnd != null) {  
-					reuse.setTime(oldEnd);
-				} else if (oldStart != null) {
-					reuse.setTime(oldStart);
-				}
-
-				latest = setHourMin(reuse, latest, endDate);
-				oldEnd = latest.getTime();
-			}
-		//}
-			
-		if (!oldTask.hasDate()) {
-			//floating task
-			//reset time here else it will take current
-			if (oldStart != null) {
-				oldStart = setTimeToZero(oldStart);
-			}
-			if (oldEnd != null) {
-				oldEnd = setTimeToZero(oldEnd);
-			}
-		}
-		
-		//if oldtask is not range, and edited is null, overwrite
-		//if (!oldTask.hasDateRange()) {
-			if (startDate == null) {
-				oldStart = null;
-			}
-			
-			if (endDate == null) {
-				oldEnd = null;
-			}
-		//}
-		
-		dates.add(oldStart);
-		dates.add(oldEnd);
-		return dates;		
-	}
-	
-	/**
-	 * This method gets the hour and minutes from {@code Calendar} reuse and sets it in {@code Calendar} latest.
-	 * 
-	 * @param reuse
-	 * 			{@code Calendar} for hour and minutes to be obtained
-	 * @param latest
-	 * 			{@code Calendar} for hour and minutes to be set
-	 * @param date
-	 * 			{@code Date} date to be set for {@code Calendar} latest
-	 * @return {@code Calendar} with updated hour and minutes
-	 */
-	private Calendar setHourMin(Calendar reuse, Calendar latest, Date date) {
-		int hour = reuse.get(Calendar.HOUR);
-		int min = reuse.get(Calendar.MINUTE);
-		int ampm = reuse.get(Calendar.AM_PM);
-
-		latest.setTime(date);
-		latest.set(Calendar.HOUR, hour);
-		latest.set(Calendar.MINUTE, min);
-		latest.set(Calendar.AM_PM, ampm);
-
-		return latest;
-	}
-	
-	/**
 	 * This method duplicates the date information in {@code Task} oldTask to {@code Task} editedTask.
 	 * 
 	 * @param editedTask
@@ -1333,6 +1212,11 @@ public class CommandParser {
 	 * @param oldTask
 	 * 			{@code Task} with the old date information
 	 * @return {@code List<Date>} of updated dates
+	 */
+	/**
+	 * @param editedTask
+	 * @param oldTask
+	 * @return
 	 */
 	private List<Date> reuseDate(Task editedTask, Task oldTask) {
 		List<Date> dates = new ArrayList<Date>();
@@ -1372,16 +1256,15 @@ public class CommandParser {
 			oldEnd = endDate;
 		}
 		
-		//if (!oldTask.hasDateRange()) {
-			if (startDate == null) {
-				oldStart = null;
-			}
-			
-			if (endDate == null) {
-				oldEnd = null;
-			}
-		//}
-		
+	
+		if (startDate == null) {
+			oldStart = null;
+		}
+
+		if (endDate == null) {
+			oldEnd = null;
+		}
+	
 		dates.add(oldStart);
 		dates.add(oldEnd);
 		return dates;		
