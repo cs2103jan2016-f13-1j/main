@@ -11,29 +11,19 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXListCell;
-import com.jfoenix.controls.JFXListView;
 import com.jfoenix.controls.JFXTabPane;
 import com.jfoenix.controls.JFXTextField;
-import com.sun.javafx.scene.control.skin.VirtualFlow;
 
 import javafx.animation.FadeTransition;
 import javafx.animation.SequentialTransition;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.Group;
-import javafx.scene.Node;
-import javafx.scene.control.IndexedCell;
 import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
-import javafx.scene.control.SelectionMode;
 import javafx.scene.control.SingleSelectionModel;
 import javafx.scene.control.Tab;
 import javafx.scene.input.KeyCode;
@@ -46,11 +36,9 @@ import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
-import javafx.util.Callback;
 import javafx.util.Duration;
 import main.data.ParseIndexResult;
 import main.data.Task;
-import main.data.TaskHeader;
 import main.logic.AddCommand;
 import main.logic.Command;
 import main.logic.DeleteCommand;
@@ -67,7 +55,6 @@ import main.parser.CommandParser.InvalidLabelFormat;
 import main.parser.CommandParser.InvalidTaskIndexFormat;
 import main.parser.CommandParser.InvalidTitle;
 
-@SuppressWarnings("restriction")
 public class RootLayoutController implements Observer {
     private static final String STRING_COMMAND_EDIT = "edit";
     private static final String STRING_COMMAND_DELETE = "delete";
@@ -98,11 +85,11 @@ public class RootLayoutController implements Observer {
     private static final KeyCombination HOTKEY_CTRL_D = new KeyCodeCombination(KeyCode.D, KeyCombination.CONTROL_DOWN);
 
     @FXML
-    private TaskListViewController todoListViewController; // Value injected by
-                                                           // FXMLLoader
+    private ListViewController todoListViewController; // Value injected by
+                                                       // FXMLLoader
     @FXML
-    private TaskListViewController completedListViewController; // Value
-                                                                // injected by
+    private ListViewController completedListViewController; // Value
+                                                            // injected by
     // FXMLLoader
 
     @FXML // fx:id="rootLayout"
@@ -151,8 +138,6 @@ public class RootLayoutController implements Observer {
     private Label labelSuggestedAction; // Value injected by FXMLLoader
 
     private MainApp mainApp;
-    private VirtualFlow<IndexedCell<String>> virtualFlowTodo;
-    private VirtualFlow<IndexedCell<String>> virtualFlowCompleted;
 
     private Invoker invoker;
     private Receiver receiver;
@@ -168,8 +153,6 @@ public class RootLayoutController implements Observer {
     private ArrayList<Task> completedTasks;
     private ArrayList<Task> todoTasksWithHeaders;
     private ArrayList<Task> completedTasksWithHeaders;
-    private ObservableList<Task> observableTodoTasks = FXCollections.observableArrayList();
-    private ObservableList<Task> observableCompletedTasks = FXCollections.observableArrayList();
     private String inputFeedback;
     private String userInput;
     private String[] userInputArray;
@@ -180,10 +163,9 @@ public class RootLayoutController implements Observer {
     private boolean isSearchMode;
     private boolean isUndoRedo;
 
-    private JFXListView<Task> currentListView;
     private ArrayList<Task> currentTaskList;
 
-    private TaskListViewController currentListViewController;
+    private ListViewController currentListViewController;
 
     private static final Logger logger = Logger.getLogger(RootLayoutController.class.getName());
 
@@ -255,14 +237,13 @@ public class RootLayoutController implements Observer {
 
     public void initListViewBehavior() {
         todoListViewController.initListViewBehavior();
+        completedListViewController.initListViewBehavior();
     }
 
     public void selectFirstItemFromListView() {
         logger.log(Level.INFO, "Set Select the first item on the ListView");
         todoListViewController.selectListViewFirstItem();
-        todoListViewController.initListViewBehavior();
         completedListViewController.selectListViewFirstItem();
-        completedListViewController.initListViewBehavior();
 
         setCurrentListViewController(tabTodo.getText());
     }
@@ -275,43 +256,7 @@ public class RootLayoutController implements Observer {
     private void initialize() {
         logger.log(Level.INFO, "Initializing the UI...");
 
-        // assert rootLayout != null : "fx:id=\"rootLayout\" was not injected:
-        // check your FXML file 'RootLayout.fxml'.";
-        // assert tabPane != null : "fx:id=\"tabPane\" was not injected: check
-        // your FXML file 'RootLayout.fxml'.";
-        // assert tabTodo != null : "fx:id=\"tabTodo\" was not injected: check
-        // your FXML file 'RootLayout.fxml'.";
-        // assert listViewTodo != null : "fx:id=\"listViewTodo\" was not
-        // injected: check your FXML file 'RootLayout.fxml'.";
-        // assert tabCompleted != null : "fx:id=\"tabCompleted\" was not
-        // injected: check your FXML file 'RootLayout.fxml'.";
-        // assert listViewCompleted != null : "fx:id=\"listViewCompleted\" was
-        // not injected: check your FXML file 'RootLayout.fxml'.";
-        // assert commandBar != null : "fx:id=\"commandBar\" was not injected:
-        // check your FXML file 'RootLayout.fxml'.";
-        // assert chipSearchMode != null : "fx:id=\"chipSearchMode\" was not
-        // injected: check your FXML file 'RootLayout.fxml'.";
-        // assert btnFeedback != null : "fx:id=\"btnFeedback\" was not injected:
-        // check your FXML file 'RootLayout.fxml'.";
-        // assert groupFeedback != null : "fx:id=\"groupFeedback\" was not
-        // injected: check your FXML file 'RootLayout.fxml'.";
-        // assert textFlowFeedback != null : "fx:id=\"textFlowFeedback\" was not
-        // injected: check your FXML file 'RootLayout.fxml'.";
-        // assert textUserAction != null : "fx:id=\"textUserAction\" was not
-        // injected: check your FXML file 'RootLayout.fxml'.";
-        // assert textUserParsedResult != null : "fx:id=\"textUserParsedResult\"
-        // was not injected: check your FXML file 'RootLayout.fxml'.";
-        // assert anchorPaneExecutionResult != null :
-        // "fx:id=\"anchorPaneExecutionResult\" was not injected: check your
-        // FXML file 'RootLayout.fxml'.";
-        // assert labelExecutedCommand != null : "fx:id=\"labelExecutedCommand\"
-        // was not injected: check your FXML file 'RootLayout.fxml'.";
-        // assert labelExecutionDetails != null :
-        // "fx:id=\"labelExecutionDetails\" was not injected: check your FXML
-        // file 'RootLayout.fxml'.";
-        // assert labelSuggestedAction != null : "fx:id=\"labelSuggestedAction\"
-        // was not injected: check your FXML file 'RootLayout.fxml'.";
-        // todoListViewController = new TaskListViewController();
+        assertDependencyInjection();
         initLogicAndParser();
         initListView();
         initTabSelectionListener();
@@ -320,6 +265,24 @@ public class RootLayoutController implements Observer {
         initSearchModeChipsLayoutListener();
 
         logger.log(Level.INFO, "UI initialization complete");
+    }
+
+    private void assertDependencyInjection() {
+        assert rootLayout != null : "fx:id=\"rootLayout\" was not injected: check your FXML file 'RootLayout.fxml'.";
+        assert tabPane != null : "fx:id=\"tabPane\" was not injected: check your FXML file 'RootLayout.fxml'.";
+        assert tabTodo != null : "fx:id=\"tabTodo\" was not injected: check your FXML file 'RootLayout.fxml'.";
+        assert tabCompleted != null : "fx:id=\"tabCompleted\" was not injected: check your FXML file 'RootLayout.fxml'.";
+        assert commandBar != null : "fx:id=\"commandBar\" was not injected: check your FXML file 'RootLayout.fxml'.";
+        assert chipSearchMode != null : "fx:id=\"chipSearchMode\" was not injected: check your FXML file 'RootLayout.fxml'.";
+        assert btnFeedback != null : "fx:id=\"btnFeedback\" was not injected: check your FXML file 'RootLayout.fxml'.";
+        assert groupFeedback != null : "fx:id=\"groupFeedback\" was not injected: check your FXML file 'RootLayout.fxml'.";
+        assert textFlowFeedback != null : "fx:id=\"textFlowFeedback\" was not injected: check your FXML file 'RootLayout.fxml'.";
+        assert textUserAction != null : "fx:id=\"textUserAction\" was not injected: check your FXML file 'RootLayout.fxml'.";
+        assert textUserParsedResult != null : "fx:id=\"textUserParsedResult\" was not injected: check your FXML file 'RootLayout.fxml'.";
+        assert anchorPaneExecutionResult != null : "fx:id=\"anchorPaneExecutionResult\" was not injected: check your FXML file 'RootLayout.fxml'.";
+        assert labelExecutedCommand != null : "fx:id=\"labelExecutedCommand\" was not injected: check your FXML file 'RootLayout.fxml'.";
+        assert labelExecutionDetails != null : "fx:id=\"labelExecutionDetails\" was not injected: check your FXML file 'RootLayout.fxml'.";
+        assert labelSuggestedAction != null : "fx:id=\"labelSuggestedAction\" was not injected: check your FXML file 'RootLayout.fxml'.";
     }
 
     /**
@@ -349,7 +312,6 @@ public class RootLayoutController implements Observer {
 
             @Override
             public void changed(ObservableValue<? extends Tab> observable, Tab oldValue, Tab newValue) {
-                System.out.println("Hi");
                 setCurrentListViewController(newValue.getText());
                 setCurrentList(newValue.getText());
             }
@@ -368,7 +330,6 @@ public class RootLayoutController implements Observer {
                 logger.log(Level.INFO, "Command bar focus is: " + newValue);
                 if (!newValue) {
                     commandBar.requestFocus();
-                    todoListViewController.sayHello();
                 }
 
             }
@@ -463,6 +424,8 @@ public class RootLayoutController implements Observer {
         populateListView();
         setCurrentList(getSelectedTabName());
         setCurrentListViewController(getSelectedTabName());
+        todoListViewController.setRootLayoutController(this);
+        completedListViewController.setRootLayoutController(this);
     }
 
     /**
@@ -470,7 +433,7 @@ public class RootLayoutController implements Observer {
      *
      */
     private void populateListView() {
-        getTaskListFromReceiver();
+        getTasksFromReceiver();
 
         todoListViewController.populateListView(todoTasks);
         todoTasksWithHeaders = todoListViewController.getTaskList();
@@ -489,12 +452,13 @@ public class RootLayoutController implements Observer {
      *
      */
     private void refreshListView() {
-        getTaskListFromReceiver();
+        getTasksFromReceiver();
         todoListViewController.refreshListView(todoTasks);
         completedListViewController.refreshListView(completedTasks);
+        updateTabAndLabelWithTotalTasks();
     }
 
-    private void getTaskListFromReceiver() {
+    private void getTasksFromReceiver() {
         todoTasks = receiver.getTodoTasks();
         assert todoTasks != null;
         completedTasks = receiver.getCompletedTasks();
@@ -503,12 +467,8 @@ public class RootLayoutController implements Observer {
     }
 
     private void updateTabAndLabelWithTotalTasks() {
-        // if(!isEditMode){
-        // labelCurrentMode.setText(getSelectedTabName());
-        // }
         tabTodo.setText("To-do" + STRING_WHITESPACE + String.format(STRING_TAB_TASK_SIZE, todoTasks.size()));
-        tabCompleted
-                .setText("Completed" + STRING_WHITESPACE + String.format(STRING_TAB_TASK_SIZE, completedTasks.size()));
+        tabCompleted.setText("Completed" + STRING_WHITESPACE + String.format(STRING_TAB_TASK_SIZE, completedTasks.size()));
 
     }
 
@@ -670,8 +630,7 @@ public class RootLayoutController implements Observer {
      *
      */
     private void handleDeleteKey() {
-        logger.log(Level.INFO,
-                "Pressed DELETE key: task index  " + getCurrentListViewController().getSelectedIndex());
+        logger.log(Level.INFO, "Pressed DELETE key: task index  " + getCurrentListViewController().getSelectedIndex());
         taskIndexesToBeExecuted = new ArrayList<>(1);
         taskIndexesToBeExecuted.add(getCurrentListViewController().getSelectedIndex());
         taskToBeExecuted = getCurrentTaskList().get(getCurrentListViewController().getSelectedIndex());
@@ -711,30 +670,33 @@ public class RootLayoutController implements Observer {
      *
      */
     private void handleCtrlD() {
-        taskToBeExecuted = currentTaskList.get(getCurrentListViewController().getSelectedIndex());
+        taskToBeExecuted = getCurrentTaskList().get(getCurrentListViewController().getSelectedIndex());
 
         if (getSelectedTabName().equals(tabTodo.getText())) {
-            logger.log(Level.INFO, "Pressed CTRL+D key: Task "
-                    + (getCurrentListViewController().getSelectedIndex() + 1) + " done");
+            logger.log(Level.INFO,
+                    "Pressed CTRL+D key: Task " + (getCurrentListViewController().getSelectedIndex() + 1) + " done");
             taskIndexesToBeExecuted.clear();
             taskIndexesToBeExecuted.add(getCurrentListViewController().getSelectedIndex());
-            taskToBeExecuted = getCurrentTaskList().get(getCurrentListViewController().getPreviousSelectedIndex());
+            // taskToBeExecuted =
+            // getCurrentTaskList().get(getCurrentListViewController().getPreviousSelectedIndex());
             listOfTaskToBeExecuted.clear();
             listOfTaskToBeExecuted.add(taskToBeExecuted);
             commandToBeExecuted = new DoneCommand(receiver, listOfTaskToBeExecuted);
 
         } else if (getSelectedTabName().equals(tabCompleted.getText())) {
-            logger.log(Level.INFO, "Pressed CTRL+D key: Task "
-                    + (getCurrentListViewController().getSelectedIndex() + 1) + " undone");
+            logger.log(Level.INFO,
+                    "Pressed CTRL+D key: Task " + (getCurrentListViewController().getSelectedIndex() + 1) + " undone");
             taskIndexesToBeExecuted.clear();
             taskIndexesToBeExecuted.add(getCurrentListViewController().getSelectedIndex());
-            taskToBeExecuted = getCurrentTaskList().get(previousSelectedTaskIndex);
+            // taskToBeExecuted =
+            // getCurrentTaskList().get(previousSelectedTaskIndex);
             listOfTaskToBeExecuted.clear();
             listOfTaskToBeExecuted.add(taskToBeExecuted);
-            commandToBeExecuted = new DoneCommand(receiver, listOfTaskToBeExecuted);
+            commandToBeExecuted = new UndoneCommand(receiver, listOfTaskToBeExecuted);
         }
 
         invoker.execute(commandToBeExecuted);
+
         showExecutionResult(commandToBeExecuted, null);
         if (!chipSearchMode.getText().equals("")) {
             invoker.execute(searchCommand);
@@ -1303,7 +1265,7 @@ public class RootLayoutController implements Observer {
 
     }
 
-    private TaskListViewController getCurrentListViewController() {
+    private ListViewController getCurrentListViewController() {
         return currentListViewController;
     }
 
@@ -1355,7 +1317,7 @@ public class RootLayoutController implements Observer {
     }
 
     // TODO create one similar getter for completedTaskController
-    public TaskListViewController getTodoTaskListViewController() {
+    public ListViewController getTodoTaskListViewController() {
         return todoListViewController;
     }
 }

@@ -34,8 +34,8 @@ import main.logic.DoneCommand;
 import main.logic.EditCommand;
 import main.logic.UndoneCommand;
 
-public class TaskListViewController extends AnchorPane {
-    private static final Logger logger = Logger.getLogger(TaskListViewController.class.getName());
+public class ListViewController extends AnchorPane {
+    private static final Logger logger = Logger.getLogger(ListViewController.class.getName());
     private static final String STRING_LISTVIEW_TODO_EMPTY = "You have no task!";
 
     @FXML
@@ -55,7 +55,7 @@ public class TaskListViewController extends AnchorPane {
     public boolean hasUpcomingHeader;
     public boolean hasSomedayHeader;
 
-    public TaskListViewController() {
+    public ListViewController() {
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/main/resources/layouts/TaskListView.fxml"));
         fxmlLoader.setRoot(this);
         fxmlLoader.setController(this);
@@ -162,8 +162,8 @@ public class TaskListViewController extends AnchorPane {
     }
 
     public void selectListViewFirstItem() {
-        previousSelectedTaskIndex = 0;
         listView.getSelectionModel().selectFirst();
+        saveSelectedIndex();
         initCustomViewportBehaviorForListView();
 
         listView.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Task>() {
@@ -199,6 +199,7 @@ public class TaskListViewController extends AnchorPane {
                 // get an instance of VirtualFlow. this is essentially the
                 // viewport for ListView
                 virtualFlow = (VirtualFlow<IndexedCell<String>>) node;
+                System.out.println("Found virtual flow");
             }
         }
 
@@ -207,8 +208,9 @@ public class TaskListViewController extends AnchorPane {
     /**
      * This method is used to emulate the original behavior of a ListView, i.e.
      * the automatic scrolling of focused ListView when a selected item is not
-     * visible within the viewport
+     * visible within the viewport.
      */
+    @SuppressWarnings("restriction")
     private void adjustViewportForListView() {
 
         int firstVisibleIndex = virtualFlow.getFirstVisibleCellWithinViewPort().getIndex();
