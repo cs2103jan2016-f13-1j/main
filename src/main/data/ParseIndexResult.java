@@ -90,7 +90,7 @@ public class ParseIndexResult {
     	}
     	
     	if (isRange) {
-    		//in case last is range
+    		//account for having a range at the end
     		stringBuilder.append("-"+start);
     	}
     	

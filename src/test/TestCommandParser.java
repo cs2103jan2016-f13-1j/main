@@ -698,7 +698,6 @@ public class TestCommandParser {
 		assertEquals("eat brownie 1 May from 10pm - 11pm P:2", task2.toString());	
 	}
 	
-	
 	/**
 	 * Test for parsing date with year (and time).
 	 * 
@@ -778,7 +777,7 @@ public class TestCommandParser {
 	 * @throws InvalidLabelFormat 
 	 * @throws InvalidTitle 
 	 */
-
+	@Test
 	public void testCompareTo() throws InterruptedException, InvalidLabelFormat, InvalidTitle {
 		CommandParser parser = new CommandParser();
 		Task task1, task2;
@@ -1045,23 +1044,23 @@ public class TestCommandParser {
 	 * @throws InvalidLabelFormat
 	 * @throws InvalidTitle
 	 */
-	
+	@Test
 	public void testShortcut() throws InvalidLabelFormat, InvalidTitle {
 		CommandParser parser = new CommandParser();	
 		Task task,task2;
 		
 		task = parser.parseAdd("Supper tmr 11pm");
-		assertEquals("Supper on this Wed at 11pm", task.toString());
+		assertEquals("Supper on this Fri at 11pm", task.toString());
 		
 		task = parser.parseAdd("Supper tml 11pm");
-		assertEquals("Supper on this Wed at 11pm", task.toString());
+		assertEquals("Supper on this Fri at 11pm", task.toString());
 		
 		task = parser.parseAdd("Supper tmrw 11pm");
-		assertEquals("Supper on this Wed at 11pm", task.toString());
+		assertEquals("Supper on this Fri at 11pm", task.toString());
 		
 		task = parser.parseAdd("Donate books");
 		task2 = parser.parseEdit(task, "tmr 11pm");
-		assertEquals("Donate books on this Wed at 11pm", task2.toString());
+		assertEquals("Donate books on this Fri at 11pm", task2.toString());
 		
 		task = parser.parseAdd("Supper today 8pm");
 		assertEquals("Supper today at 8pm", task.toString());
@@ -1228,6 +1227,11 @@ public class TestCommandParser {
 		assertEquals(true, thrown);        
 	}
 	
+	/**
+	 * Test for getting valid and invalid indexes string.
+	 * 
+	 * @throws InvalidTaskIndexFormat
+	 */
 	@Test
 	public void testIndexesString() throws InvalidTaskIndexFormat {
 		CommandParser parser = new CommandParser();	
@@ -1250,17 +1254,11 @@ public class TestCommandParser {
 		CommandParser parser = new CommandParser();	
 		Task task,task2;
 		
-
-		//task =  parser.parseAdd("Attend lecture next week 8-9pm");
 		//?!?!?!??! lol whut
 		task = parser.parseAdd("cousin 10 may 7pm");
 		System.out.println(task.toString());
 		task = parser.parseAdd("apple 10 may 7pm");
 		System.out.println(task.toString());
-		
 
-
-
-		
 	}
 }
