@@ -273,7 +273,6 @@ public class Task {
     	}
 
     	if (isSameDay) {
-    		//same day
     		stringBuilder.append(" - " + endTime);
     	} else {
     		stringBuilder.append(" - " + endDate);
@@ -490,6 +489,7 @@ public class Task {
 		 correctedDays.remove(0);
 		 correctedDays.remove(0);
 		 correctedDays.add("Sun");
+		 
 		 int value = day.getValue() - 1;
 		 return correctedDays.get(value);
 	}
