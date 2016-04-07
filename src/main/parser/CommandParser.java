@@ -164,7 +164,7 @@ public class CommandParser {
 		
 		inputString = title;
 		inputString = correctDateNumFormat(inputString, hasYear);
-		
+
 		if (hasDate && hasTime) {
 			dates = parseDateTime(inputString);
 		} else if (hasDate) {
@@ -179,6 +179,16 @@ public class CommandParser {
 			dates = parseTimeOnly(inputString);
 		} 
 		
+		if (inputString.contains("next week")) {
+			if (!hasTime) {
+				isDatedOnly = true;
+			}
+			
+			dates = correctNextWeek(dates);
+			regex = "\\bnext week\\b";
+			title = removeRegex(regex, title);
+		}
+		
 		if (hasPreposition && hasTimeWithoutAmPm) {
 			dates = parseDateTime(inputString);
 			dates = fixTimeForWithoutAmPm(dates);
@@ -190,6 +200,11 @@ public class CommandParser {
 			startDate = dates.get(DATE_START);
 			endDate = dates.get(DATE_END);
 
+			if (hasDate && hasTime) {
+				regex = "\\b(the day after )" + REGEX_DATE_WORD;
+				title = removeRegex(regex, title);
+			}
+			
 			if (hasTime) {
 				//remove time from title
 				regex = REGEX_PREPOSITION_ALL + "?" + REGEX_TIME_WORD;
@@ -236,6 +251,26 @@ public class CommandParser {
 		}
 		
 		return task;
+	}
+	
+	private List<Date> correctNextWeek(List<Date> dates) {
+		Calendar cal = Calendar.getInstance();
+		if (dates.size() == 0) {
+			cal.setTime(new Date());
+			int week = cal.get(Calendar.WEEK_OF_YEAR) + 1;
+			cal.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
+			cal.set(Calendar.WEEK_OF_YEAR, week);
+			cal.setTime(setTimeToZero(cal.getTime()));
+			dates.add(cal.getTime());
+		} else {
+			for (int i = 0; i < dates.size(); i++) {
+				
+				 cal.setTime(dates.get(i));
+				 cal.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
+				 dates.set(i, cal.getTime());
+			}
+		}
+		return dates;
 	}
 	
 	private String correctUserInput(String inputString) {
