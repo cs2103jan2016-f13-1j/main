@@ -404,7 +404,7 @@ public class TestCommandParser {
 	
 		//if ending not specified, am
 		task = parser.parseAdd("Buy apple 10pm-3");
-		assertEquals("Buy apple from today 10pm - this Thu 3am", task.toString());	
+		assertEquals("Buy apple from today 10pm - this Fri 3am", task.toString());	
 	}
 	
 	/**
@@ -428,16 +428,16 @@ public class TestCommandParser {
 		assertEquals("Homework today at 8:15pm", task.toString());
 		
 		task = parser.parseAdd("Do tutorial by morning");
-		assertEquals("Do tutorial by this Thu 8am", task.toString());
+		assertEquals("Do tutorial by this Fri 8am", task.toString());
 		
 		task = parser.parseAdd("Do tutorial by afternoon");
-		assertEquals("Do tutorial by this Thu 12pm", task.toString());
+		assertEquals("Do tutorial by this Fri 12pm", task.toString());
 		
 		task = parser.parseAdd("Do tutorial by evening");
 		assertEquals("Do tutorial by today 7pm", task.toString());
 		
 		task = parser.parseAdd("Do tutorial midnight");
-		assertEquals("Do tutorial on this Thu at 12am", task.toString());
+		assertEquals("Do tutorial on this Fri at 12am", task.toString());
 		
 		task = parser.parseAdd("Do tutorial afternoon 5pm");
 		assertEquals("Do tutorial today at 5pm", task.toString());
@@ -455,7 +455,7 @@ public class TestCommandParser {
 		Task task;
 
 		task = parser.parseAdd("Do homework by 2");
-		assertEquals("Do homework by this Thu 2am", task.toString());
+		assertEquals("Do homework by this Fri 2am", task.toString());
 		
 		task = parser.parseAdd("Do homework by 11");
 		assertEquals("Do homework by today 11pm", task.toString());
@@ -584,7 +584,7 @@ public class TestCommandParser {
 		CommandParser parser = new CommandParser();
 		//now is tues
 		Task task = parser.parseAdd("Attend meeting on thurs");
-		assertEquals("Attend meeting on this Thu", task.toString());
+		assertEquals("Attend meeting on next Thu", task.toString());
 		
 		//now is tues
 		task = parser.parseAdd("Attend meeting from mon to weds");
@@ -943,7 +943,7 @@ public class TestCommandParser {
 		assertEquals("Buy milk on 1 May at 3pm #party", task2.toString());
 
 		task2 = parser.parseEdit(task, "at 4");
-		assertEquals("Buy milk on 1 May at 4pm #party", task2.toString());
+		assertEquals("Buy milk on 1 May at 4am #party", task2.toString());
 
 		task2 = parser.parseEdit(task, "at 4am");
 		assertEquals("Buy milk on 1 May at 4am #party", task2.toString());
@@ -1252,8 +1252,17 @@ public class TestCommandParser {
 		CommandParser parser = new CommandParser();	
 		Task task,task2;
 		
-		task = parser.parseAdd("call father day after tomorrow 5pm");
+
+		//task =  parser.parseAdd("Attend lecture next week 8-9pm");
+		//?!?!?!??! lol whut
+		task = parser.parseAdd("cousin 10 may 7pm");
 		System.out.println(task.toString());
+		task = parser.parseAdd("apple 10 may 7pm");
+		System.out.println(task.toString());
+		
+
+
+
 		
 	}
 }
