@@ -16,9 +16,7 @@ import org.junit.Test;
 import main.data.ParseIndexResult;
 import main.data.Task;
 import main.parser.CommandParser;
-import main.parser.CommandParser.InvalidLabelFormat;
-import main.parser.CommandParser.InvalidTaskIndexFormat;
-import main.parser.CommandParser.InvalidTitle;
+import main.parser.exceptions.*;
 
 public class TestCommandParser {
 	/**
@@ -440,7 +438,7 @@ public class TestCommandParser {
 		assertEquals("Do tutorial on this Fri at 12am", task.toString());
 		
 		task = parser.parseAdd("Do tutorial afternoon 5pm");
-		assertEquals("Do tutorial today at 5pm", task.toString());
+		assertEquals("Do tutorial on this Fri at 5pm", task.toString());
 	}
 	
 	/**

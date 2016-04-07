@@ -24,6 +24,7 @@ import org.ocpsoft.prettytime.nlp.PrettyTimeParser;
 
 import main.data.ParseIndexResult;
 import main.data.Task;
+import main.parser.exceptions.*;
 
 public class CommandParser {
 	private final int DATE_INDEX = 0;
@@ -247,6 +248,8 @@ public class CommandParser {
 		logger.log(Level.INFO, "Task object built.");
 		
 		if (title.length() == 0) {
+			logger.log(Level.WARNING, "Title cannot be parsed by parser.");
+			logger.log(Level.WARNING, "InvalidTitle exception thrown.");
 			throw new InvalidTitle("Invalid title detected.", task);
 		}
 		
@@ -354,11 +357,15 @@ public class CommandParser {
 		try {
 			word = inputString.split(" ")[0];
 		} catch (Exception e ) {
-			throw new InvalidLabelFormat();
+			logger.log(Level.WARNING, "Label cannot be parsed by parser.");
+			logger.log(Level.WARNING, "InvalidLabelFormat exception thrown.");
+			throw new InvalidLabelFormat("Invalid label input detected.");
 		}
 
 		if (word.length() == 0) {
-			throw new InvalidLabelFormat();
+			logger.log(Level.WARNING, "Label cannot be parsed by parser.");
+			logger.log(Level.WARNING, "InvalidLabelFormat exception thrown.");
+			throw new InvalidLabelFormat("Invalid label input detected.");
 		}
 
 		return word;
@@ -1356,7 +1363,9 @@ public class CommandParser {
 			logger.log(Level.INFO, "Indexes retrieved.");
 			return indexResult;
 		} catch (Exception e) {
-			throw new InvalidTaskIndexFormat("Invalid indexes input detected.");
+			logger.log(Level.WARNING, "NumberFormatException: Indexes cannot be parsed by parser.");
+			logger.log(Level.WARNING, "InvalidTaskIndexFormat exception thrown.");
+			throw new InvalidTaskIndexFormat("Invalid indexes input detected.");	
 		}
 	}
 	
@@ -1401,7 +1410,9 @@ public class CommandParser {
 				rangedIndexes = getRangedIndexes(tempRangedIndexes);
 
 				if (rangedIndexes.size() == 1) {
-					throw new InvalidTaskIndexFormat();
+					logger.log(Level.WARNING, "NumberFormatException: Indexes cannot be parsed by parser.");
+					logger.log(Level.WARNING, "InvalidTaskIndexFormat exception thrown.");
+					throw new InvalidTaskIndexFormat("Invalid indexes input detected.");
 				}
 
 				multipleIndexes.addAll(getMultipleIndexes(rangedIndexes));
@@ -1502,72 +1513,5 @@ public class CommandParser {
 		}
 		
 		return indexesResult;
-	}
-
-
-	// =============================
-	// Exceptions
-	// =============================
-
-	@SuppressWarnings("serial")
-	public class InvalidTaskIndexFormat extends Exception {
-		public InvalidTaskIndexFormat() {
-			logger.log(Level.WARNING, "NumberFormatException: Indexes cannot be parsed by parser.");
-			logger.log(Level.WARNING, "InvalidTaskIndexFormat exception thrown.");
-		}
-
-		public InvalidTaskIndexFormat(String message) {
-			super (message);
-			logger.log(Level.WARNING, "NumberFormatException: Indexes cannot be parsed by parser.");
-			logger.log(Level.WARNING, "InvalidTaskIndexFormat exception thrown.");    		
-		}
-	}
-
-	@SuppressWarnings("serial")
-	public class InvalidLabelFormat extends Exception {
-		public InvalidLabelFormat() {
-			logger.log(Level.WARNING, "Label cannot be parsed by parser.");
-			logger.log(Level.WARNING, "InvalidLabelFormat exception thrown.");
-		}
-
-		public InvalidLabelFormat(String message) {
-			super (message);
-			logger.log(Level.WARNING, "Label cannot be parsed by parser.");
-			logger.log(Level.WARNING, "InvalidLabelFormat exception thrown.");    		
-		}
-	}
-	
-	@SuppressWarnings("serial")
-	public class InvalidTimeFormat extends Exception {
-		public InvalidTimeFormat() {
-			logger.log(Level.WARNING, "Time cannot be parsed by parser.");
-			logger.log(Level.WARNING, "InvalidTimeFormat exception thrown.");
-		}
-
-		public InvalidTimeFormat(String message) {
-			super (message);
-			logger.log(Level.WARNING, "Time cannot be parsed by parser.");
-			logger.log(Level.WARNING, "InvalidTimeFormat exception thrown.");    		
-		}
-	}
-	
-	@SuppressWarnings("serial")
-	public class InvalidTitle extends Exception {
-		Task task;
-		public InvalidTitle() {
-			logger.log(Level.WARNING, "Title cannot be parsed by parser.");
-			logger.log(Level.WARNING, "InvalidTitle exception thrown.");
-		}
-
-		public InvalidTitle(String message, Task task) {
-			super (message);
-			this.task = task;
-			logger.log(Level.WARNING, "Title cannot be parsed by parser.");
-			logger.log(Level.WARNING, "InvalidTitle exception thrown.");    		
-		}
-		
-		public Task getTask() {
-			return task;
-		}
-	}
+	}	
 }
