@@ -250,6 +250,7 @@ public class CommandParser {
 		if (title.length() == 0) {
 			logger.log(Level.WARNING, "Title cannot be parsed by parser.");
 			logger.log(Level.WARNING, "InvalidTitle exception thrown.");
+			task.setTitle("<No title>");
 			throw new InvalidTitle("Invalid title detected.", task);
 		}
 		
@@ -1178,7 +1179,7 @@ public class CommandParser {
 			editedTask = exception.getTask();
 		}
 		
-		if (editedTask.getTitle().length() != 0) {
+		if (editedTask.getTitle().length() != 0 && !editedTask.getTitle().equals("<No title>")) {
 			newTitle = editedTask.getTitle();
 		}
 	
