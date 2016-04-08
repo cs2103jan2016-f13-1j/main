@@ -1017,7 +1017,7 @@ public class RootLayoutController implements Observer {
                 int taskIndex = taskIndexesToBeExecuted.get(0);
                 int actualIndex = getCurrentListViewController().getActualIndex(taskIndex);
                 taskToBeExecuted = getCurrentList().get(actualIndex);
-                inputFeedback = taskIndexesToBeExecuted.toString();
+                inputFeedback = taskToBeExecuted.toString();
                 commandToBeExecuted = new UndoneCommand(receiver, getTasksToBeDeleted(taskIndexesToBeExecuted));
                 getCurrentListViewController().clearListViewSelection();
                 getCurrentListViewController().selectItem(taskIndex);
