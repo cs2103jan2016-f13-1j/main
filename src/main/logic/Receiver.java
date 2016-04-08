@@ -36,6 +36,10 @@ public class Receiver extends Observable {
         scheduler = new ScheduleManager();
         assert(storage != null);
         
+        initialize();
+        assert(todoTasks != null);
+        assert(completedTasks != null);
+        
         loadFromStorage();
     }
     
@@ -137,9 +141,22 @@ public class Receiver extends Observable {
         updateObservers();
     }
     
-    private void initializeLists() {
+    private void initialize() {
         todoTasks = new ArrayList<Task>();
         completedTasks = new ArrayList<Task>();
+        Thread thread = new Thread() {
+            public void run() {
+                while(true) {
+                    updateObservers();
+                    try {
+                        Thread.sleep(30000); //Sleep for 30 seconds
+                    } catch (InterruptedException ie) {
+                        logger.log(Level.WARNING, "Thread interrupted while updating observers");
+                    }
+                }
+            }
+        };
+        thread.start();
     }
     
     public void initiateSave() {
@@ -153,15 +170,12 @@ public class Receiver extends Observable {
     public void updateObservers() {
         setChanged();
         notifyObservers();
+        System.out.println("UPDATING OBSERVERS");
     }
     
     private void loadFromStorage() {
         allTasks = storage.readTasks();
         assert(allTasks != null);
-        
-        initializeLists();
-        assert(todoTasks != null);
-        assert(completedTasks != null);
         
         categorizeTasks(allTasks);
         sortTasks();
@@ -182,19 +196,19 @@ public class Receiver extends Observable {
     }
     
     private void sortTasks() {
-        logger.log(Level.INFO,"Sorting tasks");
+        logger.log(Level.INFO, "Sorting tasks");
         Collections.sort(todoTasks, new TodoTaskComparator());
         Collections.sort(completedTasks, new CompletedTaskComparator());
-        logger.log(Level.INFO,"Tasks sorted");
     }
     
     private void updateCollision() {
+        logger.log(Level.INFO, "Updating tasks collision variables");
         scheduler.updateTodoCollision(todoTasks);
         scheduler.updateCompletedCollision(completedTasks);
     }
     
     private void saveToStorage() {
-        logger.log(Level.INFO,"Saving tasks: " + allTasks);
+        logger.log(Level.INFO, "Saving tasks: " + allTasks);
         storage.writeTasks(allTasks);
     }
 }

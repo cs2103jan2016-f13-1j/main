@@ -4,6 +4,8 @@ package main.data;
 import java.text.DateFormatSymbols;
 import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
+import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.time.ZoneId;
@@ -793,5 +795,49 @@ public class Task {
     	} else {
     		return true;
     	}
+    }
+    
+    public String getTimeDifference() {
+        StringBuilder result = null;
+        if (hasDate()) {
+            LocalDate date;
+            LocalDate now = LocalDate.now();
+            if (hasSingleDate()) {
+                date = getSingleDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            } else {
+                date = getEndDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            }
+            long minsDiff = Duration.between(now, date).toMinutes();
+            long hoursDiff = Duration.between(now, date).toHours();
+            
+            if (hoursDiff <= 2) {
+                result = new StringBuilder();
+                if (minsDiff == 0) {
+                    result.append("now");
+                    return result.toString();
+                }
+                if (hoursDiff == 2) {
+                    result.append("2 hr");
+                    minsDiff -= 2*60;
+                    if (minsDiff > 0) {
+                        result.append(" ");
+                    }
+                } else if (hoursDiff == 1) {
+                    result.append("1 hr");
+                    minsDiff -= 60;
+                    if (minsDiff > 0) {
+                        result.append(" ");
+                    }
+                }
+                if (minsDiff > 0) {
+                    if (date.isAfter(now)) {
+                        result.append(minsDiff + " mins");
+                    } else {
+                        result.append(minsDiff + " mins passed");
+                    }
+                }
+            }
+        }
+        return result.toString();
     }
 }

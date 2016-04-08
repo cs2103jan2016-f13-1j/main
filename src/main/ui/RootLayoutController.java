@@ -227,7 +227,6 @@ public class RootLayoutController implements Observer {
                 showFeedback(true, STRING_FEEDBACK_ACTION_SEARCH,
                         " Found " + currentTaskList.size() + " tasks for -" + userArguments + "-");
             }
-
         }
     }
 
