@@ -210,7 +210,7 @@ public class RootLayoutController implements Observer {
                     // select back the previous first index that was in the
                     // range
                     if (getCurrentList().size() > 0) {
-                        getCurrentListViewController().selectItem(taskIndexesToBeExecuted.get(0) - 1);
+                        getCurrentListViewController().selectItem(taskIndexesToBeExecuted.get(0));
                     }
 
                 }
@@ -641,7 +641,7 @@ public class RootLayoutController implements Observer {
         taskIndexesToBeExecuted = new ArrayList<>(1);
         taskIndexesToBeExecuted.add(getCurrentListViewController().getSelectedIndex());
         taskToBeExecuted = getCurrentList().get(getCurrentListViewController().getSelectedIndex());
-        commandToBeExecuted = new DeleteCommand(receiver, getTasksToBeDeleted(taskIndexesToBeExecuted));
+        commandToBeExecuted = new DeleteCommand(receiver, getTasksToBeExecuted(taskIndexesToBeExecuted));
         invoker.execute(commandToBeExecuted);
         showExecutionResult(commandToBeExecuted, null);
     }
@@ -813,14 +813,14 @@ public class RootLayoutController implements Observer {
                 int actualIndex = getCurrentListViewController().getActualIndex(taskIndex);
                 inputFeedback = getCurrentList().get(actualIndex).toString();
                 taskToBeExecuted = getCurrentList().get(actualIndex);
-                listOfTaskToBeExecuted = getTasksToBeDeleted(taskIndexesToBeExecuted);
+                listOfTaskToBeExecuted = getTasksToBeExecuted(taskIndexesToBeExecuted);
                 commandToBeExecuted = new DeleteCommand(receiver, listOfTaskToBeExecuted);
                 getCurrentListViewController().clearListViewSelection();
                 getCurrentListViewController().selectItem(taskIndex);
                 showFeedback(true, STRING_FEEDBACK_ACTION_DELETE, inputFeedback);
 
             } else if (taskIndexesToBeExecuted.size() > 1) { //when there's a range of indexes
-                listOfTaskToBeExecuted = getTasksToBeDeleted(taskIndexesToBeExecuted);
+                listOfTaskToBeExecuted = getTasksToBeExecuted(taskIndexesToBeExecuted);
                 commandToBeExecuted = new DeleteCommand(receiver, listOfTaskToBeExecuted);
                 getCurrentListViewController().clearListViewSelection();
                 for (int index : taskIndexesToBeExecuted) {
@@ -962,13 +962,13 @@ public class RootLayoutController implements Observer {
                 int actualIndex = getCurrentListViewController().getActualIndex(taskIndex);
                 taskToBeExecuted = getCurrentList().get(actualIndex);
                 inputFeedback = taskToBeExecuted.toString();
-                commandToBeExecuted = new DoneCommand(receiver, getTasksToBeDeleted(taskIndexesToBeExecuted));
+                commandToBeExecuted = new DoneCommand(receiver, getTasksToBeExecuted(taskIndexesToBeExecuted));
                 getCurrentListViewController().clearListViewSelection();
                 getCurrentListViewController().selectItem(taskIndex);
                 showFeedback(true, STRING_FEEDBACK_ACTION_DONE, inputFeedback);
 
             } else {
-                commandToBeExecuted = new DoneCommand(receiver, getTasksToBeDeleted(taskIndexesToBeExecuted));
+                commandToBeExecuted = new DoneCommand(receiver, getTasksToBeExecuted(taskIndexesToBeExecuted));
                 getCurrentListViewController().clearListViewSelection();
                 for (int index : taskIndexesToBeExecuted) {
                     getCurrentListViewController().selectItem(index);
@@ -1018,13 +1018,13 @@ public class RootLayoutController implements Observer {
                 int actualIndex = getCurrentListViewController().getActualIndex(taskIndex);
                 taskToBeExecuted = getCurrentList().get(actualIndex);
                 inputFeedback = taskToBeExecuted.toString();
-                commandToBeExecuted = new UndoneCommand(receiver, getTasksToBeDeleted(taskIndexesToBeExecuted));
+                commandToBeExecuted = new UndoneCommand(receiver, getTasksToBeExecuted(taskIndexesToBeExecuted));
                 getCurrentListViewController().clearListViewSelection();
                 getCurrentListViewController().selectItem(taskIndex);
                 showFeedback(true, STRING_FEEDBACK_ACTION_UNDONE, inputFeedback);
 
             } else {
-                commandToBeExecuted = new UndoneCommand(receiver, getTasksToBeDeleted(taskIndexesToBeExecuted));
+                commandToBeExecuted = new UndoneCommand(receiver, getTasksToBeExecuted(taskIndexesToBeExecuted));
                 getCurrentListViewController().clearListViewSelection();
                 for (int index : taskIndexesToBeExecuted) {
                     getCurrentListViewController().selectItem(index);
@@ -1091,14 +1091,16 @@ public class RootLayoutController implements Observer {
 
     private ArrayList<Task> getTasksToBeDeleted(int taskIndex) {
         ArrayList<Task> tasksToBeDeleted = new ArrayList<>(1);
-        tasksToBeDeleted.add(currentList.get(taskIndex));
+        int actualIndex = getCurrentListViewController().getActualIndex(taskIndex);
+        tasksToBeDeleted.add(getCurrentList().get(actualIndex));
         return tasksToBeDeleted;
     }
 
-    private ArrayList<Task> getTasksToBeDeleted(ArrayList<Integer> taskIndexes) {
+    private ArrayList<Task> getTasksToBeExecuted(ArrayList<Integer> taskIndexes) {
         ArrayList<Task> tasksToBeDeleted = new ArrayList<>(taskIndexes.size());
-        for (Integer i : taskIndexes) {
-            tasksToBeDeleted.add(currentList.get(i - 1));
+        for (Integer index : taskIndexes) {
+            int actualIndex = getCurrentListViewController().getActualIndex(index);
+            tasksToBeDeleted.add(getCurrentList().get(actualIndex));
         }
         return tasksToBeDeleted;
     }

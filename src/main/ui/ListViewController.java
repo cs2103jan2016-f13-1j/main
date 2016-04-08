@@ -104,7 +104,7 @@ public class ListViewController extends AnchorPane {
         if (displayedIndexToOriginalIndexMap == null) {
             displayedIndexToOriginalIndexMap = new HashMap<>(taskListWithHeaders.size());
         }
-        displayedIndexToOriginalIndexMap.clear();
+//        displayedIndexToOriginalIndexMap.clear();
     }
 
     public void mapIndexToActualIndex(int displayedIndex, int actualIndex) {
