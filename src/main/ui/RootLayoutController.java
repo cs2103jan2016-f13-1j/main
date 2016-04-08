@@ -52,9 +52,7 @@ import main.logic.SearchCommand;
 import main.logic.SetFileLocationCommand;
 import main.logic.UndoneCommand;
 import main.parser.CommandParser;
-import main.parser.CommandParser.InvalidLabelFormat;
-import main.parser.CommandParser.InvalidTaskIndexFormat;
-import main.parser.CommandParser.InvalidTitle;
+import main.parser.exceptions.*;
 
 public class RootLayoutController implements Observer {
     private static final String STRING_COMMAND_EDIT = "edit";
@@ -220,7 +218,6 @@ public class RootLayoutController implements Observer {
                 showFeedback(true, STRING_FEEDBACK_ACTION_SEARCH,
                         " Found " + currentList.size() + " tasks for -" + userArguments + "-");
             }
-
         }
     }
 
