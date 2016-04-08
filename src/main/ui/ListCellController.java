@@ -1,9 +1,11 @@
+//@@author A0126400Y
 package main.ui;
 
 import java.io.IOException;
 
 import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXListCell;
+import com.jfoenix.effects.JFXDepthManager;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -17,7 +19,7 @@ import javafx.scene.shape.Rectangle;
 import main.data.Task;
 import main.data.TaskHeader;
 
-public class CustomListCellController extends JFXListCell<Task> {
+public class ListCellController extends JFXListCell<Task> {
 
     @FXML // fx:id="horizontalBox"
     private HBox horizontalBox; // Value injected by FXMLLoader
@@ -52,11 +54,7 @@ public class CustomListCellController extends JFXListCell<Task> {
     @FXML // fx:id="rectangleTaskPriority"
     private Rectangle rectangleTaskPriority; // Value injected by FXMLLoader
 
-    public static boolean hasOverdueHeader;
-    public static boolean hasTodayHeader;
-    public static boolean hasTomorrowHeader;
-    public static boolean hasUpcomingHeader;
-    public static boolean hasSomedayHeader;
+    private ListViewController parentListViewController;
 
     @FXML // This method is called by the FXMLLoader when initialization is
           // complete
@@ -75,12 +73,12 @@ public class CustomListCellController extends JFXListCell<Task> {
 
     }
 
-    public CustomListCellController() {
-        FXMLLoader loader = new FXMLLoader(
-                getClass().getResource("/main/resources/layouts/SmallerCustomListCellLayout.fxml"));
+    public ListCellController(ListViewController parentListViewController) {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/main/resources/layouts/ListCellLayout.fxml"));
         loader.setController(this);
         try {
             loader.load();
+            this.parentListViewController = parentListViewController;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -89,13 +87,13 @@ public class CustomListCellController extends JFXListCell<Task> {
     @Override
     public void updateItem(Task task, boolean empty) {
         super.updateItem(task, empty);
-        if (empty) {
-            setGraphic(null);
-        } else if (task == null) {
+        if (empty || task == null) {
             setGraphic(null);
         } else {
             if (task instanceof TaskHeader) {
-                setGraphic(new Label(task.toString()));
+                ListCellHeaderController listCellHeader = new ListCellHeaderController();
+                listCellHeader.setText(task.getTitle());
+                setGraphic(listCellHeader);
             } else {
                 showTaskIndex(task);
                 setLabelTaskTitle(task);
@@ -160,44 +158,52 @@ public class CustomListCellController extends JFXListCell<Task> {
     }
 
     private int getActualIndexWithOffset(Task task, int taskIndex) {
-        int actualIndex = taskIndex;
-        if (task.isToday()) {
-            if (hasOverdueHeader) {
-                actualIndex--;
-            }
-        } else if (task.isTomorrow()) {
-            if (hasOverdueHeader) {
-                actualIndex--;
-            }
-            if (hasTodayHeader) {
-                actualIndex--;
-            }
-        } else if (task.isUpcoming()) {
-            if (hasOverdueHeader) {
-                actualIndex--;
-            }
-            if (hasTodayHeader) {
-                actualIndex--;
-            }
-            if (hasTomorrowHeader) {
-                actualIndex--;
-            }
-        } else if (task.isSomeday()) {
-            if (hasOverdueHeader) {
-                actualIndex--;
-            }
-            if (hasTodayHeader) {
-                actualIndex--;
-            }
-            if (hasTomorrowHeader) {
-                actualIndex--;
-            }
-            if (hasUpcomingHeader) {
-                actualIndex--;
+        int actualIndex = getIndex();
+        int numberOfHeaders = 0;
+        if (task.isToday() && !task.isOverdue()) {
+            if (parentListViewController.isOverdueHeaderAdded()) {
+                numberOfHeaders++;
             }
         }
 
-        return actualIndex;
+        if (task.isTomorrow()) {
+            if (parentListViewController.isOverdueHeaderAdded()) {
+                numberOfHeaders++;
+            }
+            if (parentListViewController.isTodayHeaderAdded()) {
+                numberOfHeaders++;
+            }
+        }
+
+        if (task.isUpcoming()) {
+            if (parentListViewController.isOverdueHeaderAdded()) {
+                numberOfHeaders++;
+            }
+            if (parentListViewController.isTodayHeaderAdded()) {
+                numberOfHeaders++;
+            }
+            if (parentListViewController.isTomorrowHeaderAdded()) {
+                numberOfHeaders++;
+            }
+        }
+
+        if (task.isSomeday()) {
+            if (parentListViewController.isOverdueHeaderAdded()) {
+                numberOfHeaders++;
+            }
+            if (parentListViewController.isTodayHeaderAdded()) {
+                numberOfHeaders++;
+            }
+            if (parentListViewController.isTomorrowHeaderAdded()) {
+                numberOfHeaders++;
+            }
+            if (parentListViewController.isUpcomingHeaderAdded()) {
+                numberOfHeaders++;
+            }
+
+        }
+
+        return actualIndex - numberOfHeaders;
     }
 
     public void showTaskTime(Task task) {

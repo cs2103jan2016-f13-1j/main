@@ -1,3 +1,4 @@
+//@@author A0126400Y
 package main.ui;
 
 import java.io.IOException;
@@ -49,11 +50,11 @@ public class ListViewController extends AnchorPane {
     // ListView UI related
     private VirtualFlow<IndexedCell<String>> virtualFlow;
 
-    public boolean hasOverdueHeader;
-    public boolean hasTodayHeader;
-    public boolean hasTomorrowHeader;
-    public boolean hasUpcomingHeader;
-    public boolean hasSomedayHeader;
+    private boolean isOverdueHeaderAdded = false;
+    private boolean isTodayHeaderAdded = false;
+    private boolean isTomorrowHeaderAdded = false;
+    private boolean isUpcomingHeaderAdded = false;
+    private boolean isSomedayHeaderAdded = false;
 
     public ListViewController() {
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/main/resources/layouts/TaskListView.fxml"));
@@ -75,7 +76,7 @@ public class ListViewController extends AnchorPane {
 
             @Override
             public JFXListCell<Task> call(ListView<Task> param) {
-                return new CustomListCellController();
+                return new ListCellController(ListViewController.this);
             }
         });
     }
@@ -103,16 +104,12 @@ public class ListViewController extends AnchorPane {
         ArrayList<Task> taskListWithHeaders = new ArrayList<>(taskList.size() + 4);
         taskListWithHeaders.addAll(taskList);
 
-        boolean isOverdueHeaderAdded = false;
-        boolean isTodayHeaderAdded = false;
-        boolean isTomorrowHeaderAdded = false;
-        boolean isUpcomingHeaderAdded = false;
-        boolean isSomedayHeaderAdded = false;
+        resetHeadersState();
 
         for (int i = 0; i < taskListWithHeaders.size(); i++) {
             Task task = taskListWithHeaders.get(i);
 
-            if (!task.isToday() && !task.isTomorrow() && !task.isUpcoming() && !task.isSomeday()) {
+            if (task.isOverdue()) {
                 if (!isOverdueHeaderAdded) {
                     taskListWithHeaders.add(i, new TaskHeader("Overdue"));
                     isOverdueHeaderAdded = true;
@@ -120,7 +117,7 @@ public class ListViewController extends AnchorPane {
                 }
             }
 
-            if (task.isToday()) {
+            if (task.isToday() && !task.isOverdue()) { //cases where task is today and not overdue
                 if (!isTodayHeaderAdded) {
                     taskListWithHeaders.add(i, new TaskHeader("Today"));
                     isTodayHeaderAdded = true;
@@ -152,17 +149,19 @@ public class ListViewController extends AnchorPane {
 
         }
 
-        hasOverdueHeader = isOverdueHeaderAdded;
-        hasTodayHeader = isTodayHeaderAdded;
-        hasTomorrowHeader = isTomorrowHeaderAdded;
-        hasUpcomingHeader = isUpcomingHeaderAdded;
-        hasSomedayHeader = isSomedayHeaderAdded;
-
         return taskListWithHeaders;
     }
 
+    private void resetHeadersState() {
+        isOverdueHeaderAdded = false;
+        isTodayHeaderAdded = false;
+        isTomorrowHeaderAdded = false;
+        isUpcomingHeaderAdded = false;
+        isSomedayHeaderAdded = false;
+    }
+
     public void selectListViewFirstItem() {
-        listView.getSelectionModel().selectFirst();
+        listView.getSelectionModel().select(1);
         saveSelectedIndex();
         initCustomViewportBehaviorForListView();
 
@@ -172,6 +171,20 @@ public class ListViewController extends AnchorPane {
             public void changed(ObservableValue<? extends Task> observable, Task oldValue, Task newValue) {
                 // TODO will encounter nullpointer on first run
                 System.out.println("Listview selection changed");
+                // saveSelectedIndex();
+
+                if (newValue instanceof TaskHeader) {
+                    int currentSelectedIndex = listView.getSelectionModel().getSelectedIndex();
+                    System.out.println(currentSelectedIndex);
+
+                    if (currentSelectedIndex < getPreviousSelectedIndex()) {
+
+                        listView.getSelectionModel().clearAndSelect(currentSelectedIndex - 1);
+
+                    } else if (currentSelectedIndex > getPreviousSelectedIndex()) {
+                        listView.getSelectionModel().clearAndSelect(currentSelectedIndex + 1);
+                    }
+                }
                 adjustViewportForListView();
 
             }
@@ -280,6 +293,7 @@ public class ListViewController extends AnchorPane {
     */
     public void saveSelectedIndex() {
         previousSelectedTaskIndex = getSelectedIndex();
+        System.out.println("Saved index: " + previousSelectedTaskIndex);
     }
 
     /**
@@ -336,17 +350,13 @@ public class ListViewController extends AnchorPane {
         saveSelectedIndex();
         System.out.println("handleArrowKeys: " + previousSelectedTaskIndex);
         if (keyEvent.getCode() == KeyCode.UP) {
-            if (previousSelectedTaskIndex > 0) {
-                listView.getSelectionModel().clearSelection();
-                previousSelectedTaskIndex--;
-                listView.getSelectionModel().select(previousSelectedTaskIndex);
+            if (previousSelectedTaskIndex > 1) {
+                listView.getSelectionModel().clearAndSelect(getPreviousSelectedIndex() - 1);
             }
 
         } else if (keyEvent.getCode() == KeyCode.DOWN) {
             if (previousSelectedTaskIndex < observableTaskList.size() - 1) {
-                listView.getSelectionModel().clearSelection();
-                previousSelectedTaskIndex++;
-                listView.getSelectionModel().select(previousSelectedTaskIndex);
+                listView.getSelectionModel().clearAndSelect(getPreviousSelectedIndex() + 1);
             }
 
         }
@@ -356,28 +366,23 @@ public class ListViewController extends AnchorPane {
         System.out.println("handleArrowKeys: " + previousSelectedTaskIndex);
     }
 
-    public void setHasOverdueHeader(boolean hasOverdueHeader) {
-        this.hasOverdueHeader = hasOverdueHeader;
+    public boolean isOverdueHeaderAdded(){
+        return isOverdueHeaderAdded;
     }
 
-    public void setHasTodayHeader(boolean hasTodayHeader) {
-        this.hasTodayHeader = hasTodayHeader;
+    public boolean isTodayHeaderAdded(){
+        return isTodayHeaderAdded;
     }
 
-    public void setHasTomorrowHeader(boolean hasTomorrowHeader) {
-        this.hasTomorrowHeader = hasTomorrowHeader;
+    public boolean isTomorrowHeaderAdded(){
+        return isTomorrowHeaderAdded;
     }
 
-    public void setHasUpcomingHeader(boolean hasUpcomingHeader) {
-        this.hasUpcomingHeader = hasUpcomingHeader;
+    public boolean isUpcomingHeaderAdded(){
+        return isUpcomingHeaderAdded;
     }
 
-    public void setHasSomedayHeader(boolean hasSomedayHeader) {
-        this.hasSomedayHeader = hasSomedayHeader;
+    public boolean isSomedayHeaderAdded(){
+        return isSomedayHeaderAdded;
     }
-
-    public void sayHello() {
-        System.out.println("hello");
-    }
-
 }

@@ -416,6 +416,23 @@ public class Task {
         	return false;
         }
     }
+    
+    public boolean isOverdue() {
+        if (hasDate()) {
+            if (hasSingleDate()) {
+                if (getSingleDate().before(new Date())) {
+                    return true;
+                } 
+            } else {
+                if (getEndDate().before(new Date())) {
+                    return true;
+                }
+            }
+        } else {
+            return false;
+        }
+        return false;
+    }
 
     private boolean dateIsThisWeek(Date date) {
     	Calendar calendar = Calendar.getInstance();

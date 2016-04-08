@@ -1,3 +1,4 @@
+//@@author A0126400Y
 package main.ui;
 
 public class AppColor {
@@ -17,7 +18,7 @@ public class AppColor {
     public static final String PRIORITY_NONE = "#FF5252";
     public static final String LINE_STROKE = "#000000";
     public static final String CIRCLE_STROKE = "#979797";
-    
-    
+
+
 
 }

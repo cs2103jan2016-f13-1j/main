@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.text.Font?>
+
+<fx:root fx:id="headerTitle" maxWidth="1.7976931348623157E308" minHeight="60.0" prefHeight="60.0" prefWidth="700.0" style="-fx-background-color: #FFFFFF; -fx-effect: dropshadow(one-pass-box, rgba(00,00,00,0.24), 10, 0, 0, 3); -fx-border-radius: 4 4 4 4; -fx-background-radius: 4 4 4 4;" text="Today" type="javafx.scene.control.Label" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1">
+   <font>
+      <Font name="Noto Sans" size="18.0" />
+   </font>
+   <padding>
+      <Insets left="20.0" />
+   </padding>
+</fx:root>

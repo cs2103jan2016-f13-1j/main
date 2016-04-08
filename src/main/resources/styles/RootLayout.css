@@ -1,3 +1,4 @@
+/*@@author A0126400Y */
 .jfx-tab-pane {
 	-fx-background-color: #303F9F;
 }
@@ -37,7 +38,7 @@
 }
 .jfx-list-view .scroll-bar .increment-arrow,
 .jfx-list-view .scroll-bar .decrement-arrow{
--fx-shape:""; 
+-fx-shape:"";
 -fx-padding:0.0;
 }
 
@@ -48,14 +49,27 @@
 -fx-background-radius: 0.0em;
 }
 
+.list-cell {
+    -fx-background-color: #FAFAFA
+}
+
+.list-cell:odd {
+    -fx-background-color: #FAFAFA; 
+}
+
+.list-cell:filled:selected:focused, .list-cell:filled:selected, .list-view:horizontal .list-cell:filled:selected {
+    -fx-background-color: lightgray;
+    -fx-text-fill: -fx-selection-bar-text;
+}
+
 .jfx-snackbar-content {
 	-fx-background-color: #323232;
 }
 
 .jfx-snackbar-toast {
-	-fx-text-fill: WHITE;	
+	-fx-text-fill: WHITE;
 }
 
 .jfx-snackbar-action {
-	-fx-text-fill: #ff4081;	
+	-fx-text-fill: #ff4081;
 }
