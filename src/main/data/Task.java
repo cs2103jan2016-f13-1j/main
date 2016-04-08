@@ -700,8 +700,7 @@ public class Task {
      * 
      * If the task has a ranged time and it has started, check the end time.
      * If the end time is after tomorrow, then the task is tomorrow.
-     * If the task has a ranged time and it has not started, check the start
-     * time.
+     * If the task has a ranged time and it has not started, check the start time.
      * If the start time is tomorrow, then the task is tomorrow.
      * 
      * @return {@code boolean} true if is tomorrow
