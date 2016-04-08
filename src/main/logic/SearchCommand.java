@@ -70,6 +70,8 @@ public class SearchCommand implements Command {
             return searchForSomeday();
         } else if (searchTerm.equals("deadline")) {
             return searchForDeadline();
+        } else if (searchTerm.equals("priority l") || searchTerm.equals("priority m") || searchTerm.equals("priority h")) {
+            return searchForPriority(searchString);
         } else {
             return searchForString(searchTerm);
         }
@@ -178,6 +180,27 @@ public class SearchCommand implements Command {
         
         for (Task task : allTasks) {
             if (task.hasSingleDate() && task.hasEndDate()) {
+                searchResults.add(task);
+            }
+        }
+        
+        return searchResults;
+    }
+    
+    private ArrayList<Task> searchForPriority(String searchString) {
+        ArrayList<Task> allTasks = receiver.getAllTasks();
+        ArrayList<Task> searchResults = new ArrayList<Task>();
+        
+        String priority = searchString.split(" ")[1];
+        
+        for (Task task : allTasks) {
+            if (task.getPriority() == 1 && priority.equals("l")) {
+                searchResults.add(task);
+            }
+            if (task.getPriority() == 2 && priority.equals("m")) {
+                searchResults.add(task);
+            }
+            if (task.getPriority() == 3 && priority.equals("h")) {
                 searchResults.add(task);
             }
         }
