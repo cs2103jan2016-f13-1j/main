@@ -60,26 +60,26 @@ public class CommandParser {
 	private final int LENGTH_OFFSET = 1;
 	private final int INDEX_OFFSET = 1;
 
-	private static final Logger logger = Logger.getLogger(CommandParser.class.getName());
+	private static final Logger logger = Logger.getLogger(CommandParser.class.getName());  
 
 	/**
 	 * This method builds a {@code Task} object.
 	 * 
-	 * Tasks without date do not have any date/time specified. If a task has
-	 * only the date specified, the time is default set to 12am. Words with
-	 * prepositions might not be dated. Words without prepositions is dated if
-	 * time is explicitly specified.
+	 * Tasks without date do not have any date/time specified.
+	 * If a task has only the date specified, the time is default set to 12am.
+	 * Words with prepositions might not be dated.
+	 * Words without prepositions is dated if time is explicitly specified.
 	 * 
 	 * @param inputString
-	 *            {@code String} input to be processed
+	 * 		  {@code String} input to be processed
 	 * @return {@code Task} built
-	 * @throws InvalidLabelFormat
-	 * @throws InvalidTitle
+	 * @throws InvalidLabelFormat 
+	 * @throws InvalidTitle 
 	 */
 	public Task parseAdd(String inputString) throws InvalidLabelFormat, InvalidTitle {
 		logger.setLevel(Level.OFF);
 
-		assert (inputString != null);
+		assert(inputString != null);
 		logger.log(Level.INFO, "Parsing for ADD command.");
 
 		String title = null;
@@ -104,46 +104,47 @@ public class CommandParser {
 		List<Date> dates = new ArrayList<Date>();
 		String regex = null;
 
-		// check for day
+		//check for day
 		hasDay = checkForRegexMatch(getDayRegex(), inputString);
 
-		// check for date with year in num format
+		//check for date with year in num format
 		hasDate = checkForRegexMatch(getDateWithYearRegex(), inputString);
 		if (hasDate) {
 			hasYear = true;
 		} else {
-			// check for date in number format or text format
-			hasDate = checkForRegexMatch(getDateRegex(), inputString)
-			        || checkForRegexMatch(getDateRegexText(), inputString);
+			//check for date in number format or text format
+			hasDate = checkForRegexMatch(getDateRegex(), inputString)  
+					|| checkForRegexMatch(getDateRegexText(), inputString);			
 		}
 
-		// check for time with am/pm or check for word indicating time
-		hasTime = checkForRegexMatch(getTimeRegex(), inputString) || checkForRegexMatch(REGEX_WORD_TIMED, inputString);
+		//check for time with am/pm or check for word indicating time
+		hasTime = checkForRegexMatch(getTimeRegex(), inputString) 
+				|| checkForRegexMatch(REGEX_WORD_TIMED, inputString);
 		hasTimeRange = checkForRegexMatch(getTimeRangeRegex(), inputString);
 
-		// check for word indicating date
+		//check for word indicating date
 		if (checkForRegexMatch(REGEX_WORD_DATED, inputString)) {
 			hasDate = true;
 		}
 
-		// check for preposition
+		//check for preposition
 		hasPreposition = checkForRegexMatch(REGEX_PREPOSITION_ALL, inputString);
 		if (hasPreposition) {
-			// check for time without am/pm
+			//check for time without am/pm
 			hasTimeWithoutAmPm = checkForRegexMatch(getTimeRegexWithoutAmPm(), inputString);
-			// check for start preposition only
+			//check for start preposition only
 			hasStartDate = checkForRegexMatch(REGEX_PREPOSITION_START, inputString);
 		}
 
 		inputString = correctUserInput(inputString);
 		title = inputString;
 
-		// check for priority
+		//check for priority
 		hasPriority = checkForRegexMatch(REGEX_PRIORITY, inputString);
 		if (hasPriority) {
 			String priorityString = getPriorityString(inputString);
 			priority = getPriority(priorityString);
-			assert (priority > 0 && priority < 4);
+			assert(priority > 0 && priority < 4);
 			title = removeStringFromTitle(inputString, priorityString);
 		}
 
@@ -181,7 +182,7 @@ public class CommandParser {
 			isDatedOnly = true;
 		} else if (hasTime) {
 			dates = parseTimeOnly(inputString);
-		}
+		} 
 
 		if (inputString.contains(STRING_NEXT_WEEK)) {
 			if (!hasTime) {
@@ -210,42 +211,42 @@ public class CommandParser {
 			}
 
 			if (hasTime) {
-				// remove time from title
+				//remove time from title
 				regex = REGEX_PREPOSITION_ALL + "?" + REGEX_WORD_TIMED;
-				title = removeRegex(regex, title);
+				title = removeRegex(regex, title);			
 
 				if (hasTimeRange) {
-					// remove range from title
-					regex = "(" + REGEX_PREPOSITION_ALL + "?)(" + getTimeRangeRegex() + ")";
+					//remove range from title
+					regex = "(" + REGEX_PREPOSITION_ALL + "?)(" + getTimeRangeRegex()+ ")";
 					title = removeRegex(regex, title);
 				}
 			}
 
 			if (hasDate) {
 				if (hasYear) {
-					// remove date in num form with year from title
+					//remove date in num form with year from title
 					regex = getDateWithYearRegex();
 					title = removeRegex(regex, title);
 				}
 
-				// remove date in text form with year from title
+				//remove date in text form with year from title
 				regex = getDateRegexTextWithYear();
 				title = removeRegex(regex, title);
 
-				// remove date in text form with corrected year due to shortform
+				//remove date in text form with corrected year due to shortform
 				regex = "\\b ?'(\\d\\d)\\b";
 				title = removeRegex(regex, title);
 
-				// remove date in text form from title
+				//remove date in text form from title
 				regex = getDateRegexText();
 				title = removeRegex(regex, title);
 			}
 
-			// remove remaining date information from title
+			//remove remaining date information from title
 			title = removeDateFromTitle(title, dates);
 		}
 
-		Task task = new Task(title, startDate, endDate, label);
+		Task task = new Task (title, startDate, endDate, label);
 		task.setPriority(priority);
 		task.setIsDatedOnly(isDatedOnly);
 
@@ -319,11 +320,10 @@ public class CommandParser {
 	}
 
 	/**
-	 * This method corrects date text in user input without spaces for date
-	 * parsing. Eg: 1apr -> 1 apr
-	 * 
+	 * This method corrects date text in user input without spaces for date parsing.
+	 * Eg: 1apr -> 1 apr
 	 * @param inputString
-	 *            {@code String} input to be corrected
+	 *			{@code String} input to be corrected
 	 * @return {@code  String} with date text corrected
 	 */
 	private String correctDateText(String inputString) {
@@ -338,25 +338,24 @@ public class CommandParser {
 	}
 
 	/**
-	 * This method corrects the date when the year is specified with only two
-	 * digits for parsing.
+	 * This method corrects the date when the year is specified with only two digits for parsing.
 	 * 
 	 * @param inputString
-	 *            {@code String} containing date with year
+	 * 			{@code String} containing date with year
 	 * @return {@code String} with corrected date year
 	 */
 	private String correctDateTextYear(String inputString) {
 		String regex = getDateRegexText() + "\\b ?(\\d\\d)(?:$|\\s)";
-		inputString = inputString.replaceAll(regex, "$2 $4 $5 '$29 ");
+		inputString = inputString.replaceAll(regex,"$2 $4 $5 '$29 ") ;
 		return inputString;
 	}
 
 	/**
-	 * This method corrects time separated with a dot for date parsing. Eg:
-	 * 5.30pm
+	 * This method corrects time separated with a dot for date parsing.
+	 * Eg: 5.30pm 
 	 * 
 	 * @param inputString
-	 *            {@code String} input to be corrected
+	 * 			{@code String} input to be corrected
 	 * @return {@code String} with time corrected
 	 */
 	private String correctDotTime(String inputString) {
@@ -369,7 +368,7 @@ public class CommandParser {
 	 * This method correct short forms used by the user for parsing.
 	 * 
 	 * @param inputString
-	 *            {@code String} containing short forms
+	 * 			{@code String} containing short forms
 	 * @return {@code String} with short forms corrected
 	 */
 	private String correctShorthand(String inputString) {
@@ -385,11 +384,11 @@ public class CommandParser {
 	 * This method corrects ranged time for date parsing.
 	 * 
 	 * @param inputString
-	 *            {@code String} input to be corrected
+	 * 			{@code String} input to be corrected
 	 * @return {@code String} with time range corrected
 	 */
 	private String correctRangeTime(String inputString) {
-		inputString = inputString.replaceAll("()-()", "$1 - $2");
+		inputString = inputString.replaceAll("()-()","$1 - $2");
 		return inputString;
 	}
 
@@ -405,7 +404,7 @@ public class CommandParser {
 	}
 
 	private int getPriority(String inputString) {
-		assert (inputString != null);
+		assert(inputString != null);
 		String priority = inputString.substring(inputString.length() - LENGTH_OFFSET);
 		int level = Integer.parseInt(priority);
 		return level;
@@ -421,7 +420,7 @@ public class CommandParser {
 	 * This method checks for indication of label through detection of '#'.
 	 * 
 	 * @param inputString
-	 *            {@code String} input to be checked
+	 * 			{@code String} input to be checked
 	 * @return {@code boolean} true if found
 	 */
 	private boolean checkForLabel(String inputString) {
@@ -445,7 +444,7 @@ public class CommandParser {
 		String word = "";
 		try {
 			word = inputString.split(" ")[0];
-		} catch (Exception e) {
+		} catch (Exception e ) {
 			logger.log(Level.WARNING, "Label cannot be parsed by parser.");
 			logger.log(Level.WARNING, "InvalidLabelFormat exception thrown.");
 			throw new InvalidLabelFormat("Invalid label input detected.");
@@ -472,17 +471,17 @@ public class CommandParser {
 	 * This method corrects dd/mm into mm/dd for date parsing.
 	 * 
 	 * @param inputString
-	 *            {@code String} input to be corrected
+	 * 			{@code String} input to be corrected
 	 * @return {@code String} with the date corrected
 	 */
 	private String correctDateNumFormat(String inputString, boolean hasYear) {
 		boolean match = false;
 		String swapped = "";
 
-		// Preserve capitalization by not using toLowerCase
+		//Preserve capitalization by not using toLowerCase
 		List<String> words = new ArrayList<String>(Arrays.asList(inputString.split(" ")));
 
-		for (int i = 0; i < words.size(); i++) {
+		for (int i = 0; i< words.size(); i++) {
 			if (hasYear) {
 				match = Pattern.matches(REGEX_DATE_NUM_YEAR, words.get(i));
 			} else {
@@ -511,11 +510,9 @@ public class CommandParser {
 	}
 
 	/**
-	 * This method uses PrettyTimeParser to generate dates from {@code String}
-	 * inputString.
-	 * 
+	 * This method uses PrettyTimeParser to generate dates from {@code String} inputString.
 	 * @param inputString
-	 *            {@code String} input to be parsed
+	 * 			{@code String} input to be parsed
 	 * @return {@code List<Date>} of dates generated if possible
 	 */
 	private List<Date> parseDateTime(String inputString) {
@@ -525,11 +522,11 @@ public class CommandParser {
 	}
 
 	/**
-	 * This method parses the date only. Since time is not specified, it is set
-	 * to 12am.
+	 * This method parses the date only.
+	 * Since time is not specified, it is set to 12am.
 	 * 
 	 * @param inputString
-	 *            {@code String} input to be parsed
+	 * 			{@code String} input to be parsed
 	 * @return {@code List<Date>} of dates
 	 */
 	private List<Date> parseDateOnly(String inputString) {
@@ -544,7 +541,7 @@ public class CommandParser {
 		}
 
 		if (size == DATE_MAX_SIZE) {
-			dates.remove(0);
+			dates.remove(0);	
 		}
 
 		return dates;
@@ -567,11 +564,12 @@ public class CommandParser {
 	}
 
 	/**
-	 * This method ensures that range are sequential. Corrects date parsed by
-	 * PrettyTime. The end will come after the start.
+	 * This method ensures that range are sequential.
+	 * Corrects date parsed by PrettyTime.
+	 * The end will come after the start.
 	 * 
 	 * @param dates
-	 *            {@code List<Date>>} to be corrected
+	 * 			{@code List<Date>>} to be corrected
 	 * @return {@code List<Date>} corrected dates
 	 */
 	private List<Date> fixDayRange(List<Date> dates) {
@@ -597,16 +595,17 @@ public class CommandParser {
 	}
 
 	/**
-	 * This method sets the time if it has past and if no date is specified. It
-	 * will always take the next nearest time.
+	 * This method sets the time if it has past and if no date is specified.
+	 * It will always take the next nearest time.
 	 * 
-	 * Eg: If now is 1pm, and if either 12am or 12pm is specified, it will be
-	 * 12am or 12pm of the next day.
+	 * Eg:
+	 * If now is 1pm, and if either 12am or 12pm is specified,
+	 * it will be 12am or 12pm of the next day.
 	 * 
 	 * @param dates
-	 *            {@code List<Date>} dates to be parsed
+	 * 			{@code List<Date>} dates to be parsed
 	 * @param hasDate
-	 *            {@code boolean} indicating if date is specified
+	 * 			{@code boolean} indicating if date is specified
 	 * @return {@code List<Date>} of dates
 	 */
 	private List<Date> fixTimeToNearest(List<Date> dates, boolean hasDate) {
@@ -618,14 +617,14 @@ public class CommandParser {
 		if (!hasDate) {
 			for (int i = 0; i < dates.size(); i++) {
 				if (dates.get(i).before(now)) {
-					// date has past, get the next nearest
+					//date has past, get the next nearest
 					date.setTime(dates.get(i));
 					date.add(Calendar.DATE, 1);
 					dates.set(i, date.getTime());
 				}
 
 				if (dates.size() == 2) {
-					// update to start
+					//update to start
 					now = dates.get(i);
 				}
 			}
@@ -634,13 +633,14 @@ public class CommandParser {
 	}
 
 	/**
-	 * This method ensures that range are sequential. Corrects date parsed by
-	 * PrettyTime. The end will come after the start.
+	 * This method ensures that range are sequential.
+	 * Corrects date parsed by PrettyTime.
+	 * The end will come after the start.
 	 * 
 	 * Eg: If now is 11pm, 10pm - 2am will be today 10pm to the next day 2am.
 	 * 
 	 * @param dates
-	 *            {@code List<Date>} to be corrected
+	 * 			{@code List<Date>} to be corrected
 	 * @return {@code List<Date>} corrected dates
 	 */
 	private List<Date> fixTimeForRange(List<Date> dates) {
@@ -659,12 +659,12 @@ public class CommandParser {
 	}
 
 	/**
-	 * This method corrects the next week that is parsed by PrettyTime. When
-	 * next week is specified in the user input, it will always be corrected to
-	 * the Monday of next week.
+	 * This method corrects the next week that is parsed by PrettyTime.
+	 * When next week is specified in the user input, 
+	 * it will always be corrected to the Monday of next week.
 	 * 
 	 * @param dates
-	 *            {@code List<Date>} to be corrected
+	 * 			{@code List<Date>} to be corrected
 	 * @return {@code List<Date>} corrected to Monday of next week
 	 */
 	private List<Date> correctNextWeek(List<Date> dates) {
@@ -691,18 +691,20 @@ public class CommandParser {
 	}
 
 	/**
-	 * This method sets the time for time specified without am/pm due to the
-	 * presence of preposition. It will take the next possible time since am/pm
-	 * is not specified.
+	 * This method sets the time for time specified without am/pm due to the presence of preposition.
+	 * It will take the next possible time since am/pm is not specified.
 	 * 
-	 * Eg: If now is 1pm, and 10 is specified, it will be parsed as 10pm today.
+	 * Eg:
+	 * If now is 1pm, and 10 is specified,
+	 * it will be parsed as 10pm today.
 	 * 
-	 * If now is 10pm, and 1 is specified, it will be parsed as 1am tomorrow.
+	 * If now is 10pm, and 1 is specified,
+	 * it will be parsed as 1am tomorrow.
 	 * 
 	 * @param dates
-	 *            {@code List<Date>} dates to be parsed
+	 * 			{@code List<Date>} dates to be parsed
 	 * @param hasDate
-	 *            {@code boolean} indicating if date is specified
+	 * 			{@code boolean} indicating if date is specified
 	 * @return {@code List<Date>} of dates
 	 */
 	private List<Date> fixTimeForWithoutAmPm(List<Date> dates) {
@@ -714,23 +716,23 @@ public class CommandParser {
 
 		for (int i = 0; i < dates.size(); i++) {
 			if (dates.get(i).before(now)) {
-				// time has past, need to check next nearest
+				//time has past, need to check next nearest
 				date.setTime(dates.get(i));
 				date.add(Calendar.HOUR_OF_DAY, 12);
 
-				// if time is after current, still within the day
+				//if time is after current, still within the day
 				if (date.after(currentDate)) {
-					dates.set(i, date.getTime());
+					dates.set(i,date.getTime());
 				} else {
-					// time is before current, time has past
-					// plus 12 hours to get to next nearest
+					//time is before current, time has past
+					//plus 12 hours to get to next nearest
 					date.add(Calendar.HOUR_OF_DAY, 12);
-					dates.set(i, date.getTime());
+					dates.set(i,date.getTime());
 				}
 			}
 
 			if (dates.size() == 2) {
-				// if time is ranged, check against the fixed start date
+				//if time is ranged, check against the fixed start date
 				now = dates.get(i);
 			}
 		}
@@ -741,12 +743,11 @@ public class CommandParser {
 	 * This method determines the start and end date for a task.
 	 * 
 	 * @param dates
-	 *            {@code List<Date} dates obtained from parsing
+	 * 			{@code List<Date} dates obtained from parsing
 	 * @param hasPreposition
-	 *            {@code boolean} indicate if preposition is detected
+	 * 			{@code boolean} indicate if preposition is detected 
 	 * @param hasStartDate
-	 *            {@code boolean} indicate if start date is detected through
-	 *            detection of preposition
+	 * 			{@code boolean} indicate if start date is detected through detection of preposition
 	 * @return {@code List<Date>} of determined dates
 	 */
 	private List<Date> assignDates(List<Date> dates, boolean hasPreposition, boolean hasStartDate) {
@@ -754,23 +755,23 @@ public class CommandParser {
 		int numberOfDate = dates.size();
 
 		if (numberOfDate == DATE_MAX_SIZE) {
-			assigned.add(DATE_START, getDate(dates, DATE_START));
-			assigned.add(DATE_END, getDate(dates, DATE_END));
+			assigned.add(DATE_START,getDate(dates, DATE_START));
+			assigned.add(DATE_END,getDate(dates, DATE_END));
 		} else {
 			if (hasPreposition) {
 				if (hasStartDate) {
-					assigned.add(DATE_START, getDate(dates, DATE_INDEX));
+					assigned.add(DATE_START,getDate(dates, DATE_INDEX));
 					assigned.add(DATE_END, null);
 				} else {
 					assigned.add(DATE_START, null);
-					assigned.add(DATE_END, getDate(dates, DATE_INDEX));
+					assigned.add(DATE_END,getDate(dates, DATE_INDEX));
 				}
 			} else {
-				// no preposition
-				// one date/time only
-				// assume start
-				assigned.add(DATE_START, getDate(dates, DATE_INDEX));
-				assigned.add(DATE_END, null);
+				//no preposition
+				//one date/time only
+				//assume start
+				assigned.add(DATE_START,getDate(dates, DATE_INDEX));
+				assigned.add(DATE_END,null);
 			}
 		}
 		return assigned;
@@ -788,14 +789,14 @@ public class CommandParser {
 	 * This method removes date information from the {@code String} taken in.
 	 * 
 	 * @param title
-	 *            {@code String} containing date information
+	 * 			{@code String} containing date information
 	 * @param startDate
-	 *            {@code Date} start date
+	 * 			{@code Date} start date
 	 * @param endDate
-	 *            {@code Date} end date
+	 * 			{@code Date} end date
 	 * @return {@code String} without date information
 	 */
-	private String removeDateFromTitle(String title, List<Date> datesList) {
+	private String removeDateFromTitle(String title, List<Date> datesList) {   
 		LocalDateTime dateTime;
 
 		Date startDate = datesList.get(DATE_START);
@@ -828,11 +829,10 @@ public class CommandParser {
 	}
 
 	/**
-	 * This method generates an {@code ArrayList<String} of possible date
-	 * formats from {@code LocalDateTime}.
+	 * This method generates an {@code ArrayList<String} of possible date formats from {@code LocalDateTime}.
 	 * 
 	 * @param dateTime
-	 *            {@code LocalDateTime} to generate different date formats
+	 * 			{@code LocalDateTime} to generate different date formats
 	 * @return {@code ArrayList<String} of possible date formats
 	 */
 	private ArrayList<String> getPossibleDates(LocalDateTime dateTime) {
@@ -855,11 +855,10 @@ public class CommandParser {
 	}
 
 	/**
-	 * This method generates an {@code ArrayList<String} of possible month
-	 * formats from {@code LocalDateTime}.
+	 * This method generates an {@code ArrayList<String} of possible month formats from {@code LocalDateTime}.
 	 * 
 	 * @param dateTime
-	 *            {@code LocalDateTime} to generate different month formats
+	 * 			{@code LocalDateTime} to generate different month formats
 	 * @return {@code ArrayList<String} of possible month formats
 	 */
 	private ArrayList<String> getPossibleMonths(LocalDateTime dateTime) {
@@ -872,11 +871,10 @@ public class CommandParser {
 	}
 
 	/**
-	 * This method generates an {@code ArrayList<String} of possible day formats
-	 * from {@code LocalDateTime}.
+	 * This method generates an {@code ArrayList<String} of possible day formats from {@code LocalDateTime}.
 	 * 
 	 * @param dateTime
-	 *            {@code LocalDateTime} to generate different day formats
+	 * 			{@code LocalDateTime} to generate different day formats
 	 * @return {@code ArrayList<String} of possible day formats
 	 */
 	private ArrayList<String> getPossibleDays(LocalDateTime dateTime) {
@@ -895,7 +893,7 @@ public class CommandParser {
 				days.add("today");
 				days.add("tdy");
 				days.add("tonight");
-			} else if (date == (today.getDayOfMonth() + 1)) {
+			} else if (date == (today.getDayOfMonth()+1)) {
 				days.add("tomorrow");
 				days.add("tmr");
 				days.add("tml");
@@ -907,28 +905,27 @@ public class CommandParser {
 
 	private ArrayList<String> getDaysShorthand(ArrayList<String> days, String day) {
 		switch (day) {
-		case "tuesday":
+		case "tuesday" :
 			days.add("tues");
 			break;
-		case "wednesday":
+		case "wednesday" :
 			days.add("weds");
 			break;
-		case "thursday":
+		case "thursday" :
 			days.add("thur");
 			days.add("thurs");
 			break;
-		default:
+		default :
 			break;
 		}
 		return days;
 	}
 
 	/**
-	 * This method generates an {@code ArrayList<String} of possible time
-	 * formats from {@code LocalDateTime}.
+	 * This method generates an {@code ArrayList<String} of possible time formats from {@code LocalDateTime}.
 	 * 
 	 * @param dateTime
-	 *            {@code LocalDateTime} to generate different time formats
+	 * 			{@code LocalDateTime} to generate different time formats
 	 * @return {@code ArrayList<String} of possible time formats
 	 */
 	private ArrayList<String> getPossibleTimes(LocalDateTime dateTime) {
@@ -936,8 +933,8 @@ public class CommandParser {
 		int hour = dateTime.getHour();
 		int min = dateTime.getMinute();
 
-		assert (hour >= 0);
-		assert (min >= 0);
+		assert(hour >= 0);
+		assert(min >= 0);
 
 		String colon = ":";
 		String dot = ".";
@@ -963,7 +960,7 @@ public class CommandParser {
 				timings.add(Integer.toString(hour).concat(colon).concat(STRING_AM));
 				timings.add(Integer.toString(hour).concat(dot).concat(STRING_AM));
 			}
-		} else if (hour >= 12) {
+		} else if (hour >= 12) {	
 			hour = hour - 12;
 			if (hour == 0) {
 				String temp = STRING_TWELVE;
@@ -981,17 +978,16 @@ public class CommandParser {
 	}
 
 	/**
-	 * This method checks for and removes {@code ArrayList<String>} of targeted
-	 * word from {@code String}.
+	 * This method checks for and removes {@code ArrayList<String>} of targeted word from {@code String}.
 	 * 
-	 * If word to be removed is found, it checks if the word before it is a
-	 * preposition. If preposition found, both are removed. Else, only the
-	 * matching word is removed.
+	 * If word to be removed is found, it checks if the word before it is a preposition.
+	 * If preposition found, both are removed.
+	 * Else, only the matching word is removed.
 	 * 
 	 * @param title
-	 *            {@code String} to be checked
+	 * 			{@code String} to be checked
 	 * @param toBeRemoved
-	 *            {@code ArrayList<String>} of words to be removed
+	 * 			{@code ArrayList<String>} of words to be removed
 	 * @return {@code String} with targeted words removed
 	 */
 	private String checkAndRemove(String title, ArrayList<String> toBeRemoved) {
@@ -1026,7 +1022,7 @@ public class CommandParser {
 				}
 			}
 
-			toBeReplaced = "(?i)".concat(toBeReplaced);
+			toBeReplaced = "(?i)".concat(toBeReplaced); 
 			title = title.replaceAll(toBeReplaced, "");
 		}
 		title = removeExtraSpaces(title);
@@ -1034,13 +1030,12 @@ public class CommandParser {
 	}
 
 	/**
-	 * This method gets a word from {@code String} string base on {@code int}
-	 * index.
+	 * This method gets a word from {@code String} string base on {@code int} index.
 	 * 
 	 * @param title
-	 *            {@code String} input to obtain word from
+	 * 			{@code String} input to obtain word from
 	 * @param index
-	 *            {@code int} index of word to be obtained
+	 * 			{@code int} index of word to be obtained
 	 * @return {@code String} word obtained
 	 */
 	private String getWord(String title, int index) {
@@ -1057,7 +1052,7 @@ public class CommandParser {
 	 * This method parses {@code String} for date.
 	 * 
 	 * @param inputString
-	 *            {@code String} input to be parsed
+	 * 			{@code String} input to be parsed
 	 * @return {@code Date} if date found, {@code null} if date is not found
 	 */
 	public Date getDateForSearch(String inputString) {
@@ -1082,11 +1077,12 @@ public class CommandParser {
 	 * This method escapes date parsing if it is a special string.
 	 * 
 	 * @param inputString
-	 *            {@code String} input string
+	 * 			{@code String} input string
 	 * @return {@code boolean} true if special case detected
 	 */
 	private boolean isSpecialCase(String inputString) {
-		if (inputString.equalsIgnoreCase("this week") || inputString.equalsIgnoreCase("next week")) {
+		if (inputString.equalsIgnoreCase("this week") 
+				|| inputString.equalsIgnoreCase("next week")) {
 			return true;
 		} else {
 			return false;
@@ -1106,7 +1102,7 @@ public class CommandParser {
 	 * This method detects if index is present in edit command.
 	 * 
 	 * @param inputString
-	 *            {@code String} input for index to be obtained
+	 * 			{@code String} input for index to be obtained
 	 * @return {@code int} index if found, {@code int} -1 if index is not found
 	 */
 	public int getIndexForEdit(String inputString) {
@@ -1130,7 +1126,7 @@ public class CommandParser {
 	 * This method removes date and time information from {@code String}.
 	 * 
 	 * @param inputString
-	 *            {@code String} input for information to be removed
+	 * 			{@code String} input for information to be removed
 	 * @return {@code String} without date and time information
 	 */
 	private String removeDateTime(String inputString) {
@@ -1145,7 +1141,7 @@ public class CommandParser {
 			hasTimeRange = checkForRegexMatch(getTimeRangeRegex(), inputString);
 
 			if (hasTimeRange) {
-				regex = "(" + REGEX_PREPOSITION_ALL + "?)(" + getTimeRangeRegex() + ")";
+				regex = "(" + REGEX_PREPOSITION_ALL + "?)(" + getTimeRangeRegex()+ ")";
 				inputString = removeRegex(regex, inputString);
 			}
 
@@ -1170,14 +1166,13 @@ public class CommandParser {
 	}
 
 	/**
-	 * This method takes in {@code String} regex and removes if from
-	 * {@code String} input.
+	 * This method takes in {@code String} regex and removes if from {@code String} input.
 	 * 
 	 * @param regex
-	 *            {@code String} expressions to be removed
+	 * 			{@code String} expressions to be removed
 	 * @param inputString
-	 *            {@code String} input for expression to be removed
-	 * @return {@code String} without expression
+	 * 			{@code String} input for expression to be removed
+	 * @return {@code String} without expression 
 	 */
 	private String removeRegex(String regex, String inputString) {
 		Pattern pattern = Pattern.compile(regex);
@@ -1185,10 +1180,10 @@ public class CommandParser {
 
 		while (matcher.find()) {
 			String match = matcher.group();
-			inputString = inputString.replaceAll(match, "");
+			inputString = inputString.replaceAll(match,"");
 		}
 
-		inputString = removeExtraSpaces(inputString);
+		inputString = removeExtraSpaces(inputString); 		
 		return inputString;
 	}
 
@@ -1196,13 +1191,13 @@ public class CommandParser {
 	 * This method allows for editing of existing tasks.
 	 * 
 	 * @param oldTask
-	 *            {@code Task} to be edited
+	 * 			{@code Task} to be edited
 	 * @param inputString
-	 *            {@code String} of new information
+	 * 			{@code String} of new information
 	 * @return {@code Task} edited task
 	 * @throws InvalidLabelFormat
 	 */
-	public Task parseEdit(Task oldTask, String inputString) throws InvalidLabelFormat {
+	public Task parseEdit(Task oldTask, String inputString) throws InvalidLabelFormat {		
 		String newTitle = oldTask.getTitle();
 		String newLabel = oldTask.getLabel();
 		Date newStart = oldTask.getStartDate();
@@ -1215,7 +1210,7 @@ public class CommandParser {
 		try {
 			editedTask = parseAdd(inputString);
 		} catch (InvalidTitle exception) {
-			// exception doesn't matter if edit is using parseAdd
+			//exception doesn't matter if edit is using parseAdd
 			editedTask = exception.getTask();
 		}
 
@@ -1238,8 +1233,7 @@ public class CommandParser {
 		boolean hasTimeWithoutAmPm = false;
 		List<Date> dates = new ArrayList<Date>();
 
-		hasDate = checkForRegexMatch(getDateRegex(), inputString)
-		        || checkForRegexMatch(getDateRegexText(), inputString);
+		hasDate = checkForRegexMatch(getDateRegex(), inputString)  || checkForRegexMatch(getDateRegexText(), inputString);
 		hasTime = checkForRegexMatch(getTimeRegex(), inputString) || checkForRegexMatch(REGEX_WORD_TIMED, inputString);
 
 		if (!hasTime) {
@@ -1249,30 +1243,30 @@ public class CommandParser {
 				if (hasTimeWithoutAmPm) {
 					hasTime = true;
 				}
-			}
+			} 
 		}
 
-		// check for word indicating date
+		//check for word indicating date
 		if (checkForRegexMatch(REGEX_WORD_DATED, inputString)) {
 			hasDate = true;
 			hasTime = true;
 		}
 
-		if (editedTask.hasDate()) {
+		if (editedTask.hasDate()) {		
 			if (hasDate && !hasTime) {
 
-				// new
-				// if date only, dont reuse time
+				//new
+				//if date only, dont reuse time
 				dates.add(editedTask.getStartDate());
 				dates.add(editedTask.getEndDate());
 				isDatedOnly = true;
 			} else if (!hasDate && hasTime) {
-				// only time, reuse date
+				//only time, reuse date
 				dates = reuseDate(editedTask, oldTask);
 				isDatedOnly = false;
 			} else {
-				// have both
-				// update by overwriting
+				//have both
+				//update by overwriting
 				dates.add(editedTask.getStartDate());
 				dates.add(editedTask.getEndDate());
 				isDatedOnly = false;
@@ -1290,13 +1284,12 @@ public class CommandParser {
 	}
 
 	/**
-	 * This method duplicates the date information in {@code Task} oldTask to
-	 * {@code Task} editedTask.
+	 * This method duplicates the date information in {@code Task} oldTask to {@code Task} editedTask.
 	 * 
 	 * @param editedTask
-	 *            {@code Task} edited task that needs the old date information
+	 * 			{@code Task} edited task that needs the old date information
 	 * @param oldTask
-	 *            {@code Task} with the old date information
+	 * 			{@code Task} with the old date information
 	 * @return {@code List<Date>} of updated dates
 	 */
 	/**
@@ -1315,7 +1308,7 @@ public class CommandParser {
 		Date oldEnd = oldTask.getEndDate();
 
 		if (startDate != null) {
-			if (oldStart != null) {
+			if (oldStart != null) {  
 				reuse.setTime(oldStart);
 			} else if (oldEnd != null) {
 				reuse.setTime(oldEnd);
@@ -1326,7 +1319,7 @@ public class CommandParser {
 		}
 
 		if (endDate != null) {
-			if (oldEnd != null) {
+			if (oldEnd != null) {  
 				reuse.setTime(oldEnd);
 			} else if (oldStart != null) {
 				reuse.setTime(oldStart);
@@ -1337,10 +1330,11 @@ public class CommandParser {
 		}
 
 		if (!oldTask.hasDate()) {
-			// floating task
+			//floating task
 			oldStart = startDate;
 			oldEnd = endDate;
 		}
+
 
 		if (startDate == null) {
 			oldStart = null;
@@ -1352,19 +1346,18 @@ public class CommandParser {
 
 		dates.add(oldStart);
 		dates.add(oldEnd);
-		return dates;
+		return dates;		
 	}
 
 	/**
-	 * This method gets the day and month from {@code Calendar} reuse and sets
-	 * it in {@code Calendar} latest.
+	 * This method gets the day and month from {@code Calendar} reuse and sets it in {@code Calendar} latest.
 	 * 
 	 * @param reuse
-	 *            {@code Calendar} for day and month to be obtained
+	 * 			{@code Calendar} for day and month to be obtained
 	 * @param latest
-	 *            {@code Calendar} for day and month to be set
+	 * 			{@code Calendar} for day and month to be set
 	 * @param date
-	 *            {@code Date} date to be set for {@code Calendar} latest
+	 * 			{@code Date} date to be set for {@code Calendar} latest
 	 * @return {@code Calendar} with updated day and month
 	 */
 	private Calendar setDayMonthYear(Calendar reuse, Calendar latest, Date date) {
@@ -1378,7 +1371,7 @@ public class CommandParser {
 		latest.set(Calendar.YEAR, year);
 
 		return latest;
-	}
+	}	
 
 	// =============================
 	// Parsing Indexes
@@ -1388,10 +1381,9 @@ public class CommandParser {
 	 * This method detects the types of indexes and processes them.
 	 * 
 	 * @param inputString
-	 *            {@code String} input to be processed
+	 * 			{@code String} input to be processed
 	 * @return {@code ArrayList<Integer>} of index(es)
-	 * @throws InvalidTaskIndexFormat
-	 *             if format is invalid
+	 * @throws InvalidTaskIndexFormat if format is invalid
 	 */
 	public ParseIndexResult parseIndexes(String inputString, int maxSize) throws InvalidTaskIndexFormat {
 		assert (maxSize > 0);
@@ -1409,24 +1401,22 @@ public class CommandParser {
 		} catch (Exception e) {
 			logger.log(Level.WARNING, "NumberFormatException: Indexes cannot be parsed by parser.");
 			logger.log(Level.WARNING, "InvalidTaskIndexFormat exception thrown.");
-			throw new InvalidTaskIndexFormat("Invalid indexes input detected.");
+			throw new InvalidTaskIndexFormat("Invalid indexes input detected.");	
 		}
 	}
 
-	private String getStringWithoutCommand(String commandString) throws InvalidLabelFormat {
+	private String getStringWithoutCommand(String commandString) throws InvalidLabelFormat{
 		int index = 0;
-		String command = getFirstWord(commandString); // will not fail because
-		                                              // without command UI
-		                                              // won't call
+		String command = getFirstWord(commandString); //will not fail because without command UI won't call
 		index = command.length() + LENGTH_OFFSET;
 		String indexString = commandString.substring(index, commandString.length());
-		assert (!indexString.isEmpty());
+		assert(!indexString.isEmpty());
 		return indexString;
 	}
 
 	private String removeWhiteSpace(String string) {
-		string = string.replaceAll("\\s", "");
-		assert (!string.isEmpty());
+		string = string.replaceAll("\\s","");
+		assert(!string.isEmpty());
 		return string;
 	}
 
@@ -1434,9 +1424,9 @@ public class CommandParser {
 	 * This method obtains all numbers based on {@code String} taken in.
 	 * 
 	 * @param index
-	 *            {@code String} to be processed
-	 * @return {@code ArrayList<Integer>} of index(es)
-	 * @throws InvalidTaskIndexFormat
+	 * 			{@code String} to be processed
+	 * @return {@code ArrayList<Integer>} of index(es) 
+	 * @throws InvalidTaskIndexFormat 
 	 */
 	private ArrayList<Integer> getIndex(String index) throws InvalidTaskIndexFormat {
 		ArrayList<String> indexes = new ArrayList<String>();
@@ -1450,8 +1440,8 @@ public class CommandParser {
 			if (indexes.get(i).contains("-")) {
 				Collections.addAll(tempRangedIndexes, indexes.get(i).split("-"));
 
-				// remove all empty after splitting
-				// else will cause parseInt to fail
+				//remove all empty after splitting
+				//else will cause parseInt to fail
 				tempRangedIndexes = removeEmpty(tempRangedIndexes);
 				rangedIndexes = getRangedIndexes(tempRangedIndexes);
 
@@ -1488,7 +1478,7 @@ public class CommandParser {
 	 * This method gets the range of indexes.
 	 * 
 	 * @param arrayStrings
-	 *            {@code ArrayList<String>} to be processed
+	 * 			{@code ArrayList<String>} to be processed
 	 * @return {@code ArrayList<Integer>} of index(es) range
 	 */
 	private ArrayList<Integer> getRangedIndexes(ArrayList<String> arrayStrings) {
@@ -1498,14 +1488,14 @@ public class CommandParser {
 			ranged.add(Integer.parseInt(arrayStrings.get(i)));
 		}
 
-		return ranged;
+		return ranged;    	
 	}
 
 	/**
 	 * This method gets multiple indexes.
 	 * 
 	 * @param arrayIntegers
-	 *            {@code ArrayList<Integer>} to be processed
+	 * 			{@code ArrayList<Integer>} to be processed
 	 * @return {@code ArrayList<Integer>} of indexes
 	 */
 	private ArrayList<Integer> getMultipleIndexes(ArrayList<Integer> arrayIntegers) {
@@ -1514,16 +1504,16 @@ public class CommandParser {
 		int possibleRange = arrayIntegers.size() - 1;
 
 		for (int i = 0; i < possibleRange; i++) {
-			// Check and fix range for descending cases
-			if (arrayIntegers.get(i) < arrayIntegers.get(i + 1)) {
+			//Check and fix range for descending cases
+			if (arrayIntegers.get(i) < arrayIntegers.get(i+1)) {
 				start = arrayIntegers.get(i);
-				end = arrayIntegers.get(i + 1);
+				end = arrayIntegers.get(i+1);
 			} else {
-				start = arrayIntegers.get(i + 1);
+				start = arrayIntegers.get(i+1);
 				end = arrayIntegers.get(i);
 			}
 
-			// prevent duplicates from being added twice
+			//prevent duplicates from being added twice
 			for (int j = start; j <= end; j++) {
 				if (!multiple.contains(j)) {
 					multiple.add(j);
@@ -1538,7 +1528,7 @@ public class CommandParser {
 		ArrayList<Integer> validIndexes = new ArrayList<Integer>();
 		ArrayList<Integer> invalidIndexes = new ArrayList<Integer>();
 
-		for (int i = 0; i < indexes.size(); i++) {
+		for (int i = 0; i < indexes.size(); i++ ) {
 			int index = indexes.get(i);
 			if (index > maxSize) {
 				invalidIndexes.add(index);
@@ -1559,5 +1549,5 @@ public class CommandParser {
 		}
 
 		return indexesResult;
-	}
+	}	
 }
