@@ -149,7 +149,7 @@ public class Receiver extends Observable {
                 while(true) {
                     updateObservers();
                     try {
-                        Thread.sleep(30000); //Sleep for 30 seconds
+                        Thread.sleep(5000); //Sleep for 30 seconds
                     } catch (InterruptedException ie) {
                         logger.log(Level.WARNING, "Thread interrupted while updating observers");
                     }
