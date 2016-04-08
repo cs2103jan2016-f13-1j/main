@@ -26,16 +26,9 @@ import main.data.ParseIndexResult;
 import main.data.Task;
 import main.parser.exceptions.*;
 
-public class CommandParser {
-	private final int DATE_INDEX = 0;
-	private final int DATE_START = 0;
-	private final int DATE_END = 1;
-	private final int DATE_MAX_SIZE = 2;
-	
-	private final String REGEX_PREPOSITION_STARTING = "(?i)\\b(from|after|at|on)\\b ?"; 
+public class CommandParser {	
 	private final String REGEX_PREPOSITION_ALL = "(?i)(\\b(from|after|at|on|by|before|to)\\b ?)";
-	public final String REGEX_DAYS = "\\b((?i)((mon)(day)?|(tue)(sday|s)?|"
-			+ "(wed)(nesday|s)?|(thu)(rsday|rs|r)?|(fri)(day)?|(sat)(urday)?|(sun)(day)?))\\b";
+	private final String REGEX_PREPOSITION_START = "(?i)\\b(from|after|at|on)\\b ?"; 
 	private final String REGEX_DATE_NUM = "\\b((0?[1-9]|[12][0-9]|3[01])([/|-])(0?[1-9]|1[012]))\\b";	
 	private final String REGEX_DATE_NUM_YEAR = "\\b((0?[1-9]|[12][0-9]|3[01])([/|-])(0?[1-9]|1[012])([/|-])((19|20)?\\d\\d))\\b";
 	private final String REGEX_DATE_TEXT = "\\b((0?[1-9]|[12][0-9]|3[01]) ?)";
@@ -44,15 +37,25 @@ public class CommandParser {
 			+ "(jun)(e)?|" + "(jul)(y)?|" + "(aug)(ust)?|" + "(sep)(tember)?|"
 			+ "(oct)(ober)?|" + "(nov)(ember)?|" + "(dec)(ember)?)\\b";
 	private final String REGEX_YEAR = "\\b ?((19|20)?\\d\\d)\\b";
-	private final String REGEX_DATE_WORD = "\\b(today|tdy|tonight|tomorrow|tmr|tml|tmrw)\\b";
 	private final String REGEX_TIME_TWELVE = "((1[012]|0?[1-9])(([:|.][0-5][0-9])?))";
-	private final String REGEX_TIME_WORD = "\\b(morning|afternoon|evening|midnight)\\b";
-	private final String REGEX_AM_PM = "(?i)(am|pm)";
+	private final String REGEX_TIME_PERIOD = "(?i)(am|pm)";
+	private final String REGEX_DAYS = "\\b((?i)((mon)(day)?|(tue)(sday|s)?|"
+			+ "(wed)(nesday|s)?|(thu)(rsday|rs|r)?|(fri)(day)?|(sat)(urday)?|(sun)(day)?))\\b";
+	private final String REGEX_WORD_DATED = "\\b(today|tdy|tonight|tomorrow|tmr|tml|tmrw)\\b";
+	private final String REGEX_WORD_TIMED = "\\b(morning|afternoon|evening|midnight)\\b";
 	private final String REGEX_PRIORITY = "\\b((priority|p) ?)(1|2|3)\\b";
 
+	private final int DATE_INDEX = 0;
+	private final int DATE_START = 0;
+	private final int DATE_END = 1;
+	private final int DATE_MAX_SIZE = 2;
+	private final int DATE_FIELD_FULL = 3;
+	
 	private final String STRING_AM = "am";
 	private final String STRING_PM = "pm";
 	private final String STRING_TWELVE = "12";
+	private final String STRING_NEXT_WEEK = "next week";
+	
 	private final int DOUBLE_DIGIT = 10;
 	private final int LENGTH_OFFSET = 1;
 	private final int INDEX_OFFSET = 1;
@@ -68,7 +71,7 @@ public class CommandParser {
 	 * Words without prepositions is dated if time is explicitly specified.
 	 * 
 	 * @param inputString
-	 * 		   {@code String} input to be processed
+	 * 		  {@code String} input to be processed
 	 * @return {@code Task} built
 	 * @throws InvalidLabelFormat 
 	 * @throws InvalidTitle 
@@ -89,12 +92,12 @@ public class CommandParser {
 		boolean hasDate = false;
 		boolean hasYear = false;
 		boolean hasTime = false;
-		boolean hasTimeWithoutAmPm = false;
 		boolean hasTimeRange = false;
 		boolean hasPreposition = false;
+		boolean hasTimeWithoutAmPm = false;
 		boolean hasStartDate = false;
-		boolean hasLabel = false;
 		boolean hasPriority = false;
+		boolean hasLabel = false;
 		boolean isDatedOnly = false;
 		
 		int numberOfDate = 0;
@@ -104,23 +107,24 @@ public class CommandParser {
 		//check for day
 		hasDay = checkForRegexMatch(getDayRegex(), inputString);
 		
-		//check for date with year in both num (or text format)
+		//check for date with year in num format
 		hasDate = checkForRegexMatch(getDateWithYearRegex(), inputString);
 		if (hasDate) {
 			hasYear = true;
 		} else {
-			//check for date in number format, or text format
-			hasDate = checkForRegexMatch(getDateRegex(), inputString)  || checkForRegexMatch(getDateRegexText(), inputString);			
+			//check for date in number format or text format
+			hasDate = checkForRegexMatch(getDateRegex(), inputString)  
+				    || checkForRegexMatch(getDateRegexText(), inputString);			
 		}
 	
 		//check for time with am/pm or check for word indicating time
-		hasTime = checkForRegexMatch(getTimeRegex(), inputString) || checkForRegexMatch(REGEX_TIME_WORD, inputString);
+		hasTime = checkForRegexMatch(getTimeRegex(), inputString) 
+				|| checkForRegexMatch(REGEX_WORD_TIMED, inputString);
 		hasTimeRange = checkForRegexMatch(getTimeRangeRegex(), inputString);
 
 		//check for word indicating date
-		if (checkForRegexMatch(REGEX_DATE_WORD, inputString)) {
+		if (checkForRegexMatch(REGEX_WORD_DATED, inputString)) {
 			hasDate = true;
-			hasTime = true;
 		}
 		
 		//check for preposition
@@ -129,7 +133,7 @@ public class CommandParser {
 			//check for time without am/pm
 			hasTimeWithoutAmPm = checkForRegexMatch(getTimeRegexWithoutAmPm(), inputString);
 			//check for start preposition only
-			hasStartDate = checkForRegexMatch(REGEX_PREPOSITION_STARTING, inputString);
+			hasStartDate = checkForRegexMatch(REGEX_PREPOSITION_START, inputString);
 		}
 		
 		inputString = correctUserInput(inputString);
@@ -180,13 +184,13 @@ public class CommandParser {
 			dates = parseTimeOnly(inputString);
 		} 
 		
-		if (inputString.contains("next week")) {
+		if (inputString.contains(STRING_NEXT_WEEK)) {
 			if (!hasTime) {
 				isDatedOnly = true;
 			}
 			
 			dates = correctNextWeek(dates);
-			regex = "\\bnext week\\b";
+			regex = getNextWeekRegex();
 			title = removeRegex(regex, title);
 		}
 		
@@ -201,14 +205,14 @@ public class CommandParser {
 			startDate = dates.get(DATE_START);
 			endDate = dates.get(DATE_END);
 
-			if (hasDate && hasTime) {
-				regex = "\\b(the day after )" + REGEX_DATE_WORD;
+			if (hasDate) {
+				regex = "\\b(the day after )" + REGEX_WORD_DATED;
 				title = removeRegex(regex, title);
 			}
 			
 			if (hasTime) {
 				//remove time from title
-				regex = REGEX_PREPOSITION_ALL + "?" + REGEX_TIME_WORD;
+				regex = REGEX_PREPOSITION_ALL + "?" + REGEX_WORD_TIMED;
 				title = removeRegex(regex, title);			
 				
 				if (hasTimeRange) {
@@ -238,6 +242,7 @@ public class CommandParser {
 				title = removeRegex(regex, title);
 			}
 			
+			//remove remaining date information from title
 			title = removeDateFromTitle(title, dates);
 		}
 	
@@ -248,54 +253,124 @@ public class CommandParser {
 		logger.log(Level.INFO, "Task object built.");
 		
 		if (title.length() == 0) {
+			task.setTitle("<No title>");
+			
 			logger.log(Level.WARNING, "Title cannot be parsed by parser.");
 			logger.log(Level.WARNING, "InvalidTitle exception thrown.");
-			task.setTitle("<No title>");
 			throw new InvalidTitle("Invalid title detected.", task);
 		}
 		
 		return task;
 	}
 	
-	private List<Date> correctNextWeek(List<Date> dates) {
-		Calendar cal = Calendar.getInstance();
-		if (dates.size() == 0) {
-			cal.setTime(new Date());
-			int week = cal.get(Calendar.WEEK_OF_YEAR) + 1;
-			cal.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
-			cal.set(Calendar.WEEK_OF_YEAR, week);
-			cal.setTime(setTimeToZero(cal.getTime()));
-			dates.add(cal.getTime());
-		} else {
-			for (int i = 0; i < dates.size(); i++) {
-				
-				 cal.setTime(dates.get(i));
-				 cal.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
-				 dates.set(i, cal.getTime());
-			}
-		}
-		return dates;
+	private boolean checkForRegexMatch(String regex, String inputString) {
+		Pattern pattern = Pattern.compile(regex);
+		Matcher matcher = pattern.matcher(inputString);
+		return matcher.find();
+	}
+	
+	private String getDayRegex() {
+		return REGEX_PREPOSITION_ALL + "?" + REGEX_DAYS;
+	}
+	
+	private String getDateWithYearRegex() {
+		return REGEX_PREPOSITION_ALL + "?" + REGEX_DATE_NUM_YEAR;
+	}
+	
+	private String getDateRegex() {
+		return REGEX_PREPOSITION_ALL + "?" + REGEX_DATE_NUM;
+	}
+	
+	private String getDateRegexText() {
+		return REGEX_PREPOSITION_ALL + "?" + REGEX_DATE_TEXT + REGEX_MONTH_TEXT;
+	}
+	
+	private String getTimeRegex() {
+		return "\\b" + REGEX_TIME_TWELVE + REGEX_TIME_PERIOD;
+	}
+
+	private String getTimeRangeRegex() {
+		return "\\b" + REGEX_TIME_TWELVE + REGEX_TIME_PERIOD + "?" 
+				+ "\\s?-\\s?" +
+				"\\b" + REGEX_TIME_TWELVE + REGEX_TIME_PERIOD
+				+ "|" +
+				"\\b" + REGEX_TIME_TWELVE + REGEX_TIME_PERIOD 
+				+ "\\s?-\\s?" +
+				"\\b" + REGEX_TIME_TWELVE + REGEX_TIME_PERIOD + "?\\b";
+	}
+	
+	private String getTimeRegexWithoutAmPm() {
+		return REGEX_PREPOSITION_ALL + "\\b " + REGEX_TIME_TWELVE + "\\b$";
 	}
 	
 	private String correctUserInput(String inputString) {
 		boolean hasTimeRange = checkForRegexMatch(getTimeRangeRegex(), inputString);
+		
 		inputString = correctDateText(inputString);
 		inputString = correctDateTextYear(inputString);
 		inputString = correctDotTime(inputString);
 		inputString = correctShorthand(inputString);
+		
 		if (hasTimeRange) {
 			inputString = correctRangeTime(inputString);
 		}
+		
 		inputString = removeExtraSpaces(inputString);
 		return inputString;
 	}
 	
+	/**
+	 * This method corrects date text in user input without spaces for date parsing.
+	 * Eg: 1apr -> 1 apr
+	 * @param inputString
+	 *			{@code String} input to be corrected
+	 * @return {@code  String} with date text corrected
+	 */
+	private String correctDateText(String inputString) {
+		String regex = REGEX_DATE_TEXT + REGEX_MONTH_TEXT;
+		inputString = inputString.replaceAll(regex, "$1 $3");
+		inputString = removeExtraSpaces(inputString);
+		return inputString;
+	}
+	
+	private String removeExtraSpaces(String inputString) {
+		return inputString.replaceAll("\\s+", " ").trim();
+	}
+
+	/**
+	 * This method corrects the date when the year is specified with only two digits for parsing.
+	 * 
+	 * @param inputString
+	 * 			{@code String} containing date with year
+	 * @return {@code String} with corrected date year
+	 */
 	private String correctDateTextYear(String inputString) {
 		String regex = getDateRegexText() + "\\b ?(\\d\\d)(?:$|\\s)";
 		inputString = inputString.replaceAll(regex,"$2 $4 $5 '$29 ") ;
 		return inputString;
 	}
 	
+	/**
+	 * This method corrects time separated with a dot for date parsing.
+	 * Eg: 5.30pm 
+	 * 
+	 * @param inputString
+	 * 			{@code String} input to be corrected
+	 * @return {@code String} with time corrected
+	 */
+	private String correctDotTime(String inputString) {
+		String regex = "\\b((1[012]|0?[1-9])(([:|.])([0-5][0-9])?))(?i)(am|pm)";
+		inputString = inputString.replaceAll(regex, "$2:$5$6");
+		return inputString;
+	}
+
+	/**
+	 * This method correct short forms used by the user for parsing.
+	 * 
+	 * @param inputString
+	 * 			{@code String} containing short forms
+	 * @return {@code String} with short forms corrected
+	 */
 	private String correctShorthand(String inputString) {
 		String regex = "\\b(tmr|tml|tmrw)\\b";
 		inputString = inputString.replaceAll(regex, "tomorrow");
@@ -305,12 +380,24 @@ public class CommandParser {
 		return inputString;
 	}
 
+	/**
+	 * This method corrects ranged time for date parsing.
+	 * 
+	 * @param inputString
+	 * 			{@code String} input to be corrected
+	 * @return {@code String} with time range corrected
+	 */
+	private String correctRangeTime(String inputString) {
+		inputString = inputString.replaceAll("()-()","$1 - $2");
+		return inputString;
+	}
+
 	private String getPriorityString(String inputString) {
 		String regex = REGEX_PRIORITY;
 		Pattern pattern = Pattern.compile(regex);
 		Matcher matcher = pattern.matcher(inputString);
-		boolean found = matcher.find();
-		if (found) {
+		boolean checkMatch = matcher.find();
+		if (checkMatch) {
 			return matcher.group();
 		}
 		return null;
@@ -318,7 +405,7 @@ public class CommandParser {
 	
 	private int getPriority(String inputString) {
 		assert(inputString != null);
-		String priority = inputString.substring(inputString.length()-1);
+		String priority = inputString.substring(inputString.length() - LENGTH_OFFSET);
 		int level = Integer.parseInt(priority);
 		return level;
 	}
@@ -346,7 +433,7 @@ public class CommandParser {
 
 	private String getLabel(String inputString) throws InvalidLabelFormat {
 		int index = inputString.indexOf("#");
-		index = index + LENGTH_OFFSET;
+		index = index + INDEX_OFFSET;
 		String substring = inputString.substring(index);
 		String label = substring.trim();
 		label = getFirstWord(label);
@@ -371,113 +458,13 @@ public class CommandParser {
 
 		return word;
 	}
-
+	
 	private boolean checkValidLabel(String inputString) {
 		if (inputString.contains("-")) {
 			return false;
 		} else {
 			return true;
 		}
-	}
-	
-	private String removeExtraSpaces(String inputString) {
-		return inputString.replaceAll("\\s+", " ").trim();
-	}
-	
-	private boolean checkForRegexMatch(String regex, String inputString) {
-		Pattern pattern = Pattern.compile(regex);
-		Matcher matcher = pattern.matcher(inputString);
-		return matcher.find();
-	}
-	
-	private String getDayRegex() {
-		return REGEX_PREPOSITION_ALL + "?" + REGEX_DAYS;
-	}
-	
-	private String getDateRegex() {
-		return REGEX_PREPOSITION_ALL + "?" + REGEX_DATE_NUM;
-	}
-	
-	private String getDateWithYearRegex() {
-		return REGEX_PREPOSITION_ALL + "?" + REGEX_DATE_NUM_YEAR;
-	}
-	
-	private String getDateRegexText() {
-		return REGEX_PREPOSITION_ALL + "?" + REGEX_DATE_TEXT + REGEX_MONTH_TEXT;
-	}
-	
-	public String getDateRegexTextWithYear() {
-		return REGEX_PREPOSITION_ALL + "?" + REGEX_DATE_TEXT + REGEX_MONTH_TEXT + REGEX_YEAR;
-	}
-	
-	/**
-	 * This method corrects date text in user input without spaces for date parsing.
-	 * Eg: 1apr -> 1 apr
-	 * @param inputString
-	 * 			{@code String} input to be corrected
-	 * @return {@code  String} with date text corrected
-	 */
-	private String correctDateText(String inputString) {
-		String regex = REGEX_DATE_TEXT + REGEX_MONTH_TEXT;
-		inputString = inputString.replaceAll(regex, "$1 $3");
-		inputString = removeExtraSpaces(inputString);
-		return inputString;
-	}
-
-	private String getTimeRegex() {
-		return "\\b" + REGEX_TIME_TWELVE + REGEX_AM_PM;
-	}
-
-	/**
-	 * This method corrects time separated with a dot for date parsing.
-	 * Eg: 5.30pm 
-	 * 
-	 * @param inputString
-	 * 			{@code String} input to be corrected
-	 * @return {@code String} with time corrected
-	 */
-	private String correctDotTime(String inputString) {
-		String regex = "\\b((1[012]|0?[1-9])(([:|.])([0-5][0-9])?))(?i)(am|pm)";
-		inputString = inputString.replaceAll(regex, "$2:$5$6");
-		return inputString;
-	}
-
-	private String getTimeRangeRegex() {
-		return "\\b" + REGEX_TIME_TWELVE + REGEX_AM_PM + "?" 
-				+ "\\s?-\\s?" +
-				"\\b" + REGEX_TIME_TWELVE + REGEX_AM_PM
-				+ "|" +
-				"\\b" + REGEX_TIME_TWELVE + REGEX_AM_PM 
-				+ "\\s?-\\s?" +
-				"\\b" + REGEX_TIME_TWELVE + REGEX_AM_PM + "?\\b";
-	}
-
-	/**
-	 * This method corrects ranged time for date parsing.
-	 * 
-	 * @param inputString
-	 * 			{@code String} input to be corrected
-	 * @return {@code String} with time range corrected
-	 */
-	private String correctRangeTime(String inputString) {
-		inputString = inputString.replaceAll("()-()","$1 - $2");
-		return inputString;
-	}
-
-	private String getTimeRegexWithoutAmPm() {
-		return REGEX_PREPOSITION_ALL + "\\b " + REGEX_TIME_TWELVE + "\\b$";
-	}
-	
-	/**
-	 * This method uses PrettyTimeParser to generate dates from {@code String} inputString.
-	 * @param inputString
-	 * 			{@code String} input to be parsed
-	 * @return {@code List<Date>} of dates generated if possible
-	 */
-	private List<Date> parseDateTime(String inputString) {
-		PrettyTimeParser parser = new PrettyTimeParser(TimeZone.getDefault());
-		List<Date> dates = parser.parse(inputString);
-		return dates;
 	}
 	
 	/**
@@ -505,13 +492,13 @@ public class CommandParser {
 				if (words.get(i).contains("/")) {
 					List<String> date = new ArrayList<String>(Arrays.asList(words.get(i).split("/")));
 					swapped = date.get(1).concat("/").concat(date.get(0));
-					if (date.size() == 3) {
+					if (date.size() == DATE_FIELD_FULL) {
 						swapped = swapped.concat("/").concat(date.get(2));
 					}
 				} else if (words.get(i).contains("-")) {
 					List<String> date = new ArrayList<String>(Arrays.asList(words.get(i).split("-")));
 					swapped = date.get(1).concat("-").concat(date.get(0));
-					if (date.size() == 3) {
+					if (date.size() == DATE_FIELD_FULL) {
 						swapped = swapped.concat("-").concat(date.get(2));
 					}
 				}
@@ -520,6 +507,18 @@ public class CommandParser {
 		}
 
 		return String.join(" ", words);
+	}
+	
+	/**
+	 * This method uses PrettyTimeParser to generate dates from {@code String} inputString.
+	 * @param inputString
+	 * 			{@code String} input to be parsed
+	 * @return {@code List<Date>} of dates generated if possible
+	 */
+	private List<Date> parseDateTime(String inputString) {
+		PrettyTimeParser parser = new PrettyTimeParser(TimeZone.getDefault());
+		List<Date> dates = parser.parse(inputString);
+		return dates;
 	}
 	
 	/**
@@ -577,6 +576,7 @@ public class CommandParser {
 		if (dates.size() == DATE_MAX_SIZE) {
 			Date start = dates.get(DATE_START);
 			Date end = dates.get(DATE_END);
+			
 			if (start.after(end)) {
 				Calendar cal = Calendar.getInstance();
 				cal.setTime(end);
@@ -592,7 +592,6 @@ public class CommandParser {
 		dates = fixTimeToNearest(dates, false);
 		dates = fixTimeForRange(dates);
 		return dates;
-		
 	}
 	
 	/**
@@ -641,13 +640,14 @@ public class CommandParser {
 	 * Eg: If now is 11pm, 10pm - 2am will be today 10pm to the next day 2am.
 	 * 
 	 * @param dates
-	 * 			{@code List<Date>>} to be corrected
+	 * 			{@code List<Date>} to be corrected
 	 * @return {@code List<Date>} corrected dates
 	 */
 	private List<Date> fixTimeForRange(List<Date> dates) {
 		if (dates.size() == DATE_MAX_SIZE) {
 			Date start = dates.get(DATE_START);
 			Date end = dates.get(DATE_END);
+			
 			if (end.before(start)) {
 				Calendar cal = Calendar.getInstance();
 				cal.setTime(end);
@@ -659,6 +659,38 @@ public class CommandParser {
 	}
 	
 	/**
+	 * This method corrects the next week that is parsed by PrettyTime.
+	 * When next week is specified in the user input, 
+	 * it will always be corrected to the Monday of next week.
+	 * 
+	 * @param dates
+	 * 			{@code List<Date>} to be corrected
+	 * @return {@code List<Date>} corrected to Monday of next week
+	 */
+	private List<Date> correctNextWeek(List<Date> dates) {
+		Calendar cal = Calendar.getInstance();
+		if (dates.size() == 0) {
+			cal.setTime(new Date());
+			int week = cal.get(Calendar.WEEK_OF_YEAR) + 1;
+			cal.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
+			cal.set(Calendar.WEEK_OF_YEAR, week);
+			cal.setTime(setTimeToZero(cal.getTime()));
+			dates.add(cal.getTime());
+		} else {
+			for (int i = 0; i < dates.size(); i++) {
+				 cal.setTime(dates.get(i));
+				 cal.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
+				 dates.set(i, cal.getTime());
+			}
+		}
+		return dates;
+	}
+	
+	private String getNextWeekRegex() {
+		return "\\b" + STRING_NEXT_WEEK + "\\b";
+	}
+	
+	/**
 	 * This method sets the time for time specified without am/pm due to the presence of preposition.
 	 * It will take the next possible time since am/pm is not specified.
 	 * 
@@ -666,7 +698,7 @@ public class CommandParser {
 	 * If now is 1pm, and 10 is specified,
 	 * it will be parsed as 10pm today.
 	 * 
-	 * If now is 10 pm, and 1 is specified,
+	 * If now is 10pm, and 1 is specified,
 	 * it will be parsed as 1am tomorrow.
 	 * 
 	 * @param dates
@@ -700,7 +732,7 @@ public class CommandParser {
 				}
 				
 				if (dates.size() == 2) {
-					//if is range, check against the fixed start date
+					//if time is ranged, check against the fixed start date
 					now = dates.get(i);
 				}
 			}
@@ -747,6 +779,10 @@ public class CommandParser {
 	
 	private Date getDate(List<Date> dates, int index) {
 		return dates.get(index);
+	}
+	
+	public String getDateRegexTextWithYear() {
+		return REGEX_PREPOSITION_ALL + "?" + REGEX_DATE_TEXT + REGEX_MONTH_TEXT + REGEX_YEAR;
 	}
 
 	/**
@@ -884,7 +920,6 @@ public class CommandParser {
 		}
 		return days;
 	}
-	
 	
 	/**
 	 * This method generates an {@code ArrayList<String} of possible time formats from {@code LocalDateTime}.
@@ -1046,8 +1081,8 @@ public class CommandParser {
 	 * @return {@code boolean} true if special case detected
 	 */
 	private boolean isSpecialCase(String inputString) {
-		if (inputString.equalsIgnoreCase("this week") ||
-				inputString.equalsIgnoreCase("next week")) {
+		if (inputString.equalsIgnoreCase("this week") 
+				|| inputString.equalsIgnoreCase("next week")) {
 			return true;
 		} else {
 			return false;
@@ -1199,7 +1234,7 @@ public class CommandParser {
 		List<Date> dates = new ArrayList<Date>();
 		
 		hasDate = checkForRegexMatch(getDateRegex(), inputString)  || checkForRegexMatch(getDateRegexText(), inputString);
-		hasTime = checkForRegexMatch(getTimeRegex(), inputString) || checkForRegexMatch(REGEX_TIME_WORD, inputString);
+		hasTime = checkForRegexMatch(getTimeRegex(), inputString) || checkForRegexMatch(REGEX_WORD_TIMED, inputString);
 		
 		if (!hasTime) {
 			hasPreposition = checkForRegexMatch(REGEX_PREPOSITION_ALL, inputString);
@@ -1212,7 +1247,7 @@ public class CommandParser {
 		}
 		
 		//check for word indicating date
-		if (checkForRegexMatch(REGEX_DATE_WORD, inputString)) {
+		if (checkForRegexMatch(REGEX_WORD_DATED, inputString)) {
 			hasDate = true;
 			hasTime = true;
 		}
@@ -1369,12 +1404,6 @@ public class CommandParser {
 			throw new InvalidTaskIndexFormat("Invalid indexes input detected.");	
 		}
 	}
-	
-	private String removeWhiteSpace(String string) {
-		string = string.replaceAll("\\s","");
-		assert(!string.isEmpty());
-		return string;
-	}
 
 	private String getStringWithoutCommand(String commandString) throws InvalidLabelFormat{
 		int index = 0;
@@ -1385,6 +1414,12 @@ public class CommandParser {
 		return indexString;
 	}
 
+	private String removeWhiteSpace(String string) {
+		string = string.replaceAll("\\s","");
+		assert(!string.isEmpty());
+		return string;
+	}
+	
 	/**
 	 * This method obtains all numbers based on {@code String} taken in.
 	 * 
