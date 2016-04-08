@@ -3,6 +3,7 @@ package main.ui;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -41,14 +42,13 @@ public class ListViewController extends AnchorPane {
 
     @FXML
     private JFXListView<Task> listView;
-
+    // ListView UI related
+    private VirtualFlow<IndexedCell<String>> virtualFlow;
     private RootLayoutController rootLayoutController;
     private ObservableList<Task> observableTaskList = FXCollections.observableArrayList();
     private ArrayList<Task> taskListWithHeaders;
     private int previousSelectedTaskIndex;
-
-    // ListView UI related
-    private VirtualFlow<IndexedCell<String>> virtualFlow;
+    private HashMap<Integer, Integer> displayedIndexToOriginalIndexMap;
 
     private boolean isOverdueHeaderAdded = false;
     private boolean isTodayHeaderAdded = false;
@@ -88,7 +88,6 @@ public class ListViewController extends AnchorPane {
     public void refreshListView(ArrayList<Task> taskList) {
         saveSelectedIndex();
         observableTaskList.clear();
-
         populateListView(taskList);
         restoreListViewPreviousSelection();
     }
@@ -97,6 +96,23 @@ public class ListViewController extends AnchorPane {
         taskListWithHeaders = createListWithHeaders(taskList);
         observableTaskList.setAll(taskListWithHeaders);
         listView.setItems(observableTaskList);
+
+        initHashMapForListViewIndexes();
+    }
+
+    private void initHashMapForListViewIndexes() {
+        if (displayedIndexToOriginalIndexMap == null) {
+            displayedIndexToOriginalIndexMap = new HashMap<>(taskListWithHeaders.size());
+        }
+        displayedIndexToOriginalIndexMap.clear();
+    }
+
+    public void mapIndexToActualIndex(int displayedIndex, int actualIndex) {
+        displayedIndexToOriginalIndexMap.put(displayedIndex, actualIndex);
+    }
+
+    public int getActualIndex(int displayedIndex){
+        return displayedIndexToOriginalIndexMap.get(displayedIndex);
     }
 
     private ArrayList<Task> createListWithHeaders(ArrayList<Task> taskList) {
@@ -117,7 +133,8 @@ public class ListViewController extends AnchorPane {
                 }
             }
 
-            if (task.isToday() && !task.isOverdue()) { //cases where task is today and not overdue
+            if (task.isToday() && !task.isOverdue()) { // cases where task is
+                                                       // today and not overdue
                 if (!isTodayHeaderAdded) {
                     taskListWithHeaders.add(i, new TaskHeader("Today"));
                     isTodayHeaderAdded = true;
@@ -328,7 +345,9 @@ public class ListViewController extends AnchorPane {
     }
 
     public void selectItem(int index) {
-        listView.getSelectionModel().select(index);
+        int actualIndex = displayedIndexToOriginalIndexMap.get(index);
+        System.out.println("index: " + index + " actualIndex: " + actualIndex);
+        listView.getSelectionModel().select(actualIndex);
     }
 
     public void selectAll() {
@@ -366,23 +385,23 @@ public class ListViewController extends AnchorPane {
         System.out.println("handleArrowKeys: " + previousSelectedTaskIndex);
     }
 
-    public boolean isOverdueHeaderAdded(){
+    public boolean isOverdueHeaderAdded() {
         return isOverdueHeaderAdded;
     }
 
-    public boolean isTodayHeaderAdded(){
+    public boolean isTodayHeaderAdded() {
         return isTodayHeaderAdded;
     }
 
-    public boolean isTomorrowHeaderAdded(){
+    public boolean isTomorrowHeaderAdded() {
         return isTomorrowHeaderAdded;
     }
 
-    public boolean isUpcomingHeaderAdded(){
+    public boolean isUpcomingHeaderAdded() {
         return isUpcomingHeaderAdded;
     }
 
-    public boolean isSomedayHeaderAdded(){
+    public boolean isSomedayHeaderAdded() {
         return isSomedayHeaderAdded;
     }
 }

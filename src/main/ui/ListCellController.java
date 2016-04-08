@@ -154,11 +154,11 @@ public class ListCellController extends JFXListCell<Task> {
     }
 
     public void showTaskIndex(Task task) {
-        this.labelTaskIndex.setText(getActualIndexWithOffset(task, getIndex()) + "");
+        this.labelTaskIndex.setText(getIndexWithOffset(task, getIndex()) + "");
     }
 
-    private int getActualIndexWithOffset(Task task, int taskIndex) {
-        int actualIndex = getIndex();
+    private int getIndexWithOffset(Task task, int taskIndex) {
+
         int numberOfHeaders = 0;
         if (task.isToday() && !task.isOverdue()) {
             if (parentListViewController.isOverdueHeaderAdded()) {
@@ -203,7 +203,9 @@ public class ListCellController extends JFXListCell<Task> {
 
         }
 
-        return actualIndex - numberOfHeaders;
+        int indexWithOffset = taskIndex - numberOfHeaders;
+        parentListViewController.mapIndexToActualIndex(indexWithOffset, taskIndex);
+        return indexWithOffset;
     }
 
     public void showTaskTime(Task task) {
