@@ -182,50 +182,52 @@ public class RootLayoutController implements Observer {
     @Override
     public void update(Observable o, Object arg) {
         if (o instanceof Receiver) {
-            logger.log(Level.INFO, "(" + commandToBeExecuted.getClass().getSimpleName() + ") update() is called");
-            refreshListView();
-
-            if (isUndoRedo) {
-                restoreListViewPreviousSelection();
-                isUndoRedo = false;
-                return;
-            }
-
-            boolean isAddCommand = commandToBeExecuted instanceof AddCommand;
-            boolean isDeleteCommand = commandToBeExecuted instanceof DeleteCommand;
-            boolean isEditCommand = commandToBeExecuted instanceof EditCommand;
-            boolean isDoneCommand = commandToBeExecuted instanceof DoneCommand;
-            boolean isUndoneCommand = commandToBeExecuted instanceof UndoneCommand;
-            boolean isSearchCommand = commandToBeExecuted instanceof SearchCommand;
-
-            if (isAddCommand || isEditCommand) {
-                // TODO
-                executedCommand = commandToBeExecuted;
-                getCurrentListView().getSelectionModel().clearSelection();
-                getCurrentListView().getSelectionModel().select(getIndexFromLastExecutedTask());
-                saveSelectedTaskIndex();
-                executedCommand = null; // once item has been selected. null
-                                        // this reference
-                System.out.println(getIndexFromLastExecutedTask());
-            } else if (isDeleteCommand || isDoneCommand || isUndoneCommand) {
-                executedCommand = commandToBeExecuted;
-                getCurrentListView().getSelectionModel().clearSelection();
-
-                if (previousSelectedTaskIndex > getCurrentTaskList().size()) {
-                    getCurrentListView().getSelectionModel().selectLast();
-                } else {
-                    // select back the previous first index that was in the
-                    // range
-                    if (getCurrentTaskList().size() > 0) {
-                        getCurrentListView().getSelectionModel().select(taskIndexesToBeExecuted.get(0) - 1);
-                    }
-
+            if (commandToBeExecuted != null) {
+                logger.log(Level.INFO, "(" + commandToBeExecuted.getClass().getSimpleName() + ") update() is called");
+                refreshListView();
+    
+                if (isUndoRedo) {
+                    restoreListViewPreviousSelection();
+                    isUndoRedo = false;
+                    return;
                 }
-                executedCommand = null;
-
-            } else if (isSearchCommand) {
-                showFeedback(true, STRING_FEEDBACK_ACTION_SEARCH,
-                        " Found " + currentTaskList.size() + " tasks for -" + userArguments + "-");
+    
+                boolean isAddCommand = commandToBeExecuted instanceof AddCommand;
+                boolean isDeleteCommand = commandToBeExecuted instanceof DeleteCommand;
+                boolean isEditCommand = commandToBeExecuted instanceof EditCommand;
+                boolean isDoneCommand = commandToBeExecuted instanceof DoneCommand;
+                boolean isUndoneCommand = commandToBeExecuted instanceof UndoneCommand;
+                boolean isSearchCommand = commandToBeExecuted instanceof SearchCommand;
+    
+                if (isAddCommand || isEditCommand) {
+                    // TODO
+                    executedCommand = commandToBeExecuted;
+                    getCurrentListView().getSelectionModel().clearSelection();
+                    getCurrentListView().getSelectionModel().select(getIndexFromLastExecutedTask());
+                    saveSelectedTaskIndex();
+                    executedCommand = null; // once item has been selected. null
+                                            // this reference
+                    System.out.println(getIndexFromLastExecutedTask());
+                } else if (isDeleteCommand || isDoneCommand || isUndoneCommand) {
+                    executedCommand = commandToBeExecuted;
+                    getCurrentListView().getSelectionModel().clearSelection();
+    
+                    if (previousSelectedTaskIndex > getCurrentTaskList().size()) {
+                        getCurrentListView().getSelectionModel().selectLast();
+                    } else {
+                        // select back the previous first index that was in the
+                        // range
+                        if (getCurrentTaskList().size() > 0) {
+                            getCurrentListView().getSelectionModel().select(taskIndexesToBeExecuted.get(0) - 1);
+                        }
+    
+                    }
+                    executedCommand = null;
+    
+                } else if (isSearchCommand) {
+                    showFeedback(true, STRING_FEEDBACK_ACTION_SEARCH,
+                            " Found " + currentTaskList.size() + " tasks for -" + userArguments + "-");
+                }
             }
         }
     }
@@ -615,6 +617,7 @@ public class RootLayoutController implements Observer {
         if (getSelectedTabName().equals(tabCompleted.getText())) {
             return virtualFlowCompleted;
         }
+        System.out.println("HEREEEEEEEEE: " + virtualFlowTodo);
         return virtualFlowTodo;
     }
 

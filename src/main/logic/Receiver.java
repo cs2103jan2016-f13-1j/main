@@ -144,19 +144,19 @@ public class Receiver extends Observable {
     private void initialize() {
         todoTasks = new ArrayList<Task>();
         completedTasks = new ArrayList<Task>();
-        Thread thread = new Thread() {
-            public void run() {
-                while(true) {
-                    updateObservers();
-                    try {
-                        Thread.sleep(30000); //Sleep for 30 seconds
-                    } catch (InterruptedException ie) {
-                        logger.log(Level.WARNING, "Thread interrupted while updating observers");
-                    }
-                }
-            }
-        };
-        thread.start();
+//        Thread thread = new Thread() {
+//            public void run() {
+//                while(true) {
+//                    updateObservers();
+//                    try {
+//                        Thread.sleep(5000); //Sleep for 30 seconds
+//                    } catch (InterruptedException ie) {
+//                        logger.log(Level.WARNING, "Thread interrupted while updating observers");
+//                    }
+//                }
+//            }
+//        };
+//        thread.start();
     }
     
     public void initiateSave() {
