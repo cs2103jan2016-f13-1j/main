@@ -617,7 +617,6 @@ public class RootLayoutController implements Observer {
         if (getSelectedTabName().equals(tabCompleted.getText())) {
             return virtualFlowCompleted;
         }
-        System.out.println("HEREEEEEEEEE: " + virtualFlowTodo);
         return virtualFlowTodo;
     }
 
