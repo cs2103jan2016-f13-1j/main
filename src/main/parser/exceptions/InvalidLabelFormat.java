@@ -8,7 +8,7 @@ package main.parser.exceptions;
  */
 @SuppressWarnings("serial")
 public class InvalidLabelFormat extends Exception {
-	public InvalidLabelFormat(String message) {
-		super (message);	  		
-	}
+    public InvalidLabelFormat(String message) {
+        super(message);
+    }
 }
