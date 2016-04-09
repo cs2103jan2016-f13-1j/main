@@ -131,10 +131,22 @@ public class Receiver extends Observable {
         return storage.getFilePath();
     }
     
+    /**
+     * This method returns the current directory of the output file.
+     * 
+     * @return   A {@code String} indicating the file directory
+     */
     public String getFileDir() {
         return storage.getFileDir();
     }
     
+    /**
+     * This method updates the storage file path with the given {@code path},
+     * then loads tasks from the file into the program and notifies observers
+     * 
+     * @param   path
+     *          The new {@code path} to set to
+     */
     public void setFilePath(String path) {
         storage.setFileLocation(path);
         loadFromStorage();
@@ -168,9 +180,9 @@ public class Receiver extends Observable {
     }
     
     public void updateObservers() {
+        logger.log(Level.INFO, "Updating observers");
         setChanged();
         notifyObservers();
-        System.out.println("UPDATING OBSERVERS");
     }
     
     private void loadFromStorage() {
