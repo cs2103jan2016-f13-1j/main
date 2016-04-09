@@ -389,10 +389,32 @@ public class Task {
         }
 
         if (!priority.equals("0")) {
+            priority = getPriorityString(Integer.parseInt(priority));
             feedback = feedback.concat(" P:" + priority);
         }
 
         return feedback;
+    }
+    
+    private String getPriorityString(int priority) {
+        String level = null;
+            switch (priority) {
+            case 1 :
+                level = "low";
+                break;
+                
+            case 2 :
+                level = "mid";
+                break;
+    
+            case 3:
+                level = "high";
+                break;
+                
+            default :
+                break;
+        }
+        return level;
     }
 
     /**

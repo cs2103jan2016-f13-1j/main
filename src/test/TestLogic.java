@@ -266,6 +266,8 @@ public class TestLogic implements Observer {
             assertEquals(3, todo.size());
             invoker.execute(new SearchCommand(receiver, "a b c"));
             assertEquals(3, todo.size());
+            invoker.execute(new SearchCommand(receiver, "b a"));
+            assertEquals(0, todo.size());
             invoker.execute(new SearchCommand(receiver, "d"));
             assertEquals(2, todo.size());
             invoker.execute(new SearchCommand(receiver, "d #e"));
@@ -298,17 +300,20 @@ public class TestLogic implements Observer {
             Date tomorrow = calendar.getTime();
             
             SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-            Date fifthJune = sdf.parse("5/6/2016");
+            Date fifthJune = sdf.parse("5/6/2099");
             
             Task task1 = parser.parseAdd("task1 by 11.59pm today");
             Task task2 = parser.parseAdd("task2 by 11.59pm");
             Task task3 = parser.parseAdd("task3 by tomorrow 11.59pm");
-            Task task4 = parser.parseAdd("task4 by 5 june 1pm");
+            Task task4 = parser.parseAdd("task4 by 5 june 2099 1pm");
+            Task task5 = parser.parseAdd("task5 on 5 june 2099 at 1-2pm");
             
             invoker.execute(new AddCommand(receiver, task1));
             invoker.execute(new AddCommand(receiver, task2));
             invoker.execute(new AddCommand(receiver, task3));
             invoker.execute(new AddCommand(receiver, task4));
+            invoker.execute(new AddCommand(receiver, task5));
+            invoker.execute(new DoneCommand(receiver,task5));
             assertTrue(todo.size() == 4);
             
             invoker.execute(new SearchCommand(receiver, today));
@@ -320,12 +325,73 @@ public class TestLogic implements Observer {
             
             invoker.execute(new SearchCommand(receiver, fifthJune));
             assertTrue(todo.size() == 1);
+            assertTrue(completed.size() == 1);
             assertEquals(task4, todo.get(0));
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 	
+    /*
+     * Tests the search command with key strings such as:
+     * "this week", "next week", "upcoming", "someday", "deadline", "priority l/m/h"
+     */
+    @Test
+    public void searchKeywordTest() {
+        try {
+            Task task1 = parser.parseAdd("task1 by 11.59pm today");
+            Task task2 = parser.parseAdd("task2 at 10-11pm today");
+            Task task3 = parser.parseAdd("task3 at 1-2pm today");
+            Task task4 = parser.parseAdd("task4 next monday at 11pm");
+            Task task5 = parser.parseAdd("task5 next monday 1-2pm");
+            Task task6 = parser.parseAdd("task6 on 5 june 2099 at 11pm");
+            Task task7 = parser.parseAdd("task7 on 5 june 2099 at 1-2pm");
+            Task task8 = parser.parseAdd("no date");
+            
+            invoker.execute(new AddCommand(receiver, task1));
+            invoker.execute(new AddCommand(receiver, task2));
+            invoker.execute(new AddCommand(receiver, task3));
+            invoker.execute(new AddCommand(receiver, task4));
+            invoker.execute(new AddCommand(receiver, task5));
+            invoker.execute(new AddCommand(receiver, task6));
+            invoker.execute(new AddCommand(receiver, task7));
+            invoker.execute(new AddCommand(receiver, task8));
+            invoker.execute(new PriorityCommand(receiver, task5));
+            invoker.execute(new PriorityCommand(receiver, task6));
+            invoker.execute(new PriorityCommand(receiver, task6));
+            invoker.execute(new PriorityCommand(receiver, task7));
+            invoker.execute(new PriorityCommand(receiver, task7));
+            invoker.execute(new PriorityCommand(receiver, task7));
+            assertTrue(todo.size() == 8);
+            
+            invoker.execute(new SearchCommand(receiver, "this week"));
+            assertTrue(todo.size() == 3);
+            
+            invoker.execute(new SearchCommand(receiver, "next week"));
+            assertTrue(todo.size() == 2);
+            
+            invoker.execute(new SearchCommand(receiver, "upcoming"));
+            assertTrue(todo.size() == 4);
+            
+            invoker.execute(new SearchCommand(receiver, "someday"));
+            assertTrue(todo.size() == 1);
+            
+            invoker.execute(new SearchCommand(receiver, "deadline"));
+            assertTrue(todo.size() == 1);
+            
+            invoker.execute(new SearchCommand(receiver, "priority l"));
+            assertTrue(todo.size() == 1);
+            
+            invoker.execute(new SearchCommand(receiver, "priority m"));
+            assertTrue(todo.size() == 1);
+            
+            invoker.execute(new SearchCommand(receiver, "priority h"));
+            assertTrue(todo.size() == 1);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
 	/*
 	 * Tests the priority command
 	 * Cycle through priority 0 to 3, then undo and redo
@@ -410,6 +476,7 @@ public class TestLogic implements Observer {
             invoker.execute(new AddCommand(receiver, parser.parseAdd("Meet John for drinks at 1am")));
             invoker.execute(new AddCommand(receiver, parser.parseAdd("Catch up with Jim at 1-2am")));
             invoker.execute(new AddCommand(receiver, parser.parseAdd("Group discussion at 1-3am")));
+            invoker.execute(new AddCommand(receiver, parser.parseAdd("Buy snacks at 1.10am")));
             invoker.execute(new AddCommand(receiver, parser.parseAdd("Call Jim at 3am")));
             invoker.execute(new AddCommand(receiver, parser.parseAdd("Submit report by 3am")));
             assertFalse(todo.get(0).getCollideWithPrev());
@@ -419,11 +486,13 @@ public class TestLogic implements Observer {
             assertTrue(todo.get(2).getCollideWithPrev());
             assertTrue(todo.get(2).getCollideWithNext());
             assertTrue(todo.get(3).getCollideWithPrev());
-            assertFalse(todo.get(3).getCollideWithNext());
-            assertFalse(todo.get(4).getCollideWithPrev());
+            assertTrue(todo.get(3).getCollideWithNext());
+            assertTrue(todo.get(4).getCollideWithPrev());
             assertFalse(todo.get(4).getCollideWithNext());
             assertFalse(todo.get(5).getCollideWithPrev());
             assertFalse(todo.get(5).getCollideWithNext());
+            assertFalse(todo.get(6).getCollideWithPrev());
+            assertFalse(todo.get(6).getCollideWithNext());
 
             while (!todo.isEmpty()) {
                 invoker.execute(new DeleteCommand(receiver, todo.get(0)));
@@ -438,6 +507,7 @@ public class TestLogic implements Observer {
 	 */
 	@Test
 	public void setFilePathTest() {
+	    assertNotNull(receiver.getFileDir());
 	    String originalPath = receiver.getFilePath();
 	    String test = "test2.txt";
 	    File file = new File(test);

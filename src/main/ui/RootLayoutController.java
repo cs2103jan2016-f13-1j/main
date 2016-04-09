@@ -223,6 +223,7 @@ public class RootLayoutController implements Observer {
                 } else if (isSearchCommand) {
                     showFeedback(true, STRING_FEEDBACK_ACTION_SEARCH,
                             " Found " + currentList.size() + " tasks for -" + userArguments + "-");
+
                 }
             }
         }
