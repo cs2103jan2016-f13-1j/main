@@ -61,18 +61,23 @@ public class RootLayoutController implements Observer {
     private static final String STRING_COMMAND_SEARCH = "search";
     private static final String STRING_COMMAND_DONE = "done";
     private static final String STRING_COMMAND_UNDONE = "undone";
+    private static final String STRING_COMMAND_UNDO = "undo";
+    private static final String STRING_COMMAND_REDO = "redo";
     private static final String STRING_COMMAND_SET_FILE_LOCATION = "set";
     private static final String STRING_DOUBLE_QUOTATIONS_WITH_TEXT = "\"%1$s\"";
     private static final String STRING_TAB_TASK_SIZE = "(%1$s)";
     private static final String STRING_LISTVIEW_TODO_EMPTY = "You have no task!";
     private static final String STRING_LISTVIEW_COMPLETED_EMPTY = "You have no completed task!";
-    private static final String STRING_FEEDBACK_ACTION_ADD = "Adding: ";
-    private static final String STRING_FEEDBACK_ACTION_EDIT = "Editing: ";
-    private static final String STRING_FEEDBACK_ACTION_DELETE = "Deleting: ";
+    private static final String STRING_FEEDBACK_ACTION_ADD = "Adding:";
+    private static final String STRING_FEEDBACK_ACTION_EDIT = "Editing:";
+    private static final String STRING_FEEDBACK_ACTION_DELETE = "Deleting:";
     private static final String STRING_FEEDBACK_TOTAL_TASK = "(%1$s tasks)";
     private static final String STRING_FEEDBACK_ACTION_SEARCH = "Searching:";
-    private static final String STRING_FEEDBACK_ACTION_DONE = "Mark as done: ";
-    private static final String STRING_FEEDBACK_ACTION_UNDONE = "Mark as undone: ";
+    private static final String STRING_FEEDBACK_ACTION_DONE = "Mark as done:";
+    private static final String STRING_FEEDBACK_ACTION_UNDONE = "Mark as undone:";
+    private static final String STRING_FEEDBACK_ACTION_UNDO = "Undoing:";
+    private static final String STRING_FEEDBACK_ACTION_REDO = "Redoing:";
+    private static final String STRING_FEEDBACK_TOTAL_ACTION = "%1$s action";
     private static final String STRING_FEEDBACK_ACTION_SET_FILE_LOCATION = "Setting file location: ";
     private static final String STRING_ERROR_NOT_FOUND = "Task -%1$s- not found.";
     private static final String STRING_EMPTY = "";
@@ -160,6 +165,7 @@ public class RootLayoutController implements Observer {
     private int previousCaretPosition;
     private boolean isSearchMode;
     private boolean isUndoRedo;
+    private int numberOfActions;
 
     private ArrayList<Task> currentList;
 
@@ -172,49 +178,48 @@ public class RootLayoutController implements Observer {
         if (o instanceof Receiver) {
             if (commandToBeExecuted != null) {
                 logger.log(Level.INFO, "(" + commandToBeExecuted.getClass().getSimpleName() + ") update() is called");
-    
+
                 refreshListView();
-    
+
                 // TODO do something about this
                 if (isUndoRedo) {
-                    restoreListViewPreviousSelection();
+                    // restoreListViewPreviousSelection();
                     isUndoRedo = false;
                     return;
                 }
-    
+
                 boolean isAddCommand = commandToBeExecuted instanceof AddCommand;
                 boolean isDeleteCommand = commandToBeExecuted instanceof DeleteCommand;
                 boolean isEditCommand = commandToBeExecuted instanceof EditCommand;
                 boolean isDoneCommand = commandToBeExecuted instanceof DoneCommand;
                 boolean isUndoneCommand = commandToBeExecuted instanceof UndoneCommand;
                 boolean isSearchCommand = commandToBeExecuted instanceof SearchCommand;
-    
+
                 if (isAddCommand || isEditCommand) {
                     // TODO
-                    executedCommand = commandToBeExecuted;
+
+                    int displayIndex = getCurrentListViewController().getDisplayIndex(getIndexFromLastExecutedTask());
                     getCurrentListViewController().clearListViewSelection();
-                    getCurrentListViewController().selectItem(getIndexFromLastExecutedTask());
+                    getCurrentListViewController().select(displayIndex);
                     System.out.println("last executed task index: " + getIndexFromLastExecutedTask());
-                    getCurrentListViewController().saveSelectedIndex();
-                    executedCommand = null; // once item has been selected. null
-                                            // this reference
+                    // getCurrentListViewController().saveSelectedIndex();
                     System.out.println(getIndexFromLastExecutedTask());
                 } else if (isDeleteCommand || isDoneCommand || isUndoneCommand) {
                     executedCommand = commandToBeExecuted;
                     getCurrentListViewController().clearListViewSelection();
-    
+
                     if (getCurrentListViewController().getPreviousSelectedIndex() > getCurrentList().size()) {
                         getCurrentListViewController().selectLast();
                     } else {
                         // select back the previous first index that was in the
                         // range
                         if (getCurrentList().size() > 0) {
-                            getCurrentListViewController().selectItem(taskIndexesToBeExecuted.get(0));
+                            getCurrentListViewController().select(taskIndexesToBeExecuted.get(0));
                         }
-    
+
                     }
                     executedCommand = null;
-    
+
                 } else if (isSearchCommand) {
                     showFeedback(true, STRING_FEEDBACK_ACTION_SEARCH,
                             " Found " + currentList.size() + " tasks for -" + userArguments + "-");
@@ -227,7 +232,7 @@ public class RootLayoutController implements Observer {
      * @return
      */
     public int getIndexFromLastExecutedTask() {
-        System.out.println("Last executed task: "+taskToBeExecuted.toString());
+        System.out.println("Last executed task index: " + getCurrentList().indexOf(taskToBeExecuted));
         return getCurrentList().indexOf(taskToBeExecuted);
     }
 
@@ -372,10 +377,10 @@ public class RootLayoutController implements Observer {
                     handleArrowKeys(keyEvent);
                     keyEvent.consume();
                 } else if (keyEvent.getCode() == KeyCode.F1) {
-                    handleFOneKey();
+                    handleUndo();
                     keyEvent.consume();
                 } else if (keyEvent.getCode() == KeyCode.F2) {
-                    handleFTwoKey();
+                    handleRedo();
                     keyEvent.consume();
                 } else if (keyEvent.getCode() == KeyCode.DELETE) {
                     handleDeleteKey();
@@ -481,7 +486,7 @@ public class RootLayoutController implements Observer {
     /**
      *
      */
-    private void handleFOneKey() {
+    private void handleUndo() {
         if (invoker.isUndoAvailable()) {
             try {
                 isUndoRedo = true;
@@ -501,7 +506,7 @@ public class RootLayoutController implements Observer {
     /**
      *
      */
-    private void handleFTwoKey() {
+    private void handleRedo() {
         if (invoker.isRedoAvailable()) {
             try {
                 isUndoRedo = true;
@@ -556,6 +561,25 @@ public class RootLayoutController implements Observer {
     private void handleEnterKey() {
         if (commandBar.getText().trim().length() > 0) {
 
+            if (userCommand.equals(STRING_COMMAND_UNDO)) {
+                System.out.println("Enter key: " + userCommand);
+                for (int i = 0; i < numberOfActions; i++) {
+                    handleUndo();
+                }
+                resetStateAfterExecution();
+                return;
+
+            }
+
+            if (userCommand.equals(STRING_COMMAND_REDO)) {
+                System.out.println("Enter key: " + userCommand);
+                for (int i = 0; i < numberOfActions; i++) {
+                    handleRedo();
+                }
+                resetStateAfterExecution();
+                return;
+            }
+
             if (commandToBeExecuted == null) {
                 return;
             }
@@ -585,16 +609,21 @@ public class RootLayoutController implements Observer {
                 isSearchMode = true;
                 showSearchChipInCommandBar(isSearchMode);
             }
+
         }
 
         if (isSearchMode) {
             invoker.execute(searchCommand);
         }
 
+        resetStateAfterExecution();
+
+    }
+
+    private void resetStateAfterExecution() {
         btnFeedback.setVisible(false);
         clearStoredUserInput();
         commandBar.clear();
-
     }
 
     /**
@@ -746,6 +775,12 @@ public class RootLayoutController implements Observer {
             case STRING_COMMAND_UNDONE :
                 parseUndone();
                 break;
+            case STRING_COMMAND_UNDO :
+                parseUndo();
+                break;
+            case STRING_COMMAND_REDO :
+                parseRedo();
+                break;
             case STRING_COMMAND_SET_FILE_LOCATION :
                 parseSetFileLocation();
                 break;
@@ -806,8 +841,8 @@ public class RootLayoutController implements Observer {
             System.out.println("user arguments: " + userArguments);
             System.out.println("parse result: " + parseResult);
 
-
-            if (taskIndexesToBeExecuted.size() == 1) { //when there's only 1 index
+            if (taskIndexesToBeExecuted.size() == 1) { // when there's only 1
+                                                       // index
                 int taskIndex = taskIndexesToBeExecuted.get(0);
                 int actualIndex = getCurrentListViewController().getActualIndex(taskIndex);
                 inputFeedback = getCurrentList().get(actualIndex).toString();
@@ -815,15 +850,16 @@ public class RootLayoutController implements Observer {
                 listOfTaskToBeExecuted = getTasksToBeExecuted(taskIndexesToBeExecuted);
                 commandToBeExecuted = new DeleteCommand(receiver, listOfTaskToBeExecuted);
                 getCurrentListViewController().clearListViewSelection();
-                getCurrentListViewController().selectItem(taskIndex);
+                getCurrentListViewController().select(taskIndex);
                 showFeedback(true, STRING_FEEDBACK_ACTION_DELETE, inputFeedback);
 
-            } else if (taskIndexesToBeExecuted.size() > 1) { //when there's a range of indexes
+            } else if (taskIndexesToBeExecuted.size() > 1) { // when there's a
+                                                             // range of indexes
                 listOfTaskToBeExecuted = getTasksToBeExecuted(taskIndexesToBeExecuted);
                 commandToBeExecuted = new DeleteCommand(receiver, listOfTaskToBeExecuted);
                 getCurrentListViewController().clearListViewSelection();
                 for (int index : taskIndexesToBeExecuted) {
-                    getCurrentListViewController().selectItem(index);
+                    getCurrentListViewController().select(index);
                 }
                 showFeedback(true, STRING_FEEDBACK_ACTION_DELETE, userArguments + STRING_WHITESPACE
                         + String.format(STRING_FEEDBACK_TOTAL_TASK, listOfTaskToBeExecuted.size()));
@@ -874,8 +910,7 @@ public class RootLayoutController implements Observer {
             logger.log(Level.INFO, "EDIT command arguments is: " + userArguments);
             taskToBeExecuted = commandParser.parseEdit(taskToBeEdited, userArguments);
             commandToBeExecuted = new EditCommand(receiver, taskToBeEdited, taskToBeExecuted);
-            getCurrentListViewController().clearListViewSelection();
-            getCurrentListViewController().selectItem(taskIndex);
+            getCurrentListViewController().clearAndSelect(taskIndex);
             return;
         } catch (IndexOutOfBoundsException ioobe) {
             ioobe.printStackTrace();
@@ -962,15 +997,14 @@ public class RootLayoutController implements Observer {
                 taskToBeExecuted = getCurrentList().get(actualIndex);
                 inputFeedback = taskToBeExecuted.toString();
                 commandToBeExecuted = new DoneCommand(receiver, getTasksToBeExecuted(taskIndexesToBeExecuted));
-                getCurrentListViewController().clearListViewSelection();
-                getCurrentListViewController().selectItem(taskIndex);
+                getCurrentListViewController().clearAndSelect(taskIndex);
                 showFeedback(true, STRING_FEEDBACK_ACTION_DONE, inputFeedback);
 
             } else {
                 commandToBeExecuted = new DoneCommand(receiver, getTasksToBeExecuted(taskIndexesToBeExecuted));
                 getCurrentListViewController().clearListViewSelection();
                 for (int index : taskIndexesToBeExecuted) {
-                    getCurrentListViewController().selectItem(index);
+                    getCurrentListViewController().select(index);
                 }
                 showFeedback(true, STRING_FEEDBACK_ACTION_DONE, userArguments + STRING_WHITESPACE
                         + String.format(STRING_FEEDBACK_TOTAL_TASK, taskIndexesToBeExecuted.size()));
@@ -1018,15 +1052,14 @@ public class RootLayoutController implements Observer {
                 taskToBeExecuted = getCurrentList().get(actualIndex);
                 inputFeedback = taskToBeExecuted.toString();
                 commandToBeExecuted = new UndoneCommand(receiver, getTasksToBeExecuted(taskIndexesToBeExecuted));
-                getCurrentListViewController().clearListViewSelection();
-                getCurrentListViewController().selectItem(taskIndex);
+                getCurrentListViewController().clearAndSelect(taskIndex);
                 showFeedback(true, STRING_FEEDBACK_ACTION_UNDONE, inputFeedback);
 
             } else {
                 commandToBeExecuted = new UndoneCommand(receiver, getTasksToBeExecuted(taskIndexesToBeExecuted));
                 getCurrentListViewController().clearListViewSelection();
                 for (int index : taskIndexesToBeExecuted) {
-                    getCurrentListViewController().selectItem(index);
+                    getCurrentListViewController().select(index);
                 }
                 showFeedback(true, STRING_FEEDBACK_ACTION_UNDONE, userArguments + STRING_WHITESPACE
                         + String.format(STRING_FEEDBACK_TOTAL_TASK, taskIndexesToBeExecuted.size()));
@@ -1043,6 +1076,29 @@ public class RootLayoutController implements Observer {
             clearStoredUserInput();
             showFeedback(true, STRING_FEEDBACK_ACTION_UNDONE, String.format(STRING_ERROR_NOT_FOUND, userArguments));
             return;
+        }
+
+    }
+
+    private void parseUndo() {
+        numberOfActions = commandParser.getIndexForEdit(userInput);
+        if (numberOfActions >= 0) {
+            showFeedback(true, STRING_FEEDBACK_ACTION_UNDO,
+                    String.format(STRING_FEEDBACK_TOTAL_ACTION, numberOfActions));
+
+        } else {
+            showFeedback(true, STRING_FEEDBACK_ACTION_UNDO, String.format(STRING_FEEDBACK_TOTAL_ACTION, 0));
+
+        }
+    }
+
+    private void parseRedo() {
+        numberOfActions = commandParser.getIndexForEdit(userInput);
+        if (numberOfActions >= 0) {
+            showFeedback(true, STRING_FEEDBACK_ACTION_REDO,
+                    String.format(STRING_FEEDBACK_TOTAL_ACTION, numberOfActions));
+        } else {
+            showFeedback(true, STRING_FEEDBACK_ACTION_REDO, String.format(STRING_FEEDBACK_TOTAL_ACTION, 0));
         }
 
     }
@@ -1122,7 +1178,7 @@ public class RootLayoutController implements Observer {
             logger.log(Level.INFO, "Showing user feedback: " + userFeedback);
         }
 
-        textUserAction.setText(userAction);
+        textUserAction.setText(userAction + STRING_WHITESPACE);
         // textUserAction.setFont(new Font(20));
         textUserAction.setFill(Color.web("303F9F", 0.7));
         textUserParsedResult.setText(userFeedback);
@@ -1318,7 +1374,7 @@ public class RootLayoutController implements Observer {
     }
 
     public void restoreListViewPreviousSelection() {
-        todoListViewController.restoreListViewPreviousSelection();
+        getCurrentListViewController().restoreListViewPreviousSelection();
         // TODO one more line for completedtaskcontroller
     }
 
