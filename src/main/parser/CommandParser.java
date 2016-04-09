@@ -42,7 +42,7 @@ public class CommandParser {
             + "(wed)(nesday|s)?|(thu)(rsday|rs|r)?|(fri)(day)?|(sat)(urday)?|(sun)(day)?))\\b";
     private final String REGEX_WORD_DATED = "\\b(today|tdy|tonight|tomorrow|tmr|tml|tmrw)\\b";
     private final String REGEX_WORD_TIMED = "\\b(morning|afternoon|evening|midnight)\\b";
-    private final String REGEX_PRIORITY = "\\b((priority|p) ?)(1|2|3)\\b";
+    private final String REGEX_PRIORITY = "\\b(?i)((priority) ?)(low|l|medium|m|mid|med|high|h)\\b";
 
     private final int DATE_INDEX = 0;
     private final int DATE_START = 0;
@@ -55,6 +55,11 @@ public class CommandParser {
     private final String STRING_TWELVE = "12";
     private final String STRING_NEXT_WEEK = "next week";
 
+    private final int PRIORITY_LENGTH = 8;
+    private final int PRIORITY_LOW = 1;
+    private final int PRIORITY_MID = 2;
+    private final int PRIORITY_HIGH = 3;
+    
     private final int DOUBLE_DIGIT = 10;
     private final int LENGTH_OFFSET = 1;
     private final int INDEX_OFFSET = 1;
@@ -402,11 +407,38 @@ public class CommandParser {
 
     private int getPriority(String inputString) {
         assert (inputString != null);
-        String priority = inputString.substring(inputString.length() - LENGTH_OFFSET);
-        int level = Integer.parseInt(priority);
+        String priority = inputString.substring(PRIORITY_LENGTH).trim();
+        int level = assignLevel(priority);
         return level;
     }
+    
+    private int assignLevel(String priority) {
+        int level = 0;
+        priority = priority.toLowerCase();
+        switch (priority) {
+            case "l" :
+            case "low" :
+                level = PRIORITY_LOW;
+                break;
+                
+            case "m" :
+            case "mid" :
+            case "med" :
+            case "medium" :
+                level = PRIORITY_MID;
+                break;
 
+            case "h" :
+            case "high" :
+                level = PRIORITY_HIGH;
+                break;
+                
+            default :
+                break;
+        }
+        return level;
+    }
+    
     private String removeStringFromTitle(String title, String string) {
         title = title.replace(string, "");
         title = removeExtraSpaces(title);
@@ -909,18 +941,21 @@ public class CommandParser {
 
     private ArrayList<String> getDaysShorthand(ArrayList<String> days, String day) {
         switch (day) {
-        case "tuesday":
-            days.add("tues");
-            break;
-        case "wednesday":
-            days.add("weds");
-            break;
-        case "thursday":
-            days.add("thur");
-            days.add("thurs");
-            break;
-        default:
-            break;
+            case "tuesday" :
+                days.add("tues");
+                break;
+                
+            case "wednesday" :
+                days.add("weds");
+                break;
+                
+            case "thursday" :
+                days.add("thur");
+                days.add("thurs");
+                break;
+                
+            default :
+                break;
         }
         return days;
     }
