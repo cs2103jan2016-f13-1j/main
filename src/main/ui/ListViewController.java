@@ -48,7 +48,8 @@ public class ListViewController extends AnchorPane {
     private ObservableList<Task> observableTaskList = FXCollections.observableArrayList();
     private ArrayList<Task> taskListWithHeaders;
     private int previousSelectedTaskIndex;
-    private HashMap<Integer, Integer> displayedIndexToOriginalIndexMap;
+    private HashMap<Integer, Integer> displayIndexToActualIndexMap;
+    private HashMap<Integer, Integer> actualIndexToDisplayIndexMap;
 
     private boolean isOverdueHeaderAdded = false;
     private boolean isTodayHeaderAdded = false;
@@ -94,25 +95,103 @@ public class ListViewController extends AnchorPane {
 
     public void populateListView(ArrayList<Task> taskList) {
         taskListWithHeaders = createListWithHeaders(taskList);
+        initHashMapForListViewIndexes();
         observableTaskList.setAll(taskListWithHeaders);
         listView.setItems(observableTaskList);
-
-        initHashMapForListViewIndexes();
     }
 
     private void initHashMapForListViewIndexes() {
-        if (displayedIndexToOriginalIndexMap == null) {
-            displayedIndexToOriginalIndexMap = new HashMap<>(taskListWithHeaders.size());
+        if (displayIndexToActualIndexMap == null) {
+            displayIndexToActualIndexMap = new HashMap<>(taskListWithHeaders.size());
         }
-//        displayedIndexToOriginalIndexMap.clear();
+
+        if (actualIndexToDisplayIndexMap == null) {
+            actualIndexToDisplayIndexMap = new HashMap<>(taskListWithHeaders.size());
+        }
+
+        actualIndexToDisplayIndexMap.clear();
+        displayIndexToActualIndexMap.clear();
+
+        for (int i = 0; i < taskListWithHeaders.size(); i++) {
+            Task task = taskListWithHeaders.get(i);
+            int indexWithOffset = getIndexWithOffset(task, i);
+            boolean isTaskObject = !(task instanceof TaskHeader);
+            if(isTaskObject){
+                mapIndexWithOffsetToActualIndex(indexWithOffset, i);
+                mapActualIndexToIndexWithOffset(i, indexWithOffset);
+            }
+
+        }
+
     }
 
-    public void mapIndexToActualIndex(int displayedIndex, int actualIndex) {
-        displayedIndexToOriginalIndexMap.put(displayedIndex, actualIndex);
+    public void mapIndexWithOffsetToActualIndex(int displayIndex, int actualIndex) {
+        displayIndexToActualIndexMap.put(displayIndex, actualIndex);
+
     }
 
-    public int getActualIndex(int displayedIndex){
-        return displayedIndexToOriginalIndexMap.get(displayedIndex);
+    public void mapActualIndexToIndexWithOffset(int actualIndex, int displayIndex) {
+        actualIndexToDisplayIndexMap.put(actualIndex, displayIndex);
+
+    }
+
+    public int getActualIndex(int displayIndex) {
+        return displayIndexToActualIndexMap.get(displayIndex);
+    }
+
+    public int getDisplayIndex(int actualIndex) {
+        return actualIndexToDisplayIndexMap.get(actualIndex);
+    }
+
+    private int getIndexWithOffset(Task task, int taskIndex) {
+
+        int numberOfHeaders = 0;
+        if (task.isToday() && !task.isOverdue()) {
+            if (isOverdueHeaderAdded()) {
+                numberOfHeaders++;
+            }
+        }
+
+        if (task.isTomorrow()) {
+            if (isOverdueHeaderAdded()) {
+                numberOfHeaders++;
+            }
+            if (isTodayHeaderAdded()) {
+                numberOfHeaders++;
+            }
+        }
+
+        if (task.isUpcoming()) {
+            if (isOverdueHeaderAdded()) {
+                numberOfHeaders++;
+            }
+            if (isTodayHeaderAdded()) {
+                numberOfHeaders++;
+            }
+            if (isTomorrowHeaderAdded()) {
+                numberOfHeaders++;
+            }
+        }
+
+        if (task.isSomeday()) {
+            if (isOverdueHeaderAdded()) {
+                numberOfHeaders++;
+            }
+            if (isTodayHeaderAdded()) {
+                numberOfHeaders++;
+            }
+            if (isTomorrowHeaderAdded()) {
+                numberOfHeaders++;
+            }
+            if (isUpcomingHeaderAdded()) {
+                numberOfHeaders++;
+            }
+
+        }
+
+        int indexWithOffset = taskIndex - numberOfHeaders;
+        System.out.println("indexWithOffset: " + indexWithOffset + " original index: " + taskIndex);
+        return indexWithOffset;
     }
 
     private ArrayList<Task> createListWithHeaders(ArrayList<Task> taskList) {
@@ -191,15 +270,11 @@ public class ListViewController extends AnchorPane {
                 // saveSelectedIndex();
 
                 if (newValue instanceof TaskHeader) {
-                    int currentSelectedIndex = listView.getSelectionModel().getSelectedIndex();
-                    System.out.println(currentSelectedIndex);
+                    if (getSelectedIndex() < getPreviousSelectedIndex()) {
+                        listView.getSelectionModel().clearAndSelect(getSelectedIndex() - 1);
 
-                    if (currentSelectedIndex < getPreviousSelectedIndex()) {
-
-                        listView.getSelectionModel().clearAndSelect(currentSelectedIndex - 1);
-
-                    } else if (currentSelectedIndex > getPreviousSelectedIndex()) {
-                        listView.getSelectionModel().clearAndSelect(currentSelectedIndex + 1);
+                    } else if (getSelectedIndex() > getPreviousSelectedIndex()) {
+                        listView.getSelectionModel().clearAndSelect(getSelectedIndex() + 1);
                     }
                 }
                 adjustViewportForListView();
@@ -271,7 +346,12 @@ public class ListViewController extends AnchorPane {
 
             if (taskIndex < firstVisibleIndex) {
                 int numberOfCellsDifference = firstVisibleIndex - taskIndex;
-                listView.scrollTo(taskIndex);
+                if (taskIndex == 1) {
+                    listView.scrollTo(0); //index 1 is selected, scroll to index 0 to show header
+                } else {
+                    listView.scrollTo(taskIndex);
+                }
+
                 logger.log(Level.INFO, "Item index: " + taskIndex);
                 logger.log(Level.INFO, "Item index is less than viewport first visible index");
                 logger.log(Level.INFO, "Cell differences: " + numberOfCellsDifference);
@@ -345,7 +425,7 @@ public class ListViewController extends AnchorPane {
     }
 
     public void selectItem(int index) {
-        int actualIndex = displayedIndexToOriginalIndexMap.get(index);
+        int actualIndex = displayIndexToActualIndexMap.get(index);
         System.out.println("index: " + index + " actualIndex: " + actualIndex);
         listView.getSelectionModel().select(actualIndex);
     }

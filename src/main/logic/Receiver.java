@@ -19,33 +19,33 @@ import main.storage.Storage;
  *
  */
 public class Receiver extends Observable {
-    
+
     private static final Logger logger = Logger.getLogger(Receiver.class.getName());
-    
+
     private static Receiver receiver;
-    
+
     private Storage storage;
     private ArrayList<Task> allTasks;
     private ArrayList<Task> todoTasks;
     private ArrayList<Task> completedTasks;
-    
+
     private ScheduleManager scheduler;
-    
+
     private Receiver() {
         storage = Storage.getInstance();
         scheduler = new ScheduleManager();
         assert(storage != null);
-        
+
         initialize();
         assert(todoTasks != null);
         assert(completedTasks != null);
-        
+
         loadFromStorage();
     }
-    
+
     /**
      * A static method to initialize an instance of the {@code Receiver} class.
-     * 
+     *
      * @return   An instance of the {@code Receiver} class
      */
     public static synchronized Receiver getInstance() {
@@ -55,7 +55,7 @@ public class Receiver extends Observable {
         assert(receiver != null);
         return receiver;
     }
-    
+
     /**
      * Prevents attempts to clone this singleton class.
      */
@@ -63,16 +63,16 @@ public class Receiver extends Observable {
         logger.log(Level.WARNING, "Clone not supported. This is a singleton class.");
         throw new CloneNotSupportedException();
     }
-    
+
     /**
      * Use to retrieve all tasks
-     * 
+     *
      * @return  all tasks
      */
     public ArrayList<Task> getAllTasks() {
         return allTasks;
     }
-    
+
     /**
      * Use to set {@code allTasks} with a new {@code ArrayList}
      * @param   tasks
@@ -81,16 +81,16 @@ public class Receiver extends Observable {
     public void setAllTasks(ArrayList<Task> tasks) {
         allTasks = tasks;
     }
-    
+
     /**
      * Use to retrieve ToDo tasks
-     * 
+     *
      * @return  todo tasks
      */
     public ArrayList<Task> getTodoTasks() {
         return todoTasks;
     }
-    
+
     /**
      * Use to set {@code todoTasks} with a new {@code ArrayList}
      * @param   tasks
@@ -99,16 +99,16 @@ public class Receiver extends Observable {
     public void setTodoTasks(ArrayList<Task> tasks) {
         todoTasks = tasks;
     }
-    
+
     /**
      * Use to retrieve completed tasks
-     * 
+     *
      * @return  completed tasks
      */
     public ArrayList<Task> getCompletedTasks() {
         return completedTasks;
     }
-    
+
     /**
      * Use to set {@code completedTasks} with a new {@code ArrayList}
      * @param   tasks
@@ -117,48 +117,48 @@ public class Receiver extends Observable {
     public void setCompletedTasks(ArrayList<Task> tasks) {
         completedTasks = tasks;
     }
-    
+
     public Storage getStorage() {
         return storage;
     }
-    
+
     /**
      * This method returns the current path of the output file.
-     * 
+     *
      * @return   A {@code String} indicating the file path
      */
     public String getFilePath() {
         return storage.getFilePath();
     }
-    
+
     public String getFileDir() {
         return storage.getFileDir();
     }
-    
+
     public void setFilePath(String path) {
         storage.setFileLocation(path);
         loadFromStorage();
         updateObservers();
     }
-    
+
     private void initialize() {
         todoTasks = new ArrayList<Task>();
         completedTasks = new ArrayList<Task>();
-        Thread thread = new Thread() {
-            public void run() {
-                while(true) {
-                    updateObservers();
-                    try {
-                        Thread.sleep(5000); //Sleep for 30 seconds
-                    } catch (InterruptedException ie) {
-                        logger.log(Level.WARNING, "Thread interrupted while updating observers");
-                    }
-                }
-            }
-        };
-        thread.start();
+//        Thread thread = new Thread() {
+//            public void run() {
+//                while(true) {
+//                    updateObservers();
+//                    try {
+//                        Thread.sleep(5000); //Sleep for 30 seconds
+//                    } catch (InterruptedException ie) {
+//                        logger.log(Level.WARNING, "Thread interrupted while updating observers");
+//                    }
+//                }
+//            }
+//        };
+//        thread.start();
     }
-    
+
     public void initiateSave() {
         categorizeTasks(allTasks);
         sortTasks();
@@ -166,26 +166,26 @@ public class Receiver extends Observable {
         saveToStorage();
         updateObservers();
     }
-    
+
     public void updateObservers() {
         setChanged();
         notifyObservers();
         System.out.println("UPDATING OBSERVERS");
     }
-    
+
     private void loadFromStorage() {
         allTasks = storage.readTasks();
         assert(allTasks != null);
-        
+
         categorizeTasks(allTasks);
         sortTasks();
         updateCollision();
     }
-    
+
     private void categorizeTasks(ArrayList<Task> tasks) {
         todoTasks.clear();
         completedTasks.clear();
-        
+
         for (Task task : tasks) {
             if (task.isDone()) {
                 completedTasks.add(task);
@@ -194,19 +194,19 @@ public class Receiver extends Observable {
             }
         }
     }
-    
+
     private void sortTasks() {
         logger.log(Level.INFO, "Sorting tasks");
         Collections.sort(todoTasks, new TodoTaskComparator());
         Collections.sort(completedTasks, new CompletedTaskComparator());
     }
-    
+
     private void updateCollision() {
         logger.log(Level.INFO, "Updating tasks collision variables");
         scheduler.updateTodoCollision(todoTasks);
         scheduler.updateCompletedCollision(completedTasks);
     }
-    
+
     private void saveToStorage() {
         logger.log(Level.INFO, "Saving tasks: " + allTasks);
         storage.writeTasks(allTasks);

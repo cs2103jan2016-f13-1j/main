@@ -95,13 +95,12 @@ public class ListCellController extends JFXListCell<Task> {
                 listCellHeader.setText(task.getTitle());
                 setGraphic(listCellHeader);
             } else {
-                showTaskIndex(task);
+                showTaskIndex(getIndex());
                 setLabelTaskTitle(task);
                 showTaskTime(task);
                 showTaskDate(task);
                 showTaskLabel(task);
                 showTaskPriority(task);
-                showTaskLine();
                 showTaskCollisions(task);
                 // HBox is the parent layout of all
                 // the other UI components here.
@@ -140,73 +139,14 @@ public class ListCellController extends JFXListCell<Task> {
         }
     }
 
-    /**
-     *
-     */
-    private void showTaskLine() {
-        // if (getIndex() == 0) {
-        // topLine.setVisible(false);
-        // }
-    }
-
     public HBox getHorizontalBox() {
         return horizontalBox;
     }
 
-    public void showTaskIndex(Task task) {
-        this.labelTaskIndex.setText(getIndexWithOffset(task, getIndex()) + "");
+    public void showTaskIndex(int taskIndex) {
+        this.labelTaskIndex.setText(parentListViewController.getDisplayIndex(taskIndex) + "");
     }
 
-    private int getIndexWithOffset(Task task, int taskIndex) {
-
-        int numberOfHeaders = 0;
-        if (task.isToday() && !task.isOverdue()) {
-            if (parentListViewController.isOverdueHeaderAdded()) {
-                numberOfHeaders++;
-            }
-        }
-
-        if (task.isTomorrow()) {
-            if (parentListViewController.isOverdueHeaderAdded()) {
-                numberOfHeaders++;
-            }
-            if (parentListViewController.isTodayHeaderAdded()) {
-                numberOfHeaders++;
-            }
-        }
-
-        if (task.isUpcoming()) {
-            if (parentListViewController.isOverdueHeaderAdded()) {
-                numberOfHeaders++;
-            }
-            if (parentListViewController.isTodayHeaderAdded()) {
-                numberOfHeaders++;
-            }
-            if (parentListViewController.isTomorrowHeaderAdded()) {
-                numberOfHeaders++;
-            }
-        }
-
-        if (task.isSomeday()) {
-            if (parentListViewController.isOverdueHeaderAdded()) {
-                numberOfHeaders++;
-            }
-            if (parentListViewController.isTodayHeaderAdded()) {
-                numberOfHeaders++;
-            }
-            if (parentListViewController.isTomorrowHeaderAdded()) {
-                numberOfHeaders++;
-            }
-            if (parentListViewController.isUpcomingHeaderAdded()) {
-                numberOfHeaders++;
-            }
-
-        }
-
-        int indexWithOffset = taskIndex - numberOfHeaders;
-        parentListViewController.mapIndexToActualIndex(indexWithOffset, taskIndex);
-        return indexWithOffset;
-    }
 
     public void showTaskTime(Task task) {
         if (task.getSimpleTime().isEmpty()) {
