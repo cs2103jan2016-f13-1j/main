@@ -964,8 +964,7 @@ public class RootLayoutController implements Observer {
                 taskToBeExecuted = getCurrentList().get(actualIndex);
                 listOfTaskToBeExecuted = getTasksToBeExecuted(taskIndexesToBeExecuted);
                 commandToBeExecuted = new DeleteCommand(receiver, listOfTaskToBeExecuted);
-                getCurrentListViewController().clearListViewSelection();
-                getCurrentListViewController().select(taskIndex);
+                getCurrentListViewController().clearAndSelect(taskIndex);
                 showFeedback(true, STRING_FEEDBACK_ACTION_DELETE, inputFeedback);
 
             } else if (taskIndexesToBeExecuted.size() > 1) { // when there's a
