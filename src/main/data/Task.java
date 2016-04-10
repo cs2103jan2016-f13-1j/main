@@ -516,7 +516,7 @@ public class Task {
         return day;
     }
 
-    private static String getShortDay(DayOfWeek day) {
+    private String getShortDay(DayOfWeek day) {
         DateFormatSymbols symbols = new DateFormatSymbols();
         String[] days = symbols.getShortWeekdays();
         List<String> correctedDays = new ArrayList<String>(Arrays.asList(days));
@@ -568,7 +568,7 @@ public class Task {
         return month;
     }
 
-    private static String getShortMonth(Month month) {
+    private String getShortMonth(Month month) {
         DateFormatSymbols symbols = new DateFormatSymbols();
         String[] months = symbols.getShortMonths();
         int value = month.getValue() - 1;
