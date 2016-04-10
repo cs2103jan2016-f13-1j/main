@@ -689,8 +689,11 @@ public class RootLayoutController implements Observer {
      */
     private void handleDeleteKey() {
         logger.log(Level.INFO, "Pressed DELETE key: task index  " + getCurrentListViewController().getSelectedIndex());
+        int taskIndex = getCurrentListViewController().getSelectedIndex();
+        int actualIndex = getCurrentListViewController().getDisplayIndex(taskIndex);
+        
         taskIndexesToBeExecuted = new ArrayList<>(1);
-        taskIndexesToBeExecuted.add(getCurrentListViewController().getSelectedIndex());
+        taskIndexesToBeExecuted.add(actualIndex);
         taskToBeExecuted = getCurrentList().get(getCurrentListViewController().getSelectedIndex());
         commandToBeExecuted = new DeleteCommand(receiver, getTasksToBeExecuted(taskIndexesToBeExecuted));
         invoker.execute(commandToBeExecuted);
@@ -1278,7 +1281,7 @@ public class RootLayoutController implements Observer {
                 labelExecutedCommand.setText("Deleted:");
                 labelExecutedCommand.setTextFill(Color.web(AppColor.PRIMARY_RED_LIGHT, 0.7));
                 labelExecutionDetails.setTextFill(Color.web(AppColor.PRIMARY_WHITE, 0.9));
-
+                
                 if (listOfTaskToBeExecuted.size() == 1) {
                     labelExecutionDetails.setText(taskToBeExecuted.toString());
                 } else if (listOfTaskToBeExecuted.size() > 1) {
@@ -1287,7 +1290,6 @@ public class RootLayoutController implements Observer {
                     // TODO very dirty. refactor for better checking
                     labelExecutionDetails.setText("all");
                 }
-
             }
 
         }
