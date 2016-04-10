@@ -82,8 +82,8 @@ public class RootLayoutController implements Observer {
     private static final String STRING_FEEDBACK_ACTION_UNDO = "Undoing:";
     private static final String STRING_FEEDBACK_ACTION_REDO = "Redoing:";
     private static final String STRING_FEEDBACK_ACTION_EXIT = "Exit Dooleh";
-    private static final String STRING_FEEDBACK_TOTAL_ACTION = "%1$s action";
-    private static final String STRING_FEEDBACK_ACTION_SET_FILE_LOCATION = "Setting file location: ";
+    private static final String STRING_FEEDBACK_TOTAL_ACTION = "%1$s action(s)";
+    private static final String STRING_FEEDBACK_ACTION_SET_FILE_LOCATION = "Set file location";
     private static final String STRING_ERROR_NOT_FOUND = "Task -%1$s- not found.";
     private static final String STRING_EMPTY = "";
     private static final String STRING_WHITESPACE = " ";
@@ -237,7 +237,7 @@ public class RootLayoutController implements Observer {
                         }
                         
                         showFeedback(true, STRING_FEEDBACK_ACTION_SEARCH,
-                                " Found " + numberOfTasks + " task(s) for -" + userArguments + "-");
+                                " Found " + numberOfTasks + " task(s) for \"" + userArguments + "\"");
                     }
                 }
             } else {
