@@ -118,7 +118,7 @@ public class CommandParser {
         } else {
             // check for date in number format or text format
             hasDate = checkForRegexMatch(getDateRegex(), inputString)
-                    || checkForRegexMatch(getDateRegexText(), inputString);
+                    || checkForRegexMatch(getDateTextRegex(), inputString);
         }
 
         // check for time with am/pm or check for word indicating time
@@ -134,7 +134,7 @@ public class CommandParser {
         hasPreposition = checkForRegexMatch(REGEX_PREPOSITION_ALL, inputString);
         if (hasPreposition) {
             // check for time without am/pm
-            hasTimeWithoutAmPm = checkForRegexMatch(getTimeRegexWithoutAmPm(), inputString);
+            hasTimeWithoutAmPm = checkForRegexMatch(getTimeWithoutAmPmRegex(), inputString);
             // check for start preposition only
             hasStartDate = checkForRegexMatch(REGEX_PREPOSITION_START, inputString);
         }
@@ -243,7 +243,7 @@ public class CommandParser {
                 title = removeRegex(regex, title);
 
                 // remove date in text form from title
-                regex = getDateRegexText();
+                regex = getDateTextRegex();
                 title = removeRegex(regex, title);
             }
 
@@ -287,7 +287,7 @@ public class CommandParser {
         return REGEX_PREPOSITION_ALL + "?" + REGEX_DATE_NUM;
     }
 
-    private String getDateRegexText() {
+    private String getDateTextRegex() {
         return REGEX_PREPOSITION_ALL + "?" + REGEX_DATE_TEXT + REGEX_MONTH_TEXT;
     }
 
@@ -301,7 +301,7 @@ public class CommandParser {
                 + REGEX_TIME_TWELVE + REGEX_TIME_PERIOD + "?\\b";
     }
 
-    private String getTimeRegexWithoutAmPm() {
+    private String getTimeWithoutAmPmRegex() {
         return REGEX_PREPOSITION_ALL + "\\b " + REGEX_TIME_TWELVE + "\\b$";
     }
 
@@ -354,7 +354,7 @@ public class CommandParser {
      */
     private String correctDateTextYear(String inputString) {
         assert (inputString != null);
-        String regex = getDateRegexText() + "\\b ?(\\d\\d)(?:$|\\s)";
+        String regex = getDateTextRegex() + "\\b ?(\\d\\d)(?:$|\\s)";
         inputString = inputString.replaceAll(regex, "$2 $4 $5 '$29 ");
         return inputString;
     }
@@ -842,7 +842,7 @@ public class CommandParser {
         return dates.get(index);
     }
 
-    public String getDateRegexTextWithYear() {
+    private String getDateRegexTextWithYear() {
         return REGEX_PREPOSITION_ALL + "?" + REGEX_DATE_TEXT + REGEX_MONTH_TEXT + REGEX_YEAR;
     }
 
@@ -1250,9 +1250,9 @@ public class CommandParser {
             hasDate = false;
         }
 
-        hasDate = checkForRegexMatch(getDateRegexText(), inputString);
+        hasDate = checkForRegexMatch(getDateTextRegex(), inputString);
         if (hasDate) {
-            regex = getDateRegexText();
+            regex = getDateTextRegex();
             inputString = removeRegex(regex, inputString);
         }
 
@@ -1333,14 +1333,14 @@ public class CommandParser {
         List<Date> dates = new ArrayList<Date>();
 
         hasDate = checkForRegexMatch(getDateRegex(), inputString)
-                || checkForRegexMatch(getDateRegexText(), inputString);
+                || checkForRegexMatch(getDateTextRegex(), inputString);
         hasTime = checkForRegexMatch(getTimeRegex(), inputString) 
                 || checkForRegexMatch(REGEX_WORD_TIMED, inputString);
 
         if (!hasTime) {
             hasPreposition = checkForRegexMatch(REGEX_PREPOSITION_ALL, inputString);
             if (hasPreposition) {
-                hasTimeWithoutAmPm = checkForRegexMatch(getTimeRegexWithoutAmPm(), inputString);
+                hasTimeWithoutAmPm = checkForRegexMatch(getTimeWithoutAmPmRegex(), inputString);
                 if (hasTimeWithoutAmPm) {
                     hasTime = true;
                 }
