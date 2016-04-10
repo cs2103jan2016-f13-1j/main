@@ -221,15 +221,19 @@ public class RootLayoutController implements Observer {
                     executedCommand = null;
 
                 } else if (isSearchCommand) {
-                    int numberOfTasks = 0;
-                    for (Task task : currentList) {
-                        if (!(task instanceof TaskHeader)) {
-                            numberOfTasks++;
+                    if (userArguments.equals(" ")) {
+                        showFeedback(true, STRING_FEEDBACK_ACTION_SEARCH, "");
+                    } else {
+                        int numberOfTasks = 0;
+                        for (Task task : currentList) {
+                            if (!(task instanceof TaskHeader)) {
+                                numberOfTasks++;
+                            }
                         }
+                        
+                        showFeedback(true, STRING_FEEDBACK_ACTION_SEARCH,
+                                " Found " + numberOfTasks + " tasks for -" + userArguments + "-");
                     }
-                    
-                    showFeedback(true, STRING_FEEDBACK_ACTION_SEARCH,
-                            " Found " + numberOfTasks + " tasks for -" + userArguments + "-");
                 }
             }
         }
