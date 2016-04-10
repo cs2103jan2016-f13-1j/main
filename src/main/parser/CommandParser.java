@@ -216,7 +216,7 @@ public class CommandParser {
             }
 
             if (hasTime) {
-                // remove time from title
+                // remove timed word from title
                 regex = REGEX_PREPOSITION_ALL + "?" + REGEX_WORD_TIMED;
                 title = removeRegex(regex, title);
 
@@ -875,7 +875,7 @@ public class CommandParser {
             ArrayList<String> months = getPossibleMonths(dateTime);
             ArrayList<String> days = getPossibleDays(dateTime);
             ArrayList<String> timings = getPossibleTimes(dateTime);
-
+            
             title = checkAndRemove(title, dates);
             title = checkAndRemove(title, months);
             title = checkAndRemove(title, days);
@@ -1022,10 +1022,14 @@ public class CommandParser {
             if (hour == 0) {
                 String temp = STRING_TWELVE;
                 timings.add(temp.concat(STRING_AM));
+                timings.add(temp.concat(colon));
+                timings.add(temp.concat(dot));
                 timings.add(temp.concat(colon).concat(STRING_AM));
                 timings.add(temp.concat(dot).concat(STRING_AM));
             } else {
                 timings.add(Integer.toString(hour).concat(STRING_AM));
+                timings.add(Integer.toString(hour).concat(colon));
+                timings.add(Integer.toString(hour).concat(dot));
                 timings.add(Integer.toString(hour).concat(colon).concat(STRING_AM));
                 timings.add(Integer.toString(hour).concat(dot).concat(STRING_AM));
             }
@@ -1034,11 +1038,15 @@ public class CommandParser {
             if (hour == 0) {
                 String temp = STRING_TWELVE;
                 timings.add(temp.concat(STRING_PM));
+                timings.add(temp.concat(colon));
+                timings.add(temp.concat(dot));
                 timings.add(temp.concat(colon).concat(STRING_PM));
                 timings.add(temp.concat(dot).concat(STRING_PM));
             } else {
                 timings.add(Integer.toString(hour));
                 timings.add(Integer.toString(hour).concat(STRING_PM));
+                timings.add(Integer.toString(hour).concat(colon));
+                timings.add(Integer.toString(hour).concat(dot));
                 timings.add(Integer.toString(hour).concat(colon).concat(STRING_PM));
                 timings.add(Integer.toString(hour).concat(dot).concat(STRING_PM));
             }
