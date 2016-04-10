@@ -178,9 +178,9 @@ public class RootLayoutController implements Observer {
         if (o instanceof Receiver) {
             if (commandToBeExecuted != null) {
                 logger.log(Level.INFO, "(" + commandToBeExecuted.getClass().getSimpleName() + ") update() is called");
-
+                
                 refreshListView();
-
+                
                 // TODO do something about this
                 if (isUndoRedo) {
                     // restoreListViewPreviousSelection();
@@ -197,7 +197,6 @@ public class RootLayoutController implements Observer {
 
                 if (isAddCommand || isEditCommand) {
                     // TODO
-
                     int displayIndex = getCurrentListViewController().getDisplayIndex(getIndexFromLastExecutedTask());
                     getCurrentListViewController().clearListViewSelection();
                     getCurrentListViewController().select(displayIndex);
@@ -251,7 +250,6 @@ public class RootLayoutController implements Observer {
         logger.log(Level.INFO, "Set Select the first item on the ListView");
         todoListViewController.selectListViewFirstItem();
         completedListViewController.selectListViewFirstItem();
-
         setCurrentListViewController(tabTodo.getText());
     }
 

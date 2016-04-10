@@ -262,7 +262,7 @@ public class ListViewController extends AnchorPane {
         listView.getSelectionModel().select(1);
         saveSelectedIndex();
         initCustomViewportBehaviorForListView();
-
+        
         listView.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Task>() {
 
             @Override
@@ -270,7 +270,7 @@ public class ListViewController extends AnchorPane {
                 // TODO will encounter nullpointer on first run
                 System.out.println("Listview selection changed");
                 // saveSelectedIndex();
-
+                
                 if (newValue instanceof TaskHeader) {
                     if (getSelectedIndex() < getPreviousSelectedIndex()) {
                         listView.getSelectionModel().clearAndSelect(getSelectedIndex() - 1);
@@ -279,6 +279,7 @@ public class ListViewController extends AnchorPane {
                         listView.getSelectionModel().clearAndSelect(getSelectedIndex() + 1);
                     }
                 }
+                
                 adjustViewportForListView();
 
             }
@@ -319,7 +320,7 @@ public class ListViewController extends AnchorPane {
      */
     @SuppressWarnings("restriction")
     private void adjustViewportForListView() {
-
+        
         int firstVisibleIndex = virtualFlow.getFirstVisibleCellWithinViewPort().getIndex();
         int lastVisibleIndex = virtualFlow.getLastVisibleCellWithinViewPort().getIndex();
         int numberOfCellsInViewPort = lastVisibleIndex - firstVisibleIndex + 1;
@@ -327,7 +328,7 @@ public class ListViewController extends AnchorPane {
         System.out.println("first visible cell: " + firstVisibleIndex);
         System.out.println("last visible cell: " + lastVisibleIndex);
         System.out.println("number of cells in a viewport:" + numberOfCellsInViewPort);
-
+        System.out.println("1. SELECTED: " + getSelectedIndex() + " FIRST VISIBLE: " + firstVisibleIndex);
         if (isArrowKeysPressed) {
             System.out.println("arrowkeys true");
             System.out.println("adjustViewPort: previous index " + previousSelectedTaskIndex);
@@ -362,7 +363,8 @@ public class ListViewController extends AnchorPane {
 
         if (isAddCommand || isEditCommand || isDeleteCommand || isDoneCommand || isUndoneCommand) {
             logger.log(Level.INFO, "Adjusting viewport for: " + lastExecutedCommand.getClass().getSimpleName());
-
+            
+            System.out.println("2. SELECTED: " + getSelectedIndex() + " FIRST VISIBLE: " + firstVisibleIndex);
             if (getSelectedIndex() <= firstVisibleIndex) {
                 int numberOfCellsDifference = firstVisibleIndex - getSelectedIndex();
                 if (taskListWithHeaders.get(getSelectedIndex() - 1) instanceof TaskHeader) {
@@ -395,6 +397,9 @@ public class ListViewController extends AnchorPane {
     *
     */
     public int getSelectedIndex() {
+        if (listView.getSelectionModel().getSelectedIndex() < 0) {
+            return 1;
+        }
         return listView.getSelectionModel().getSelectedIndex();
     }
 
@@ -439,14 +444,17 @@ public class ListViewController extends AnchorPane {
     }
 
     public void select(int index) {
-        int actualIndex = displayIndexToActualIndexMap.get(index);
-        System.out.println("index: " + index + " actualIndex: " + actualIndex);
+        int actualIndex;
+        try {
+            actualIndex = displayIndexToActualIndexMap.get(index);
+        } catch (NullPointerException e) {
+            actualIndex = index - 1;
+        }
         listView.getSelectionModel().select(actualIndex);
     }
 
     public void clearAndSelect(int index) {
         int actualIndex = displayIndexToActualIndexMap.get(index);
-        System.out.println("index: " + index + " actualIndex: " + actualIndex);
         listView.getSelectionModel().clearAndSelect(actualIndex);
     }
 
