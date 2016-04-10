@@ -104,6 +104,21 @@ public class RootLayoutController implements Observer {
     @FXML // fx:id="rootLayout"
     private AnchorPane rootLayout; // Value injected by FXMLLoader
 
+    @FXML // fx:id="totalTasksOverdue"
+    private Text totalTasksOverdue; // Value injected by FXMLLoader
+
+    @FXML // fx:id="totalTasksToday"
+    private Text totalTasksToday; // Value injected by FXMLLoader
+
+    @FXML // fx:id="totalTasksTomorrow"
+    private Text totalTasksTomorrow; // Value injected by FXMLLoader
+
+    @FXML // fx:id="totalTastotalTasksUpcomingksToday"
+    private Text totalTasksUpcoming; // Value injected by FXMLLoader
+
+    @FXML // fx:id="totalTasksSomeday"
+    private Text totalTasksSomeday; // Value injected by FXMLLoader
+
     @FXML // fx:id="tabPane"
     private JFXTabPane tabPane; // Value injected by FXMLLoader
 
@@ -184,9 +199,9 @@ public class RootLayoutController implements Observer {
             System.out.println("CAME INTO UPDATE " + commandToBeExecuted);
             if (commandToBeExecuted != null) {
                 logger.log(Level.INFO, "(" + commandToBeExecuted.getClass().getSimpleName() + ") update() is called");
-                
+
                 refreshListView();
-                
+
                 // TODO do something about this
                 if (isUndoRedo) {
                     // restoreListViewPreviousSelection();
@@ -235,7 +250,7 @@ public class RootLayoutController implements Observer {
                                 numberOfTasks++;
                             }
                         }
-                        
+
                         showFeedback(true, STRING_FEEDBACK_ACTION_SEARCH,
                                 " Found " + numberOfTasks + " task(s) for \"" + userArguments + "\"");
                     }
@@ -294,6 +309,11 @@ public class RootLayoutController implements Observer {
 
     private void assertDependencyInjection() {
         assert rootLayout != null : "fx:id=\"rootLayout\" was not injected: check your FXML file 'RootLayout.fxml'.";
+        assert totalTasksOverdue != null : "fx:id=\"totalTasksOverdue\" was not injected: check your FXML file 'RootLayout.fxml'.";
+        assert totalTasksToday != null : "fx:id=\"totalTasksToday\" was not injected: check your FXML file 'RootLayout.fxml'.";
+        assert totalTasksTomorrow != null : "fx:id=\"totalTasksTomorrow\" was not injected: check your FXML file 'RootLayout.fxml'.";
+        assert totalTasksUpcoming != null : "fx:id=\"totalTasksUpcoming\" was not injected: check your FXML file 'RootLayout.fxml'.";
+        assert totalTasksSomeday != null : "fx:id=\"totalTasksSomeday\" was not injected: check your FXML file 'RootLayout.fxml'.";
         assert tabPane != null : "fx:id=\"tabPane\" was not injected: check your FXML file 'RootLayout.fxml'.";
         assert tabTodo != null : "fx:id=\"tabTodo\" was not injected: check your FXML file 'RootLayout.fxml'.";
         assert tabCompleted != null : "fx:id=\"tabCompleted\" was not injected: check your FXML file 'RootLayout.fxml'.";
@@ -339,6 +359,7 @@ public class RootLayoutController implements Observer {
             public void changed(ObservableValue<? extends Tab> observable, Tab oldValue, Tab newValue) {
                 setCurrentListViewController(newValue.getText());
                 setCurrentList(newValue.getText());
+                updateTotalTasksForEveryCategory();
             }
         });
     }
@@ -463,10 +484,12 @@ public class RootLayoutController implements Observer {
         updateTabAndLabelWithTotalTasks();
         setCurrentList(getSelectedTabName());
         setCurrentListViewController(getSelectedTabName());
+        updateTotalTasksForEveryCategory();
 
         logger.log(Level.INFO, "Populated Todo List: " + todoTasks.size() + " task");
         logger.log(Level.INFO, "Populated Completed List: " + completedTasks.size() + " task");
     }
+
 
     /**
      * In ListController now
@@ -480,6 +503,15 @@ public class RootLayoutController implements Observer {
         updateTabAndLabelWithTotalTasks();
         setCurrentList(getSelectedTabName());
         setCurrentListViewController(getSelectedTabName());
+        updateTotalTasksForEveryCategory();
+    }
+
+    private void updateTotalTasksForEveryCategory() {
+        totalTasksOverdue.setText(String.valueOf(getCurrentListViewController().getTotalOverdueTasks()));
+        totalTasksToday.setText(String.valueOf(getCurrentListViewController().getTotalTodayTasks()));
+        totalTasksTomorrow.setText(String.valueOf(getCurrentListViewController().getTotalTomorrowTasks()));
+        totalTasksUpcoming.setText(String.valueOf(getCurrentListViewController().getTotalUpcomingTasks()));
+        totalTasksSomeday.setText(String.valueOf(getCurrentListViewController().getTotalSomedayTasks()));
     }
 
     private void updateListWithHeaders() {
@@ -579,7 +611,8 @@ public class RootLayoutController implements Observer {
      */
     private void handleEnterKey() {
         if (commandBar.getText().trim().length() > 0) {
-            if (userCommand.equals(STRING_COMMAND_EXIT) || userCommand.equals(STRING_COMMAND_QUIT) || userCommand.equals(STRING_COMMAND_CLOSE)) {
+            if (userCommand.equals(STRING_COMMAND_EXIT) || userCommand.equals(STRING_COMMAND_QUIT)
+                    || userCommand.equals(STRING_COMMAND_CLOSE)) {
                 System.exit(0);
             }
             if (userCommand.equals(STRING_COMMAND_UNDO)) {
@@ -697,7 +730,7 @@ public class RootLayoutController implements Observer {
         logger.log(Level.INFO, "Pressed DELETE key: task index  " + getCurrentListViewController().getSelectedIndex());
         int taskIndex = getCurrentListViewController().getSelectedIndex();
         int actualIndex = getCurrentListViewController().getDisplayIndex(taskIndex);
-        
+
         taskIndexesToBeExecuted = new ArrayList<>(1);
         taskIndexesToBeExecuted.add(actualIndex);
         listOfTaskToBeExecuted = getTasksToBeExecuted(taskIndexesToBeExecuted);
@@ -817,16 +850,16 @@ public class RootLayoutController implements Observer {
             case STRING_COMMAND_SET_FILE_LOCATION :
                 parseSetFileLocation();
                 break;
-            case STRING_COMMAND_EXIT:
-            case STRING_COMMAND_CLOSE:
-            case STRING_COMMAND_QUIT:
+            case STRING_COMMAND_EXIT :
+            case STRING_COMMAND_CLOSE :
+            case STRING_COMMAND_QUIT :
                 parseExit();
                 break;
             default:
                 parseAdd();
         }
     }
-    
+
     private void parseExit() {
         showFeedback(true, STRING_FEEDBACK_ACTION_EXIT, "");
     }
@@ -868,20 +901,20 @@ public class RootLayoutController implements Observer {
                 }
             }
             listOfTaskToBeExecuted = tasksToDelete;
-            
+
             commandToBeExecuted = new DeleteCommand(receiver, listOfTaskToBeExecuted);
             getCurrentListViewController().clearListViewSelection();
             getCurrentListViewController().selectAll();
-            
+
             int numberOfTasks = 0;
             for (Task task : getCurrentList()) {
                 if (!(task instanceof TaskHeader)) {
                     numberOfTasks++;
                 }
             }
-            
-            showFeedback(true, STRING_FEEDBACK_ACTION_DELETE, userArguments + STRING_WHITESPACE
-                    + String.format(STRING_FEEDBACK_TOTAL_TASK, numberOfTasks));
+
+            showFeedback(true, STRING_FEEDBACK_ACTION_DELETE,
+                    userArguments + STRING_WHITESPACE + String.format(STRING_FEEDBACK_TOTAL_TASK, numberOfTasks));
             return;
 
         }
@@ -948,7 +981,8 @@ public class RootLayoutController implements Observer {
         int taskIndex = commandParser.getIndexForEdit(userInput);
         logger.log(Level.INFO, "EDIT command index is " + taskIndex);
 
-        // no index is found in user input, parse the input as an Add operation instead
+        // no index is found in user input, parse the input as an Add operation
+        // instead
         if (taskIndex == -1) {
             logger.log(Level.INFO, "EDIT command has no index. Editing current selected task");
             parseAdd();
@@ -981,25 +1015,30 @@ public class RootLayoutController implements Observer {
 
     }
 
-//    /**
-//     * Parse the Edit command for the currently selected task item on the List
-//     *
-//     * @param @throws
-//     */
-//    private void parseEditForSelectedTask() {
-//        Task taskToBeEdited = getCurrentList().get(getCurrentListViewController().getSelectedIndex());
-//        showFeedback(true, STRING_FEEDBACK_ACTION_EDIT, taskToBeEdited.toString());
-//        try {
-//            logger.log(Level.INFO, "EDIT command arguments is: " + userArguments);
-//            taskToBeExecuted = commandParser.parseEdit(taskToBeEdited, userArguments);
-//            logger.log(Level.INFO, "EDIT command editedTaskObject is: " + taskToBeExecuted.toString());
-//            commandToBeExecuted = new EditCommand(receiver, taskToBeEdited, taskToBeExecuted);
-//            return;
-//        } catch (InvalidLabelFormat e) {
-//            // TODO Auto-generated catch block
-//            e.printStackTrace();
-//        }
-//    }
+    // /**
+    // * Parse the Edit command for the currently selected task item on the List
+    // *
+    // * @param @throws
+    // */
+    // private void parseEditForSelectedTask() {
+    // Task taskToBeEdited =
+    // getCurrentList().get(getCurrentListViewController().getSelectedIndex());
+    // showFeedback(true, STRING_FEEDBACK_ACTION_EDIT,
+    // taskToBeEdited.toString());
+    // try {
+    // logger.log(Level.INFO, "EDIT command arguments is: " + userArguments);
+    // taskToBeExecuted = commandParser.parseEdit(taskToBeEdited,
+    // userArguments);
+    // logger.log(Level.INFO, "EDIT command editedTaskObject is: " +
+    // taskToBeExecuted.toString());
+    // commandToBeExecuted = new EditCommand(receiver, taskToBeEdited,
+    // taskToBeExecuted);
+    // return;
+    // } catch (InvalidLabelFormat e) {
+    // // TODO Auto-generated catch block
+    // e.printStackTrace();
+    // }
+    // }
 
     /**
      *
@@ -1138,7 +1177,7 @@ public class RootLayoutController implements Observer {
 
     private void parseUndo() {
         numberOfActions = commandParser.getIndexForEdit(userInput);
-        if (numberOfActions >= 0) { 
+        if (numberOfActions >= 0) {
             showFeedback(true, STRING_FEEDBACK_ACTION_UNDO,
                     String.format(STRING_FEEDBACK_TOTAL_ACTION, numberOfActions));
         } else {
@@ -1231,7 +1270,7 @@ public class RootLayoutController implements Observer {
         if (isVisible) {
             logger.log(Level.INFO, "Showing user feedback: " + userFeedback);
         }
-        
+
         textUserAction.setText(userAction + STRING_WHITESPACE);
         // textUserAction.setFont(new Font(20));
         textUserAction.setFill(Color.web("303F9F", 0.7));
@@ -1431,10 +1470,5 @@ public class RootLayoutController implements Observer {
     public void restoreListViewPreviousSelection() {
         getCurrentListViewController().restoreListViewPreviousSelection();
         // TODO one more line for completedtaskcontroller
-    }
-
-    // TODO create one similar getter for completedTaskController
-    public ListViewController getTodoTaskListViewController() {
-        return todoListViewController;
     }
 }
