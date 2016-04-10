@@ -40,6 +40,7 @@ import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.util.Duration;
 import main.data.ParseIndexResult;
 import main.data.Task;
+import main.data.TaskHeader;
 import main.logic.AddCommand;
 import main.logic.Command;
 import main.logic.DeleteCommand;
@@ -220,9 +221,15 @@ public class RootLayoutController implements Observer {
                     executedCommand = null;
 
                 } else if (isSearchCommand) {
+                    int numberOfTasks = 0;
+                    for (Task task : currentList) {
+                        if (!(task instanceof TaskHeader)) {
+                            numberOfTasks++;
+                        }
+                    }
+                    
                     showFeedback(true, STRING_FEEDBACK_ACTION_SEARCH,
-                            " Found " + currentList.size() + " tasks for -" + userArguments + "-");
-
+                            " Found " + numberOfTasks + " tasks for -" + userArguments + "-");
                 }
             }
         }
