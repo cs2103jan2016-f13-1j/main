@@ -65,6 +65,9 @@ public class RootLayoutController implements Observer {
     private static final String STRING_COMMAND_UNDO = "undo";
     private static final String STRING_COMMAND_REDO = "redo";
     private static final String STRING_COMMAND_SET_FILE_LOCATION = "set";
+    private static final String STRING_COMMAND_EXIT = "exit";
+    private static final String STRING_COMMAND_CLOSE = "close";
+    private static final String STRING_COMMAND_QUIT = "quit";
     private static final String STRING_DOUBLE_QUOTATIONS_WITH_TEXT = "\"%1$s\"";
     private static final String STRING_TAB_TASK_SIZE = "(%1$s)";
     private static final String STRING_LISTVIEW_TODO_EMPTY = "You have no task!";
@@ -78,6 +81,7 @@ public class RootLayoutController implements Observer {
     private static final String STRING_FEEDBACK_ACTION_UNDONE = "Mark as undone:";
     private static final String STRING_FEEDBACK_ACTION_UNDO = "Undoing:";
     private static final String STRING_FEEDBACK_ACTION_REDO = "Redoing:";
+    private static final String STRING_FEEDBACK_ACTION_EXIT = "Exit Dooleh";
     private static final String STRING_FEEDBACK_TOTAL_ACTION = "%1$s action";
     private static final String STRING_FEEDBACK_ACTION_SET_FILE_LOCATION = "Setting file location: ";
     private static final String STRING_ERROR_NOT_FOUND = "Task -%1$s- not found.";
@@ -575,7 +579,9 @@ public class RootLayoutController implements Observer {
      */
     private void handleEnterKey() {
         if (commandBar.getText().trim().length() > 0) {
-
+            if (userCommand.equals(STRING_COMMAND_EXIT) || userCommand.equals(STRING_COMMAND_QUIT) || userCommand.equals(STRING_COMMAND_CLOSE)) {
+                System.exit(0);
+            }
             if (userCommand.equals(STRING_COMMAND_UNDO)) {
                 System.out.println("Enter key: " + userCommand + " " + numberOfActions);
                 if (numberOfActions < 0) {
@@ -811,10 +817,18 @@ public class RootLayoutController implements Observer {
             case STRING_COMMAND_SET_FILE_LOCATION :
                 parseSetFileLocation();
                 break;
-
+            case STRING_COMMAND_EXIT:
+            case STRING_COMMAND_CLOSE:
+            case STRING_COMMAND_QUIT:
+                parseExit();
+                break;
             default:
                 parseAdd();
         }
+    }
+    
+    private void parseExit() {
+        showFeedback(true, STRING_FEEDBACK_ACTION_EXIT, "");
     }
 
     /**
@@ -967,25 +981,25 @@ public class RootLayoutController implements Observer {
 
     }
 
-    /**
-     * Parse the Edit command for the currently selected task item on the List
-     *
-     * @param @throws
-     */
-    private void parseEditForSelectedTask() {
-        Task taskToBeEdited = getCurrentList().get(getCurrentListViewController().getSelectedIndex());
-        showFeedback(true, STRING_FEEDBACK_ACTION_EDIT, taskToBeEdited.toString());
-        try {
-            logger.log(Level.INFO, "EDIT command arguments is: " + userArguments);
-            taskToBeExecuted = commandParser.parseEdit(taskToBeEdited, userArguments);
-            logger.log(Level.INFO, "EDIT command editedTaskObject is: " + taskToBeExecuted.toString());
-            commandToBeExecuted = new EditCommand(receiver, taskToBeEdited, taskToBeExecuted);
-            return;
-        } catch (InvalidLabelFormat e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-    }
+//    /**
+//     * Parse the Edit command for the currently selected task item on the List
+//     *
+//     * @param @throws
+//     */
+//    private void parseEditForSelectedTask() {
+//        Task taskToBeEdited = getCurrentList().get(getCurrentListViewController().getSelectedIndex());
+//        showFeedback(true, STRING_FEEDBACK_ACTION_EDIT, taskToBeEdited.toString());
+//        try {
+//            logger.log(Level.INFO, "EDIT command arguments is: " + userArguments);
+//            taskToBeExecuted = commandParser.parseEdit(taskToBeEdited, userArguments);
+//            logger.log(Level.INFO, "EDIT command editedTaskObject is: " + taskToBeExecuted.toString());
+//            commandToBeExecuted = new EditCommand(receiver, taskToBeEdited, taskToBeExecuted);
+//            return;
+//        } catch (InvalidLabelFormat e) {
+//            // TODO Auto-generated catch block
+//            e.printStackTrace();
+//        }
+//    }
 
     /**
      *
