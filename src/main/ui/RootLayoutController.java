@@ -203,7 +203,6 @@ public class RootLayoutController implements Observer {
     @Override
     public void update(Observable o, Object arg) {
         if (o instanceof Receiver) {
-            System.out.println("CAME INTO UPDATE " + commandToBeExecuted);
             if (commandToBeExecuted != null) {
                 logger.log(Level.INFO, "(" + commandToBeExecuted.getClass().getSimpleName() + ") update() is called");
 
@@ -243,7 +242,6 @@ public class RootLayoutController implements Observer {
                         if (getCurrentList().size() > 0) {
                             getCurrentListViewController().select(taskIndexesToBeExecuted.get(0));
                         }
-
                     }
                     executedCommand = null;
 
@@ -949,6 +947,7 @@ public class RootLayoutController implements Observer {
         ParseIndexResult parseIndexResult;
         try {
             parseIndexResult = commandParser.parseIndexes(userInput, getCurrentList().size());
+            
             if (parseIndexResult.hasValidIndex()) {
                 taskIndexesToBeExecuted = parseIndexResult.getValidIndexes();
             }

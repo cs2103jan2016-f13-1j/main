@@ -315,8 +315,8 @@ public class SearchCommand implements Command {
                 todoTasks.add(task);
             }
         }
-        Collections.sort(todoTasks, new TodoTaskComparator());
-        Collections.sort(completedTasks, new CompletedTaskComparator());
+        Collections.sort(todoTasks, new CustomTaskComparator());
+        Collections.sort(completedTasks, new CustomTaskComparator());
         
         receiver.setTodoTasks(todoTasks);
         receiver.setCompletedTasks(completedTasks);

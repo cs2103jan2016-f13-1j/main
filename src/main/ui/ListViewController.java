@@ -154,13 +154,13 @@ public class ListViewController extends AnchorPane {
 
     private int getIndexWithOffset(Task task, int taskIndex) {
         int numberOfHeaders = 0;
-
+        
         if (task.isToday() && !task.isOverdue()) {
             if (isOverdueHeaderAdded()) {
                 numberOfHeaders++;
             }
         }
-
+        
         if (task.isTomorrow()) {
             if (isOverdueHeaderAdded()) {
                 numberOfHeaders++;
@@ -169,7 +169,7 @@ public class ListViewController extends AnchorPane {
                 numberOfHeaders++;
             }
         }
-
+        
         if (task.isUpcoming()) {
             if (isOverdueHeaderAdded()) {
                 numberOfHeaders++;
@@ -181,7 +181,7 @@ public class ListViewController extends AnchorPane {
                 numberOfHeaders++;
             }
         }
-
+        
         if (task.isSomeday()) {
             if (isOverdueHeaderAdded()) {
                 numberOfHeaders++;
@@ -195,11 +195,9 @@ public class ListViewController extends AnchorPane {
             if (isUpcomingHeaderAdded()) {
                 numberOfHeaders++;
             }
-
         }
-
+        
         int indexWithOffset = taskIndex - numberOfHeaders;
-        System.out.println("indexWithOffset: " + indexWithOffset + " original index: " + taskIndex);
         return indexWithOffset;
     }
 
