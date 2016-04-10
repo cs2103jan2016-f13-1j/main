@@ -207,10 +207,9 @@ public class RootLayoutController implements Observer {
                 logger.log(Level.INFO, "(" + commandToBeExecuted.getClass().getSimpleName() + ") update() is called");
 
                 refreshListView();
-
+                refreshUndoRedoState();
                 // TODO do something about this
                 if (isUndoRedo) {
-                    // restoreListViewPreviousSelection();
                     isUndoRedo = false;
                     return;
                 }
@@ -265,8 +264,6 @@ public class RootLayoutController implements Observer {
                     refreshListView();
                 }
             }
-
-            refreshUndoRedoState();
         }
     }
 
