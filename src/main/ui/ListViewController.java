@@ -320,77 +320,77 @@ public class ListViewController extends AnchorPane {
      */
     @SuppressWarnings("restriction")
     private void adjustViewportForListView() {
-        
-        int firstVisibleIndex = virtualFlow.getFirstVisibleCellWithinViewPort().getIndex();
-        int lastVisibleIndex = virtualFlow.getLastVisibleCellWithinViewPort().getIndex();
-        int numberOfCellsInViewPort = lastVisibleIndex - firstVisibleIndex + 1;
-
-        System.out.println("first visible cell: " + firstVisibleIndex);
-        System.out.println("last visible cell: " + lastVisibleIndex);
-        System.out.println("number of cells in a viewport:" + numberOfCellsInViewPort);
-        System.out.println("1. SELECTED: " + getSelectedIndex() + " FIRST VISIBLE: " + firstVisibleIndex);
-        if (isArrowKeysPressed) {
-            System.out.println("arrowkeys true");
-            System.out.println("adjustViewPort: previous index " + previousSelectedTaskIndex);
-            if (getSelectedIndex() <= firstVisibleIndex) {
-                System.out.println("Scrolling up");
-                // if the item at current index -1 is a task header, adjust
-                // viewport to show header
-                if (taskListWithHeaders.get(getSelectedIndex() - 1) instanceof TaskHeader) {
-                    listView.scrollTo(getSelectedIndex() - 1);
-                } else {
-                    // viewport will scroll and show the current item at the
-                    // top
-                    listView.scrollTo(getSelectedIndex());
-                }
-
-            } else if (getSelectedIndex() > lastVisibleIndex) {
-                System.out.println("Scrolling down");
-                // viewport will scroll and show the current item at the bottom
-                listView.scrollTo(firstVisibleIndex + 1);
-            }
-            isArrowKeysPressed = false;
-            System.out.println("arrowkeys false");
-            return;
-        }
-
-        Command lastExecutedCommand = rootLayoutController.getLastExecutedCommand();
-        boolean isAddCommand = lastExecutedCommand instanceof AddCommand;
-        boolean isEditCommand = lastExecutedCommand instanceof EditCommand;
-        boolean isDeleteCommand = lastExecutedCommand instanceof DeleteCommand;
-        boolean isDoneCommand = lastExecutedCommand instanceof DoneCommand;
-        boolean isUndoneCommand = lastExecutedCommand instanceof UndoneCommand;
-
-        if (isAddCommand || isEditCommand || isDeleteCommand || isDoneCommand || isUndoneCommand) {
-            logger.log(Level.INFO, "Adjusting viewport for: " + lastExecutedCommand.getClass().getSimpleName());
+        if (virtualFlow.getFirstVisibleCellWithinViewPort() != null) {
+            int firstVisibleIndex = virtualFlow.getFirstVisibleCellWithinViewPort().getIndex();
+            int lastVisibleIndex = virtualFlow.getLastVisibleCellWithinViewPort().getIndex();
+            int numberOfCellsInViewPort = lastVisibleIndex - firstVisibleIndex + 1;
+    
+            System.out.println("first visible cell: " + firstVisibleIndex);
+            System.out.println("last visible cell: " + lastVisibleIndex);
+            System.out.println("number of cells in a viewport:" + numberOfCellsInViewPort);
             
-            System.out.println("2. SELECTED: " + getSelectedIndex() + " FIRST VISIBLE: " + firstVisibleIndex);
-            if (getSelectedIndex() <= firstVisibleIndex) {
-                int numberOfCellsDifference = firstVisibleIndex - getSelectedIndex();
-                if (taskListWithHeaders.get(getSelectedIndex() - 1) instanceof TaskHeader) {
-                    listView.scrollTo(getSelectedIndex() - 1);
-                } else {
-                    listView.scrollTo(getSelectedIndex());
-                }
-
-                System.out.println("Item index: " + getSelectedIndex());
-                System.out.println("Item index is less than viewport first visible index");
-                System.out.println("Cell differences: " + numberOfCellsDifference);
-            } else if (getSelectedIndex() > lastVisibleIndex) {
-                int numberOfCellsDifference = getSelectedIndex() - lastVisibleIndex;
-                if (numberOfCellsDifference == 1) {
+            if (isArrowKeysPressed) {
+                System.out.println("arrowkeys true");
+                System.out.println("adjustViewPort: previous index " + previousSelectedTaskIndex);
+                if (getSelectedIndex() <= firstVisibleIndex) {
+                    System.out.println("Scrolling up");
+                    // if the item at current index -1 is a task header, adjust
+                    // viewport to show header
+                    if (taskListWithHeaders.get(getSelectedIndex() - 1) instanceof TaskHeader) {
+                        listView.scrollTo(getSelectedIndex() - 1);
+                    } else {
+                        // viewport will scroll and show the current item at the
+                        // top
+                        listView.scrollTo(getSelectedIndex());
+                    }
+    
+                } else if (getSelectedIndex() > lastVisibleIndex) {
+                    System.out.println("Scrolling down");
+                    // viewport will scroll and show the current item at the bottom
                     listView.scrollTo(firstVisibleIndex + 1);
-                } else {
-                    listView.scrollTo(numberOfCellsDifference + 4);
                 }
-
-                System.out.println("Item index: " + getSelectedIndex());
-                System.out.println("Item index is more than viewport last visible index");
-                System.out.println("Cell differences: " + numberOfCellsDifference);
+                isArrowKeysPressed = false;
+                System.out.println("arrowkeys false");
+                return;
             }
-            return;
+    
+            Command lastExecutedCommand = rootLayoutController.getLastExecutedCommand();
+            boolean isAddCommand = lastExecutedCommand instanceof AddCommand;
+            boolean isEditCommand = lastExecutedCommand instanceof EditCommand;
+            boolean isDeleteCommand = lastExecutedCommand instanceof DeleteCommand;
+            boolean isDoneCommand = lastExecutedCommand instanceof DoneCommand;
+            boolean isUndoneCommand = lastExecutedCommand instanceof UndoneCommand;
+    
+            if (isAddCommand || isEditCommand || isDeleteCommand || isDoneCommand || isUndoneCommand) {
+                logger.log(Level.INFO, "Adjusting viewport for: " + lastExecutedCommand.getClass().getSimpleName());
+                
+                System.out.println("2. SELECTED: " + getSelectedIndex() + " FIRST VISIBLE: " + firstVisibleIndex);
+                if (getSelectedIndex() <= firstVisibleIndex) {
+                    int numberOfCellsDifference = firstVisibleIndex - getSelectedIndex();
+                    if (taskListWithHeaders.get(getSelectedIndex() - 1) instanceof TaskHeader) {
+                        listView.scrollTo(getSelectedIndex() - 1);
+                    } else {
+                        listView.scrollTo(getSelectedIndex());
+                    }
+    
+                    System.out.println("Item index: " + getSelectedIndex());
+                    System.out.println("Item index is less than viewport first visible index");
+                    System.out.println("Cell differences: " + numberOfCellsDifference);
+                } else if (getSelectedIndex() > lastVisibleIndex) {
+                    int numberOfCellsDifference = getSelectedIndex() - lastVisibleIndex;
+                    if (numberOfCellsDifference == 1) {
+                        listView.scrollTo(firstVisibleIndex + 1);
+                    } else {
+                        listView.scrollTo(numberOfCellsDifference + 4);
+                    }
+    
+                    System.out.println("Item index: " + getSelectedIndex());
+                    System.out.println("Item index is more than viewport last visible index");
+                    System.out.println("Cell differences: " + numberOfCellsDifference);
+                }
+                return;
+            }
         }
-
     }
 
     /**
