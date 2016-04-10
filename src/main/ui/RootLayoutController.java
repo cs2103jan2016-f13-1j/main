@@ -237,7 +237,7 @@ public class RootLayoutController implements Observer {
                         }
                         
                         showFeedback(true, STRING_FEEDBACK_ACTION_SEARCH,
-                                " Found " + numberOfTasks + " tasks for -" + userArguments + "-");
+                                " Found " + numberOfTasks + " task(s) for -" + userArguments + "-");
                     }
                 }
             } else {
