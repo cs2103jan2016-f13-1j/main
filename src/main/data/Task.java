@@ -30,6 +30,9 @@ public class Task {
     private boolean collideWithPrev;
     private boolean collideWithNext;
 
+    public Task() {
+    }
+    
     public Task(String title) {
         this.title = title;
         startDate = null;
@@ -56,9 +59,6 @@ public class Task {
         completedDate = null;
         collideWithPrev = false;
         collideWithNext = false;
-    }
-    
-    public Task() {
     }
     
     public String getTitle() {
