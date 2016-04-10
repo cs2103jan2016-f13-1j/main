@@ -902,10 +902,10 @@ public class RootLayoutController implements Observer {
         int taskIndex = commandParser.getIndexForEdit(userInput);
         logger.log(Level.INFO, "EDIT command index is " + taskIndex);
 
-        // no index is found in user input TODO maybe removing this
+        // no index is found in user input, parse the input as an Add operation instead
         if (taskIndex == -1) {
             logger.log(Level.INFO, "EDIT command has no index. Editing current selected task");
-            parseEditForSelectedTask();
+            parseAdd();
             return;
         }
 

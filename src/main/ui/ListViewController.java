@@ -424,10 +424,7 @@ public class ListViewController extends AnchorPane {
     public void restoreListViewPreviousSelection() {
         // if previous selected index was the last index in the previous list
         if (previousSelectedTaskIndex == observableTaskList.size()) {
-            listView.getSelectionModel().clearAndSelect(observableTaskList.size() - 1); // select
-                                                                                        // the
-                                                                                        // last
-                                                                                        // index
+            listView.getSelectionModel().clearAndSelect(observableTaskList.size() - 1); // select the last index
             saveSelectedIndex();
             logger.log(Level.INFO, "Restore ListView selection to last item");
         } else {
