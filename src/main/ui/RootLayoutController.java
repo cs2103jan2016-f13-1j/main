@@ -694,6 +694,7 @@ public class RootLayoutController implements Observer {
         
         taskIndexesToBeExecuted = new ArrayList<>(1);
         taskIndexesToBeExecuted.add(actualIndex);
+        listOfTaskToBeExecuted = getTasksToBeExecuted(taskIndexesToBeExecuted);
         taskToBeExecuted = getCurrentList().get(getCurrentListViewController().getSelectedIndex());
         commandToBeExecuted = new DeleteCommand(receiver, getTasksToBeExecuted(taskIndexesToBeExecuted));
         invoker.execute(commandToBeExecuted);
@@ -1281,12 +1282,12 @@ public class RootLayoutController implements Observer {
                 labelExecutedCommand.setText("Deleted:");
                 labelExecutedCommand.setTextFill(Color.web(AppColor.PRIMARY_RED_LIGHT, 0.7));
                 labelExecutionDetails.setTextFill(Color.web(AppColor.PRIMARY_WHITE, 0.9));
-                
+                System.out.println("LIST SIZE: " + listOfTaskToBeExecuted.size());
                 if (listOfTaskToBeExecuted.size() == 1) {
                     labelExecutionDetails.setText(taskToBeExecuted.toString());
                 } else if (listOfTaskToBeExecuted.size() > 1) {
                     labelExecutionDetails.setText(listOfTaskToBeExecuted.size() + " tasks");
-                } else if (userArguments.toLowerCase().equals("all")) {
+                } else if (userArguments != null && userArguments.toLowerCase().equals("all")) {
                     // TODO very dirty. refactor for better checking
                     labelExecutionDetails.setText("all");
                 }
