@@ -103,6 +103,8 @@ public class RootLayoutController implements Observer {
 
     @FXML // fx:id="rootLayout"
     private AnchorPane rootLayout; // Value injected by FXMLLoader
+    
+    
 
     @FXML // fx:id="tabPane"
     private JFXTabPane tabPane; // Value injected by FXMLLoader
@@ -294,6 +296,11 @@ public class RootLayoutController implements Observer {
 
     private void assertDependencyInjection() {
         assert rootLayout != null : "fx:id=\"rootLayout\" was not injected: check your FXML file 'RootLayout.fxml'.";
+        
+        
+        
+        
+        
         assert tabPane != null : "fx:id=\"tabPane\" was not injected: check your FXML file 'RootLayout.fxml'.";
         assert tabTodo != null : "fx:id=\"tabTodo\" was not injected: check your FXML file 'RootLayout.fxml'.";
         assert tabCompleted != null : "fx:id=\"tabCompleted\" was not injected: check your FXML file 'RootLayout.fxml'.";

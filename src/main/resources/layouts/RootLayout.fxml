@@ -13,16 +13,56 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.text.TextFlow?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.shape.Circle?>
+<?import javafx.scene.shape.SVGPath?>
 <?import main.ui.ListViewController?>
 
-<AnchorPane fx:id="rootLayout" cacheHint="SPEED" prefHeight="1000.0"
+<AnchorPane fx:id="rootLayout" cacheHint="SPEED" prefHeight="1080.0"
 	prefWidth="860.0" stylesheets="@../styles/RootLayout.css" xmlns="http://javafx.com/javafx/8.0.65"
 	xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.ui.RootLayoutController">
+		<children>
+<BorderPane fx:id="toolbar" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="80.0" prefWidth="860.0" style="-fx-background-color: #303F9F;" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+   <left>
+      <Label fx:id="labelAppTitle" alignment="CENTER" text="Dooleh" textFill="WHITE" BorderPane.alignment="CENTER_LEFT">
+         <font>
+            <Font size="30.0" />
+         </font>
+      </Label>
+   </left>
+   <right>
+      <HBox alignment="CENTER_RIGHT" BorderPane.alignment="CENTER">
+         <children>
+            <JFXButton prefHeight="75.0" prefWidth="75.0">
+               <graphic>
+                  <SVGPath fx:id="iconUndo" content="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z" fill="#ffffff66" scaleX="1.3" scaleY="1.3" scaleZ="1.3" />
+               </graphic>
+            </JFXButton>
+            <JFXButton prefHeight="75.0" prefWidth="75.0">
+               <graphic>
+                  <SVGPath fx:id="iconRedo" content="M18.4 10.6C16.55 8.99 14.15 8 11.5 8c-4.65 0-8.58 3.03-9.96 7.22L3.9 16c1.05-3.19 4.05-5.5 7.6-5.5 1.95 0 3.73.72 5.12 1.88L13 16h9V7l-3.6 3.6z" fill="#ffffff66" scaleX="1.3" scaleY="1.3" scaleZ="1.3" />
+               </graphic>
+            </JFXButton>
+            <JFXButton prefHeight="75.0" prefWidth="75.0">
+               <graphic>
+                  <SVGPath fx:id="iconHelp" content="M11 18h2v-2h-2v2zm1-16C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-2.21 0-4 1.79-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5 0-2.21-1.79-4-4-4z" fill="WHITE" scaleX="1.3" scaleY="1.3" scaleZ="1.3" />
+               </graphic>
+            </JFXButton>
+         </children>
+      </HBox>
+   </right>
+   <padding>
+      <Insets left="20.0" />
+   </padding>
+</BorderPane>
+		</children>		
 	<children>
 		<JFXTabPane fx:id="tabPane" cacheHint="SPEED" tabMinHeight="48.0"
 			tabMinWidth="420.0" AnchorPane.bottomAnchor="0.0"
 			AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
-			AnchorPane.topAnchor="0.0">
+			AnchorPane.topAnchor="80.0">
 			<tabs>
 				<Tab fx:id="tabTodo" closable="false" text="To-do">
 					<content>
@@ -38,22 +78,164 @@
 		</JFXTabPane>
 		<JFXTextField fx:id="commandBar" cacheHint="SPEED"
 			prefHeight="48.0" promptText="Type something..." style="-fx-prompt-text-fill: #808080;"
-			AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="40.0"
-			AnchorPane.rightAnchor="40.0">
+			AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="20.0"
+			AnchorPane.rightAnchor="20.0">
 			<font>
 				<Font name="Noto Sans" size="18.0" />
 			</font>
 		</JFXTextField>
 		<JFXButton fx:id="chipSearchMode" style="-fx-background-color: #4CAF50;"
 			textFill="WHITE" visible="false" AnchorPane.bottomAnchor="30.0"
-			AnchorPane.leftAnchor="52.0">
+			AnchorPane.leftAnchor="32.0">
 			<font>
 				<Font name="Noto Sans" size="14.0" />
 			</font>
 		</JFXButton>
+		
+		<JFXButton fx:id="btnFeedback" alignment="CENTER"
+			buttonType="RAISED" cacheHint="SPEED" layoutY="796.0" prefHeight="48.0"
+			style="-fx-background-color: white;" visible="false"
+			AnchorPane.bottomAnchor="70.0" AnchorPane.leftAnchor="40.0"
+			AnchorPane.rightAnchor="40.0">
+			<font>
+				<Font name="Noto Sans" size="13.0" />
+			</font>
+			<graphic>
+				<Group fx:id="groupFeedback">
+					<children>
+						<TextFlow fx:id="textFlowFeedback">
+							<children>
+								<Text fx:id="textUserAction" strokeType="OUTSIDE"
+									strokeWidth="0.0" text="User action:">
+									<font>
+										<Font name="Noto Sans" size="20.0" />
+									</font>
+								</Text>
+								<Text fx:id="textUserParsedResult" strokeType="OUTSIDE"
+									strokeWidth="0.0" text="Parsed feedback">
+									<font>
+										<Font size="20.0" />
+									</font>
+								</Text>
+							</children>
+						</TextFlow>
+					</children>
+				</Group>
+			</graphic>
+		</JFXButton>
+	</children>
+	
+	<children>
+		<HBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="100.0" prefWidth="860.0" spacing="100.0" style="-fx-background-color: #FFFFFF;"
+			AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+			AnchorPane.topAnchor="130.0">
+   <children>
+      <StackPane prefHeight="100.0">
+         <children>
+            <Label alignment="CENTER" prefWidth="102.0" text="TODAY" textFill="#3f51b5" StackPane.alignment="TOP_CENTER">
+               <font>
+                  <Font size="16.0" />
+               </font></Label>
+            <StackPane prefWidth="60.0">
+               <children>
+                  <Circle fill="#3f51b5" radius="16.0" stroke="TRANSPARENT" strokeType="INSIDE" />
+                  <Text fx:id="totalTasksToday" fill="WHITE" fontSmoothingType="LCD" strokeType="OUTSIDE" strokeWidth="0.0" text="999" textAlignment="CENTER" StackPane.alignment="CENTER">
+                     <font>
+                        <Font name="Noto Sans Bold" size="14.0" />
+                     </font>
+                  </Text>
+               </children>
+               <padding>
+                  <Insets top="8.0" />
+               </padding>
+            </StackPane>
+         </children>
+         <padding>
+            <Insets top="18.0" />
+         </padding>
+      </StackPane>
+      <StackPane prefHeight="100.0">
+         <children>
+            <Label text="TOMORROW" textFill="#3f51b5" StackPane.alignment="TOP_CENTER">
+               <font>
+                  <Font size="16.0" />
+               </font>
+            </Label>
+            <StackPane maxWidth="60.0">
+               <children>
+                  <Circle fill="#3f51b5" radius="16.0" stroke="TRANSPARENT" strokeType="INSIDE" />
+                  <Text fx:id="totalTasksTomorrow" fill="WHITE" fontSmoothingType="LCD" strokeType="OUTSIDE" strokeWidth="0.0" text="999" textAlignment="CENTER">
+                     <font>
+                        <Font name="Noto Sans Bold" size="14.0" />
+                     </font>
+                  </Text>
+               </children>
+               <padding>
+                  <Insets top="8.0" />
+               </padding>
+            </StackPane>
+         </children>
+         <padding>
+            <Insets top="18.0" />
+         </padding>
+      </StackPane>
+      <StackPane prefHeight="100.0">
+         <children>
+            <Label alignment="CENTER" prefWidth="102.0" text="UPCOMING" textFill="#3f51b5" StackPane.alignment="TOP_CENTER">
+               <font>
+                  <Font size="16.0" />
+               </font>
+            </Label>
+            <StackPane prefWidth="60.0">
+               <children>
+                  <Circle fill="#3f51b5" radius="16.0" stroke="TRANSPARENT" strokeType="INSIDE" />
+                  <Text fx:id="totalTasksUpcoming" fill="WHITE" fontSmoothingType="LCD" strokeType="OUTSIDE" strokeWidth="0.0" text="999" textAlignment="CENTER">
+                     <font>
+                        <Font name="Noto Sans Bold" size="14.0" />
+                     </font>
+                  </Text>
+               </children>
+               <padding>
+                  <Insets top="8.0" />
+               </padding>
+            </StackPane>
+         </children>
+         <padding>
+            <Insets top="18.0" />
+         </padding>
+      </StackPane>
+      <StackPane prefHeight="100.0">
+         <children>
+            <Label alignment="CENTER" prefWidth="102.0" text="SOMEDAY" textFill="#3f51b5" StackPane.alignment="TOP_CENTER">
+               <font>
+                  <Font size="16.0" />
+               </font>
+            </Label>
+            <StackPane prefWidth="60.0">
+               <children>
+                  <Circle fill="#3f51b5" radius="16.0" stroke="TRANSPARENT" strokeType="INSIDE" />
+                  <Text fx:id="totalTasksSomeday" fill="WHITE" fontSmoothingType="LCD" strokeType="OUTSIDE" strokeWidth="0.0" text="999" textAlignment="CENTER" StackPane.alignment="CENTER">
+                     <font>
+                        <Font name="Noto Sans Bold" size="14.0" />
+                     </font>
+                  </Text>
+               </children>
+               <padding>
+                  <Insets top="8.0" />
+               </padding>
+            </StackPane>
+         </children>
+         <padding>
+            <Insets top="18.0" />
+         </padding>
+      </StackPane>
+   </children>
+</HBox>
+	</children>
+	<children>
 		<AnchorPane fx:id="anchorPaneExecutionResult" opacity="0.0"
-			style="-fx-background-color: #323232;" AnchorPane.bottomAnchor="70.0"
-			AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="40.0">
+			style="-fx-background-color: #323232;" AnchorPane.topAnchor="160.0"
+			AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
 			<children>
 				<Label fx:id="labelExecutedCommand" layoutX="10.0" layoutY="10.0"
 					text="Deleted:" textAlignment="RIGHT" textFill="#c5cae9"
@@ -86,36 +268,5 @@
 				<Insets left="60.0" right="60.0" />
 			</padding>
 		</AnchorPane>
-		<JFXButton fx:id="btnFeedback" alignment="CENTER"
-			buttonType="RAISED" cacheHint="SPEED" layoutY="796.0" prefHeight="48.0"
-			style="-fx-background-color: white;" visible="false"
-			AnchorPane.bottomAnchor="70.0" AnchorPane.leftAnchor="40.0"
-			AnchorPane.rightAnchor="40.0">
-			<font>
-				<Font name="Noto Sans" size="13.0" />
-			</font>
-			<graphic>
-				<Group fx:id="groupFeedback">
-					<children>
-						<TextFlow fx:id="textFlowFeedback">
-							<children>
-								<Text fx:id="textUserAction" strokeType="OUTSIDE"
-									strokeWidth="0.0" text="User action:">
-									<font>
-										<Font name="Noto Sans" size="20.0" />
-									</font>
-								</Text>
-								<Text fx:id="textUserParsedResult" strokeType="OUTSIDE"
-									strokeWidth="0.0" text="Parsed feedback">
-									<font>
-										<Font size="20.0" />
-									</font>
-								</Text>
-							</children>
-						</TextFlow>
-					</children>
-				</Group>
-			</graphic>
-		</JFXButton>
 	</children>
 </AnchorPane>
