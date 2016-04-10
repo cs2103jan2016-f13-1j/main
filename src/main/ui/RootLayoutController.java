@@ -1127,9 +1127,8 @@ public class RootLayoutController implements Observer {
         if (numberOfActions >= 0) { 
             showFeedback(true, STRING_FEEDBACK_ACTION_UNDO,
                     String.format(STRING_FEEDBACK_TOTAL_ACTION, numberOfActions));
-            
         } else {
-            showFeedback(true, STRING_FEEDBACK_ACTION_UNDO, String.format(STRING_FEEDBACK_TOTAL_ACTION, 0));
+            showFeedback(true, STRING_FEEDBACK_ACTION_UNDO, String.format(STRING_FEEDBACK_TOTAL_ACTION, 1));
         }
     }
 
