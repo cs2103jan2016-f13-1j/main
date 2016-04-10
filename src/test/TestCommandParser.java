@@ -1256,25 +1256,4 @@ public class TestCommandParser {
         assertEquals("1-5,10", indexes.getValidIndexesString());
         assertEquals("11-20,31-33,35", indexes.getInvalidIndexesString());
     }
-
-    // =============================
-    // Latest stuff
-    // =============================
-    @Test
-    public void testBuggyTheClown() throws InvalidLabelFormat, InvalidTitle {
-        CommandParser parser = new CommandParser();
-        Task task, task2;
-
-        // ?!?!?!??! lol whut
-        /*
-         * task = parser.parseAdd("cousin 10 may 7pm");
-         * System.out.println(task.toString());
-         * task = parser.parseAdd("apple 10 may 7pm");
-         * System.out.println(task.toString());
-         */
-
-
-     
-
-    }
 }
