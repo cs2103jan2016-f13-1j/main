@@ -364,7 +364,6 @@ public class ListViewController extends AnchorPane {
             if (isAddCommand || isEditCommand || isDeleteCommand || isDoneCommand || isUndoneCommand) {
                 logger.log(Level.INFO, "Adjusting viewport for: " + lastExecutedCommand.getClass().getSimpleName());
                 
-                System.out.println("2. SELECTED: " + getSelectedIndex() + " FIRST VISIBLE: " + firstVisibleIndex);
                 if (getSelectedIndex() <= firstVisibleIndex) {
                     int numberOfCellsDifference = firstVisibleIndex - getSelectedIndex();
                     if (taskListWithHeaders.get(getSelectedIndex() - 1) instanceof TaskHeader) {

@@ -501,7 +501,7 @@ public class RootLayoutController implements Observer {
             try {
                 isUndoRedo = true;
                 Command previousCommand = invoker.undo();
-                logger.log(Level.INFO, "Pressed F2 key: UNDO operation");
+                logger.log(Level.INFO, "Pressed F1 key: UNDO operation");
 
                 if (!chipSearchMode.getText().equals("")) {
                     invoker.execute(searchCommand);
@@ -521,7 +521,7 @@ public class RootLayoutController implements Observer {
             try {
                 isUndoRedo = true;
                 Command previousCommand = invoker.redo();
-                logger.log(Level.INFO, "Pressed F3 key: REDO operation");
+                logger.log(Level.INFO, "Pressed F2 key: REDO operation");
 
                 if (!chipSearchMode.getText().equals("")) {
                     invoker.execute(searchCommand);
@@ -830,12 +830,27 @@ public class RootLayoutController implements Observer {
 
         if (userArguments.toLowerCase().equals("all")) {
             // previousSelectedTaskIndex = 0;
-            listOfTaskToBeExecuted = getCurrentList();
+            ArrayList<Task> tasksToDelete = new ArrayList<Task>();
+            for (Task task : getCurrentList()) {
+                if (!(task instanceof TaskHeader)) {
+                    tasksToDelete.add(task);
+                }
+            }
+            listOfTaskToBeExecuted = tasksToDelete;
+            
             commandToBeExecuted = new DeleteCommand(receiver, listOfTaskToBeExecuted);
             getCurrentListViewController().clearListViewSelection();
             getCurrentListViewController().selectAll();
+            
+            int numberOfTasks = 0;
+            for (Task task : getCurrentList()) {
+                if (!(task instanceof TaskHeader)) {
+                    numberOfTasks++;
+                }
+            }
+            
             showFeedback(true, STRING_FEEDBACK_ACTION_DELETE, userArguments + STRING_WHITESPACE
-                    + String.format(STRING_FEEDBACK_TOTAL_TASK, getCurrentList().size()));
+                    + String.format(STRING_FEEDBACK_TOTAL_TASK, numberOfTasks));
             return;
 
         }

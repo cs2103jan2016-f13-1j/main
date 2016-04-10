@@ -4,6 +4,7 @@ package main.logic;
 import java.util.ArrayList;
 
 import main.data.Task;
+import main.data.TaskHeader;
 
 /**
  * 
@@ -50,13 +51,13 @@ public class DeleteCommand implements Command {
     
     public void undo() {
         ArrayList<Task> allTasks = receiver.getAllTasks();
-
+        
         if (task != null) {
             allTasks.add(task);
         } else if (tasks != null){
             for (Task task : tasks) {
                 allTasks.add(task);
-            } 
+            }
         }
         
         receiver.setAllTasks(allTasks);
