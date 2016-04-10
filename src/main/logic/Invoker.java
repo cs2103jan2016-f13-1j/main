@@ -47,6 +47,7 @@ public class Invoker {
 	public Command undo() throws EmptyStackException {
 	    Command command;
 	    try {
+	        logger.log(Level.INFO, "Executing undo command");
     		command = undoHistory.pop();
     		command.undo();
     		redoHistory.push(command);
@@ -73,6 +74,7 @@ public class Invoker {
 	public Command redo() throws EmptyStackException {
 	    Command command;
 	    try {
+	        logger.log(Level.INFO, "Executing redo command");
     		command = redoHistory.pop();
     		command.execute();
     		undoHistory.push(command);

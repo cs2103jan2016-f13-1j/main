@@ -177,6 +177,7 @@ public class RootLayoutController implements Observer {
     @Override
     public void update(Observable o, Object arg) {
         if (o instanceof Receiver) {
+            System.out.println("CAME INTO UPDATE " + commandToBeExecuted);
             if (commandToBeExecuted != null) {
                 logger.log(Level.INFO, "(" + commandToBeExecuted.getClass().getSimpleName() + ") update() is called");
                 
@@ -234,6 +235,10 @@ public class RootLayoutController implements Observer {
                         showFeedback(true, STRING_FEEDBACK_ACTION_SEARCH,
                                 " Found " + numberOfTasks + " tasks for -" + userArguments + "-");
                     }
+                }
+            } else {
+                if (isUndoRedo) {
+                    refreshListView();
                 }
             }
         }
@@ -572,9 +577,13 @@ public class RootLayoutController implements Observer {
         if (commandBar.getText().trim().length() > 0) {
 
             if (userCommand.equals(STRING_COMMAND_UNDO)) {
-                System.out.println("Enter key: " + userCommand);
-                for (int i = 0; i < numberOfActions; i++) {
+                System.out.println("Enter key: " + userCommand + " " + numberOfActions);
+                if (numberOfActions < 0) {
                     handleUndo();
+                } else {
+                    for (int i = 0; i < numberOfActions; i++) {
+                        handleUndo();
+                    }
                 }
                 resetStateAfterExecution();
                 return;
@@ -583,8 +592,12 @@ public class RootLayoutController implements Observer {
 
             if (userCommand.equals(STRING_COMMAND_REDO)) {
                 System.out.println("Enter key: " + userCommand);
-                for (int i = 0; i < numberOfActions; i++) {
+                if (numberOfActions < 0) {
                     handleRedo();
+                } else {
+                    for (int i = 0; i < numberOfActions; i++) {
+                        handleRedo();
+                    }
                 }
                 resetStateAfterExecution();
                 return;
@@ -1107,13 +1120,12 @@ public class RootLayoutController implements Observer {
 
     private void parseUndo() {
         numberOfActions = commandParser.getIndexForEdit(userInput);
-        if (numberOfActions >= 0) {
+        if (numberOfActions >= 0) { 
             showFeedback(true, STRING_FEEDBACK_ACTION_UNDO,
                     String.format(STRING_FEEDBACK_TOTAL_ACTION, numberOfActions));
-
+            
         } else {
             showFeedback(true, STRING_FEEDBACK_ACTION_UNDO, String.format(STRING_FEEDBACK_TOTAL_ACTION, 0));
-
         }
     }
 
