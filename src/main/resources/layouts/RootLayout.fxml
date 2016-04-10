@@ -86,7 +86,7 @@
 		</JFXTextField>
 		<JFXButton fx:id="chipSearchMode" style="-fx-background-color: #4CAF50;"
 			textFill="WHITE" visible="false" AnchorPane.bottomAnchor="30.0"
-			AnchorPane.leftAnchor="32.0">
+			AnchorPane.leftAnchor="30.0">
 			<font>
 				<Font name="Noto Sans" size="14.0" />
 			</font>

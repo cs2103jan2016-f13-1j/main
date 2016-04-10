@@ -279,7 +279,32 @@ public class ListViewController extends AnchorPane {
 
         }
 
+        recalculateTotalTasksForEveryCategory();
+
+
+
         return taskListWithHeaders;
+    }
+
+    private void recalculateTotalTasksForEveryCategory() {
+        // decrement all the counters by 1 due to double counting when an
+        // insertion of a task header causes items in the arraylist to be
+        // shifted to the right
+        if (totalOverdueTasks != 0) {
+            totalOverdueTasks = totalOverdueTasks - 1;
+        }
+        if (totalTodayTasks != 0) {
+            totalTodayTasks = totalTodayTasks - 1;
+        }
+        if (totalTomorrowTasks != 0) {
+            totalTomorrowTasks = totalTomorrowTasks - 1;
+        }
+        if (totalUpcomingTasks != 0) {
+            totalUpcomingTasks = totalUpcomingTasks - 1;
+        }
+        if (totalSomedayTasks != 0) {
+            totalSomedayTasks = totalSomedayTasks - 1;
+        }
     }
 
     private void resetCountForTaskCategories() {
