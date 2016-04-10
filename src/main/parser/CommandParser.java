@@ -716,6 +716,7 @@ public class CommandParser {
      * This method corrects the next week that is parsed by PrettyTime.
      * When next week is specified in the user input,
      * it will always be corrected to the Monday of next week.
+     * The week starts on Monday.
      * 
      * @param dates
      *            {@code List<Date>} to be corrected
@@ -723,14 +724,18 @@ public class CommandParser {
      */
     private List<Date> correctNextWeek(List<Date> dates) {
         Calendar cal = Calendar.getInstance();
+        cal.setFirstDayOfWeek(Calendar.MONDAY);
+
         if (dates.size() == 0) {
+            //if there is no date parsed by PrettyTime, set to next Monday
             cal.setTime(new Date());
             int week = cal.get(Calendar.WEEK_OF_YEAR) + 1;
-            cal.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
             cal.set(Calendar.WEEK_OF_YEAR, week);
+            cal.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
             cal.setTime(setTimeToZero(cal.getTime()));
             dates.add(cal.getTime());
-        } else {
+        } else{
+            //correct to next Monday for range time
             for (int i = 0; i < dates.size(); i++) {
                 cal.setTime(dates.get(i));
                 cal.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
