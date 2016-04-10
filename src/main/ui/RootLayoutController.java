@@ -1178,7 +1178,7 @@ public class RootLayoutController implements Observer {
         if (isVisible) {
             logger.log(Level.INFO, "Showing user feedback: " + userFeedback);
         }
-
+        
         textUserAction.setText(userAction + STRING_WHITESPACE);
         // textUserAction.setFont(new Font(20));
         textUserAction.setFill(Color.web("303F9F", 0.7));
@@ -1296,8 +1296,10 @@ public class RootLayoutController implements Observer {
                 labelExecutedCommand.setTextFill(Color.web(AppColor.PRIMARY_WHITE));
                 labelExecutionDetails.setTextFill(Color.web(AppColor.PRIMARY_WHITE, 0));
             } else {
-                labelExecutedCommand.setText("New file location has been set.");
-                labelExecutedCommand.setTextFill(Color.web(AppColor.PRIMARY_WHITE, 0.7));
+                labelExecutedCommand.setText("Set:");
+                labelExecutedCommand.setTextFill(Color.web(AppColor.PRIMARY_BLUE_LIGHT, 0.7));
+                labelExecutionDetails.setText("New file location has been set.");
+                labelExecutionDetails.setTextFill(Color.web(AppColor.PRIMARY_WHITE, 0.9));
             }
 
         }
