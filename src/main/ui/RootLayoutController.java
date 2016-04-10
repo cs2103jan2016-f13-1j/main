@@ -944,7 +944,7 @@ public class RootLayoutController implements Observer {
         ParseIndexResult parseIndexResult;
         try {
             parseIndexResult = commandParser.parseIndexes(userInput, getCurrentList().size());
-            
+
             if (parseIndexResult.hasValidIndex()) {
                 taskIndexesToBeExecuted = parseIndexResult.getValidIndexes();
             }
@@ -978,14 +978,14 @@ public class RootLayoutController implements Observer {
         } catch (InvalidTaskIndexFormat invalidTaskIndexFormat) {
             logger.log(Level.INFO, "DELETE command index(es) invalid: " + userArguments);
             getCurrentListViewController().clearListViewSelection();
-            clearStoredUserInput();
             showFeedback(true, STRING_FEEDBACK_ACTION_DELETE, String.format(STRING_ERROR_NOT_FOUND, userArguments));
+            clearStoredUserInput();
             return;
         } catch (IndexOutOfBoundsException indexOutOfBoundsException) {
             logger.log(Level.INFO, "DELETE command index(es) invalid: " + userArguments);
             getCurrentListViewController().clearListViewSelection();
-            clearStoredUserInput();
             showFeedback(true, STRING_FEEDBACK_ACTION_DELETE, String.format(STRING_ERROR_NOT_FOUND, userArguments));
+            clearStoredUserInput();
             return;
         }
 
