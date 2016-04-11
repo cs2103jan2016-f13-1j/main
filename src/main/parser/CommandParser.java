@@ -81,8 +81,6 @@ public class CommandParser {
      * @throws InvalidTitle
      */
     public Task parseAdd(String inputString) throws InvalidLabelFormat, InvalidTitle {
-        logger.setLevel(Level.OFF);
-
         assert (inputString != null);
         logger.log(Level.INFO, "Parsing for ADD command.");
 
