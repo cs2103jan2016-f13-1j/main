@@ -233,8 +233,8 @@ public class RootLayoutController implements Observer {
                 // TODO do something about this
                 if (isUndoRedo) {
                     isUndoRedo = false;
-                    System.out.println("IS UNDO, selected index: " + getCurrentListViewController().getSelectedIndex());
-                    return;
+//                    System.out.println("IS UNDO, selected index: " + getCurrentListViewController().getSelectedIndex());
+//                    return;
                 }
 
                 boolean isAddCommand = commandToBeExecuted instanceof AddCommand;
