@@ -901,7 +901,6 @@ public class RootLayoutController implements Observer {
                 }
             }
             listOfTaskToBeExecuted = tasksToDelete;
-
             commandToBeExecuted = new DeleteCommand(receiver, listOfTaskToBeExecuted);
             getCurrentListViewController().clearListViewSelection();
             getCurrentListViewController().selectAll();
@@ -923,9 +922,20 @@ public class RootLayoutController implements Observer {
         ParseIndexResult parseIndexResult;
         try {
             parseIndexResult = commandParser.parseIndexes(userInput, getCurrentList().size());
+            
             if (parseIndexResult.hasValidIndex()) {
+                System.out.println("valid yes: "+parseIndexResult.getValidIndexes());
                 taskIndexesToBeExecuted = parseIndexResult.getValidIndexes();
+                
+                if (parseIndexResult.hasInvalidIndex()) {
+                    //feedback to user the invalids among the valid?
+                    //parseIndexResult.getInvalidIndexesString()
+                }
+            } else {
+                //clear if invalid only
+                taskIndexesToBeExecuted.clear();
             }
+            
             String parseResult = taskIndexesToBeExecuted.toString();
             System.out.println("user arguments: " + userArguments);
             System.out.println("parse result: " + parseResult);
