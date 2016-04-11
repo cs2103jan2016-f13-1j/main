@@ -342,12 +342,29 @@ public class RootLayoutController implements Observer {
         initKeyboardListener();
         initCommandBarListener();
         initSearchModeChipsLayoutListener();
-        initHelpPageDialog();
+        initToolBarButtons();
 
         logger.log(Level.INFO, "UI initialization complete");
     }
 
-    private void initHelpPageDialog() {
+    private void initToolBarButtons() {
+        buttonUndo.setOnMouseClicked(new EventHandler<Event>() {
+
+            @Override
+            public void handle(Event event) {
+                handleUndo();
+
+            }
+        });
+        buttonRedo.setOnMouseClicked(new EventHandler<Event>() {
+
+            @Override
+            public void handle(Event event) {
+                handleRedo();
+
+            }
+        });
+
         dialogHelp.setContent(new HelpPage());
         dialogHelp.setTransitionType(DialogTransition.CENTER);
         buttonHelp.setOnMouseClicked(new EventHandler<Event>() {
