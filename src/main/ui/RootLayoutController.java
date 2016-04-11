@@ -196,7 +196,6 @@ public class RootLayoutController implements Observer {
     @Override
     public void update(Observable o, Object arg) {
         if (o instanceof Receiver) {
-            System.out.println("CAME INTO UPDATE " + commandToBeExecuted);
             if (commandToBeExecuted != null) {
                 logger.log(Level.INFO, "(" + commandToBeExecuted.getClass().getSimpleName() + ") update() is called");
 
@@ -227,8 +226,7 @@ public class RootLayoutController implements Observer {
                 } else if (isDeleteCommand || isDoneCommand || isUndoneCommand) {
                     executedCommand = commandToBeExecuted;
                     getCurrentListViewController().clearListViewSelection();
-
-                    if (getCurrentListViewController().getPreviousSelectedIndex() > getCurrentList().size()) {
+                    if (getCurrentListViewController().getPreviousSelectedIndex() >= getCurrentList().size() - 1) {
                         getCurrentListViewController().selectLast();
                     } else {
                         // select back the previous first index that was in the
@@ -1099,7 +1097,6 @@ public class RootLayoutController implements Observer {
                 commandToBeExecuted = new DoneCommand(receiver, getTasksToBeExecuted(taskIndexesToBeExecuted));
                 getCurrentListViewController().clearAndSelect(taskIndex);
                 showFeedback(true, STRING_FEEDBACK_ACTION_DONE, inputFeedback);
-
             } else {
                 commandToBeExecuted = new DoneCommand(receiver, getTasksToBeExecuted(taskIndexesToBeExecuted));
                 getCurrentListViewController().clearListViewSelection();
