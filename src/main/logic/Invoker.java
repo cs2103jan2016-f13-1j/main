@@ -22,14 +22,12 @@ public class Invoker {
 	 * @param command An instance of the Command interface
 	 */
 	public void execute(Command command) {
-		command.execute();
-		
-		if (command instanceof SearchCommand) {
-		    return;
+		if (!(command instanceof SearchCommand)) {
+    		undoHistory.push(command);
+    		redoHistory.clear();
 		}
 		
-		undoHistory.push(command);
-		redoHistory.clear();
+		command.execute();
 	}
 
 	/** Returns true if there is at least one undoable Command
@@ -49,8 +47,8 @@ public class Invoker {
 	    try {
 	        logger.log(Level.INFO, "Executing undo command");
     		command = undoHistory.pop();
-    		command.undo();
     		redoHistory.push(command);
+    		command.undo();
 	    } catch (Exception e) {
 	        logger.log(Level.WARNING, "Stack is empty, check if undo is available before calling");
 	        throw new EmptyStackException();
@@ -76,8 +74,8 @@ public class Invoker {
 	    try {
 	        logger.log(Level.INFO, "Executing redo command");
     		command = redoHistory.pop();
-    		command.execute();
     		undoHistory.push(command);
+    		command.execute();
 	    } catch (Exception e) {
 	        logger.log(Level.WARNING, "Stack is empty, check if redo is available before calling");
 	        throw new EmptyStackException();

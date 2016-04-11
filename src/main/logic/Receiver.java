@@ -210,8 +210,8 @@ public class Receiver extends Observable {
 
     private void sortTasks() {
         logger.log(Level.INFO, "Sorting tasks");
-        Collections.sort(todoTasks, new TodoTaskComparator());
-        Collections.sort(completedTasks, new CompletedTaskComparator());
+        Collections.sort(todoTasks, new CustomTaskComparator());
+        Collections.sort(completedTasks, new CustomTaskComparator());
     }
 
     private void updateCollision() {
