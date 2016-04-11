@@ -7,12 +7,13 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
 public class MainApp extends Application {
     private static final String WINDOW_TITLE = "Dooleh";
     private Stage primaryStage;
-    private AnchorPane rootLayout;
+    private StackPane rootLayout;
 
     @Override
     public void start(Stage primaryStage) {
@@ -30,7 +31,7 @@ public class MainApp extends Application {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/main/resources/layouts/RootLayout.fxml"));
 //            rootLayout = FXMLLoader.load(getClass().getResource("/main/resources/layouts/RootLayout.fxml"));
 
-            rootLayout = (AnchorPane) loader.load();
+            rootLayout = (StackPane) loader.load();
 
             // Show the scene containing the root layout.
             Scene scene = new Scene(rootLayout);

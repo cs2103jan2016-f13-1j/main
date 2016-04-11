@@ -12,6 +12,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.jfoenix.controls.JFXButton;
+import com.jfoenix.controls.JFXDialog;
+import com.jfoenix.controls.JFXDialog.DialogTransition;
 import com.jfoenix.controls.JFXTabPane;
 import com.jfoenix.controls.JFXTextField;
 
@@ -20,6 +22,7 @@ import javafx.animation.SequentialTransition;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
@@ -32,6 +35,7 @@ import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.SVGPath;
 import javafx.scene.text.Text;
@@ -54,7 +58,9 @@ import main.logic.SearchCommand;
 import main.logic.SetFileLocationCommand;
 import main.logic.UndoneCommand;
 import main.parser.CommandParser;
-import main.parser.exceptions.*;
+import main.parser.exceptions.InvalidLabelFormat;
+import main.parser.exceptions.InvalidTaskIndexFormat;
+import main.parser.exceptions.InvalidTitle;
 
 public class RootLayoutController implements Observer {
     private static final String STRING_COMMAND_EDIT = "edit";
@@ -71,8 +77,6 @@ public class RootLayoutController implements Observer {
     private static final String STRING_COMMAND_QUIT = "quit";
     private static final String STRING_DOUBLE_QUOTATIONS_WITH_TEXT = "\"%1$s\"";
     private static final String STRING_TAB_TASK_SIZE = "(%1$s)";
-    private static final String STRING_LISTVIEW_TODO_EMPTY = "You have no task!";
-    private static final String STRING_LISTVIEW_COMPLETED_EMPTY = "You have no completed task!";
     private static final String STRING_FEEDBACK_ACTION_ADD = "Adding:";
     private static final String STRING_FEEDBACK_ACTION_EDIT = "Editing:";
     private static final String STRING_FEEDBACK_ACTION_DELETE = "Deleting:";
@@ -106,10 +110,25 @@ public class RootLayoutController implements Observer {
     private AnchorPane rootLayout; // Value injected by FXMLLoader
 
     @FXML
+    private JFXButton buttonUndo;
+
+    @FXML
+    private JFXButton buttonRedo;
+
+    @FXML
+    private JFXButton buttonHelp;
+
+    @FXML
     private SVGPath iconUndo;
 
     @FXML
     private SVGPath iconRedo;
+
+    @FXML
+    private JFXDialog dialogHelp;
+
+    @FXML
+    private StackPane dialogContainer;
 
     @FXML // fx:id="totalTasksOverdue"
     private Text totalTasksOverdue; // Value injected by FXMLLoader
@@ -323,12 +342,33 @@ public class RootLayoutController implements Observer {
         initKeyboardListener();
         initCommandBarListener();
         initSearchModeChipsLayoutListener();
+        initHelpPageDialog();
 
         logger.log(Level.INFO, "UI initialization complete");
     }
 
+    private void initHelpPageDialog() {
+        dialogHelp.setContent(new HelpPage());
+        dialogHelp.setTransitionType(DialogTransition.CENTER);
+        buttonHelp.setOnMouseClicked(new EventHandler<Event>() {
+
+            @Override
+            public void handle(Event event) {
+                dialogHelp.show(dialogContainer);
+
+            }
+        });
+    }
+
     private void assertDependencyInjection() {
         assert rootLayout != null : "fx:id=\"rootLayout\" was not injected: check your FXML file 'RootLayout.fxml'.";
+        assert buttonUndo != null : "fx:id=\"buttonUndo\" was not injected: check your FXML file 'RootLayout.fxml'.";
+        assert buttonRedo != null : "fx:id=\"buttonRedo\" was not injected: check your FXML file 'RootLayout.fxml'.";
+        assert buttonHelp != null : "fx:id=\"buttonHelp\" was not injected: check your FXML file 'RootLayout.fxml'.";
+        assert iconRedo != null : "fx:id=\"iconRedo\" was not injected: check your FXML file 'RootLayout.fxml'.";
+        assert iconUndo != null : "fx:id=\"iconUndo\" was not injected: check your FXML file 'RootLayout.fxml'.";
+        assert dialogContainer != null : "fx:id=\"dialogContainer\" was not injected: check your FXML file 'RootLayout.fxml'.";
+        assert dialogHelp != null : "fx:id=\"dialogHelp\" was not injected: check your FXML file 'RootLayout.fxml'.";
         assert totalTasksOverdue != null : "fx:id=\"totalTasksOverdue\" was not injected: check your FXML file 'RootLayout.fxml'.";
         assert totalTasksToday != null : "fx:id=\"totalTasksToday\" was not injected: check your FXML file 'RootLayout.fxml'.";
         assert totalTasksTomorrow != null : "fx:id=\"totalTasksTomorrow\" was not injected: check your FXML file 'RootLayout.fxml'.";
@@ -436,6 +476,8 @@ public class RootLayoutController implements Observer {
                 if (keyEvent.getCode() == KeyCode.UP || keyEvent.getCode() == KeyCode.DOWN) {
                     handleArrowKeys(keyEvent);
                     keyEvent.consume();
+                } else if (keyEvent.getCode() == KeyCode.ESCAPE) {
+                    handleEscKey();
                 } else if (keyEvent.getCode() == KeyCode.F1) {
                     handleUndo();
                     keyEvent.consume();
@@ -463,6 +505,10 @@ public class RootLayoutController implements Observer {
                 }
 
                 saveCaretPosition();
+            }
+
+            private void handleEscKey() {
+                dialogHelp.close();
             }
         });
     }
@@ -942,18 +988,19 @@ public class RootLayoutController implements Observer {
         ParseIndexResult parseIndexResult;
         try {
             parseIndexResult = commandParser.parseIndexes(userInput, getCurrentList().size());
-            
+
             if (parseIndexResult.hasInvalidIndex()) {
                 throw new IndexOutOfBoundsException();
             }
             if (parseIndexResult.hasValidIndex()) {
                 taskIndexesToBeExecuted = parseIndexResult.getValidIndexes();
                 String parseResult = taskIndexesToBeExecuted.toString();
-                
+
                 System.out.println("user arguments: " + userArguments);
                 System.out.println("parse result: " + parseResult);
 
-                if (taskIndexesToBeExecuted.size() == 1) { // when there's only 1
+                if (taskIndexesToBeExecuted.size() == 1) { // when there's only
+                                                           // 1
                                                            // index
                     int taskIndex = taskIndexesToBeExecuted.get(0);
                     int actualIndex = getCurrentListViewController().getActualIndex(taskIndex);
@@ -965,11 +1012,14 @@ public class RootLayoutController implements Observer {
                     getCurrentListViewController().select(taskIndex);
                     showFeedback(true, STRING_FEEDBACK_ACTION_DELETE, inputFeedback);
 
-                } else if (taskIndexesToBeExecuted.size() > 1) { // when there's a
-                                                                 // range of indexes
+                } else if (taskIndexesToBeExecuted.size() > 1) { // when there's
+                                                                 // a
+                                                                 // range of
+                                                                 // indexes
                     listOfTaskToBeExecuted = getTasksToBeExecuted(taskIndexesToBeExecuted);
                     commandToBeExecuted = new DeleteCommand(receiver, listOfTaskToBeExecuted);
-                    getCurrentListViewController().clearAndSelect(taskIndexesToBeExecuted.get(taskIndexesToBeExecuted.size() - 1));
+                    getCurrentListViewController()
+                            .clearAndSelect(taskIndexesToBeExecuted.get(taskIndexesToBeExecuted.size() - 1));
                     for (int index : taskIndexesToBeExecuted) {
                         getCurrentListViewController().select(index);
                     }
@@ -1128,18 +1178,19 @@ public class RootLayoutController implements Observer {
         ParseIndexResult parseIndexResult;
         try {
             parseIndexResult = commandParser.parseIndexes(userInput, getCurrentList().size());
-            
+
             if (parseIndexResult.hasInvalidIndex()) {
                 throw new IndexOutOfBoundsException();
             }
             if (parseIndexResult.hasValidIndex()) {
                 taskIndexesToBeExecuted = parseIndexResult.getValidIndexes();
                 String parseResult = taskIndexesToBeExecuted.toString();
-                
+
                 System.out.println("user arguments: " + userArguments);
                 System.out.println("parse result: " + parseResult);
 
-                if (taskIndexesToBeExecuted.size() == 1) { // when there's only 1
+                if (taskIndexesToBeExecuted.size() == 1) { // when there's only
+                                                           // 1
                                                            // index
                     int taskIndex = taskIndexesToBeExecuted.get(0);
                     int actualIndex = getCurrentListViewController().getActualIndex(taskIndex);
@@ -1151,11 +1202,14 @@ public class RootLayoutController implements Observer {
                     getCurrentListViewController().select(taskIndex);
                     showFeedback(true, STRING_FEEDBACK_ACTION_DONE, inputFeedback);
 
-                } else if (taskIndexesToBeExecuted.size() > 1) { // when there's a
-                                                                 // range of indexes
+                } else if (taskIndexesToBeExecuted.size() > 1) { // when there's
+                                                                 // a
+                                                                 // range of
+                                                                 // indexes
                     listOfTaskToBeExecuted = getTasksToBeExecuted(taskIndexesToBeExecuted);
                     commandToBeExecuted = new DoneCommand(receiver, listOfTaskToBeExecuted);
-                    getCurrentListViewController().clearAndSelect(taskIndexesToBeExecuted.get(taskIndexesToBeExecuted.size() - 1));
+                    getCurrentListViewController()
+                            .clearAndSelect(taskIndexesToBeExecuted.get(taskIndexesToBeExecuted.size() - 1));
                     for (int index : taskIndexesToBeExecuted) {
                         getCurrentListViewController().select(index);
                     }
@@ -1218,18 +1272,19 @@ public class RootLayoutController implements Observer {
         ParseIndexResult parseIndexResult;
         try {
             parseIndexResult = commandParser.parseIndexes(userInput, getCurrentList().size());
-            
+
             if (parseIndexResult.hasInvalidIndex()) {
                 throw new IndexOutOfBoundsException();
             }
             if (parseIndexResult.hasValidIndex()) {
                 taskIndexesToBeExecuted = parseIndexResult.getValidIndexes();
                 String parseResult = taskIndexesToBeExecuted.toString();
-                
+
                 System.out.println("user arguments: " + userArguments);
                 System.out.println("parse result: " + parseResult);
 
-                if (taskIndexesToBeExecuted.size() == 1) { // when there's only 1
+                if (taskIndexesToBeExecuted.size() == 1) { // when there's only
+                                                           // 1
                                                            // index
                     int taskIndex = taskIndexesToBeExecuted.get(0);
                     int actualIndex = getCurrentListViewController().getActualIndex(taskIndex);
@@ -1241,11 +1296,14 @@ public class RootLayoutController implements Observer {
                     getCurrentListViewController().select(taskIndex);
                     showFeedback(true, STRING_FEEDBACK_ACTION_UNDONE, inputFeedback);
 
-                } else if (taskIndexesToBeExecuted.size() > 1) { // when there's a
-                                                                 // range of indexes
+                } else if (taskIndexesToBeExecuted.size() > 1) { // when there's
+                                                                 // a
+                                                                 // range of
+                                                                 // indexes
                     listOfTaskToBeExecuted = getTasksToBeExecuted(taskIndexesToBeExecuted);
                     commandToBeExecuted = new UndoneCommand(receiver, listOfTaskToBeExecuted);
-                    getCurrentListViewController().clearAndSelect(taskIndexesToBeExecuted.get(taskIndexesToBeExecuted.size() - 1));
+                    getCurrentListViewController()
+                            .clearAndSelect(taskIndexesToBeExecuted.get(taskIndexesToBeExecuted.size() - 1));
                     for (int index : taskIndexesToBeExecuted) {
                         getCurrentListViewController().select(index);
                     }
