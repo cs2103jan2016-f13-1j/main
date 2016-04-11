@@ -60,7 +60,6 @@ import main.logic.UndoneCommand;
 import main.parser.CommandParser;
 import main.parser.exceptions.InvalidLabelFormat;
 import main.parser.exceptions.InvalidTaskIndexFormat;
-import main.parser.exceptions.InvalidTitle;
 
 public class RootLayoutController implements Observer {
     private static final String STRING_COMMAND_EDIT = "edit";
@@ -98,94 +97,92 @@ public class RootLayoutController implements Observer {
     private static final KeyCombination HOTKEY_CTRL_P = new KeyCodeCombination(KeyCode.P, KeyCombination.CONTROL_DOWN);
     private static final KeyCombination HOTKEY_CTRL_D = new KeyCodeCombination(KeyCode.D, KeyCombination.CONTROL_DOWN);
 
-    @FXML
-    private ListViewController todoListViewController; // Value injected by
-                                                       // FXMLLoader
-    @FXML
-    private ListViewController completedListViewController; // Value
-                                                            // injected by
-    // FXMLLoader
+    @FXML // fx:id="ListViewController"
+    private ListViewController todoListViewController;
+
+    @FXML // fx:id="ListViewController"
+    private ListViewController completedListViewController;
 
     @FXML // fx:id="rootLayout"
-    private AnchorPane rootLayout; // Value injected by FXMLLoader
+    private AnchorPane rootLayout;
 
-    @FXML
+    @FXML // fx:id="buttonUndo"
     private JFXButton buttonUndo;
 
-    @FXML
+    @FXML // fx:id="buttonRedo"
     private JFXButton buttonRedo;
 
-    @FXML
+    @FXML // fx:id="buttonHelp"
     private JFXButton buttonHelp;
 
-    @FXML
+    @FXML // fx:id="iconUndo"
     private SVGPath iconUndo;
 
-    @FXML
+    @FXML // fx:id="iconRedo"
     private SVGPath iconRedo;
 
-    @FXML
+    @FXML // fx:id="dialogHelp"
     private JFXDialog dialogHelp;
 
-    @FXML
+    @FXML // fx:id="dialogContainer"
     private StackPane dialogContainer;
 
     @FXML // fx:id="totalTasksOverdue"
-    private Text totalTasksOverdue; // Value injected by FXMLLoader
+    private Text totalTasksOverdue;
 
     @FXML // fx:id="totalTasksToday"
-    private Text totalTasksToday; // Value injected by FXMLLoader
+    private Text totalTasksToday;
 
     @FXML // fx:id="totalTasksTomorrow"
-    private Text totalTasksTomorrow; // Value injected by FXMLLoader
+    private Text totalTasksTomorrow;
 
     @FXML // fx:id="totalTastotalTasksUpcomingksToday"
-    private Text totalTasksUpcoming; // Value injected by FXMLLoader
+    private Text totalTasksUpcoming;
 
     @FXML // fx:id="totalTasksSomeday"
-    private Text totalTasksSomeday; // Value injected by FXMLLoader
+    private Text totalTasksSomeday;
 
     @FXML // fx:id="tabPane"
-    private JFXTabPane tabPane; // Value injected by FXMLLoader
+    private JFXTabPane tabPane;
 
     @FXML // fx:id="tabTodo"
-    private Tab tabTodo; // Value injected by FXMLLoader
+    private Tab tabTodo;
 
     @FXML // fx:id="tabCompleted"
-    private Tab tabCompleted; // Value injected by FXMLLoader
+    private Tab tabCompleted;
 
     @FXML // fx:id="commandBar"
-    private JFXTextField commandBar; // Value injected by FXMLLoader
+    private JFXTextField commandBar;
 
     @FXML // fx:id="chipSearchMode"
-    private JFXButton chipSearchMode; // Value injected by FXMLLoader
+    private JFXButton chipSearchMode;
 
     @FXML // fx:id="btnFeedback"
-    private JFXButton btnFeedback; // Value injected by FXMLLoader
+    private JFXButton btnFeedback;
 
     @FXML // fx:id="groupFeedback"
-    private Group groupFeedback; // Value injected by FXMLLoader
+    private Group groupFeedback;
 
     @FXML // fx:id="textFlowFeedback"
-    private TextFlow textFlowFeedback; // Value injected by FXMLLoader
+    private TextFlow textFlowFeedback;
 
     @FXML // fx:id="textUserAction"
-    private Text textUserAction; // Value injected by FXMLLoader
+    private Text textUserAction;
 
     @FXML // fx:id="textUserParsedResult"
-    private Text textUserParsedResult; // Value injected by FXMLLoader
+    private Text textUserParsedResult;
 
     @FXML // fx:id="anchorPaneExecutionResult"
-    private AnchorPane anchorPaneExecutionResult; // Value injected by
-                                                  // FXMLLoader
+    private AnchorPane anchorPaneExecutionResult;
+
     @FXML // fx:id="labelExecutedCommand"
-    private Label labelExecutedCommand; // Value injected by FXMLLoader
+    private Label labelExecutedCommand;
 
     @FXML // fx:id="labelExecutionDetails"
-    private Label labelExecutionDetails; // Value injected by FXMLLoader
+    private Label labelExecutionDetails;
 
     @FXML // fx:id="labelSuggestedAction"
-    private Label labelSuggestedAction; // Value injected by FXMLLoader
+    private Label labelSuggestedAction;
 
     private MainApp mainApp;
 
@@ -193,8 +190,9 @@ public class RootLayoutController implements Observer {
     private Receiver receiver;
     private CommandParser commandParser;
     private Command commandToBeExecuted;
-    private SearchCommand searchCommand;
     private Command executedCommand;
+    private SearchCommand searchCommand;
+
     private Task taskToBeExecuted;
     private ArrayList<Task> listOfTaskToBeExecuted = new ArrayList<>();
     private ArrayList<Integer> taskIndexesToBeExecuted = new ArrayList<>();
@@ -219,9 +217,15 @@ public class RootLayoutController implements Observer {
 
     private static final Logger logger = Logger.getLogger(RootLayoutController.class.getName());
 
+    /**
+     * Use to set {@code allTasks} with a new {@code ArrayList}
+     *
+     * @param observable
+     * @param observable
+     */
     @Override
-    public void update(Observable o, Object arg) {
-        if (o instanceof Receiver) {
+    public void update(Observable observable, Object arg) {
+        if (observable instanceof Receiver) {
             if (commandToBeExecuted != null) {
                 logger.log(Level.INFO, "(" + commandToBeExecuted.getClass().getSimpleName() + ") update() is called");
 
@@ -285,6 +289,9 @@ public class RootLayoutController implements Observer {
         }
     }
 
+    /**
+     * @return void
+     */
     private void refreshUndoRedoState() {
         if (invoker.isUndoAvailable()) {
             System.out.println("Undo is available");
@@ -303,6 +310,7 @@ public class RootLayoutController implements Observer {
     }
 
     /**
+     *
      * @return
      */
     public int getIndexFromLastExecutedTask() {
@@ -371,7 +379,7 @@ public class RootLayoutController implements Observer {
 
             @Override
             public void handle(Event event) {
-                dialogHelp.show(dialogContainer);
+                toggleHelpDialog();
 
             }
         });
@@ -500,6 +508,9 @@ public class RootLayoutController implements Observer {
                     keyEvent.consume();
                 } else if (keyEvent.getCode() == KeyCode.F2) {
                     handleRedo();
+                    keyEvent.consume();
+                } else if (keyEvent.getCode() == KeyCode.F3) {
+                    toggleHelpDialog();
                     keyEvent.consume();
                 } else if (keyEvent.getCode() == KeyCode.DELETE) {
                     handleDeleteKey();
@@ -1070,18 +1081,9 @@ public class RootLayoutController implements Observer {
         int taskIndex = commandParser.getIndexForEdit(userInput);
         logger.log(Level.INFO, "EDIT command index is " + taskIndex);
 
-        // no index is found in user input, parse the input as an Add operation
-        // instead
-        if (taskIndex == -1) {
-            logger.log(Level.INFO, "EDIT command has no index. Editing current selected task");
-            parseAdd();
-            return;
-        }
-
         // parsing edit command with index
         try {
             logger.log(Level.INFO, "EDIT command index is " + taskIndex);
-
             int actualIndex = getCurrentListViewController().getActualIndex(taskIndex);
             Task taskToBeEdited = getCurrentList().get(actualIndex);
             showFeedback(true, STRING_FEEDBACK_ACTION_EDIT, taskToBeEdited.toString());
@@ -1092,42 +1094,16 @@ public class RootLayoutController implements Observer {
             getCurrentListViewController().clearAndSelect(taskIndex);
             return;
         } catch (IndexOutOfBoundsException ioobe) {
-            ioobe.printStackTrace();
-            logger.log(Level.INFO, "EDIT command index is out of range. index = " + taskIndex + " ArrayList size = "
+            logger.log(Level.WARNING, "EDIT command index is out of range. index = " + taskIndex + " ArrayList size = "
                     + currentList.size());
             showFeedback(true, STRING_FEEDBACK_ACTION_EDIT, String.format(STRING_ERROR_NOT_FOUND, userInputArray[1]));
             clearStoredUserInput();
             return;
         } catch (InvalidLabelFormat e) {
-            e.printStackTrace();
+            logger.log(Level.WARNING, "EDIT command has invalid label.");
         }
 
     }
-
-    // /**
-    // * Parse the Edit command for the currently selected task item on the List
-    // *
-    // * @param @throws
-    // */
-    // private void parseEditForSelectedTask() {
-    // Task taskToBeEdited =
-    // getCurrentList().get(getCurrentListViewController().getSelectedIndex());
-    // showFeedback(true, STRING_FEEDBACK_ACTION_EDIT,
-    // taskToBeEdited.toString());
-    // try {
-    // logger.log(Level.INFO, "EDIT command arguments is: " + userArguments);
-    // taskToBeExecuted = commandParser.parseEdit(taskToBeEdited,
-    // userArguments);
-    // logger.log(Level.INFO, "EDIT command editedTaskObject is: " +
-    // taskToBeExecuted.toString());
-    // commandToBeExecuted = new EditCommand(receiver, taskToBeEdited,
-    // taskToBeExecuted);
-    // return;
-    // } catch (InvalidLabelFormat e) {
-    // // TODO Auto-generated catch block
-    // e.printStackTrace();
-    // }
-    // }
 
     /**
      *
@@ -1155,21 +1131,21 @@ public class RootLayoutController implements Observer {
     }
 
     private void parseDone() {
+        // no index found. parse the input as an Add operation instead
         if (userInputArray.length <= 1) {
             logger.log(Level.INFO, "DONE command has no index. Interpreting as ADD command instead");
-            parseAdd(); // no index found. parse the input as an Add operation
-                        // instead
+            parseAdd();
             return;
         }
 
         if (userArguments.toLowerCase().equals("all")) {
-            // previousSelectedTaskIndex = 0;
             ArrayList<Task> tasksToDone = new ArrayList<Task>();
             for (Task task : getCurrentList()) {
                 if (!(task instanceof TaskHeader)) {
                     tasksToDone.add(task);
                 }
             }
+
             listOfTaskToBeExecuted = tasksToDone;
             commandToBeExecuted = new DoneCommand(receiver, listOfTaskToBeExecuted);
             getCurrentListViewController().clearListViewSelection();
@@ -1185,7 +1161,6 @@ public class RootLayoutController implements Observer {
             showFeedback(true, STRING_FEEDBACK_ACTION_DONE,
                     userArguments + STRING_WHITESPACE + String.format(STRING_FEEDBACK_TOTAL_TASK, numberOfTasks));
             return;
-
         }
 
         logger.log(Level.INFO, "Sending user input to commandParser: " + userInput);
@@ -1397,20 +1372,16 @@ public class RootLayoutController implements Observer {
             return selectedFilePath;
         } catch (IOException e) {
             // TODO show some feedback about invalid filepath
-            e.printStackTrace();
+            logger.log(Level.WARNING, "File path is invalid");
         }
 
         System.out.println("File path: " + selectedFilePath);
         return selectedFilePath;
     }
 
-    private ArrayList<Task> getTasksToBeDeleted(int taskIndex) {
-        ArrayList<Task> tasksToBeDeleted = new ArrayList<>(1);
-        int actualIndex = getCurrentListViewController().getActualIndex(taskIndex);
-        tasksToBeDeleted.add(getCurrentList().get(actualIndex));
-        return tasksToBeDeleted;
-    }
-
+    /**
+    *
+    */
     private ArrayList<Task> getTasksToBeExecuted(ArrayList<Integer> taskIndexes) {
         ArrayList<Task> tasksToBeDeleted = new ArrayList<>(taskIndexes.size());
         for (Integer index : taskIndexes) {
@@ -1601,8 +1572,6 @@ public class RootLayoutController implements Observer {
             currentListViewController = todoListViewController; //
         } else if (tabName.equals(tabCompleted.getText())) {
             currentListViewController = completedListViewController; // completedController
-        } else {
-            System.out.println("wtf: " + tabName);
         }
     }
 
@@ -1637,5 +1606,15 @@ public class RootLayoutController implements Observer {
     public void restoreListViewPreviousSelection() {
         getCurrentListViewController().restoreListViewPreviousSelection();
         // TODO one more line for completedtaskcontroller
+    }
+
+    private void toggleHelpDialog() {
+        if(!dialogHelp.isVisible()){
+            dialogHelp.show(dialogContainer);
+        }
+        else{
+            dialogHelp.close();
+        }
+
     }
 }
