@@ -969,7 +969,7 @@ public class RootLayoutController implements Observer {
                                                                  // range of indexes
                     listOfTaskToBeExecuted = getTasksToBeExecuted(taskIndexesToBeExecuted);
                     commandToBeExecuted = new DeleteCommand(receiver, listOfTaskToBeExecuted);
-                    getCurrentListViewController().clearListViewSelection();
+                    getCurrentListViewController().clearAndSelect(taskIndexesToBeExecuted.get(taskIndexesToBeExecuted.size() - 1));
                     for (int index : taskIndexesToBeExecuted) {
                         getCurrentListViewController().select(index);
                     }
@@ -1155,7 +1155,7 @@ public class RootLayoutController implements Observer {
                                                                  // range of indexes
                     listOfTaskToBeExecuted = getTasksToBeExecuted(taskIndexesToBeExecuted);
                     commandToBeExecuted = new DoneCommand(receiver, listOfTaskToBeExecuted);
-                    getCurrentListViewController().clearListViewSelection();
+                    getCurrentListViewController().clearAndSelect(taskIndexesToBeExecuted.get(taskIndexesToBeExecuted.size() - 1));
                     for (int index : taskIndexesToBeExecuted) {
                         getCurrentListViewController().select(index);
                     }
@@ -1245,7 +1245,7 @@ public class RootLayoutController implements Observer {
                                                                  // range of indexes
                     listOfTaskToBeExecuted = getTasksToBeExecuted(taskIndexesToBeExecuted);
                     commandToBeExecuted = new UndoneCommand(receiver, listOfTaskToBeExecuted);
-                    getCurrentListViewController().clearListViewSelection();
+                    getCurrentListViewController().clearAndSelect(taskIndexesToBeExecuted.get(taskIndexesToBeExecuted.size() - 1));
                     for (int index : taskIndexesToBeExecuted) {
                         getCurrentListViewController().select(index);
                     }
