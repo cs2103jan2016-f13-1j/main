@@ -1249,10 +1249,14 @@ public class TestCommandParser {
         ParseIndexResult indexes;
 
         indexes = parser.parseIndexes("del 1-10,12,13,14,15", 10);
+        assertEquals(true, indexes.hasValidIndex());
+        assertEquals(true, indexes.hasInvalidIndex());
         assertEquals("1-10", indexes.getValidIndexesString());
         assertEquals("12-15", indexes.getInvalidIndexesString());
 
         indexes = parser.parseIndexes("del 1-5,10-20, 31, 32, 33, 35", 10);
+        assertEquals(true, indexes.hasValidIndex());
+        assertEquals(true, indexes.hasInvalidIndex());
         assertEquals("1-5,10", indexes.getValidIndexesString());
         assertEquals("11-20,31-33,35", indexes.getInvalidIndexesString());
     }
