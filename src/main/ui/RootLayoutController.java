@@ -960,7 +960,7 @@ public class RootLayoutController implements Observer {
             showFeedback(true, STRING_FEEDBACK_ACTION_ADD, inputFeedback);
 
         } catch (InvalidLabelFormat e) {
-            e.printStackTrace();
+            logger.log(Level.INFO, "ADD command has invalid label.");
         }
     }
 
