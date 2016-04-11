@@ -97,10 +97,10 @@ public class RootLayoutController implements Observer {
     private static final KeyCombination HOTKEY_CTRL_P = new KeyCodeCombination(KeyCode.P, KeyCombination.CONTROL_DOWN);
     private static final KeyCombination HOTKEY_CTRL_D = new KeyCodeCombination(KeyCode.D, KeyCombination.CONTROL_DOWN);
 
-    @FXML  // fx:id="ListViewController"
+    @FXML // fx:id="ListViewController"
     private ListViewController todoListViewController;
 
-    @FXML  // fx:id="ListViewController"
+    @FXML // fx:id="ListViewController"
     private ListViewController completedListViewController;
 
     @FXML // fx:id="rootLayout"
@@ -219,8 +219,9 @@ public class RootLayoutController implements Observer {
 
     /**
      * Use to set {@code allTasks} with a new {@code ArrayList}
-     * @param   observable
-     * @param   observable
+     *
+     * @param observable
+     * @param observable
      */
     @Override
     public void update(Observable observable, Object arg) {
@@ -378,7 +379,7 @@ public class RootLayoutController implements Observer {
 
             @Override
             public void handle(Event event) {
-                dialogHelp.show(dialogContainer);
+                toggleHelpDialog();
 
             }
         });
@@ -507,6 +508,9 @@ public class RootLayoutController implements Observer {
                     keyEvent.consume();
                 } else if (keyEvent.getCode() == KeyCode.F2) {
                     handleRedo();
+                    keyEvent.consume();
+                } else if (keyEvent.getCode() == KeyCode.F3) {
+                    toggleHelpDialog();
                     keyEvent.consume();
                 } else if (keyEvent.getCode() == KeyCode.DELETE) {
                     handleDeleteKey();
@@ -1602,5 +1606,15 @@ public class RootLayoutController implements Observer {
     public void restoreListViewPreviousSelection() {
         getCurrentListViewController().restoreListViewPreviousSelection();
         // TODO one more line for completedtaskcontroller
+    }
+
+    private void toggleHelpDialog() {
+        if(!dialogHelp.isVisible()){
+            dialogHelp.show(dialogContainer);
+        }
+        else{
+            dialogHelp.close();
+        }
+
     }
 }
