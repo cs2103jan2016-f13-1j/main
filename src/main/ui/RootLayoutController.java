@@ -33,6 +33,7 @@ import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.SVGPath;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.stage.FileChooser;
@@ -103,6 +104,12 @@ public class RootLayoutController implements Observer {
 
     @FXML // fx:id="rootLayout"
     private AnchorPane rootLayout; // Value injected by FXMLLoader
+
+    @FXML
+    private SVGPath iconUndo;
+
+    @FXML
+    private SVGPath iconRedo;
 
     @FXML // fx:id="totalTasksOverdue"
     private Text totalTasksOverdue; // Value injected by FXMLLoader
@@ -200,10 +207,9 @@ public class RootLayoutController implements Observer {
                 logger.log(Level.INFO, "(" + commandToBeExecuted.getClass().getSimpleName() + ") update() is called");
 
                 refreshListView();
-
+                refreshUndoRedoState();
                 // TODO do something about this
                 if (isUndoRedo) {
-                    // restoreListViewPreviousSelection();
                     isUndoRedo = false;
                     return;
                 }
@@ -234,7 +240,6 @@ public class RootLayoutController implements Observer {
                         if (getCurrentList().size() > 0) {
                             getCurrentListViewController().select(taskIndexesToBeExecuted.get(0));
                         }
-
                     }
                     executedCommand = null;
 
@@ -258,6 +263,23 @@ public class RootLayoutController implements Observer {
                     refreshListView();
                 }
             }
+        }
+    }
+
+    private void refreshUndoRedoState() {
+        if (invoker.isUndoAvailable()) {
+            System.out.println("Undo is available");
+            iconUndo.setFill(Color.web(AppColor.PRIMARY_WHITE));
+        } else {
+            System.out.println("Undo not available");
+            iconUndo.setFill(Color.web(AppColor.PRIMARY_WHITE, 0.4));
+        }
+        if (invoker.isRedoAvailable()) {
+            System.out.println("Redo is available");
+            iconRedo.setFill(Color.web(AppColor.PRIMARY_WHITE));
+        } else {
+            System.out.println("Redo not available");
+            iconRedo.setFill(Color.web(AppColor.PRIMARY_WHITE, 0.4));
         }
     }
 
@@ -488,7 +510,6 @@ public class RootLayoutController implements Observer {
         logger.log(Level.INFO, "Populated Completed List: " + completedTasks.size() + " task");
     }
 
-
     /**
      * In ListController now
      *
@@ -692,7 +713,8 @@ public class RootLayoutController implements Observer {
     private void handleBackspaceKey() {
         if (isSearchMode && commandBar.getLength() == 0) {
             // invoker.undo();
-            invoker.execute(new SearchCommand(receiver, ""));
+            commandToBeExecuted = new SearchCommand(receiver, "");
+            invoker.execute(commandToBeExecuted);
             isSearchMode = false;
             showSearchChipInCommandBar(isSearchMode);
         }

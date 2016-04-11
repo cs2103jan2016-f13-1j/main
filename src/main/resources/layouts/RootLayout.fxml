@@ -95,8 +95,8 @@
 		<JFXButton fx:id="btnFeedback" alignment="CENTER"
 			buttonType="RAISED" cacheHint="SPEED" layoutY="796.0" prefHeight="48.0"
 			style="-fx-background-color: white;" visible="false"
-			AnchorPane.bottomAnchor="70.0" AnchorPane.leftAnchor="40.0"
-			AnchorPane.rightAnchor="40.0">
+			AnchorPane.bottomAnchor="70.0" AnchorPane.leftAnchor="20.0"
+			AnchorPane.rightAnchor="20.0">
 			<font>
 				<Font name="Noto Sans" size="13.0" />
 			</font>

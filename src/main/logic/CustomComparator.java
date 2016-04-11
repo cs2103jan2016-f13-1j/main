@@ -29,7 +29,7 @@ import main.data.Task;
  *          - if only one started, return the task that already started
  *          - if both have not started, return earlier end date first
  */
-class TodoTaskComparator implements Comparator<Task> {
+class CustomTaskComparator implements Comparator<Task> {
     public int compare(Task t1, Task t2) {
         if (!t1.hasDate() && !t2.hasDate()) {
             //If both are floating tasks
@@ -117,23 +117,6 @@ class TodoTaskComparator implements Comparator<Task> {
                     }
                 }
             }
-        }
-    }
-}
-
-/**
- * This comparator sorts tasks by a few rules:
- * 1. If both tasks are completed at the same time, return the task that was created later
- * 2. If not completed at the same time, return the last completed task
- */
-class CompletedTaskComparator implements Comparator<Task> {
-    public int compare(Task t1, Task t2) {
-        if (t2.getCompletedDate().compareTo(t1.getCompletedDate()) == 0) {
-            //If both tasks are set completed at the same time, compare the created date, later first
-            return t2.getCreatedDate().compareTo(t1.getCreatedDate());
-        } else {
-            //Return the tasks that was completed later first
-            return t2.getCompletedDate().compareTo(t1.getCompletedDate());
         }
     }
 }

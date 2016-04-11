@@ -16,6 +16,4 @@ public class ListCellHeaderController extends Label {
             throw new RuntimeException(e);
         }
     }
-
-
 }
