@@ -57,8 +57,7 @@ public class ParseIndexResult {
     }
 
     /**
-     * This method converts an {@code ArrayList<Integer>} of indexes to
-     * {@code String}.
+     * This method converts an {@code ArrayList<Integer>} of indexes to {@code String}.
      * This method is used by the UI.
      * 
      * @param indexes
