@@ -190,7 +190,6 @@ public class RootLayoutController implements Observer {
     private Receiver receiver;
     private CommandParser commandParser;
     private Command commandToBeExecuted;
-    private Command executedCommand;
     private SearchCommand searchCommand;
 
     private Task taskToBeExecuted;
@@ -245,12 +244,10 @@ public class RootLayoutController implements Observer {
                 boolean isSearchCommand = commandToBeExecuted instanceof SearchCommand;
 
                 if (isAddCommand || isEditCommand) {
-                    // TODO
                     int displayIndex = getCurrentListViewController().getDisplayIndex(getIndexFromLastExecutedTask());
                     getCurrentListViewController().clearListViewSelection();
                     getCurrentListViewController().select(displayIndex);
                 } else if (isDeleteCommand || isDoneCommand || isUndoneCommand) {
-                    executedCommand = commandToBeExecuted;
                     getCurrentListViewController().clearListViewSelection();
                     if (getCurrentListViewController().getPreviousSelectedIndex() >= getCurrentList().size() - 1) {
                         getCurrentListViewController().selectLast();
@@ -261,8 +258,6 @@ public class RootLayoutController implements Observer {
                             getCurrentListViewController().select(taskIndexesToBeExecuted.get(0));
                         }
                     }
-                    executedCommand = null;
-
                 } else if (isSearchCommand) {
                     if (userArguments.equals(" ")) {
                         showFeedback(true, STRING_FEEDBACK_ACTION_SEARCH, "");
