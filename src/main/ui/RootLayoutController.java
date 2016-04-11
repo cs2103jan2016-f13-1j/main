@@ -84,7 +84,7 @@ public class RootLayoutController implements Observer {
     private static final String STRING_FEEDBACK_ACTION_EXIT = "Exit Dooleh";
     private static final String STRING_FEEDBACK_TOTAL_ACTION = "%1$s action(s)";
     private static final String STRING_FEEDBACK_ACTION_SET_FILE_LOCATION = "Set file location";
-    private static final String STRING_ERROR_NOT_FOUND = "Task -%1$s- not found.";
+    private static final String STRING_ERROR_NOT_FOUND = "Task %1$s not found.";
     private static final String STRING_EMPTY = "";
     private static final String STRING_WHITESPACE = " ";
 
@@ -923,58 +923,53 @@ public class RootLayoutController implements Observer {
         try {
             parseIndexResult = commandParser.parseIndexes(userInput, getCurrentList().size());
             
+            if (parseIndexResult.hasInvalidIndex()) {
+                throw new IndexOutOfBoundsException();
+            }
             if (parseIndexResult.hasValidIndex()) {
-                System.out.println("valid yes: "+parseIndexResult.getValidIndexes());
                 taskIndexesToBeExecuted = parseIndexResult.getValidIndexes();
+                String parseResult = taskIndexesToBeExecuted.toString();
                 
-                if (parseIndexResult.hasInvalidIndex()) {
-                    //feedback to user the invalids among the valid?
-                    //parseIndexResult.getInvalidIndexesString()
+                System.out.println("user arguments: " + userArguments);
+                System.out.println("parse result: " + parseResult);
+
+                if (taskIndexesToBeExecuted.size() == 1) { // when there's only 1
+                                                           // index
+                    int taskIndex = taskIndexesToBeExecuted.get(0);
+                    int actualIndex = getCurrentListViewController().getActualIndex(taskIndex);
+                    inputFeedback = getCurrentList().get(actualIndex).toString();
+                    taskToBeExecuted = getCurrentList().get(actualIndex);
+                    listOfTaskToBeExecuted = getTasksToBeExecuted(taskIndexesToBeExecuted);
+                    commandToBeExecuted = new DeleteCommand(receiver, listOfTaskToBeExecuted);
+                    getCurrentListViewController().clearListViewSelection();
+                    getCurrentListViewController().select(taskIndex);
+                    showFeedback(true, STRING_FEEDBACK_ACTION_DELETE, inputFeedback);
+
+                } else if (taskIndexesToBeExecuted.size() > 1) { // when there's a
+                                                                 // range of indexes
+                    listOfTaskToBeExecuted = getTasksToBeExecuted(taskIndexesToBeExecuted);
+                    commandToBeExecuted = new DeleteCommand(receiver, listOfTaskToBeExecuted);
+                    getCurrentListViewController().clearListViewSelection();
+                    for (int index : taskIndexesToBeExecuted) {
+                        getCurrentListViewController().select(index);
+                    }
+                    showFeedback(true, STRING_FEEDBACK_ACTION_DELETE, userArguments + STRING_WHITESPACE
+                            + String.format(STRING_FEEDBACK_TOTAL_TASK, listOfTaskToBeExecuted.size()));
                 }
             } else {
-                //clear if invalid only
                 taskIndexesToBeExecuted.clear();
             }
-            
-            String parseResult = taskIndexesToBeExecuted.toString();
-            System.out.println("user arguments: " + userArguments);
-            System.out.println("parse result: " + parseResult);
-
-            if (taskIndexesToBeExecuted.size() == 1) { // when there's only 1
-                                                       // index
-                int taskIndex = taskIndexesToBeExecuted.get(0);
-                int actualIndex = getCurrentListViewController().getActualIndex(taskIndex);
-                inputFeedback = getCurrentList().get(actualIndex).toString();
-                taskToBeExecuted = getCurrentList().get(actualIndex);
-                listOfTaskToBeExecuted = getTasksToBeExecuted(taskIndexesToBeExecuted);
-                commandToBeExecuted = new DeleteCommand(receiver, listOfTaskToBeExecuted);
-                getCurrentListViewController().clearListViewSelection();
-                getCurrentListViewController().select(taskIndex);
-                showFeedback(true, STRING_FEEDBACK_ACTION_DELETE, inputFeedback);
-
-            } else if (taskIndexesToBeExecuted.size() > 1) { // when there's a
-                                                             // range of indexes
-                listOfTaskToBeExecuted = getTasksToBeExecuted(taskIndexesToBeExecuted);
-                commandToBeExecuted = new DeleteCommand(receiver, listOfTaskToBeExecuted);
-                getCurrentListViewController().clearListViewSelection();
-                for (int index : taskIndexesToBeExecuted) {
-                    getCurrentListViewController().select(index);
-                }
-                showFeedback(true, STRING_FEEDBACK_ACTION_DELETE, userArguments + STRING_WHITESPACE
-                        + String.format(STRING_FEEDBACK_TOTAL_TASK, listOfTaskToBeExecuted.size()));
-            }
-
         } catch (InvalidTaskIndexFormat invalidTaskIndexFormat) {
             logger.log(Level.INFO, "DELETE command index(es) invalid: " + userArguments);
             getCurrentListViewController().clearListViewSelection();
-            clearStoredUserInput();
             showFeedback(true, STRING_FEEDBACK_ACTION_DELETE, String.format(STRING_ERROR_NOT_FOUND, userArguments));
+            clearStoredUserInput();
             return;
-        } catch (IndexOutOfBoundsException indexOutOfBoundsException) {
+        } catch (Exception e) {
             logger.log(Level.INFO, "DELETE command index(es) invalid: " + userArguments);
             getCurrentListViewController().clearListViewSelection();
-            clearStoredUserInput();
             showFeedback(true, STRING_FEEDBACK_ACTION_DELETE, String.format(STRING_ERROR_NOT_FOUND, userArguments));
+            clearStoredUserInput();
             return;
         }
 
