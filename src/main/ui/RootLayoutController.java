@@ -245,9 +245,6 @@ public class RootLayoutController implements Observer {
                     int displayIndex = getCurrentListViewController().getDisplayIndex(getIndexFromLastExecutedTask());
                     getCurrentListViewController().clearListViewSelection();
                     getCurrentListViewController().select(displayIndex);
-                    System.out.println("last executed task index: " + getIndexFromLastExecutedTask());
-                    // getCurrentListViewController().saveSelectedIndex();
-                    System.out.println(getIndexFromLastExecutedTask());
                 } else if (isDeleteCommand || isDoneCommand || isUndoneCommand) {
                     executedCommand = commandToBeExecuted;
                     getCurrentListViewController().clearListViewSelection();
@@ -287,17 +284,13 @@ public class RootLayoutController implements Observer {
 
     private void refreshUndoRedoState() {
         if (invoker.isUndoAvailable()) {
-            System.out.println("Undo is available");
             iconUndo.setFill(Color.web(AppColor.PRIMARY_WHITE));
         } else {
-            System.out.println("Undo not available");
             iconUndo.setFill(Color.web(AppColor.PRIMARY_WHITE, 0.4));
         }
         if (invoker.isRedoAvailable()) {
-            System.out.println("Redo is available");
             iconRedo.setFill(Color.web(AppColor.PRIMARY_WHITE));
         } else {
-            System.out.println("Redo not available");
             iconRedo.setFill(Color.web(AppColor.PRIMARY_WHITE, 0.4));
         }
     }
@@ -306,7 +299,6 @@ public class RootLayoutController implements Observer {
      * @return
      */
     public int getIndexFromLastExecutedTask() {
-        System.out.println("Last executed task index: " + getCurrentList().indexOf(taskToBeExecuted));
         return getCurrentList().indexOf(taskToBeExecuted);
     }
 
@@ -698,7 +690,6 @@ public class RootLayoutController implements Observer {
                 System.exit(0);
             }
             if (userCommand.equals(STRING_COMMAND_UNDO)) {
-                System.out.println("Enter key: " + userCommand + " " + numberOfActions);
                 if (numberOfActions < 0) {
                     handleUndo();
                 } else {
@@ -712,7 +703,6 @@ public class RootLayoutController implements Observer {
             }
 
             if (userCommand.equals(STRING_COMMAND_REDO)) {
-                System.out.println("Enter key: " + userCommand);
                 if (numberOfActions < 0) {
                     handleRedo();
                 } else {
@@ -787,16 +777,12 @@ public class RootLayoutController implements Observer {
      *
      */
     private void showSearchChipInCommandBar(boolean isVisible) {
-        System.out.println("showSearchChipInCommandBar");
         if (isVisible) {
-            System.out.println("Show chips:true");
             chipSearchMode.setVisible(isVisible);
             chipSearchMode.setText(STRING_COMMAND_SEARCH + STRING_WHITESPACE
                     + String.format(STRING_DOUBLE_QUOTATIONS_WITH_TEXT, userArguments));
 
         } else {
-            System.out.println("Show chips:false");
-            System.out.println(isVisible);
             chipSearchMode.setVisible(isVisible);
 
             // must set it to a empty string so that the the chip will resize
@@ -1010,9 +996,6 @@ public class RootLayoutController implements Observer {
                 taskIndexesToBeExecuted = parseIndexResult.getValidIndexes();
                 String parseResult = taskIndexesToBeExecuted.toString();
 
-                System.out.println("user arguments: " + userArguments);
-                System.out.println("parse result: " + parseResult);
-
                 if (taskIndexesToBeExecuted.size() == 1) { // when there's only
                                                            // 1
                                                            // index
@@ -1181,7 +1164,7 @@ public class RootLayoutController implements Observer {
                     numberOfTasks++;
                 }
             }
-
+            
             showFeedback(true, STRING_FEEDBACK_ACTION_DONE,
                     userArguments + STRING_WHITESPACE + String.format(STRING_FEEDBACK_TOTAL_TASK, numberOfTasks));
             return;
@@ -1199,9 +1182,6 @@ public class RootLayoutController implements Observer {
             if (parseIndexResult.hasValidIndex()) {
                 taskIndexesToBeExecuted = parseIndexResult.getValidIndexes();
                 String parseResult = taskIndexesToBeExecuted.toString();
-
-                System.out.println("user arguments: " + userArguments);
-                System.out.println("parse result: " + parseResult);
 
                 if (taskIndexesToBeExecuted.size() == 1) { // when there's only
                                                            // 1
@@ -1294,9 +1274,6 @@ public class RootLayoutController implements Observer {
                 taskIndexesToBeExecuted = parseIndexResult.getValidIndexes();
                 String parseResult = taskIndexesToBeExecuted.toString();
 
-                System.out.println("user arguments: " + userArguments);
-                System.out.println("parse result: " + parseResult);
-
                 if (taskIndexesToBeExecuted.size() == 1) { // when there's only
                                                            // 1
                                                            // index
@@ -1382,7 +1359,6 @@ public class RootLayoutController implements Observer {
         fileChooser.getExtensionFilters().addAll(new ExtensionFilter("Text Files", "*.txt"));
         fileChooser.setInitialFileName("tasks");
 
-        System.out.println(receiver.getFileDir());
         fileChooser.setInitialDirectory(new File(receiver.getFileDir()));
         File selectedFile = fileChooser.showSaveDialog(mainApp.getPrimaryStage());
 
@@ -1393,14 +1369,12 @@ public class RootLayoutController implements Observer {
         String selectedFilePath = "";
         try {
             selectedFilePath = selectedFile.getCanonicalPath();
-            System.out.println("File path: " + selectedFilePath);
             return selectedFilePath;
         } catch (IOException e) {
             // TODO show some feedback about invalid filepath
             e.printStackTrace();
         }
 
-        System.out.println("File path: " + selectedFilePath);
         return selectedFilePath;
     }
 
@@ -1468,8 +1442,6 @@ public class RootLayoutController implements Observer {
                 labelExecutionDetails.setTextFill(Color.web(AppColor.PRIMARY_WHITE, 0));
 
             } else {
-                System.out.println("not undo");
-                System.out.println(taskToBeExecuted.toString());
                 labelExecutedCommand.setText("Added:");
                 labelExecutedCommand.setTextFill(Color.web(AppColor.PRIMARY_BLUE_LIGHT, 0.7));
                 labelExecutionDetails.setTextFill(Color.web(AppColor.PRIMARY_WHITE, 0.9));
@@ -1501,7 +1473,7 @@ public class RootLayoutController implements Observer {
                 labelExecutedCommand.setText("Deleted:");
                 labelExecutedCommand.setTextFill(Color.web(AppColor.PRIMARY_RED_LIGHT, 0.7));
                 labelExecutionDetails.setTextFill(Color.web(AppColor.PRIMARY_WHITE, 0.9));
-                System.out.println("LIST SIZE: " + listOfTaskToBeExecuted.size());
+                
                 if (listOfTaskToBeExecuted.size() == 1) {
                     labelExecutionDetails.setText(taskToBeExecuted.toString());
                 } else if (listOfTaskToBeExecuted.size() > 1) {
@@ -1601,8 +1573,6 @@ public class RootLayoutController implements Observer {
             currentListViewController = todoListViewController; //
         } else if (tabName.equals(tabCompleted.getText())) {
             currentListViewController = completedListViewController; // completedController
-        } else {
-            System.out.println("wtf: " + tabName);
         }
     }
 
@@ -1618,7 +1588,6 @@ public class RootLayoutController implements Observer {
      * @return String
      */
     private String getSelectedTabName() {
-        System.out.println(tabPane.getSelectionModel().getSelectedItem().getText());
         return tabPane.getSelectionModel().getSelectedItem().getText();
     }
 
