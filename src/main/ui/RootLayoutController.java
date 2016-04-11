@@ -1017,6 +1017,7 @@ public class RootLayoutController implements Observer {
             if (parseIndexResult.hasInvalidIndex()) {
                 throw new IndexOutOfBoundsException();
             }
+
             if (parseIndexResult.hasValidIndex()) {
                 taskIndexesToBeExecuted = parseIndexResult.getValidIndexes();
                 String parseResult = taskIndexesToBeExecuted.toString();
@@ -1037,10 +1038,8 @@ public class RootLayoutController implements Observer {
                     getCurrentListViewController().select(taskIndex);
                     showFeedback(true, STRING_FEEDBACK_ACTION_DELETE, inputFeedback);
 
-                } else if (taskIndexesToBeExecuted.size() > 1) { // when there's
-                                                                 // a
-                                                                 // range of
-                                                                 // indexes
+                    // when there's a range of indexes
+                } else if (taskIndexesToBeExecuted.size() > 1) {
                     listOfTaskToBeExecuted = getTasksToBeExecuted(taskIndexesToBeExecuted);
                     commandToBeExecuted = new DeleteCommand(receiver, listOfTaskToBeExecuted);
                     getCurrentListViewController()
@@ -1140,6 +1139,7 @@ public class RootLayoutController implements Observer {
 
         if (userArguments.toLowerCase().equals("all")) {
             ArrayList<Task> tasksToDone = new ArrayList<Task>();
+
             for (Task task : getCurrentList()) {
                 if (!(task instanceof TaskHeader)) {
                     tasksToDone.add(task);
@@ -1151,12 +1151,7 @@ public class RootLayoutController implements Observer {
             getCurrentListViewController().clearListViewSelection();
             getCurrentListViewController().selectAll();
 
-            int numberOfTasks = 0;
-            for (Task task : getCurrentList()) {
-                if (!(task instanceof TaskHeader)) {
-                    numberOfTasks++;
-                }
-            }
+            int numberOfTasks = listOfTaskToBeExecuted.size();
 
             showFeedback(true, STRING_FEEDBACK_ACTION_DONE,
                     userArguments + STRING_WHITESPACE + String.format(STRING_FEEDBACK_TOTAL_TASK, numberOfTasks));
@@ -1485,20 +1480,13 @@ public class RootLayoutController implements Observer {
 
         }
 
-        if (executedCommand instanceof SearchCommand) {
-            // textCommandExecuted.setText("Searching:");
-            // textCommandExecuted.setFill(Color.web("303F9F", 0.7));
-            // textExecutionDetails.setText(userFeedback);
-
-        }
-
         if (executedCommand instanceof DoneCommand) {
             if (undoOrRedo != null) {
                 labelExecutedCommand.setText(undoOrRedo + STRING_WHITESPACE + "task completed.");
                 labelExecutedCommand.setTextFill(Color.web(AppColor.PRIMARY_WHITE));
                 labelExecutionDetails.setTextFill(Color.web(AppColor.PRIMARY_WHITE, 0));
             } else {
-                labelExecutedCommand.setText(taskIndexesToBeExecuted.size() + STRING_WHITESPACE + "task completed.");
+                labelExecutedCommand.setText(listOfTaskToBeExecuted.size() + STRING_WHITESPACE + "task completed.");
                 labelExecutedCommand.setTextFill(Color.web(AppColor.PRIMARY_LIME_LIGHT, 0.7));
                 labelExecutionDetails.setTextFill(Color.web(AppColor.PRIMARY_WHITE, 0));
             }
@@ -1512,7 +1500,7 @@ public class RootLayoutController implements Observer {
                 labelExecutionDetails.setTextFill(Color.web(AppColor.PRIMARY_WHITE, 0));
             } else {
                 labelExecutedCommand
-                        .setText("Mark " + taskIndexesToBeExecuted.size() + STRING_WHITESPACE + "task as incomplete.");
+                        .setText("Mark " + listOfTaskToBeExecuted.size() + STRING_WHITESPACE + "task as incomplete.");
                 labelExecutedCommand.setTextFill(Color.web(AppColor.PRIMARY_LIME_LIGHT, 0.7));
                 labelExecutionDetails.setTextFill(Color.web(AppColor.PRIMARY_WHITE, 0));
             }
