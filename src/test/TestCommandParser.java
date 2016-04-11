@@ -8,9 +8,9 @@ import static org.junit.Assert.assertNull;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import main.data.ParseIndexResult;
@@ -1193,6 +1193,7 @@ public class TestCommandParser {
         indexes = parser.parseIndexes("del 1-3-5-7-9-10", 10);
         assertEquals(expectedIndexes, indexes.getValidIndexes());
 
+        Collections.sort(expectedIndexes, Collections.reverseOrder());
         indexes = parser.parseIndexes("del 10-1", 10);
         assertEquals(expectedIndexes, indexes.getValidIndexes());
 

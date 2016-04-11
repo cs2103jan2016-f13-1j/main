@@ -1552,7 +1552,7 @@ public class CommandParser {
                 }
 
                 multipleIndexes.addAll(getMultipleIndexes(rangedIndexes));
-
+           
                 tempRangedIndexes.clear();
                 rangedIndexes.clear();
             } else {
@@ -1562,8 +1562,7 @@ public class CommandParser {
                 }
             }
         }
-
-        Collections.sort(multipleIndexes);
+        
         return multipleIndexes;
     }
 
@@ -1606,20 +1605,20 @@ public class CommandParser {
         int start, end;
         int possibleRange = arrayIntegers.size() - 1;
 
-        for (int i = 0; i < possibleRange; i++) {
-            // Check and fix range for descending cases
-            if (arrayIntegers.get(i) < arrayIntegers.get(i + 1)) {
-                start = arrayIntegers.get(i);
-                end = arrayIntegers.get(i + 1);
+        for (int i = 0; i < possibleRange; i++) {            
+            start = arrayIntegers.get(i);
+            end = arrayIntegers.get(i + 1);
+            if (start < end) {
+                for (int j = start; j <= end; j++) {
+                    if (!multiple.contains(j)) {
+                        multiple.add(j);
+                    }
+                }
             } else {
-                start = arrayIntegers.get(i + 1);
-                end = arrayIntegers.get(i);
-            }
-
-            // prevent duplicates from being added twice
-            for (int j = start; j <= end; j++) {
-                if (!multiple.contains(j)) {
-                    multiple.add(j);
+                for (int j = start; j >= end; j--) {
+                    if (!multiple.contains(j)) {
+                        multiple.add(j);
+                    }
                 }
             }
         }

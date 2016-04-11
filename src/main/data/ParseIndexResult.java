@@ -2,6 +2,7 @@
 package main.data;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class ParseIndexResult {
     private boolean hasValid;
@@ -67,7 +68,8 @@ public class ParseIndexResult {
     private String convertIndexesToString(ArrayList<Integer> indexes) {
         StringBuilder stringBuilder = new StringBuilder();
         boolean isRange = false;
-
+        Collections.sort(indexes);
+        
         int start = indexes.get(0);
         stringBuilder.append(start);
 
