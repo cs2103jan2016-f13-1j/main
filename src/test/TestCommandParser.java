@@ -180,7 +180,7 @@ public class TestCommandParser {
      * @throws InvalidTitle
      */
     @Test
-    public void testDetectFloating() throws InvalidLabelFormat, InvalidTitle {
+    public void testDetectFloating() throws InvalidLabelFormat {
         CommandParser parser = new CommandParser();
 
         Task task = parser.parseAdd("Do assignment 1");
@@ -217,7 +217,7 @@ public class TestCommandParser {
      * @throws InvalidTitle
      */
     @Test
-    public void testAddFloating() throws InvalidLabelFormat, InvalidTitle {
+    public void testAddFloating() throws InvalidLabelFormat {
         CommandParser parser = new CommandParser();
 
         Task task = parser.parseAdd("Cook dinner");
@@ -236,7 +236,7 @@ public class TestCommandParser {
      * @throws InvalidTitle
      */
     @Test
-    public void testLabel() throws InvalidLabelFormat, InvalidTitle {
+    public void testLabel() throws InvalidLabelFormat {
         CommandParser parser = new CommandParser();
 
         Task task = parser.parseAdd("Cook dinner #home");
@@ -272,7 +272,7 @@ public class TestCommandParser {
      * @throws InvalidTitle
      */
     @Test
-    public void testTogglePriority() throws InvalidLabelFormat, InvalidTitle {
+    public void testTogglePriority() throws InvalidLabelFormat {
         CommandParser parser = new CommandParser();
         Task task = parser.parseAdd("Cook dinner #home");
         assertEquals(0, task.getPriority());
@@ -290,7 +290,7 @@ public class TestCommandParser {
      * @throws InvalidTitle
      */
     @Test
-    public void testToggleDone() throws InvalidLabelFormat, InvalidTitle {
+    public void testToggleDone() throws InvalidLabelFormat {
         CommandParser parser = new CommandParser();
         Task task = parser.parseAdd("Do assignment");
         assertEquals(false, task.isDone());
@@ -309,7 +309,7 @@ public class TestCommandParser {
      * @throws InvalidTitle
      */
     @Test
-    public void testNoPreposition() throws InvalidLabelFormat, InvalidTitle {
+    public void testNoPreposition() throws InvalidLabelFormat {
         CommandParser parser = new CommandParser();
         Task task;
 
@@ -344,7 +344,7 @@ public class TestCommandParser {
      * @throws InvalidTitle
      */
     @Test
-    public void testHasTime() throws InvalidLabelFormat, InvalidTitle {
+    public void testHasTime() throws InvalidLabelFormat {
         CommandParser parser = new CommandParser();
         Task task;
 
@@ -381,7 +381,7 @@ public class TestCommandParser {
      * @throws InvalidTitle
      */
     @Test
-    public void testSmartDetectionOfTime() throws InvalidLabelFormat, InvalidTitle {
+    public void testSmartDetectionOfTime() throws InvalidLabelFormat {
         CommandParser parser = new CommandParser();
         Task task;
 
@@ -405,7 +405,7 @@ public class TestCommandParser {
      * @throws InvalidTitle
      */
     @Test
-    public void testDetectStartTime() throws InvalidLabelFormat, InvalidTitle {
+    public void testDetectStartTime() throws InvalidLabelFormat {
         CommandParser parser = new CommandParser();
         Task task = parser.parseAdd("Attempt quiz from 5pm 1 Aug");
         assertEquals("Attempt quiz", task.getTitle());
@@ -431,7 +431,7 @@ public class TestCommandParser {
      * @throws InvalidTitle
      */
     @Test
-    public void testTaskWithTimeRange() throws InvalidLabelFormat, InvalidTitle {
+    public void testTaskWithTimeRange() throws InvalidLabelFormat {
         CommandParser parser = new CommandParser();
         Task task = parser.parseAdd("Do homework on 1Aug 2-4pm");
         assertEquals("Do homework 1 Aug from 2pm - 4pm", task.toString());
@@ -466,7 +466,7 @@ public class TestCommandParser {
      * @throws InvalidTitle
      */
     @Test
-    public void testTaskToString() throws InvalidLabelFormat, InvalidTitle {
+    public void testTaskToString() throws InvalidLabelFormat {
         CommandParser parser = new CommandParser();
 
         Task task = parser.parseAdd("Cook dinner");
@@ -507,7 +507,7 @@ public class TestCommandParser {
      * @throws InvalidTitle
      */
     @Test
-    public void testDays() throws InvalidLabelFormat, InvalidTitle {
+    public void testDays() throws InvalidLabelFormat {
         CommandParser parser = new CommandParser();
         Task task;
         /*
@@ -534,7 +534,7 @@ public class TestCommandParser {
      * @throws InvalidTitle
      */
     @Test
-    public void testAdd() throws ParseException, InvalidLabelFormat, InvalidTitle {
+    public void testAdd() throws ParseException, InvalidLabelFormat {
         CommandParser parser = new CommandParser();
         Task task = parser.parseAdd("Cook dinner on 24 Mar 7pm #home");
         SimpleDateFormat dateFormat = new SimpleDateFormat("EEE MMM d HH:mm:ss Z yyyy");
@@ -553,7 +553,7 @@ public class TestCommandParser {
      * @throws InvalidTitle
      */
     @Test
-    public void testDatedTaskTitle() throws InvalidLabelFormat, InvalidTitle {
+    public void testDatedTaskTitle() throws InvalidLabelFormat {
         CommandParser parser = new CommandParser();
         Task task = parser.parseAdd("Attend meeting from Monday to Wednesday");
         assertEquals("Attend meeting", task.getTitle());
@@ -602,7 +602,7 @@ public class TestCommandParser {
      * @throws InvalidTitle
      */
     @Test
-    public void testPriorityInCommand() throws InvalidLabelFormat, InvalidTitle {
+    public void testPriorityInCommand() throws InvalidLabelFormat {
         CommandParser parser = new CommandParser();
         Task task, task2;
 
@@ -638,7 +638,7 @@ public class TestCommandParser {
      * @throws InvalidTitle
      */
     @Test
-    public void testAddEditWithYear() throws InvalidLabelFormat, InvalidTitle {
+    public void testAddEditWithYear() throws InvalidLabelFormat {
         CommandParser parser = new CommandParser();
         Task task, task2;
 
@@ -713,7 +713,7 @@ public class TestCommandParser {
      * @throws InvalidTitle
      */
     @Test
-    public void testCompareTo() throws InterruptedException, InvalidLabelFormat, InvalidTitle {
+    public void testCompareTo() throws InterruptedException, InvalidLabelFormat {
         CommandParser parser = new CommandParser();
         Task task1, task2;
 
@@ -799,7 +799,7 @@ public class TestCommandParser {
      * @throws InvalidTitle
      */
     @Test
-    public void testEditBasic() throws InvalidLabelFormat, InvalidTitle {
+    public void testEditBasic() throws InvalidLabelFormat {
         CommandParser parser = new CommandParser();
         Task task, task2;
 
@@ -832,7 +832,7 @@ public class TestCommandParser {
      * @throws InvalidTitle
      */
     @Test
-    public void testEditTimeOnly() throws InvalidLabelFormat, InvalidTitle {
+    public void testEditTimeOnly() throws InvalidLabelFormat {
         CommandParser parser = new CommandParser();
         Task task, task2;
 
@@ -864,7 +864,7 @@ public class TestCommandParser {
     }
 
     @Test
-    public void testEditTimeOnly2() throws InvalidLabelFormat, InvalidTitle {
+    public void testEditTimeOnly2() throws InvalidLabelFormat {
         CommandParser parser = new CommandParser();
         Task task, task2;
 
@@ -914,7 +914,7 @@ public class TestCommandParser {
      * @throws InvalidTitle
      */
     @Test
-    public void testOverallEdit() throws InvalidLabelFormat, InvalidTitle {
+    public void testOverallEdit() throws InvalidLabelFormat {
         CommandParser parser = new CommandParser();
         Task task, task2;
 
@@ -951,7 +951,7 @@ public class TestCommandParser {
     }
 
     @Test
-    public void testOverallEdit2() throws InvalidLabelFormat, InvalidTitle {
+    public void testOverallEdit2() throws InvalidLabelFormat {
         CommandParser parser = new CommandParser();
         Task task, task2;
 
@@ -983,7 +983,7 @@ public class TestCommandParser {
      * @throws InvalidTitle
      */
     @Test
-    public void testShortcut() throws InvalidLabelFormat, InvalidTitle {
+    public void testShortcut() throws InvalidLabelFormat {
         CommandParser parser = new CommandParser();
         Task task, task2;
         /*
