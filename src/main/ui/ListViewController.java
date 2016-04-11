@@ -335,7 +335,7 @@ public class ListViewController extends AnchorPane {
                 // TODO will encounter nullpointer on first run
                 System.out.println("Listview selection changed");
                 // saveSelectedIndex();
-
+                
                 if (newValue instanceof TaskHeader) {
                     if (getSelectedIndex() < getPreviousSelectedIndex()) {
                         listView.getSelectionModel().clearAndSelect(getSelectedIndex() - 1);
@@ -344,7 +344,7 @@ public class ListViewController extends AnchorPane {
                         listView.getSelectionModel().clearAndSelect(getSelectedIndex() + 1);
                     }
                 }
-
+                
                 adjustViewportForListView();
 
             }
@@ -513,7 +513,7 @@ public class ListViewController extends AnchorPane {
         try {
             actualIndex = displayIndexToActualIndexMap.get(index);
         } catch (NullPointerException e) {
-            actualIndex = index - 1;
+            actualIndex = displayIndexToActualIndexMap.get(index - 1);
         }
         listView.getSelectionModel().select(actualIndex);
     }

@@ -196,7 +196,6 @@ public class RootLayoutController implements Observer {
     @Override
     public void update(Observable o, Object arg) {
         if (o instanceof Receiver) {
-            System.out.println("CAME INTO UPDATE " + commandToBeExecuted);
             if (commandToBeExecuted != null) {
                 logger.log(Level.INFO, "(" + commandToBeExecuted.getClass().getSimpleName() + ") update() is called");
 
@@ -227,8 +226,7 @@ public class RootLayoutController implements Observer {
                 } else if (isDeleteCommand || isDoneCommand || isUndoneCommand) {
                     executedCommand = commandToBeExecuted;
                     getCurrentListViewController().clearListViewSelection();
-
-                    if (getCurrentListViewController().getPreviousSelectedIndex() > getCurrentList().size()) {
+                    if (getCurrentListViewController().getPreviousSelectedIndex() >= getCurrentList().size() - 1) {
                         getCurrentListViewController().selectLast();
                     } else {
                         // select back the previous first index that was in the
@@ -1071,7 +1069,6 @@ public class RootLayoutController implements Observer {
     }
 
     private void parseDone() {
-        // TODO Refactor this
         if (userInputArray.length <= 1) {
             logger.log(Level.INFO, "DONE command has no index. Interpreting as ADD command instead");
             parseAdd(); // no index found. parse the input as an Add operation
@@ -1079,105 +1076,176 @@ public class RootLayoutController implements Observer {
             return;
         }
 
+        if (userArguments.toLowerCase().equals("all")) {
+            // previousSelectedTaskIndex = 0;
+            ArrayList<Task> tasksToDone = new ArrayList<Task>();
+            for (Task task : getCurrentList()) {
+                if (!(task instanceof TaskHeader)) {
+                    tasksToDone.add(task);
+                }
+            }
+            listOfTaskToBeExecuted = tasksToDone;
+            commandToBeExecuted = new DoneCommand(receiver, listOfTaskToBeExecuted);
+            getCurrentListViewController().clearListViewSelection();
+            getCurrentListViewController().selectAll();
+
+            int numberOfTasks = 0;
+            for (Task task : getCurrentList()) {
+                if (!(task instanceof TaskHeader)) {
+                    numberOfTasks++;
+                }
+            }
+
+            showFeedback(true, STRING_FEEDBACK_ACTION_DONE,
+                    userArguments + STRING_WHITESPACE + String.format(STRING_FEEDBACK_TOTAL_TASK, numberOfTasks));
+            return;
+
+        }
+
         logger.log(Level.INFO, "Sending user input to commandParser: " + userInput);
-        // TODO consider refactoring this into a reusable method
         ParseIndexResult parseIndexResult;
         try {
             parseIndexResult = commandParser.parseIndexes(userInput, getCurrentList().size());
+            
+            if (parseIndexResult.hasInvalidIndex()) {
+                throw new IndexOutOfBoundsException();
+            }
             if (parseIndexResult.hasValidIndex()) {
                 taskIndexesToBeExecuted = parseIndexResult.getValidIndexes();
-            }
-            String parseResult = taskIndexesToBeExecuted.toString();
-            System.out.println("user arguments: " + userArguments);
-            System.out.println("parse result: " + parseResult);
+                String parseResult = taskIndexesToBeExecuted.toString();
+                
+                System.out.println("user arguments: " + userArguments);
+                System.out.println("parse result: " + parseResult);
 
-            if (taskIndexesToBeExecuted.size() == 1) {
-                int taskIndex = taskIndexesToBeExecuted.get(0);
-                int actualIndex = getCurrentListViewController().getActualIndex(taskIndex);
-                taskToBeExecuted = getCurrentList().get(actualIndex);
-                inputFeedback = taskToBeExecuted.toString();
-                commandToBeExecuted = new DoneCommand(receiver, getTasksToBeExecuted(taskIndexesToBeExecuted));
-                getCurrentListViewController().clearAndSelect(taskIndex);
-                showFeedback(true, STRING_FEEDBACK_ACTION_DONE, inputFeedback);
+                if (taskIndexesToBeExecuted.size() == 1) { // when there's only 1
+                                                           // index
+                    int taskIndex = taskIndexesToBeExecuted.get(0);
+                    int actualIndex = getCurrentListViewController().getActualIndex(taskIndex);
+                    inputFeedback = getCurrentList().get(actualIndex).toString();
+                    taskToBeExecuted = getCurrentList().get(actualIndex);
+                    listOfTaskToBeExecuted = getTasksToBeExecuted(taskIndexesToBeExecuted);
+                    commandToBeExecuted = new DoneCommand(receiver, listOfTaskToBeExecuted);
+                    getCurrentListViewController().clearListViewSelection();
+                    getCurrentListViewController().select(taskIndex);
+                    showFeedback(true, STRING_FEEDBACK_ACTION_DONE, inputFeedback);
 
-            } else {
-                commandToBeExecuted = new DoneCommand(receiver, getTasksToBeExecuted(taskIndexesToBeExecuted));
-                getCurrentListViewController().clearListViewSelection();
-                for (int index : taskIndexesToBeExecuted) {
-                    getCurrentListViewController().select(index);
+                } else if (taskIndexesToBeExecuted.size() > 1) { // when there's a
+                                                                 // range of indexes
+                    listOfTaskToBeExecuted = getTasksToBeExecuted(taskIndexesToBeExecuted);
+                    commandToBeExecuted = new DoneCommand(receiver, listOfTaskToBeExecuted);
+                    getCurrentListViewController().clearListViewSelection();
+                    for (int index : taskIndexesToBeExecuted) {
+                        getCurrentListViewController().select(index);
+                    }
+                    showFeedback(true, STRING_FEEDBACK_ACTION_DONE, userArguments + STRING_WHITESPACE
+                            + String.format(STRING_FEEDBACK_TOTAL_TASK, listOfTaskToBeExecuted.size()));
                 }
-                showFeedback(true, STRING_FEEDBACK_ACTION_DONE, userArguments + STRING_WHITESPACE
-                        + String.format(STRING_FEEDBACK_TOTAL_TASK, taskIndexesToBeExecuted.size()));
+            } else {
+                taskIndexesToBeExecuted.clear();
             }
         } catch (InvalidTaskIndexFormat invalidTaskIndexFormat) {
             logger.log(Level.INFO, "DONE command index(es) invalid: " + userArguments);
             getCurrentListViewController().clearListViewSelection();
-            clearStoredUserInput();
             showFeedback(true, STRING_FEEDBACK_ACTION_DONE, String.format(STRING_ERROR_NOT_FOUND, userArguments));
+            clearStoredUserInput();
             return;
-        } catch (IndexOutOfBoundsException indexOutOfBoundsException) {
+        } catch (Exception e) {
             logger.log(Level.INFO, "DONE command index(es) invalid: " + userArguments);
             getCurrentListViewController().clearListViewSelection();
-            clearStoredUserInput();
             showFeedback(true, STRING_FEEDBACK_ACTION_DONE, String.format(STRING_ERROR_NOT_FOUND, userArguments));
+            clearStoredUserInput();
             return;
         }
-
     }
 
     private void parseUndone() {
-        // TODO Refactor this
         if (userInputArray.length <= 1) {
-            logger.log(Level.INFO, "DONE command has no index. Interpreting as ADD command instead");
+            logger.log(Level.INFO, "UNDONE command has no index. Interpreting as ADD command instead");
             parseAdd(); // no index found. parse the input as an Add operation
                         // instead
             return;
         }
 
+        if (userArguments.toLowerCase().equals("all")) {
+            // previousSelectedTaskIndex = 0;
+            ArrayList<Task> tasksToUndone = new ArrayList<Task>();
+            for (Task task : getCurrentList()) {
+                if (!(task instanceof TaskHeader)) {
+                    tasksToUndone.add(task);
+                }
+            }
+            listOfTaskToBeExecuted = tasksToUndone;
+            commandToBeExecuted = new UndoneCommand(receiver, listOfTaskToBeExecuted);
+            getCurrentListViewController().clearListViewSelection();
+            getCurrentListViewController().selectAll();
+
+            int numberOfTasks = 0;
+            for (Task task : getCurrentList()) {
+                if (!(task instanceof TaskHeader)) {
+                    numberOfTasks++;
+                }
+            }
+
+            showFeedback(true, STRING_FEEDBACK_ACTION_UNDONE,
+                    userArguments + STRING_WHITESPACE + String.format(STRING_FEEDBACK_TOTAL_TASK, numberOfTasks));
+            return;
+
+        }
+
         logger.log(Level.INFO, "Sending user input to commandParser: " + userInput);
-        // TODO consider refactoring this into a reusable method
         ParseIndexResult parseIndexResult;
         try {
             parseIndexResult = commandParser.parseIndexes(userInput, getCurrentList().size());
+            
+            if (parseIndexResult.hasInvalidIndex()) {
+                throw new IndexOutOfBoundsException();
+            }
             if (parseIndexResult.hasValidIndex()) {
                 taskIndexesToBeExecuted = parseIndexResult.getValidIndexes();
-            }
-            String parseResult = taskIndexesToBeExecuted.toString();
-            System.out.println("user arguments: " + userArguments);
-            System.out.println("parse result: " + parseResult);
+                String parseResult = taskIndexesToBeExecuted.toString();
+                
+                System.out.println("user arguments: " + userArguments);
+                System.out.println("parse result: " + parseResult);
 
-            if (taskIndexesToBeExecuted.size() == 1) {
-                int taskIndex = taskIndexesToBeExecuted.get(0);
-                int actualIndex = getCurrentListViewController().getActualIndex(taskIndex);
-                taskToBeExecuted = getCurrentList().get(actualIndex);
-                inputFeedback = taskToBeExecuted.toString();
-                commandToBeExecuted = new UndoneCommand(receiver, getTasksToBeExecuted(taskIndexesToBeExecuted));
-                getCurrentListViewController().clearAndSelect(taskIndex);
-                showFeedback(true, STRING_FEEDBACK_ACTION_UNDONE, inputFeedback);
+                if (taskIndexesToBeExecuted.size() == 1) { // when there's only 1
+                                                           // index
+                    int taskIndex = taskIndexesToBeExecuted.get(0);
+                    int actualIndex = getCurrentListViewController().getActualIndex(taskIndex);
+                    inputFeedback = getCurrentList().get(actualIndex).toString();
+                    taskToBeExecuted = getCurrentList().get(actualIndex);
+                    listOfTaskToBeExecuted = getTasksToBeExecuted(taskIndexesToBeExecuted);
+                    commandToBeExecuted = new UndoneCommand(receiver, listOfTaskToBeExecuted);
+                    getCurrentListViewController().clearListViewSelection();
+                    getCurrentListViewController().select(taskIndex);
+                    showFeedback(true, STRING_FEEDBACK_ACTION_UNDONE, inputFeedback);
 
-            } else {
-                commandToBeExecuted = new UndoneCommand(receiver, getTasksToBeExecuted(taskIndexesToBeExecuted));
-                getCurrentListViewController().clearListViewSelection();
-                for (int index : taskIndexesToBeExecuted) {
-                    getCurrentListViewController().select(index);
+                } else if (taskIndexesToBeExecuted.size() > 1) { // when there's a
+                                                                 // range of indexes
+                    listOfTaskToBeExecuted = getTasksToBeExecuted(taskIndexesToBeExecuted);
+                    commandToBeExecuted = new UndoneCommand(receiver, listOfTaskToBeExecuted);
+                    getCurrentListViewController().clearListViewSelection();
+                    for (int index : taskIndexesToBeExecuted) {
+                        getCurrentListViewController().select(index);
+                    }
+                    showFeedback(true, STRING_FEEDBACK_ACTION_UNDONE, userArguments + STRING_WHITESPACE
+                            + String.format(STRING_FEEDBACK_TOTAL_TASK, listOfTaskToBeExecuted.size()));
                 }
-                showFeedback(true, STRING_FEEDBACK_ACTION_UNDONE, userArguments + STRING_WHITESPACE
-                        + String.format(STRING_FEEDBACK_TOTAL_TASK, taskIndexesToBeExecuted.size()));
+            } else {
+                taskIndexesToBeExecuted.clear();
             }
         } catch (InvalidTaskIndexFormat invalidTaskIndexFormat) {
             logger.log(Level.INFO, "UNDONE command index(es) invalid: " + userArguments);
             getCurrentListViewController().clearListViewSelection();
-            clearStoredUserInput();
             showFeedback(true, STRING_FEEDBACK_ACTION_UNDONE, String.format(STRING_ERROR_NOT_FOUND, userArguments));
+            clearStoredUserInput();
             return;
-        } catch (IndexOutOfBoundsException indexOutOfBoundsException) {
+        } catch (Exception e) {
             logger.log(Level.INFO, "UNDONE command index(es) invalid: " + userArguments);
             getCurrentListViewController().clearListViewSelection();
-            clearStoredUserInput();
             showFeedback(true, STRING_FEEDBACK_ACTION_UNDONE, String.format(STRING_ERROR_NOT_FOUND, userArguments));
+            clearStoredUserInput();
             return;
         }
-
     }
 
     private void parseUndo() {
