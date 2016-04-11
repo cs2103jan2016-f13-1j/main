@@ -1496,7 +1496,7 @@ public class RootLayoutController implements Observer {
             labelSuggestedAction.setText("UNDO (F1)");
         }
 
-        FadeTransition appearVisible = new FadeTransition(Duration.seconds(5), anchorPaneExecutionResult);
+        FadeTransition appearVisible = new FadeTransition(Duration.seconds(2), anchorPaneExecutionResult);
         appearVisible.setFromValue(1);
         appearVisible.setToValue(1);
         appearVisible.setCycleCount(1);

@@ -263,8 +263,8 @@
 	</children>
 	<children>
 		<AnchorPane fx:id="anchorPaneExecutionResult" opacity="0.0"
-			style="-fx-background-color: #323232;" AnchorPane.topAnchor="160.0"
-			AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+			style="-fx-background-color: #323232e5;" AnchorPane.bottomAnchor="108.0"
+			AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="40.0">
 			<children>
 				<Label fx:id="labelExecutedCommand" layoutX="10.0" layoutY="10.0"
 					text="Deleted:" textAlignment="RIGHT" textFill="#c5cae9"
