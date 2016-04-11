@@ -955,16 +955,13 @@ public class RootLayoutController implements Observer {
 
         try {
             taskToBeExecuted = commandParser.parseAdd(userInput);
-        } catch (InvalidTitle e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            commandToBeExecuted = new AddCommand(receiver, taskToBeExecuted);
+            inputFeedback = taskToBeExecuted.toString();
+            showFeedback(true, STRING_FEEDBACK_ACTION_ADD, inputFeedback);
+
         } catch (InvalidLabelFormat e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        commandToBeExecuted = new AddCommand(receiver, taskToBeExecuted);
-        inputFeedback = taskToBeExecuted.toString();
-        showFeedback(true, STRING_FEEDBACK_ACTION_ADD, inputFeedback);
     }
 
     private void parseDelete() {
