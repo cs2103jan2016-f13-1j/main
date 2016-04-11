@@ -233,6 +233,7 @@ public class RootLayoutController implements Observer {
                 // TODO do something about this
                 if (isUndoRedo) {
                     isUndoRedo = false;
+                    System.out.println("IS UNDO, selected index: " + getCurrentListViewController().getSelectedIndex());
                     return;
                 }
 
@@ -1001,7 +1002,6 @@ public class RootLayoutController implements Observer {
 
             if (parseIndexResult.hasValidIndex()) {
                 taskIndexesToBeExecuted = parseIndexResult.getValidIndexes();
-                String parseResult = taskIndexesToBeExecuted.toString();
 
                 if (taskIndexesToBeExecuted.size() == 1) { // when there's only
                                                            // 1
@@ -1146,7 +1146,6 @@ public class RootLayoutController implements Observer {
             }
             if (parseIndexResult.hasValidIndex()) {
                 taskIndexesToBeExecuted = parseIndexResult.getValidIndexes();
-                String parseResult = taskIndexesToBeExecuted.toString();
 
                 if (taskIndexesToBeExecuted.size() == 1) { // when there's only
                                                            // 1
@@ -1237,7 +1236,6 @@ public class RootLayoutController implements Observer {
             }
             if (parseIndexResult.hasValidIndex()) {
                 taskIndexesToBeExecuted = parseIndexResult.getValidIndexes();
-                String parseResult = taskIndexesToBeExecuted.toString();
 
                 if (taskIndexesToBeExecuted.size() == 1) { // when there's only
                                                            // 1

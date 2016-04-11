@@ -150,7 +150,6 @@ public class ListCellController extends JFXListCell<Task> {
 
     public void showTaskTime(Task task) {
         if (task.getSimpleTime().isEmpty()) {
-            System.out.println(task.getSimpleTime());
             this.labelTaskTime.setText("-");
             return;
         }

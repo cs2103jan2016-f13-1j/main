@@ -36,6 +36,7 @@ import main.logic.DoneCommand;
 import main.logic.EditCommand;
 import main.logic.UndoneCommand;
 
+@SuppressWarnings("restriction")
 public class ListViewController extends AnchorPane {
     private static final Logger logger = Logger.getLogger(ListViewController.class.getName());
     private static final String STRING_LISTVIEW_TODO_EMPTY = "You have no task!";
@@ -235,7 +236,6 @@ public class ListViewController extends AnchorPane {
                 if (!isOverdueHeaderAdded) {
                     taskListWithHeaders.add(i, new TaskHeader("Overdue"));
                     isOverdueHeaderAdded = true;
-                    System.out.println("Overdue header is added");
                 }
                 totalOverdueTasks++;
             }
@@ -245,7 +245,6 @@ public class ListViewController extends AnchorPane {
                 if (!isTodayHeaderAdded) {
                     taskListWithHeaders.add(i, new TaskHeader("Today"));
                     isTodayHeaderAdded = true;
-                    System.out.println("Today header is added");
                 }
                 totalTodayTasks++;
             }
@@ -254,7 +253,6 @@ public class ListViewController extends AnchorPane {
                 if (!isTomorrowHeaderAdded) {
                     taskListWithHeaders.add(i, new TaskHeader("Tomorrow"));
                     isTomorrowHeaderAdded = true;
-                    System.out.println("Tomorrow header is added");
                 }
                 totalTomorrowTasks++;
             }
@@ -262,7 +260,6 @@ public class ListViewController extends AnchorPane {
                 if (!isUpcomingHeaderAdded) {
                     taskListWithHeaders.add(i, new TaskHeader("Upcoming"));
                     isUpcomingHeaderAdded = true;
-                    System.out.println("Upcoming header is added");
                 }
                 totalUpcomingTasks++;
             }
@@ -270,7 +267,6 @@ public class ListViewController extends AnchorPane {
                 if (!isSomedayHeaderAdded) {
                     taskListWithHeaders.add(i, new TaskHeader("Someday"));
                     isSomedayHeaderAdded = true;
-                    System.out.println("Someday header is added");
                 }
                 totalSomedayTasks++;
             }
@@ -331,7 +327,6 @@ public class ListViewController extends AnchorPane {
             @Override
             public void changed(ObservableValue<? extends Task> observable, Task oldValue, Task newValue) {
                 // TODO will encounter nullpointer on first run
-                System.out.println("Listview selection changed");
                 // saveSelectedIndex();
                 
                 if (newValue instanceof TaskHeader) {
@@ -363,14 +358,13 @@ public class ListViewController extends AnchorPane {
      * select items from the ListView. See adjustViewportForListView() method to
      * find out more about the viewport adjusting algorithm
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked" })
     private void initCustomViewportBehaviorForListView() {
         for (Node node : listView.getChildrenUnmodifiable()) {
             if (node instanceof VirtualFlow) {
                 // get an instance of VirtualFlow. this is essentially the
                 // viewport for ListView
                 virtualFlow = (VirtualFlow<IndexedCell<String>>) node;
-                System.out.println("Found virtual flow");
             }
         }
 
@@ -381,22 +375,13 @@ public class ListViewController extends AnchorPane {
      * the automatic scrolling of focused ListView when a selected item is not
      * visible within the viewport.
      */
-    @SuppressWarnings("restriction")
     private void adjustViewportForListView() {
         if (virtualFlow.getFirstVisibleCellWithinViewPort() != null) {
             int firstVisibleIndex = virtualFlow.getFirstVisibleCellWithinViewPort().getIndex();
             int lastVisibleIndex = virtualFlow.getLastVisibleCellWithinViewPort().getIndex();
-            int numberOfCellsInViewPort = lastVisibleIndex - firstVisibleIndex + 1;
-
-            System.out.println("first visible cell: " + firstVisibleIndex);
-            System.out.println("last visible cell: " + lastVisibleIndex);
-            System.out.println("number of cells in a viewport:" + numberOfCellsInViewPort);
 
             if (isArrowKeysPressed) {
-                System.out.println("arrowkeys true");
-                System.out.println("adjustViewPort: previous index " + previousSelectedTaskIndex);
                 if (getSelectedIndex() <= firstVisibleIndex) {
-                    System.out.println("Scrolling up");
                     // if the item at current index -1 is a task header, adjust
                     // viewport to show header
                     if (taskListWithHeaders.get(getSelectedIndex() - 1) instanceof TaskHeader) {
@@ -408,13 +393,11 @@ public class ListViewController extends AnchorPane {
                     }
 
                 } else if (getSelectedIndex() > lastVisibleIndex) {
-                    System.out.println("Scrolling down");
                     // viewport will scroll and show the current item at the
                     // bottom
                     listView.scrollTo(firstVisibleIndex + 1);
                 }
                 isArrowKeysPressed = false;
-                System.out.println("arrowkeys false");
                 return;
             }
 
@@ -427,29 +410,23 @@ public class ListViewController extends AnchorPane {
 
             if (isAddCommand || isEditCommand || isDeleteCommand || isDoneCommand || isUndoneCommand) {
                 logger.log(Level.INFO, "Adjusting viewport for: " + lastExecutedCommand.getClass().getSimpleName());
-
+                
+                int numberOfCellsDifference;
                 if (getSelectedIndex() <= firstVisibleIndex) {
-                    int numberOfCellsDifference = firstVisibleIndex - getSelectedIndex();
+                    numberOfCellsDifference = firstVisibleIndex - getSelectedIndex();
                     if (taskListWithHeaders.get(getSelectedIndex() - 1) instanceof TaskHeader) {
                         listView.scrollTo(getSelectedIndex() - 1);
                     } else {
                         listView.scrollTo(getSelectedIndex());
                     }
 
-                    System.out.println("Item index: " + getSelectedIndex());
-                    System.out.println("Item index is less than viewport first visible index");
-                    System.out.println("Cell differences: " + numberOfCellsDifference);
                 } else if (getSelectedIndex() > lastVisibleIndex) {
-                    int numberOfCellsDifference = getSelectedIndex() - lastVisibleIndex;
+                    numberOfCellsDifference = getSelectedIndex() - lastVisibleIndex;
                     if (numberOfCellsDifference == 1) {
                         listView.scrollTo(firstVisibleIndex + 1);
                     } else {
                         listView.scrollTo(numberOfCellsDifference + 4);
                     }
-
-                    System.out.println("Item index: " + getSelectedIndex());
-                    System.out.println("Item index is more than viewport last visible index");
-                    System.out.println("Cell differences: " + numberOfCellsDifference);
                 }
                 return;
             }
@@ -471,7 +448,6 @@ public class ListViewController extends AnchorPane {
     */
     public void saveSelectedIndex() {
         previousSelectedTaskIndex = getSelectedIndex();
-        System.out.println("Saved index: " + previousSelectedTaskIndex);
     }
 
     /**
@@ -494,8 +470,6 @@ public class ListViewController extends AnchorPane {
             saveSelectedIndex();
             logger.log(Level.INFO, "Restore ListView selection to last item");
         } else {
-            System.out.println(listView.getId());
-            System.out.println(previousSelectedTaskIndex);
             listView.getSelectionModel().select(previousSelectedTaskIndex);
             saveSelectedIndex();
             logger.log(Level.INFO, "Restore ListView selection to previous to previous item");
@@ -538,7 +512,6 @@ public class ListViewController extends AnchorPane {
     */
     public void handleArrowKeys(KeyEvent keyEvent) {
         saveSelectedIndex();
-        System.out.println("handleArrowKeys: " + previousSelectedTaskIndex);
         if (keyEvent.getCode() == KeyCode.UP) {
             if (getPreviousSelectedIndex() > 1) {
                 isArrowKeysPressed = true;
@@ -555,7 +528,6 @@ public class ListViewController extends AnchorPane {
 
         logger.log(Level.INFO, "Pressed " + keyEvent.getCode() + " arrow key: currently selected index is "
                 + getSelectedIndex() + " current listview: " + listView.getId());
-        System.out.println("handleArrowKeys: " + previousSelectedTaskIndex);
     }
 
     public boolean isOverdueHeaderAdded() {
